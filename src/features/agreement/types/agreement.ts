@@ -1,4 +1,8 @@
-export type AgreementTemplate = "partnership" | "vendor";
+export type AgreementTemplate =
+  | "partnership"
+  | "vendor"
+  | "inc-installation-assign"
+  | "inc-goodwill-execution";
 
 export interface AgreementCompany {
   name: string;

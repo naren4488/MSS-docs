@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { FilePlus2, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { AGREEMENT_TEMPLATES } from "../lib/agreement-defaults";
+import { AGREEMENT_TEMPLATES, getAgreementTemplateLabel } from "../lib/agreement-defaults";
 import { formatRecordDate } from "../lib/agreement-formatters";
 import { deleteAgreementRecord, listAgreements } from "../lib/agreement-storage";
 
@@ -19,19 +19,14 @@ export function AllAgreements() {
 
   return (
     <div className="page-shell">
-      <div className="maker-toolbar" style={{ marginBottom: 24 }}>
-        <div className="maker-heading">
-          <p className="eyebrow">Saved Documents</p>
-          <h1>Agreements</h1>
-          <p>Open any saved agreement to continue editing it, or delete old drafts you no longer need.</p>
-        </div>
-      </div>
-
       <section className="template-picker" style={{ marginBottom: 32 }}>
         <div className="panel-header">
           <div>
             <p className="eyebrow">Create New</p>
             <h2 style={{ margin: "4px 0 0" }}>Pick a template</h2>
+            <p className="muted-text" style={{ marginTop: 8, marginBottom: 0 }}>
+              Choose a template below to create a new agreement. Saved agreements appear further down.
+            </p>
           </div>
           <p className="muted-text">
             Each template pre-fills different clauses and deal variables so you start from the right baseline.
@@ -56,6 +51,14 @@ export function AllAgreements() {
         </div>
       </section>
 
+      <div className="maker-toolbar" style={{ marginBottom: 24 }}>
+        <div className="maker-heading">
+          <p className="eyebrow">Saved Documents</p>
+          <h1>Agreements</h1>
+          <p>Open any saved agreement to continue editing it, or delete old drafts you no longer need.</p>
+        </div>
+      </div>
+
       {records.length === 0 ? (
         <div className="empty-card">
           <p className="eyebrow">Nothing Saved Yet</p>
@@ -69,9 +72,7 @@ export function AllAgreements() {
           {records.map((record) => (
             <article className="saved-card" key={record.id}>
               <div>
-                <p className="eyebrow">
-                  {record.content.template === "vendor" ? "Vendor Agreement" : "Sales Partner Agreement"}
-                </p>
+                <p className="eyebrow">{getAgreementTemplateLabel(record.content.template)}</p>
                 <h3>{record.name || "Untitled Agreement"}</h3>
                 <p className="muted-text" style={{ marginBottom: 0 }}>
                   Last updated {formatRecordDate(record.updatedAt)}

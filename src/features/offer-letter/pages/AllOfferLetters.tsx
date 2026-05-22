@@ -20,19 +20,14 @@ export function AllOfferLetters() {
 
   return (
     <div className="page-shell">
-      <div className="maker-toolbar" style={{ marginBottom: 24 }}>
-        <div className="maker-heading">
-          <p className="eyebrow">Saved Documents</p>
-          <h1>Offer Letters</h1>
-          <p>Open any saved letter, continue editing it, or delete old drafts you no longer need.</p>
-        </div>
-      </div>
-
       <section className="template-picker" style={{ marginBottom: 32 }}>
         <div className="panel-header">
           <div>
             <p className="eyebrow">Create New</p>
             <h2 style={{ margin: "4px 0 0" }}>Pick a template</h2>
+            <p className="muted-text" style={{ marginTop: 8, marginBottom: 0 }}>
+              Choose a template below to create a new offer letter. Saved letters appear further down.
+            </p>
           </div>
           <p className="muted-text">
             Each template pre-fills different terms (probation / salary review) so you start from the right baseline.
@@ -56,6 +51,14 @@ export function AllOfferLetters() {
           ))}
         </div>
       </section>
+
+      <div className="maker-toolbar" style={{ marginBottom: 24 }}>
+        <div className="maker-heading">
+          <p className="eyebrow">Saved Documents</p>
+          <h1>Offer Letters</h1>
+          <p>Open any saved letter, continue editing it, or delete old drafts you no longer need.</p>
+        </div>
+      </div>
 
       {records.length === 0 ? (
         <div className="empty-card">

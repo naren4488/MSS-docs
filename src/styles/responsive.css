@@ -20,6 +20,19 @@
     align-items: stretch;
   }
 
+  .sticky-topbar-left {
+    width: 100%;
+  }
+
+  .maker-feature-nav {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .maker-feature-nav-link {
+    flex: 1;
+  }
+
   .field-grid {
     grid-template-columns: 1fr;
   }

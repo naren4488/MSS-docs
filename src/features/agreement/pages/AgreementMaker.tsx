@@ -1,10 +1,15 @@
 import { ArrowLeft, Columns2, Eye, Maximize2, Printer, RotateCcw, Save } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useBeforeUnload, useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { Navigate, useBeforeUnload, useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { MakerFeatureNav } from "@/components/MakerFeatureNav";
 import { AgreementEditor } from "../components/AgreementEditor";
 import { AgreementPreview } from "../components/AgreementPreview";
 import { SaveAgreementDialog } from "../components/SaveAgreementDialog";
-import { createDefaultAgreementData, normalizeAgreementData } from "../lib/agreement-defaults";
+import {
+  createDefaultAgreementData,
+  isAgreementTemplate,
+  normalizeAgreementData,
+} from "../lib/agreement-defaults";
 import {
   clearAgreementDraft,
   getAgreement,
@@ -13,12 +18,6 @@ import {
   saveAgreementRecord,
 } from "../lib/agreement-storage";
 import type { AgreementData, AgreementTemplate } from "../types/agreement";
-
-const TEMPLATE_VALUES: AgreementTemplate[] = ["partnership", "vendor"];
-
-function isAgreementTemplate(value: string | null): value is AgreementTemplate {
-  return value !== null && (TEMPLATE_VALUES as string[]).includes(value);
-}
 
 function cloneData(data: AgreementData) {
   return JSON.parse(JSON.stringify(data)) as AgreementData;
@@ -32,6 +31,9 @@ export function AgreementMaker() {
   const explicitTemplate: AgreementTemplate | null = isAgreementTemplate(templateParam) ? templateParam : null;
   const previewRef = useRef<HTMLDivElement | null>(null);
   const record = params.id ? getAgreement(params.id) : null;
+  const draft = !record ? getAgreementDraft() : null;
+  const shouldRedirectToList = !record && !explicitTemplate && !draft;
+
   const initialData = useMemo(() => {
     if (record) {
       return normalizeAgreementData(cloneData(record.content));
@@ -111,13 +113,20 @@ export function AgreementMaker() {
 
   const defaultSaveName = data.party.entityName || record?.name || data.title || "Untitled Agreement";
 
+  if (shouldRedirectToList) {
+    return <Navigate replace to="/agreements" />;
+  }
+
   return (
     <div className="page-shell page-shell--maker page-shell--maker-agreement">
       <div className="sticky-topbar no-print">
-        <button className="ghost-button" type="button" onClick={handleBack}>
-          <ArrowLeft size={16} />
-          Back
-        </button>
+        <div className="sticky-topbar-left">
+          <MakerFeatureNav isDirty={isDirty} />
+          <button className="ghost-button" type="button" onClick={handleBack}>
+            <ArrowLeft size={16} />
+            Back
+          </button>
+        </div>
         <div className="topbar-actions">
           <div className={`status-pill ${isDirty ? "dirty" : ""}`}>{isDirty ? "Unsaved changes" : "All changes saved"}</div>
           <div className="segmented-control">

@@ -202,6 +202,53 @@
   backdrop-filter: blur(20px);
 }
 
+.sticky-topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.maker-feature-nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 999px;
+  background: #eef2f8;
+  border: 1px solid #dce3ef;
+}
+
+.maker-feature-nav-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: #5d6b84;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.maker-feature-nav-link.active {
+  background: linear-gradient(135deg, #152036, #26406d);
+  color: #fff;
+  box-shadow: 0 8px 18px rgba(21, 32, 54, 0.18);
+}
+
+.maker-feature-nav-link:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.85);
+  color: #152036;
+}
+
 .topbar-actions {
   display: flex;
   gap: 10px;

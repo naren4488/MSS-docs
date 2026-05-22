@@ -3,6 +3,7 @@ import { useState } from "react";
 import { ChevronDown, Plus, Trash2 } from "lucide-react";
 import { ImageUploader } from "@/features/offer-letter/components/ImageUploader";
 import { BulletListEditor } from "@/features/offer-letter/components/BulletListEditor";
+import { getAgreementTemplateLabel } from "../lib/agreement-defaults";
 import type { AgreementCompany, AgreementData, AgreementSection, AgreementWitness } from "../types/agreement";
 import { PartyEditor } from "./PartyEditor";
 import { SectionEditor } from "./ClauseListEditor";
@@ -91,7 +92,7 @@ export function AgreementEditor({ data, onChange }: AgreementEditorProps) {
     onChange({ ...data, witnesses: next });
   }
 
-  const showApplicantFields = data.template === "vendor";
+  const showApplicantFields = data.template === "vendor" || data.template === "inc-goodwill-execution";
 
   return (
     <div className="stack">
@@ -111,7 +112,7 @@ export function AgreementEditor({ data, onChange }: AgreementEditorProps) {
           </div>
           <div className="field">
             <label>Template</label>
-            <input value={data.template === "vendor" ? "Vendor Agreement" : "Sales Partner Agreement"} readOnly />
+            <input value={getAgreementTemplateLabel(data.template)} readOnly />
           </div>
         </div>
       </AccordionSection>

@@ -1,6 +1,7 @@
 import { ArrowLeft, Columns2, Eye, Maximize2, Printer, RotateCcw, Save } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useBeforeUnload, useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { Navigate, useBeforeUnload, useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { MakerFeatureNav } from "@/components/MakerFeatureNav";
 import { OfferLetterEditor } from "../components/OfferLetterEditor";
 import { OfferLetterPreview } from "../components/OfferLetterPreview";
 import { SaveOfferLetterDialog } from "../components/SaveOfferLetterDialog";
@@ -31,6 +32,9 @@ export function OfferLetterMaker() {
   const explicitTemplate: OfferLetterTemplate | null = isOfferLetterTemplate(templateParam) ? templateParam : null;
   const previewRef = useRef<HTMLDivElement | null>(null);
   const record = params.id ? getOfferLetter(params.id) : null;
+  const draft = !record ? getDraft() : null;
+  const shouldRedirectToList = !record && !explicitTemplate && !draft;
+
   const initialData = useMemo(() => {
     if (record) {
       return normalizeOfferLetterData(cloneData(record.content));
@@ -113,13 +117,20 @@ export function OfferLetterMaker() {
     setData(createDefaultOfferLetterData(explicitTemplate ?? "fresh"));
   }
 
+  if (shouldRedirectToList) {
+    return <Navigate replace to="/offer-letters" />;
+  }
+
   return (
     <div className="page-shell page-shell--maker">
       <div className="sticky-topbar no-print">
-        <button className="ghost-button" type="button" onClick={handleBack}>
-          <ArrowLeft size={16} />
-          Back
-        </button>
+        <div className="sticky-topbar-left">
+          <MakerFeatureNav isDirty={isDirty} />
+          <button className="ghost-button" type="button" onClick={handleBack}>
+            <ArrowLeft size={16} />
+            Back
+          </button>
+        </div>
         <div className="topbar-actions">
           <div className={`status-pill ${isDirty ? "dirty" : ""}`}>{isDirty ? "Unsaved changes" : "All changes saved"}</div>
           <div className="segmented-control">

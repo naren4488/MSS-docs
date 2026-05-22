@@ -21,7 +21,34 @@ export const AGREEMENT_TEMPLATES: { id: AgreementTemplate; label: string; descri
     description:
       "Installation contract between Mahi Solar (as Vendor) and a residential applicant under the Rooftop Solar Programme. Includes scope, warranties, performance guarantee and cancellation.",
   },
+  {
+    id: "inc-installation-assign",
+    label: "INC Project — Installation Assignment",
+    description:
+      "Assign INC / subsidy installation work to a third-party installer. Covers scope, safety responsibility, materials, payments and conduct.",
+  },
+  {
+    id: "inc-goodwill-execution",
+    label: "INC Project — Goodwill Execution Letter",
+    description:
+      "Goodwill commitment to execute a beneficiary's INC project with agreed scope, materials where needed, and beneficiary cooperation.",
+  },
 ];
+
+const AGREEMENT_TEMPLATE_IDS: AgreementTemplate[] = [
+  "partnership",
+  "vendor",
+  "inc-installation-assign",
+  "inc-goodwill-execution",
+];
+
+export function isAgreementTemplate(value: string | null): value is AgreementTemplate {
+  return value !== null && (AGREEMENT_TEMPLATE_IDS as string[]).includes(value);
+}
+
+export function getAgreementTemplateLabel(template: AgreementTemplate): string {
+  return AGREEMENT_TEMPLATES.find((item) => item.id === template)?.label ?? "Agreement";
+}
 
 function uuid() {
   return crypto.randomUUID();
@@ -157,20 +184,51 @@ function createPartnershipSections(): AgreementSection[] {
           },
         ],
       }),
+    ]),
+    section("Compliance & Conduct", [
       clause({
         number: "2",
+        title: "Safety, Insurance & Subcontracting",
+        content: "Partner shall ensure compliance with the following obligations in connection with all projects under this Agreement:",
+        subPoints: [
+          {
+            label: "a",
+            text:
+              "Partner is solely responsible for installer and worker safety, site safety, and compliance with applicable statutory and electrical safety norms at all installation sites. {{company.name}} shall not be liable for safety failures attributable to Partner or its personnel.",
+          },
+          {
+            label: "b",
+            text:
+              "Partner shall maintain adequate workmen's compensation, third-party liability, or other insurance as applicable to its operations, where required by law or prudent business practice.",
+          },
+          {
+            label: "c",
+            text:
+              "Partner shall not subcontract any work assigned under this Agreement without {{company.name}}'s prior written consent.",
+          },
+          {
+            label: "d",
+            text:
+              "Partner shall not offer or accept improper inducements in connection with subsidy, DISCOM, or National Portal processes, and shall conduct business with integrity and in good faith.",
+          },
+        ],
+      }),
+    ]),
+    section("General Terms", [
+      clause({
+        number: "3",
         title: "Independent Contractor & Limitation of Liability",
         content:
           "Partner agrees that Partner is an independent contractor, not {{company.name}}'s partner, agent or employee. Partner shall bear its own expenses in connection with this Agreement without any reimbursement by {{company.name}}. Partner understands and agrees that this arrangement is on a non-exclusive basis and that {{company.name}} may engage other parties to assist in its sales efforts with respect to the Services or any other services, as and wherever it desires.\n\nIN NO EVENT SHALL {{company.name}} BE LIABLE TO PARTNER, CUSTOMERS OR TO ANY THIRD PARTY FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL OR PUNITIVE DAMAGES, INCLUDING, BUT NOT LIMITED TO, ANY DAMAGES FOR LOST PROFITS, LOST SAVINGS, INTERRUPTION OF BUSINESS, LOSS OF TECHNOLOGY OR LOST DATA, HOWEVER ARISING, WHETHER UNDER THEORIES OF CONTRACT, TORT (INCLUDING NEGLIGENCE), STRICT LIABILITY OR OTHERWISE, EVEN IF {{company.name}} HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES. {{company.name}}'S TOTAL CUMULATIVE LIABILITY UNDER THIS AGREEMENT SHALL BE LIMITED IN THE AGGREGATE TO THE TOTAL AMOUNT OF COMMISSIONS PAID TO {{company.name}} BY PARTNER AGAINST THE PARTICULAR CUSTOMER.",
       }),
       clause({
-        number: "3",
+        number: "4",
         title: "Confidentiality",
         content:
           "All information that {{company.name}} discloses to Partner hereunder (\"Confidential Information\"), including any information concerning an approved prospect, shall always be treated as confidential by Partner during the term of this Agreement and thereafter, and shall not be disclosed to a third party without {{company.name}}'s prior written consent. Partner shall not use any of the Confidential Information except in the performance of its duties hereunder. All Information provided to Partner shall be returned to {{company.name}} immediately upon request.",
       }),
       clause({
-        number: "4",
+        number: "5",
         title: "Term & Termination",
         content:
           "This Agreement shall be effective as of the Effective Date and shall continue until either Party sends the other written notice of termination. Termination of this Agreement shall be effective immediately. Commissions shall be paid only so long as such customer remains a {{company.name}} customer and provided this Agreement has not been terminated (for a period not to exceed {{var.commissionMonths}} months). Upon termination of this Agreement by {{company.name}} for cause, all payment of commissions by Partner shall be released immediately.",
@@ -266,6 +324,12 @@ function createVendorSections(): AgreementSection[] {
         number: "1.3",
         content:
           "The Applicant understands and agrees that future changes in load, electricity usage patterns and/or electricity tariffs may affect the economics of the RTS System and these factors have not been and cannot be considered in any analysis or quotation provided by Vendor or its Authorised Persons.",
+      }),
+      clause({
+        number: "1.4",
+        title: "Installation Safety",
+        content:
+          "The Vendor shall carry out installation using qualified personnel and in compliance with applicable electrical safety norms and good industry practice. The Applicant shall cooperate by providing safe and unobstructed site access and shall not interfere with the Vendor's safe work practices.",
       }),
     ]),
     section("RTS System", [
@@ -466,6 +530,11 @@ function createVendorSections(): AgreementSection[] {
           { label: "b", text: "Refund of the moneys paid by the Applicant to the Vendor, if the Vendor cannot fulfil the order." },
         ],
       }),
+      clause({
+        number: "11.2",
+        content:
+          "The Vendor shall not be liable for delays, defects, or losses arising from the Applicant's failure to maintain site safety, shadow-free access, timely approvals, or cooperation required under this Agreement.",
+      }),
     ]),
     section("Suspension & Termination", [
       clause({
@@ -508,9 +577,258 @@ const vendorRecitals = [
 
 const vendorPreamble = "";
 
+// ---------- INC Installation Assignment template ----------
+
+const incAssignVariableFields: AgreementVariableField[] = [
+  { key: "scheme", label: "Scheme / Programme", helper: "e.g. DBT Subsidy Scheme" },
+  { key: "region", label: "Assigned Region / Territory", helper: "e.g. Jaipur Rural, Rajasthan" },
+  { key: "safetyStandards", label: "Safety Standards Reference", helper: "e.g. applicable electrical and height-work safety norms" },
+  { key: "advancePct", label: "Advance Release %", helper: "e.g. 90" },
+  { key: "balancePct", label: "Balance Release %", helper: "e.g. 10" },
+  { key: "arbitrationVenue", label: "Arbitration Venue", helper: "e.g. Jaipur" },
+];
+
+const incAssignVariableDefaults: Record<string, string> = {
+  scheme: "DBT Subsidy Scheme",
+  region: "Jaipur Rural, Rajasthan",
+  safetyStandards: "applicable electrical safety, height-work, and site safety norms",
+  advancePct: "90",
+  balancePct: "10",
+  arbitrationVenue: "Jaipur",
+};
+
+function createIncInstallationAssignSections(): AgreementSection[] {
+  return [
+    section("Assignment & Scope", [
+      clause({
+        number: "1",
+        title: "Project Assignment",
+        content:
+          "{{company.name}} may assign specific INC / rooftop solar installation projects under {{var.scheme}} in the region of {{var.region}} to Contractor (\"Assigned Projects\"). Contractor agrees to perform installation and related site execution work only, in the name and under the empanelment of {{company.name}}, as per National Portal and applicable DISCOM norms.",
+        subPoints: [
+          {
+            label: "a",
+            text:
+              "Contractor shall execute Assigned Projects with sincerity, diligence, professionalism, and good faith, and shall not engage in any conduct that harms {{company.name}}'s reputation or compliance standing.",
+          },
+          {
+            label: "b",
+            text:
+              "Unless expressly agreed in writing, Contractor shall not independently solicit or finalize customers in {{company.name}}'s name without prior approval.",
+          },
+          {
+            label: "c",
+            text:
+              "{{company.name}} may inspect, verify, or suspend any Assigned Project with or without prior notice.",
+          },
+        ],
+      }),
+    ]),
+    section("Safety & Compliance", [
+      clause({
+        number: "2",
+        title: "Safety Responsibility",
+        content:
+          "Contractor acknowledges that safety at the installation site is Contractor's sole responsibility. Contractor shall comply with {{var.safetyStandards}} and all applicable laws, permits, and site-access requirements.",
+        subPoints: [
+          {
+            label: "a",
+            text:
+              "Contractor shall provide and maintain required PPE, safe work practices, qualified personnel, and equipment for safe execution of Assigned Projects.",
+          },
+          {
+            label: "b",
+            text:
+              "{{company.name}} may, at its discretion, provide safety items, materials, or equipment as needed for a particular project, without assuming ongoing safety liability or supervision duty.",
+          },
+          {
+            label: "c",
+            text:
+              "Contractor shall indemnify and hold harmless {{company.name}} against claims, penalties, or losses arising from Contractor's safety breaches, negligence, or non-compliance attributable to Contractor or its personnel.",
+          },
+        ],
+      }),
+    ]),
+    section("Quality, Materials & Payments", [
+      clause({
+        number: "3",
+        title: "Quality & Materials",
+        content:
+          "Contractor shall ensure installation quality as per National Portal specifications, manufacturer guidelines, and {{company.name}}'s written instructions. Defects attributable to Contractor's workmanship shall be rectified by Contractor at Contractor's cost.",
+        subPoints: [
+          {
+            label: "a",
+            text:
+              "{{company.name}} may supply materials for Assigned Projects. Contractor shall use such materials only for the relevant project, account for them properly, and be liable for loss, damage, or misuse.",
+          },
+          {
+            label: "b",
+            text:
+              "Customer payments collected for Assigned Projects shall be deposited in {{company.name}}'s designated bank account. {{company.name}} shall release {{var.advancePct}}% for procurement and execution and the balance {{var.balancePct}}% upon successful completion including net metering, subject to agreed deductions.",
+          },
+        ],
+      }),
+    ]),
+    section("Independent Contractor", [
+      clause({
+        number: "4",
+        content:
+          "Contractor is an independent contractor and not an employee, agent, or partner of {{company.name}}. This arrangement is non-exclusive. Contractor shall bear its own expenses unless otherwise agreed in writing.",
+      }),
+    ]),
+    section("Confidentiality", [
+      clause({
+        number: "5",
+        content:
+          "Customer data, portal credentials, serial numbers, site coordinates, pricing, and any information shared by {{company.name}} shall be treated as confidential. Contractor shall return or destroy such information upon request or termination.",
+      }),
+    ]),
+    section("Limitation of Liability", [
+      clause({
+        number: "6",
+        content:
+          "IN NO EVENT SHALL {{company.name}} BE LIABLE FOR INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES. {{company.name}}'S TOTAL LIABILITY FOR ANY ASSIGNED PROJECT SHALL NOT EXCEED THE FEES ACTUALLY PAID BY {{company.name}} TO CONTRACTOR FOR THAT PROJECT.",
+      }),
+    ]),
+    section("Term & Termination", [
+      clause({
+        number: "7",
+        content:
+          "This Agreement is effective from the Effective Date until terminated by either Party on written notice. Upon termination, Contractor shall immediately stop work on Assigned Projects and return confidential information and unused materials belonging to {{company.name}}.",
+      }),
+    ]),
+  ];
+}
+
+const incAssignGoverningLaw =
+  "This Agreement shall be governed by the laws of India. Disputes shall first be resolved through good-faith negotiation. Failing resolution, disputes shall be referred to sole arbitration under the Arbitration and Conciliation Act, 1996 at {{var.arbitrationVenue}}. Each Party shall bear its own costs unless the arbitrator directs otherwise.";
+
+const incAssignClosing =
+  "By signing below, the Parties confirm that this Agreement constitutes the entire understanding between them regarding INC installation assignments and may be amended only in writing signed by both Parties.";
+
+const incAssignIntroTemplate =
+  "THIS INSTALLATION ASSIGNMENT AGREEMENT (the \"Agreement\") is made as of {{effectiveDateFormatted}} (the \"Effective Date\") between {{company.name}}, having its principal place of business at {{company.address}} (\"Company\"), and {{party.entityName}}, having its principal place of business at {{party.address}} (\"Contractor\").";
+
+const incAssignRecitals = [
+  "{{company.name}} undertakes rooftop solar installation projects under {{var.scheme}} and related programmes.",
+  "Contractor is engaged to perform installation and site execution work for Assigned Projects on behalf of {{company.name}}.",
+  "The Parties wish to record their respective rights, responsibilities, and safety obligations in connection with such assignments.",
+];
+
+const incAssignPreamble =
+  "NOW, THEREFORE, in consideration of the mutual promises set forth herein, the Parties agree as follows:";
+
+// ---------- INC Goodwill Execution template ----------
+
+const incGoodwillVariableFields: AgreementVariableField[] = [
+  { key: "scheme", label: "Scheme / Programme", helper: "e.g. Rooftop Solar Programme Ph-II" },
+  { key: "ministry", label: "Issuing Ministry", helper: "e.g. MNRE" },
+  { key: "capacity", label: "RTS System Capacity (kWp)" },
+  { key: "estimatedTimeline", label: "Estimated Timeline", helper: "e.g. 45–60 days from site readiness" },
+  { key: "materialProvision", label: "Materials Summary", helper: "e.g. modules, inverter, BoS as per agreed scope" },
+  { key: "maintenanceYears", label: "Workmanship / Maintenance Period (years)", helper: "e.g. 5" },
+  { key: "arbitrationVenue", label: "Arbitration Venue", helper: "e.g. Jaipur" },
+];
+
+const incGoodwillVariableDefaults: Record<string, string> = {
+  scheme: "Rooftop Solar Programme Ph-II",
+  ministry: "MNRE",
+  capacity: "5",
+  estimatedTimeline: "45–60 days from site readiness and documentation completion",
+  materialProvision: "solar modules, inverter, and balance of system items as required for the agreed scope",
+  maintenanceYears: "5",
+  arbitrationVenue: "Jaipur",
+};
+
+function createIncGoodwillSections(): AgreementSection[] {
+  return [
+    section("Goodwill Commitment", [
+      clause({
+        number: "1",
+        title: "Voluntary Undertaking",
+        content:
+          "As a goodwill arrangement, {{company.name}} voluntarily agrees to undertake design, installation, commissioning, and {{var.maintenanceYears}}-year workmanship support for Beneficiary's rooftop solar project under {{var.scheme}} (capacity: minimum {{var.capacity}} kWp). This document records commitment terms and is not a commercial quotation unless separately agreed in writing.",
+      }),
+    ]),
+    section("Scope of Work", [
+      clause({
+        number: "2",
+        content:
+          "{{company.name}} shall perform the work professionally and in accordance with applicable DISCOM, {{var.ministry}}, and National Portal procedures. Estimated timeline: {{var.estimatedTimeline}}.",
+        subPoints: [
+          { label: "a", text: "Scope includes supply and installation of RTS system components and BoS as per agreed layout." },
+          { label: "b", text: "Beneficiary shall provide accurate site, load, and ownership information on which {{company.name}} has relied." },
+        ],
+      }),
+    ]),
+    section("Materials & Support", [
+      clause({
+        number: "3",
+        content:
+          "{{company.name}} shall provide {{var.materialProvision}} where needed for the agreed scope. Beneficiary shall cooperate on site access, approvals, documentation, and timely responses required for subsidy and net-metering processes.",
+      }),
+    ]),
+    section("Beneficiary Responsibilities", [
+      clause({
+        number: "4",
+        content: "Beneficiary agrees to:",
+        subPoints: [
+          { label: "a", text: "Keep the site shadow-free, accessible, and safe for installation and maintenance." },
+          { label: "b", text: "Provide power, water, storage, and local support reasonably required for execution." },
+          { label: "c", text: "Not misuse the RTS system or interfere with safe work practices of {{company.name}} personnel." },
+          { label: "d", text: "Perform routine cleaning and basic upkeep after handover unless otherwise agreed." },
+        ],
+      }),
+    ]),
+    section("Timelines & Subsidy Disclaimer", [
+      clause({
+        number: "5",
+        content:
+          "All timelines are estimates only. {{company.name}} does not guarantee subsidy approval, portal disbursement, or DISCOM timelines. Delays caused by Beneficiary, authorities, or Force Majeure shall extend timelines accordingly.",
+      }),
+    ]),
+    section("Limited Liability", [
+      clause({
+        number: "6",
+        content:
+          "{{company.name}}'s liability under this goodwill arrangement shall be limited to re-performance of defective workmanship or refund of amounts actually received from Beneficiary specifically for the project, to the extent permitted by law.",
+      }),
+    ]),
+    section("Suspension & Termination", [
+      clause({
+        number: "7",
+        content:
+          "{{company.name}} may suspend or terminate this arrangement if Beneficiary fails to cooperate, provides false information, obstructs site access, or defaults on any agreed payment (if applicable), after reasonable notice where practicable.",
+      }),
+    ]),
+  ];
+}
+
+const incGoodwillGoverningLaw =
+  "This Agreement shall be governed by the laws of India. Disputes shall be resolved through negotiation, failing which by sole arbitration at {{var.arbitrationVenue}} under the Arbitration and Conciliation Act, 1996.";
+
+const incGoodwillClosing =
+  "By signing below, the Parties acknowledge that they have read and understood this goodwill project execution arrangement.";
+
+const incGoodwillIntroTemplate =
+  "THIS GOODWILL PROJECT EXECUTION AGREEMENT is executed on {{effectiveDateFormatted}} for a rooftop solar project under {{var.scheme}}.\n\nBETWEEN: {{party.entityName}}, Consumer No. {{party.consumerNumber}} ({{party.discom}}), residing at {{party.address}} (\"Beneficiary\").\n\nAND: {{company.name}}, having office at {{company.address}} (\"Company\").";
+
+const incGoodwillRecitals = [
+  "Beneficiary intends to install a rooftop solar system under {{var.scheme}} of {{var.ministry}}.",
+  "{{company.name}} wishes to extend a goodwill commitment to execute the project on the terms set out herein.",
+  "This arrangement is entered in good faith to support timely and professional project completion.",
+];
+
+const incGoodwillPreamble = "";
+
 // ---------- Builders ----------
 
 export function createDefaultAgreementData(template: AgreementTemplate = "partnership"): AgreementData {
+  const baseWitnesses = [
+    { id: uuid(), name: "" },
+    { id: uuid(), name: "" },
+  ];
+
   if (template === "vendor") {
     return {
       template: "vendor",
@@ -535,10 +853,67 @@ export function createDefaultAgreementData(template: AgreementTemplate = "partne
       closingParagraph: vendorClosing,
       governingLawParagraph: vendorGoverningLaw,
       showWitnesses: true,
-      witnesses: [
-        { id: uuid(), name: "" },
-        { id: uuid(), name: "" },
-      ],
+      witnesses: baseWitnesses,
+      showPageNumbers: true,
+      showLetterhead: true,
+    };
+  }
+
+  if (template === "inc-installation-assign") {
+    return {
+      template: "inc-installation-assign",
+      title: "INSTALLATION ASSIGNMENT AGREEMENT (INC PROJECTS)",
+      effectiveDate: today,
+      company: defaultCompany(),
+      party: {
+        entityName: "",
+        partyLabel: "Contractor",
+        address: "",
+        representativeName: "",
+        representativeTitle: "",
+        consumerNumber: "",
+        discom: "",
+      },
+      variableFields: incAssignVariableFields,
+      variables: { ...incAssignVariableDefaults },
+      introTemplate: incAssignIntroTemplate,
+      recitals: incAssignRecitals,
+      preambleAfterRecitals: incAssignPreamble,
+      sections: createIncInstallationAssignSections(),
+      closingParagraph: incAssignClosing,
+      governingLawParagraph: incAssignGoverningLaw,
+      showWitnesses: true,
+      witnesses: baseWitnesses,
+      showPageNumbers: true,
+      showLetterhead: true,
+    };
+  }
+
+  if (template === "inc-goodwill-execution") {
+    return {
+      template: "inc-goodwill-execution",
+      title: "GOODWILL PROJECT EXECUTION AGREEMENT (INC PROJECT)",
+      effectiveDate: today,
+      company: defaultCompany(),
+      party: {
+        entityName: "",
+        partyLabel: "Beneficiary",
+        address: "",
+        representativeName: "",
+        representativeTitle: "",
+        consumerNumber: "",
+        discom: "JVVNL",
+      },
+      variableFields: incGoodwillVariableFields,
+      variables: { ...incGoodwillVariableDefaults },
+      introTemplate: incGoodwillIntroTemplate,
+      recitals: incGoodwillRecitals,
+      preambleAfterRecitals: incGoodwillPreamble,
+      sections: createIncGoodwillSections(),
+      closingParagraph: incGoodwillClosing,
+      governingLawParagraph: incGoodwillGoverningLaw,
+      showWitnesses: true,
+      witnesses: baseWitnesses,
       showPageNumbers: true,
       showLetterhead: true,
     };
@@ -567,17 +942,15 @@ export function createDefaultAgreementData(template: AgreementTemplate = "partne
     closingParagraph: partnershipClosing,
     governingLawParagraph: partnershipGoverningLaw,
     showWitnesses: true,
-    witnesses: [
-      { id: uuid(), name: "" },
-      { id: uuid(), name: "" },
-    ],
+    witnesses: baseWitnesses,
     showPageNumbers: true,
     showLetterhead: true,
   };
 }
 
 export function normalizeAgreementData(input?: Partial<AgreementData> | null): AgreementData {
-  const template: AgreementTemplate = input?.template === "vendor" ? "vendor" : "partnership";
+  const rawTemplate = input?.template ?? null;
+  const template: AgreementTemplate = isAgreementTemplate(rawTemplate) ? rawTemplate : "partnership";
   const defaults = createDefaultAgreementData(template);
 
   return {
