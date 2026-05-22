@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
-import type { OfferLetterData } from "../../types/offer-letter";
+import type { OfferLetterData } from "../types/offer-letter";
 import { BulletListEditor } from "./BulletListEditor";
 import { ImageUploader } from "./ImageUploader";
 import { TermsEditor } from "./TermsEditor";
@@ -91,27 +91,6 @@ export function OfferLetterEditor({ data, onChange }: OfferLetterEditorProps) {
         </div>
       </AccordionSection>
 
-      <AccordionSection title="Company & Signatory">
-        <div className="field-grid">
-          <div className="field">
-            <label>Founder / Signatory Name</label>
-            <input value={data.company.founderName} onChange={(event) => updateCompany("founderName", event.target.value)} />
-          </div>
-          <div className="field">
-            <label>Title</label>
-            <input value={data.company.founderTitle} onChange={(event) => updateCompany("founderTitle", event.target.value)} />
-          </div>
-          <div className="field">
-            <label>Website</label>
-            <input value={data.company.website} onChange={(event) => updateCompany("website", event.target.value)} />
-          </div>
-          <div className="field">
-            <label>Signatory Name</label>
-            <input value={data.signatoryName} onChange={(event) => update("signatoryName", event.target.value)} />
-          </div>
-        </div>
-      </AccordionSection>
-
       <AccordionSection title="Employee & Role">
         <div className="field-grid">
           <div className="field">
@@ -158,8 +137,8 @@ export function OfferLetterEditor({ data, onChange }: OfferLetterEditorProps) {
       </AccordionSection>
 
       <AccordionSection
-        title="Role, Responsibilities & Reporting"
-        helper="Use separate content blocks so the preview can keep paragraphs and bullet groups together more accurately across pages."
+        title="Role & Responsibilities"
+        helper="Add the role overview paragraph and the primary responsibility bullets."
       >
         <div className="stack">
           <div className="field">
@@ -171,29 +150,35 @@ export function OfferLetterEditor({ data, onChange }: OfferLetterEditorProps) {
             items={data.responsibilityPoints}
             onChange={(next) => update("responsibilityPoints", next)}
           />
+        </div>
+      </AccordionSection>
+
+      <AccordionSection
+        title="Signatory"
+        helper="The person signing this letter. Shown in the closing block above the company contact details."
+      >
+        <div className="field-grid">
           <div className="field">
-            <label>Admin Operations Intro</label>
-            <input value={data.adminIntro} onChange={(event) => update("adminIntro", event.target.value)} />
-          </div>
-          <BulletListEditor label="Admin Operations Points" items={data.adminPoints} onChange={(next) => update("adminPoints", next)} />
-          <div className="field">
-            <label>Responsibilities Closing</label>
-            <textarea
-              rows={3}
-              value={data.responsibilitiesClosing}
-              onChange={(event) => update("responsibilitiesClosing", event.target.value)}
+            <label>Signatory Name</label>
+            <input
+              value={data.signatoryName}
+              placeholder={data.company.founderName}
+              onChange={(event) => update("signatoryName", event.target.value)}
             />
           </div>
           <div className="field">
-            <label>Reporting Paragraph</label>
-            <textarea rows={4} value={data.reportingClosing} onChange={(event) => update("reportingClosing", event.target.value)} />
+            <label>Title</label>
+            <input value={data.company.founderTitle} onChange={(event) => updateCompany("founderTitle", event.target.value)} />
+          </div>
+          <div className="field full-span">
+            <label>Founder Name (default fallback for signatory)</label>
+            <input value={data.company.founderName} onChange={(event) => updateCompany("founderName", event.target.value)} />
           </div>
         </div>
       </AccordionSection>
 
       <AccordionSection title="Policies & Benefits">
         <BulletListEditor label="Leave Policy" items={data.leavePolicy} onChange={(next) => update("leavePolicy", next)} />
-        <BulletListEditor label="Salary Policy" items={data.salaryPolicy} onChange={(next) => update("salaryPolicy", next)} />
         <BulletListEditor label="Other Benefits" items={data.otherBenefits} onChange={(next) => update("otherBenefits", next)} />
         <div className="field-grid">
           <div className="field full-span">
@@ -229,10 +214,6 @@ export function OfferLetterEditor({ data, onChange }: OfferLetterEditorProps) {
               </div>
             );
           })}
-        </div>
-        <div className="field">
-          <label>Signatory Name</label>
-          <input value={data.signatoryName} onChange={(event) => update("signatoryName", event.target.value)} />
         </div>
       </AccordionSection>
     </div>

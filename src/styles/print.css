@@ -1,0 +1,102 @@
+/* ----- Print / Save as PDF: vector HTML, same template as on-screen preview ----- */
+@page {
+  size: A4;
+  margin: 0;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  html,
+  body {
+    background: #fff !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .app-root {
+    padding-bottom: 0 !important;
+    min-height: 0 !important;
+  }
+
+  .page-shell--maker {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: none !important;
+  }
+
+  .page-shell--maker .layout-grid {
+    display: block !important;
+    gap: 0 !important;
+  }
+
+  .page-shell--maker .editor-shell {
+    display: none !important;
+  }
+
+  .page-shell--maker .preview-shell.content-card {
+    background: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    backdrop-filter: none !important;
+  }
+
+  .preview-shell.preview-shell--offscreen-screen {
+    position: static !important;
+    inset: auto !important;
+    width: auto !important;
+    margin: 0 auto !important;
+    z-index: auto !important;
+    pointer-events: auto !important;
+  }
+
+  .preview-a4-viewport {
+    display: block !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+  }
+
+  .offer-letter-measure-layer {
+    display: none !important;
+  }
+
+  #offer-letter-preview {
+    display: block !important;
+    width: 210mm !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    gap: 0 !important;
+    padding: 0 !important;
+  }
+
+  #offer-letter-preview > [data-export-page="true"] {
+    page-break-after: always;
+    break-after: page;
+    width: 210mm !important;
+    height: 297mm !important;
+    min-height: 297mm !important;
+    max-height: 297mm !important;
+    box-sizing: border-box !important;
+    box-shadow: none !important;
+    outline: none !important;
+    margin: 0 auto !important;
+    overflow: hidden !important;
+  }
+
+  #offer-letter-preview > [data-export-page="true"]:last-child {
+    page-break-after: auto;
+    break-after: auto;
+  }
+
+  .dialog-overlay {
+    display: none !important;
+  }
+}

@@ -1,8 +1,17 @@
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties, ReactNode } from "react";
-import { filledValue, formatCurrency, formatDate } from "../../lib/offer-letter-formatters";
-import { renderRichText } from "../../lib/offer-letter-parser";
-import type { OfferLetterData } from "../../types/offer-letter";
+import {
+  FIRST_PAGE_CAPACITY,
+  FOLLOWING_PAGE_CAPACITY,
+  HEADER_HEIGHT,
+  PAGE_HEIGHT,
+  PAGE_SIDE_PADDING,
+  PAGE_TOP_BOTTOM_PADDING,
+  PAGE_WIDTH,
+} from "../constants/sheet-layout";
+import { filledValue, formatCurrency, formatDate } from "../lib/offer-letter-formatters";
+import { renderRichText } from "../lib/offer-letter-parser";
+import type { OfferLetterData } from "../types/offer-letter";
 
 interface OfferLetterPreviewProps {
   data: OfferLetterData;
@@ -12,15 +21,8 @@ interface PreviewBlock {
   key: string;
   estimate: number;
   node: ReactNode;
+  keepWithNext?: boolean;
 }
-
-const PAGE_WIDTH = 794;
-const PAGE_HEIGHT = 1123;
-const HEADER_HEIGHT = 150;
-const PAGE_TOP_BOTTOM_PADDING = 40;
-const PAGE_SIDE_PADDING = 56;
-const FIRST_PAGE_CAPACITY = PAGE_HEIGHT - HEADER_HEIGHT - PAGE_TOP_BOTTOM_PADDING * 2;
-const FOLLOWING_PAGE_CAPACITY = PAGE_HEIGHT - PAGE_TOP_BOTTOM_PADDING * 2;
 
 const pageBodyStyle: CSSProperties = {
   padding: `${PAGE_TOP_BOTTOM_PADDING}px ${PAGE_SIDE_PADDING}px`,
@@ -86,7 +88,8 @@ function Header({ data }: { data: OfferLetterData }) {
       </div>
       <div style={{ fontSize: 10, marginTop: 8 }}>{filledValue(data.company.address)}</div>
       <div style={{ fontSize: 10, marginTop: 4 }}>
-        {[filledValue(data.company.phone), filledValue(data.company.email)].join(" | ")}
+        {[data.company.phone, data.company.email, data.company.website].filter(Boolean).join(" | ") ||
+          filledValue("")}
       </div>
       {data.company.cin || data.company.gst ? (
         <div style={{ fontSize: 9.5, marginTop: 4 }}>
@@ -113,20 +116,61 @@ function Page({
   return (
     <div
       data-export-page="true"
+      className="preview-a4-page"
       style={{
         width: PAGE_WIDTH,
-        minHeight: PAGE_HEIGHT,
+        height: PAGE_HEIGHT,
+        maxHeight: PAGE_HEIGHT,
+        boxSizing: "border-box",
         background: "#ffffff",
         color: "#111827",
         fontFamily: "Lexend, sans-serif",
         boxShadow: "0 24px 60px rgba(15, 23, 42, 0.14)",
         overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
       }}
     >
       {showHeader ? <Header data={data} /> : null}
-      <div style={pageBodyStyle}>{children}</div>
+      <div
+        style={{
+          ...pageBodyStyle,
+          flex: 1,
+          minHeight: 0,
+          overflow: "hidden",
+        }}
+      >
+        {children}
+      </div>
     </div>
   );
+}
+
+function bulletItemBlocks(
+  items: string[],
+  keyPrefix: string,
+  options: { listStyleType?: string; bottomGap?: number } = {},
+): PreviewBlock[] {
+  const { listStyleType, bottomGap = 12 } = options;
+  return items.map((item, index) => {
+    const isLast = index === items.length - 1;
+    return {
+      key: `${keyPrefix}-${index}`,
+      estimate: 12 + estimateTextLines(item, 58) * 22,
+      node: (
+        <ul
+          style={{
+            margin: isLast ? `0 0 ${bottomGap}px` : 0,
+            paddingLeft: 22,
+            lineHeight: 1.8,
+            ...(listStyleType ? { listStyleType } : null),
+          }}
+        >
+          <li style={{ marginBottom: 6 }}>{filledValue(item)}</li>
+        </ul>
+      ),
+    };
+  });
 }
 
 function createPrePolicyBlocks(data: OfferLetterData, signatory: string): PreviewBlock[] {
@@ -181,7 +225,7 @@ function createPrePolicyBlocks(data: OfferLetterData, signatory: string): Previe
     },
     {
       key: "details",
-      estimate: 88,
+      estimate: 110,
       node: (
         <div style={{ marginBottom: 14, lineHeight: 1.8 }}>
           <p style={{ margin: "0 0 4px" }}>
@@ -192,8 +236,11 @@ function createPrePolicyBlocks(data: OfferLetterData, signatory: string): Previe
               <strong>Location:</strong> {filledValue(data.location)}
             </p>
           ) : null}
-          <p style={{ margin: 0 }}>
+          <p style={{ margin: "0 0 4px" }}>
             <strong>Monthly Salary:</strong> {formatCurrency(data.monthlySalary)}
+          </p>
+          <p style={{ margin: 0 }}>
+            <strong>Reporting To:</strong> {filledValue(data.reportingTo)}
           </p>
         </div>
       ),
@@ -216,54 +263,16 @@ function createPrePolicyBlocks(data: OfferLetterData, signatory: string): Previe
     {
       key: "role-heading",
       estimate: 34,
-      node: <h2 style={headingStyle}>ROLE, RESPONSIBILITIES & REPORTING</h2>,
+      keepWithNext: true,
+      node: <h2 style={headingStyle}>ROLE & RESPONSIBILITIES</h2>,
     },
     {
       key: "role-overview",
       estimate: 26 + estimateTextLines(data.roleOverview, 72) * 22,
+      keepWithNext: true,
       node: <div>{renderRichText(data.roleOverview, "role-overview")}</div>,
     },
-    {
-      key: "responsibility-points",
-      estimate: 16 + data.responsibilityPoints.reduce((sum, item) => sum + estimateTextLines(item, 58) * 22, 0),
-      node: (
-        <ul style={{ margin: "0 0 12px", paddingLeft: 22, lineHeight: 1.8 }}>
-          {data.responsibilityPoints.map((item, index) => (
-            <li key={`responsibility-point-${index}`} style={{ marginBottom: 6 }}>
-              {filledValue(item)}
-            </li>
-          ))}
-        </ul>
-      ),
-    },
-    {
-      key: "admin-intro",
-      estimate: 26 + estimateTextLines(data.adminIntro, 68) * 22,
-      node: <div>{renderRichText(data.adminIntro, "admin-intro")}</div>,
-    },
-    {
-      key: "admin-points",
-      estimate: 16 + data.adminPoints.reduce((sum, item) => sum + estimateTextLines(item, 58) * 22, 0),
-      node: (
-        <ul style={{ margin: "0 0 12px", paddingLeft: 22, lineHeight: 1.8, listStyleType: "circle" }}>
-          {data.adminPoints.map((item, index) => (
-            <li key={`admin-point-${index}`} style={{ marginBottom: 6 }}>
-              {filledValue(item)}
-            </li>
-          ))}
-        </ul>
-      ),
-    },
-    {
-      key: "responsibilities-closing",
-      estimate: 26 + estimateTextLines(data.responsibilitiesClosing, 72) * 22,
-      node: <div>{renderRichText(data.responsibilitiesClosing, "responsibilities-closing")}</div>,
-    },
-    {
-      key: "reporting-closing",
-      estimate: 26 + estimateTextLines(data.reportingClosing, 72) * 22,
-      node: <div>{renderRichText(data.reportingClosing, "reporting-closing")}</div>,
-    },
+    ...bulletItemBlocks(data.responsibilityPoints, "responsibility-point"),
     {
       key: "closing-line",
       estimate: 58,
@@ -275,15 +284,23 @@ function createPrePolicyBlocks(data: OfferLetterData, signatory: string): Previe
     },
     {
       key: "signature-block",
-      estimate: 150,
+      estimate: 180,
       node: (
-        <div style={{ position: "relative", minHeight: 130, marginTop: 18 }}>
+        <div style={{ position: "relative", minHeight: 160, marginTop: 18 }}>
           <p style={{ margin: "0 0 18px", lineHeight: 1.7 }}>Warm regards,</p>
           <div style={{ position: "absolute", bottom: 0, left: 0 }}>
             <p style={{ margin: "0 0 4px", fontWeight: 700 }}>{signatory}</p>
-            <p style={{ margin: "0 0 4px" }}>{filledValue(data.company.founderTitle)}</p>
+            {data.company.founderTitle ? (
+              <p style={{ margin: "0 0 4px" }}>{data.company.founderTitle}</p>
+            ) : null}
             <p style={{ margin: "0 0 4px" }}>{filledValue(data.company.name)}</p>
-            <p style={{ margin: 0 }}>{filledValue(data.company.phone)}</p>
+            {[data.company.phone, data.company.email, data.company.website]
+              .filter(Boolean)
+              .map((line, index) => (
+                <p key={`signature-contact-${index}`} style={{ margin: "0 0 4px" }}>
+                  {line}
+                </p>
+              ))}
           </div>
         </div>
       ),
@@ -296,15 +313,16 @@ function createPostPolicyBlocks(data: OfferLetterData): PreviewBlock[] {
     {
       key: "policies-heading",
       estimate: 34,
+      keepWithNext: true,
       node: <h2 style={headingStyle}>COMPANY POLICIES & BENEFITS</h2>,
     },
   ];
 
-  [
+  const policySections = [
     { title: "Leave Policy", items: data.leavePolicy },
-    { title: "Salary Policy", items: data.salaryPolicy },
     { title: "Other Benefits", items: data.otherBenefits },
-  ].forEach((section, index) => {
+  ];
+  policySections.forEach((section, index) => {
     blocks.push({
       key: `policy-${section.title}`,
       estimate: 46 + section.items.reduce((sum, item) => sum + estimateTextLines(item, 64) * 22, 0),
@@ -316,7 +334,7 @@ function createPostPolicyBlocks(data: OfferLetterData): PreviewBlock[] {
               <li key={`${section.title}-${itemIndex}`}>{filledValue(item)}</li>
             ))}
           </ul>
-          {index < 2 ? <hr style={separatorStyle} /> : null}
+          {index < policySections.length - 1 ? <hr style={separatorStyle} /> : null}
         </div>
       ),
     });
@@ -345,6 +363,7 @@ function createPostPolicyBlocks(data: OfferLetterData): PreviewBlock[] {
     {
       key: "terms-heading",
       estimate: 34,
+      keepWithNext: true,
       node: <h2 style={headingStyle}>TERMS AND CONDITIONS</h2>,
     },
   );
@@ -368,15 +387,16 @@ function createPostPolicyBlocks(data: OfferLetterData): PreviewBlock[] {
   if (data.showAcceptance) {
     blocks.push({
       key: "acceptance",
-      estimate: 220,
+      estimate: 260,
       node: (
         <div style={{ marginTop: 24 }}>
           <hr style={separatorStyle} />
           <h2 style={headingStyle}>ACCEPTANCE</h2>
           <p style={{ margin: "0 0 22px", lineHeight: 1.8 }}>
-            I, <strong>{filledValue(data.employeeName)}</strong>, accept the offer made to me for the role of{" "}
-            <strong>{filledValue(data.role)}</strong> and agree to abide by the terms and conditions mentioned in this
-            letter.
+            I, <strong>{filledValue(data.employeeName)}</strong>, hereby acknowledge that I have read and understood the
+            contents of this offer letter, and accept the offer for the role of <strong>{filledValue(data.role)}</strong>{" "}
+            with <strong>{filledValue(data.company.name)}</strong>, with effect from{" "}
+            <strong>{formatDate(data.dateOfJoining)}</strong>. I agree to abide by the terms and conditions stated herein.
           </p>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 30, marginTop: 34 }}>
             <div>
@@ -395,17 +415,27 @@ function createPostPolicyBlocks(data: OfferLetterData): PreviewBlock[] {
 }
 
 function paginateBlocks(blocks: PreviewBlock[], heights: Record<string, number>, firstCapacity: number, nextCapacity: number) {
+  const heightOf = (block: PreviewBlock) => heights[block.key] ?? block.estimate;
+
   const pages: PreviewBlock[][] = [];
   let currentPage: PreviewBlock[] = [];
   let remaining = firstCapacity;
 
   for (const block of blocks) {
-    const blockHeight = heights[block.key] ?? block.estimate;
+    const blockHeight = heightOf(block);
 
     if (currentPage.length > 0 && blockHeight > remaining) {
-      pages.push(currentPage);
-      currentPage = [];
-      remaining = nextCapacity;
+      const carryOver: PreviewBlock[] = [];
+      while (currentPage.length > 0 && currentPage[currentPage.length - 1].keepWithNext) {
+        carryOver.unshift(currentPage.pop() as PreviewBlock);
+      }
+
+      if (currentPage.length > 0) {
+        pages.push(currentPage);
+      }
+
+      currentPage = carryOver;
+      remaining = nextCapacity - carryOver.reduce((sum, item) => sum + heightOf(item), 0);
     }
 
     currentPage.push(block);
@@ -445,6 +475,7 @@ export function OfferLetterPreview({ data }: OfferLetterPreviewProps) {
     <>
       <div
         aria-hidden="true"
+        className="offer-letter-measure-layer no-print"
         style={{
           position: "absolute",
           left: -99999,
@@ -460,7 +491,7 @@ export function OfferLetterPreview({ data }: OfferLetterPreviewProps) {
             ref={(node) => {
               measureRefs.current[block.key] = node;
             }}
-            style={{ width: "100%" }}
+            style={{ width: "100%", display: "flow-root" }}
           >
             {block.node}
           </div>
@@ -479,7 +510,9 @@ export function OfferLetterPreview({ data }: OfferLetterPreviewProps) {
         {prePolicyPages.map((pageBlocks, pageIndex) => (
           <Page data={data} key={`pre-policy-${pageIndex + 1}`} pageIndex={pageIndex}>
             {pageBlocks.map((block) => (
-              <div key={block.key}>{block.node}</div>
+              <div key={block.key} style={{ display: "flow-root" }}>
+                {block.node}
+              </div>
             ))}
           </Page>
         ))}
@@ -487,7 +520,9 @@ export function OfferLetterPreview({ data }: OfferLetterPreviewProps) {
         {postPolicyPages.map((pageBlocks, pageOffset) => (
           <Page data={data} key={`post-policy-${pageOffset + 1}`} pageIndex={prePolicyPages.length + pageOffset}>
             {pageBlocks.map((block) => (
-              <div key={block.key}>{block.node}</div>
+              <div key={block.key} style={{ display: "flow-root" }}>
+                {block.node}
+              </div>
             ))}
           </Page>
         ))}

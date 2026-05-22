@@ -1,6 +1,6 @@
 import type { DragEvent } from "react";
 import { GripVertical, Plus, Trash2 } from "lucide-react";
-import type { OfferLetterTerm } from "../../types/offer-letter";
+import type { OfferLetterTerm } from "../types/offer-letter";
 
 interface TermsEditorProps {
   terms: OfferLetterTerm[];

@@ -1,7 +1,6 @@
 import { FileText, Plus } from "lucide-react";
 import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
-import { AllOfferLetters } from "./pages/AllOfferLetters";
-import { OfferLetterMaker } from "./pages/OfferLetterMaker";
+import { AllOfferLetters, OfferLetterMaker } from "@/features/offer-letter";
 
 function FeatureNavigation() {
   const location = useLocation();
@@ -10,7 +9,7 @@ function FeatureNavigation() {
   const isMaker = location.pathname.startsWith("/offer-letter");
 
   return (
-    <nav className="feature-nav">
+    <nav className="feature-nav no-print">
       <button className={`feature-nav-link ${isList ? "active" : ""}`} type="button" onClick={() => navigate("/offer-letters")}>
         <FileText size={16} />
         View All Letters

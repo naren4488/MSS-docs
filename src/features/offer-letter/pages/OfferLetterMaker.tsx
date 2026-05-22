@@ -1,13 +1,23 @@
-import { ArrowLeft, Columns2, Eye, FileDown, Maximize2, Save } from "lucide-react";
+import { ArrowLeft, Columns2, Eye, Maximize2, Printer, RotateCcw, Save } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useBeforeUnload, useNavigate, useParams } from "react-router-dom";
-import { OfferLetterEditor } from "../components/offer-letter/OfferLetterEditor";
-import { OfferLetterPreview } from "../components/offer-letter/OfferLetterPreview";
-import { SaveOfferLetterDialog } from "../components/offer-letter/SaveOfferLetterDialog";
-import { buildLegacyResponsibilities, createDefaultOfferLetterData, normalizeOfferLetterData } from "../lib/offer-letter-defaults";
-import { exportOfferLetterPdf, exportOfferLetterTextPdf } from "../lib/export-offer-letter-pdf";
+import { useBeforeUnload, useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { OfferLetterEditor } from "../components/OfferLetterEditor";
+import { OfferLetterPreview } from "../components/OfferLetterPreview";
+import { SaveOfferLetterDialog } from "../components/SaveOfferLetterDialog";
+import {
+  buildLegacyResponsibilities,
+  createDefaultOfferLetterData,
+  normalizeOfferLetterData,
+  type OfferLetterTemplate,
+} from "../lib/offer-letter-defaults";
 import { clearDraft, getDraft, getOfferLetter, saveDraft, saveOfferLetterRecord } from "../lib/offer-letter-storage";
 import type { OfferLetterData } from "../types/offer-letter";
+
+const TEMPLATE_VALUES: OfferLetterTemplate[] = ["fresh", "full-time-conversion", "direct-full-time"];
+
+function isOfferLetterTemplate(value: string | null): value is OfferLetterTemplate {
+  return value !== null && (TEMPLATE_VALUES as string[]).includes(value);
+}
 
 function cloneData(data: OfferLetterData) {
   return JSON.parse(JSON.stringify(data)) as OfferLetterData;
@@ -16,6 +26,9 @@ function cloneData(data: OfferLetterData) {
 export function OfferLetterMaker() {
   const params = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const templateParam = searchParams.get("template");
+  const explicitTemplate: OfferLetterTemplate | null = isOfferLetterTemplate(templateParam) ? templateParam : null;
   const previewRef = useRef<HTMLDivElement | null>(null);
   const record = params.id ? getOfferLetter(params.id) : null;
   const initialData = useMemo(() => {
@@ -23,15 +36,17 @@ export function OfferLetterMaker() {
       return normalizeOfferLetterData(cloneData(record.content));
     }
 
+    if (explicitTemplate) {
+      return createDefaultOfferLetterData(explicitTemplate);
+    }
+
     const draft = getDraft();
     return draft ? normalizeOfferLetterData(draft) : createDefaultOfferLetterData();
-  }, [record]);
+  }, [record, explicitTemplate]);
 
   const [data, setData] = useState<OfferLetterData>(initialData);
   const [viewMode, setViewMode] = useState<"split" | "editor" | "preview">("split");
-  const [exportMode, setExportMode] = useState<"dom" | "text">("dom");
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
-  const [isExporting, setIsExporting] = useState(false);
   const [savedSnapshot, setSavedSnapshot] = useState(JSON.stringify(initialData));
   const isDirty = JSON.stringify(data) !== savedSnapshot;
 
@@ -60,26 +75,10 @@ export function OfferLetterMaker() {
     { capture: true },
   );
 
-  async function handleExport() {
-    setViewMode("preview");
-    setIsExporting(true);
-    await new Promise((resolve) => window.setTimeout(resolve, 500));
-
-    const previewNode = previewRef.current?.querySelector("#offer-letter-preview");
-    if (!(previewNode instanceof HTMLElement)) {
-      setIsExporting(false);
-      return;
-    }
-
-    try {
-      if (exportMode === "text") {
-        await exportOfferLetterTextPdf(previewNode, data.employeeName || "offer-letter", data.showPageNumbers);
-      } else {
-        await exportOfferLetterPdf(previewNode, data.employeeName || "offer-letter", data.showPageNumbers);
-      }
-    } finally {
-      setIsExporting(false);
-    }
+  async function handleSaveAsPdf() {
+    await document.fonts.ready;
+    await new Promise((resolve) => window.setTimeout(resolve, 150));
+    window.print();
   }
 
   function handleSave(name: string) {
@@ -106,9 +105,17 @@ export function OfferLetterMaker() {
     navigate("/offer-letters");
   }
 
+  function handleReset() {
+    if (!window.confirm("Reset the form to default values? Any unsaved edits will be lost.")) {
+      return;
+    }
+
+    setData(createDefaultOfferLetterData(explicitTemplate ?? "fresh"));
+  }
+
   return (
-    <div className="page-shell">
-      <div className="sticky-topbar">
+    <div className="page-shell page-shell--maker">
+      <div className="sticky-topbar no-print">
         <button className="ghost-button" type="button" onClick={handleBack}>
           <ArrowLeft size={16} />
           Back
@@ -129,13 +136,23 @@ export function OfferLetterMaker() {
               Preview
             </button>
           </div>
-          <select className="export-select" value={exportMode} onChange={(event) => setExportMode(event.target.value as "dom" | "text")}>
-            <option value="dom">DOM Export</option>
-            <option value="text">Text-based PDF</option>
-          </select>
-          <button className="ghost-button" type="button" onClick={handleExport} disabled={isExporting}>
-            <FileDown size={16} />
-            {isExporting ? "Exporting..." : exportMode === "text" ? "Export Text PDF" : "Export PDF"}
+          <button
+            className="ghost-button"
+            type="button"
+            onClick={handleReset}
+            title="Replace the current form with the default values"
+          >
+            <RotateCcw size={16} />
+            Reset
+          </button>
+          <button
+            className="ghost-button"
+            type="button"
+            onClick={() => void handleSaveAsPdf()}
+            title="Opens the print dialog — choose Save as PDF for a vector PDF matching the preview"
+          >
+            <Printer size={16} />
+            Save as PDF
           </button>
           <button className="primary-button" type="button" onClick={() => setSaveDialogOpen(true)}>
             <Save size={16} />
@@ -146,7 +163,7 @@ export function OfferLetterMaker() {
 
       <div className={`layout-grid ${viewMode === "editor" ? "editor-only-grid" : viewMode === "preview" ? "preview-only-grid" : ""}`}>
         {viewMode !== "preview" ? (
-          <section className="content-card editor-shell">
+          <section className="content-card editor-shell no-print">
             <div className="panel-header">
               <div>
                 <p className="eyebrow">Editor</p>
@@ -158,23 +175,25 @@ export function OfferLetterMaker() {
           </section>
         ) : null}
 
-        {viewMode !== "editor" ? (
-          <section className="content-card preview-shell" ref={previewRef}>
-          <div className="panel-header">
+        <section
+          ref={previewRef}
+          className={`content-card preview-shell ${viewMode === "editor" ? "preview-shell--offscreen-screen" : ""}`}
+          aria-hidden={viewMode === "editor"}
+        >
+          <div className="panel-header no-print">
             <div>
               <p className="eyebrow">Preview</p>
               <h2>Page-by-Page Document</h2>
             </div>
-            <p className="muted-text">This preview is the exact source used for PDF export.</p>
+            <p className="muted-text">Save as PDF uses your browser — same layout as below.</p>
           </div>
-          <div className="preview-scale-note">
-            A4-based pages are rendered here exactly as export pages, so review layout and page breaks before downloading.
+          <div className="preview-scale-note no-print">
+            Each page is <strong>210 × 297 mm (A4)</strong>. Use <strong>Save as PDF</strong> in the print dialog to download.
           </div>
-          <div style={{ width: "100%", display: "grid", justifyItems: "center" }}>
+          <div className="preview-a4-viewport">
             <OfferLetterPreview data={data} />
           </div>
         </section>
-        ) : null}
       </div>
 
       <SaveOfferLetterDialog

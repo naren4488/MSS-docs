@@ -30,12 +30,7 @@ export interface OfferLetterData {
   responsibilities?: string;
   roleOverview: string;
   responsibilityPoints: string[];
-  adminIntro: string;
-  adminPoints: string[];
-  responsibilitiesClosing: string;
-  reportingClosing: string;
   leavePolicy: string[];
-  salaryPolicy: string[];
   otherBenefits: string[];
   insuranceCoverage: string;
   insuranceMinTenure: string;
