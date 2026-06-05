@@ -4,6 +4,8 @@ export type AgreementTemplate =
   | "inc-installation-assign"
   | "inc-goodwill-execution";
 
+export type AgreementLanguage = "en" | "hi";
+
 export interface AgreementCompany {
   name: string;
   logoUrl: string;
@@ -62,6 +64,7 @@ export interface AgreementWitness {
 
 export interface AgreementData {
   template: AgreementTemplate;
+  language: AgreementLanguage;
   title: string;
   effectiveDate: string;
 

@@ -3,6 +3,7 @@ import type {
   AgreementClauseSubPoint,
   AgreementCompany,
   AgreementData,
+  AgreementLanguage,
   AgreementSection,
   AgreementTemplate,
   AgreementVariableField,
@@ -182,6 +183,11 @@ function createPartnershipSections(): AgreementSection[] {
             text:
               "{{company.name}} may visit and verify any project of a customer executed under this Agreement at any suitable time, with or without prior information to Partner.",
           },
+          {
+            label: "m",
+            text:
+              "Partner shall ensure that customer service rendered under this Agreement is genuine and that no negative ratings, complaints or punch points arise from customers. Any complaints or punch points raised by a customer shall be resolved by Partner at Partner's own cost within a reasonable time. If Partner fails to resolve them, {{company.name}} may undertake such resolution and recover the cost from Partner in accordance with {{company.name}}'s prevailing terms.",
+          },
         ],
       }),
     ]),
@@ -254,6 +260,147 @@ const partnershipRecitals = [
 
 const partnershipPreamble =
   "NOW, THEREFORE, in consideration of the mutual promises hereinafter set forth, {{company.name}} and Partner do hereby agree as follows:";
+
+// ---------- Partnership template (Hindi) ----------
+
+const partnershipTitleHi = "विक्रय पार्टनर समझौता";
+
+const partnershipIntroTemplateHi =
+  "यह समझौता (\"समझौता\") {{effectiveDateFormatted}} (\"प्रभावी तिथि\") को {{company.name}}, जिसका मुख्य कार्यस्थल {{company.address}} पर है, एवं {{party.entityName}} (\"पार्टनर\"), जिसका मुख्य कार्यस्थल {{party.address}} पर है, के मध्य निष्पादित किया गया है।";
+
+const partnershipRecitalsHi = [
+  "{{company.name}} कतिपय सौर ऊर्जा समाधानों (इसके पश्चात् \"सेवाएँ\") का प्रचार, विपणन एवं विक्रय करता है;",
+  "पार्टनर के पास ऐसे व्यावसायिक संपर्क हैं जो {{company.name}} की सेवाओं से लाभान्वित हो सकते हैं;",
+  "{{company.name}} इन सेवाओं के प्रचार, विपणन एवं निष्पादन का गैर-अनन्य अधिकार पार्टनर को प्रदान करने का इच्छुक है, तथा पार्टनर ऐसा अधिकार प्राप्त करने का इच्छुक है।",
+];
+
+const partnershipPreambleHi =
+  "अतः, यहाँ उल्लिखित पारस्परिक वचनों के प्रतिफल में, {{company.name}} एवं पार्टनर निम्नलिखित शर्तों पर सहमत होते हैं:";
+
+function createPartnershipSectionsHi(): AgreementSection[] {
+  return [
+    section("कार्य का विस्तार", [
+      clause({
+        number: "1",
+        content:
+          "{{company.name}} {{var.scheme}} के अंतर्गत आवासीय संपत्ति एवं पंजीकृत सामूहिक आवास सोसायटियों पर सौर रूफटॉप पावर प्लांट स्थापित करने हेतु राष्ट्रीय सौर रूफटॉप पोर्टल पर एक सूचीबद्ध विक्रेता है। {{company.name}} इस योजना के अंतर्गत संपूर्ण राज्य में अपनी सेवाएँ प्रदान करने हेतु पात्र है।",
+        subPoints: [
+          {
+            label: "क",
+            text: "पार्टनर सहमत है कि वह {{var.scheme}} से संबंधित सेवाओं को {{var.region}} क्षेत्र में {{company.name}} के नाम से निष्पादित करेगा।",
+          },
+          { label: "ख", text: "{{company.name}} एवं पार्टनर इस समझौते की अवधि में निम्नलिखित कार्य करेंगे:" },
+          {
+            label: "ग",
+            text:
+              "ऑर्डर की पुष्टि, सामग्री की खरीद, स्थापना प्रक्रिया का निष्पादन तथा DISCOM एवं नेट मीटरिंग से संबंधित कार्य पार्टनर की ज़िम्मेदारी है।",
+          },
+          {
+            label: "घ",
+            text:
+              "पार्टनर यह सुनिश्चित करेगा कि उत्पादों एवं स्थापना की गुणवत्ता राष्ट्रीय सौर रूफटॉप पोर्टल द्वारा निर्धारित मानकों के अनुरूप हो।",
+          },
+          {
+            label: "ङ",
+            text:
+              "ऐसी परियोजनाओं के संचालन एवं रखरखाव की संपूर्ण ज़िम्मेदारी कम से कम {{var.oAndMYears}} वर्षों तक पार्टनर की होगी।",
+          },
+          {
+            label: "च",
+            text:
+              "पार्टनर सब्सिडी के आवेदन तथा स्थापित संयंत्र की कार्यक्षमता पर नियमित प्रतिक्रिया हेतु अंतिम रूप दिए गए ग्राहकों का संपूर्ण विवरण {{company.name}} के प्रतिनिधियों को उपलब्ध कराएगा।",
+          },
+          {
+            label: "छ",
+            text:
+              "पार्टनर संयंत्र का संपूर्ण विवरण, जिसमें उत्पाद विशिष्टताएँ, डेटा शीट, सीरियल नंबर, साइट निर्देशांक, आईडी, पासवर्ड एवं समय-समय पर अपेक्षित अन्य कोई जानकारी सम्मिलित है, प्रदान करेगा।",
+          },
+          {
+            label: "ज",
+            text:
+              "ग्राहक से समस्त भुगतान एकत्रित करने की ज़िम्मेदारी पार्टनर की होगी। ग्राहक की ओर से देय किसी भी राशि के लिए {{company.name}} किसी भी परिस्थिति में उत्तरदायी नहीं होगा।",
+          },
+          {
+            label: "झ",
+            text:
+              "पार्टनर {{var.scheme}} के अंतर्गत अपने ग्राहक से समस्त भुगतान {{company.name}} के बैंक खाते में एकत्रित करेगा। {{company.name}} परियोजना की खरीद एवं निष्पादन हेतु {{var.advancePct}}% राशि पार्टनर को निर्गत करेगा। शेष {{var.balancePct}}% राशि, ग्राहकों के लिए योजना के सुगम क्रियान्वयन हेतु पारस्परिक रूप से सहमत शुल्क की कटौती के पश्चात्, परियोजना के नेट मीटरिंग सहित सफल निष्पादन पर निर्गत की जाएगी।",
+          },
+          { label: "ञ", text: "{{company.name}} परियोजना की बिक्री एवं निष्पादन दोनों हेतु दूरभाष आधारित सहायता प्रदान करेगा।" },
+          {
+            label: "ट",
+            text:
+              "{{company.name}} ग्राहक के बैंक खाते में सब्सिडी के सीधे संवितरण की प्रक्रिया हेतु परियोजना के समस्त अपेक्षित विवरण राष्ट्रीय पोर्टल पर समय-समय पर अपलोड करेगा।",
+          },
+          {
+            label: "ठ",
+            text:
+              "{{company.name}} इस समझौते के अंतर्गत किसी ग्राहक की निष्पादित परियोजना का निरीक्षण एवं सत्यापन, पार्टनर को पूर्व सूचना के साथ अथवा उसके बिना, किसी भी उपयुक्त समय पर कर सकता है।",
+          },
+          {
+            label: "ड",
+            text:
+              "पार्टनर यह सुनिश्चित करेगा कि इस समझौते के अंतर्गत प्रदान की जाने वाली ग्राहक सेवा वास्तविक हो तथा ग्राहकों की ओर से कोई नकारात्मक रेटिंग, शिकायत अथवा पंच पॉइंट उत्पन्न न हो। ग्राहक द्वारा उठाई गई कोई भी शिकायत अथवा पंच पॉइंट का निवारण पार्टनर अपने व्यय पर उचित समयावधि में करेगा। यदि पार्टनर उनका निवारण करने में विफल रहता है, तो {{company.name}} स्वयं ऐसे निवारण का दायित्व ले सकता है तथा {{company.name}} की प्रचलित शर्तों के अनुसार उसका व्यय पार्टनर से वसूल कर सकता है।",
+          },
+        ],
+      }),
+    ]),
+    section("अनुपालन एवं आचरण", [
+      clause({
+        number: "2",
+        title: "सुरक्षा, बीमा एवं उपठेका",
+        content: "पार्टनर इस समझौते के अंतर्गत समस्त परियोजनाओं के संबंध में निम्नलिखित दायित्वों का अनुपालन सुनिश्चित करेगा:",
+        subPoints: [
+          {
+            label: "क",
+            text:
+              "इंस्टॉलर एवं श्रमिक सुरक्षा, साइट सुरक्षा, तथा सभी स्थापना स्थलों पर लागू सांविधिक एवं विद्युत सुरक्षा मानकों के अनुपालन की संपूर्ण ज़िम्मेदारी पार्टनर की होगी। पार्टनर अथवा उसके कार्मिकों से संबंधित किसी सुरक्षा विफलता हेतु {{company.name}} उत्तरदायी नहीं होगा।",
+          },
+          {
+            label: "ख",
+            text:
+              "पार्टनर अपने संचालन पर लागू पर्याप्त श्रमिक मुआवजा, तृतीय-पक्ष दायित्व अथवा अन्य बीमा, जैसा विधि द्वारा अथवा विवेकपूर्ण व्यावसायिक प्रथा के अनुसार आवश्यक हो, बनाए रखेगा।",
+          },
+          {
+            label: "ग",
+            text:
+              "पार्टनर {{company.name}} की पूर्व लिखित सहमति के बिना इस समझौते के अंतर्गत सौंपे गए किसी भी कार्य का उपठेका नहीं देगा।",
+          },
+          {
+            label: "घ",
+            text:
+              "पार्टनर सब्सिडी, DISCOM अथवा राष्ट्रीय पोर्टल प्रक्रियाओं के संबंध में किसी अनुचित प्रलोभन की पेशकश अथवा स्वीकृति नहीं करेगा, तथा सद्भावना एवं ईमानदारी के साथ व्यवसाय का संचालन करेगा।",
+          },
+        ],
+      }),
+    ]),
+    section("सामान्य शर्तें", [
+      clause({
+        number: "3",
+        title: "स्वतंत्र ठेकेदार एवं दायित्व की सीमा",
+        content:
+          "पार्टनर सहमत है कि पार्टनर एक स्वतंत्र ठेकेदार है, न कि {{company.name}} का पार्टनर, एजेंट अथवा कर्मचारी। पार्टनर इस समझौते से संबंधित अपने व्ययों को {{company.name}} से किसी प्रतिपूर्ति की मांग किए बिना स्वयं वहन करेगा। पार्टनर समझता है एवं सहमत है कि यह व्यवस्था गैर-अनन्य आधार पर है तथा {{company.name}} सेवाओं अथवा किसी अन्य सेवा से संबंधित अपने विक्रय प्रयासों में सहायता हेतु अन्य पक्षों को जब एवं जहाँ चाहे संलग्न कर सकता है।\n\nकिसी भी परिस्थिति में {{company.name}} पार्टनर, ग्राहकों अथवा किसी तृतीय पक्ष के प्रति किसी अप्रत्यक्ष, आकस्मिक, विशेष, परिणामी अथवा दंडात्मक क्षति हेतु, जिसमें खोए हुए लाभ, खोई हुई बचत, व्यवसाय व्यवधान, प्रौद्योगिकी की हानि अथवा खोए हुए डेटा से संबंधित कोई भी क्षति सम्मिलित है, चाहे वह संविदा, अपकृत्य (लापरवाही सहित), कठोर दायित्व अथवा अन्य किसी सिद्धांत के अंतर्गत उत्पन्न हुई हो, उत्तरदायी नहीं होगा, भले ही {{company.name}} को ऐसी क्षतियों की संभावना से अवगत कराया गया हो। इस समझौते के अंतर्गत {{company.name}} का संपूर्ण संचयी दायित्व, संबंधित ग्राहक के विरुद्ध पार्टनर द्वारा {{company.name}} को भुगतान किए गए कुल कमीशन की राशि तक सीमित रहेगा।",
+      }),
+      clause({
+        number: "4",
+        title: "गोपनीयता",
+        content:
+          "{{company.name}} द्वारा पार्टनर को इस समझौते के अंतर्गत प्रकट की गई समस्त जानकारी (\"गोपनीय जानकारी\"), जिसमें किसी अनुमोदित संभावित ग्राहक से संबंधित कोई भी जानकारी सम्मिलित है, पार्टनर द्वारा इस समझौते की अवधि में एवं उसके पश्चात् भी सर्वदा गोपनीय रूप से संधारित की जाएगी, तथा {{company.name}} की पूर्व लिखित सहमति के बिना किसी तृतीय पक्ष को प्रकट नहीं की जाएगी। पार्टनर इस समझौते के अंतर्गत अपने कर्तव्यों के निष्पादन के अतिरिक्त किसी भी गोपनीय जानकारी का उपयोग नहीं करेगा। पार्टनर को प्रदत्त समस्त जानकारी मांग किए जाने पर अविलंब {{company.name}} को वापस की जाएगी।",
+      }),
+      clause({
+        number: "5",
+        title: "अवधि एवं समाप्ति",
+        content:
+          "यह समझौता प्रभावी तिथि से लागू होगा तथा तब तक प्रभावी रहेगा जब तक कोई एक पक्ष दूसरे को समाप्ति की लिखित सूचना प्रदान नहीं करता। इस समझौते की समाप्ति तत्काल प्रभावी होगी। कमीशन का भुगतान केवल तब तक किया जाएगा जब तक संबंधित ग्राहक {{company.name}} का ग्राहक बना रहता है तथा यह समझौता समाप्त नहीं हुआ हो (अधिकतम {{var.commissionMonths}} माह की अवधि हेतु)। {{company.name}} द्वारा किसी कारण से इस समझौते की समाप्ति पर, पार्टनर द्वारा देय समस्त कमीशन का भुगतान अविलंब निर्गत किया जाएगा।",
+      }),
+    ]),
+  ];
+}
+
+const partnershipGoverningLawHi =
+  "इस समझौते की वैधता, व्याख्या, क्रियान्वयन अथवा कथित उल्लंघन के संबंध में कोई विवाद उत्पन्न होने पर, पक्षकार प्रथमतः उसका समाधान आपसी विचार-विमर्श से करने का प्रयास करेंगे। यदि विवाद विचार-विमर्श से समाधान नहीं हो पाते, तो कोई भी पक्ष विवाद के समाधान हेतु एकमात्र मध्यस्थ द्वारा माध्यस्थम् के लिए संदर्भित कर सकता है, जो माध्यस्थम् एवं सुलह अधिनियम, 1996 अथवा उसके किसी पश्चातवर्ती अधिनियमन अथवा संशोधन के प्रावधानों के अनुरूप होगा, तथा मध्यस्थ का निर्णय पक्षकारों पर बाध्यकारी होगा। माध्यस्थम् का स्थान {{var.arbitrationVenue}} होगा। प्रत्येक पक्ष माध्यस्थम् का अपना व्यय स्वयं वहन करेगा।";
+
+const partnershipClosingHi =
+  "नीचे हस्ताक्षर करके, पक्षकार सहमत होते हैं कि यह समझौता पक्षकारों के मध्य संपूर्ण समझौता है तथा इसे केवल दोनों पक्षकारों के प्राधिकृत अधिकारियों द्वारा निष्पादित लिखित लिखत द्वारा ही संशोधित किया जा सकता है।";
 
 // ---------- Vendor template ----------
 
@@ -823,7 +970,16 @@ const incGoodwillPreamble = "";
 
 // ---------- Builders ----------
 
-export function createDefaultAgreementData(template: AgreementTemplate = "partnership"): AgreementData {
+export const HINDI_SUPPORTED_TEMPLATES: AgreementTemplate[] = ["partnership"];
+
+export function isHindiSupported(template: AgreementTemplate): boolean {
+  return HINDI_SUPPORTED_TEMPLATES.includes(template);
+}
+
+export function createDefaultAgreementData(
+  template: AgreementTemplate = "partnership",
+  language: AgreementLanguage = "en",
+): AgreementData {
   const baseWitnesses = [
     { id: uuid(), name: "" },
     { id: uuid(), name: "" },
@@ -832,6 +988,7 @@ export function createDefaultAgreementData(template: AgreementTemplate = "partne
   if (template === "vendor") {
     return {
       template: "vendor",
+      language: "en",
       title: "VENDOR AGREEMENT",
       effectiveDate: today,
       company: defaultCompany(),
@@ -862,6 +1019,7 @@ export function createDefaultAgreementData(template: AgreementTemplate = "partne
   if (template === "inc-installation-assign") {
     return {
       template: "inc-installation-assign",
+      language: "en",
       title: "INSTALLATION ASSIGNMENT AGREEMENT (INC PROJECTS)",
       effectiveDate: today,
       company: defaultCompany(),
@@ -892,6 +1050,7 @@ export function createDefaultAgreementData(template: AgreementTemplate = "partne
   if (template === "inc-goodwill-execution") {
     return {
       template: "inc-goodwill-execution",
+      language: "en",
       title: "GOODWILL PROJECT EXECUTION AGREEMENT (INC PROJECT)",
       effectiveDate: today,
       company: defaultCompany(),
@@ -919,14 +1078,16 @@ export function createDefaultAgreementData(template: AgreementTemplate = "partne
     };
   }
 
+  const isHindi = language === "hi";
   return {
     template: "partnership",
-    title: "SALES PARTNER AGREEMENT",
+    language: isHindi ? "hi" : "en",
+    title: isHindi ? partnershipTitleHi : "SALES PARTNER AGREEMENT",
     effectiveDate: today,
     company: defaultCompany(),
     party: {
       entityName: "",
-      partyLabel: "Partner",
+      partyLabel: isHindi ? "पार्टनर" : "Partner",
       address: "",
       representativeName: "",
       representativeTitle: "",
@@ -935,12 +1096,12 @@ export function createDefaultAgreementData(template: AgreementTemplate = "partne
     },
     variableFields: partnershipVariableFields,
     variables: { ...partnershipVariableDefaults },
-    introTemplate: partnershipIntroTemplate,
-    recitals: partnershipRecitals,
-    preambleAfterRecitals: partnershipPreamble,
-    sections: createPartnershipSections(),
-    closingParagraph: partnershipClosing,
-    governingLawParagraph: partnershipGoverningLaw,
+    introTemplate: isHindi ? partnershipIntroTemplateHi : partnershipIntroTemplate,
+    recitals: isHindi ? partnershipRecitalsHi : partnershipRecitals,
+    preambleAfterRecitals: isHindi ? partnershipPreambleHi : partnershipPreamble,
+    sections: isHindi ? createPartnershipSectionsHi() : createPartnershipSections(),
+    closingParagraph: isHindi ? partnershipClosingHi : partnershipClosing,
+    governingLawParagraph: isHindi ? partnershipGoverningLawHi : partnershipGoverningLaw,
     showWitnesses: true,
     witnesses: baseWitnesses,
     showPageNumbers: true,
@@ -948,15 +1109,44 @@ export function createDefaultAgreementData(template: AgreementTemplate = "partne
   };
 }
 
+/**
+ * Returns a copy of `data` with all template text replaced by the chosen
+ * language's defaults. Preserves user-filled values: company info, party
+ * info, variable values, witness names, effective date, and document flags.
+ * Falls back to English if Hindi is not supported for the template.
+ */
+export function switchAgreementLanguage(
+  data: AgreementData,
+  language: AgreementLanguage,
+): AgreementData {
+  const effectiveLanguage: AgreementLanguage =
+    language === "hi" && !isHindiSupported(data.template) ? "en" : language;
+  const fresh = createDefaultAgreementData(data.template, effectiveLanguage);
+
+  return {
+    ...fresh,
+    effectiveDate: data.effectiveDate,
+    company: { ...fresh.company, ...data.company },
+    party: { ...fresh.party, ...data.party, partyLabel: fresh.party.partyLabel },
+    variables: { ...fresh.variables, ...data.variables },
+    witnesses: data.witnesses.length ? data.witnesses : fresh.witnesses,
+    showWitnesses: data.showWitnesses,
+    showPageNumbers: data.showPageNumbers,
+    showLetterhead: data.showLetterhead,
+  };
+}
+
 export function normalizeAgreementData(input?: Partial<AgreementData> | null): AgreementData {
   const rawTemplate = input?.template ?? null;
   const template: AgreementTemplate = isAgreementTemplate(rawTemplate) ? rawTemplate : "partnership";
-  const defaults = createDefaultAgreementData(template);
+  const language: AgreementLanguage = input?.language === "hi" ? "hi" : "en";
+  const defaults = createDefaultAgreementData(template, language);
 
   return {
     ...defaults,
     ...input,
     template,
+    language: defaults.language,
     company: { ...defaults.company, ...input?.company },
     party: { ...defaults.party, ...input?.party },
     variableFields: input?.variableFields?.length ? input.variableFields : defaults.variableFields,

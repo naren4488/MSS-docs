@@ -4,12 +4,33 @@ import {
   FIRST_PAGE_CAPACITY,
   FOLLOWING_PAGE_CAPACITY,
   PAGE_HEIGHT,
+  PAGE_NUMBER_FOOTER_HEIGHT,
   PAGE_SIDE_PADDING,
   PAGE_TOP_BOTTOM_PADDING,
   PAGE_WIDTH,
 } from "../constants/sheet-layout";
-import type { AgreementData, AgreementSection } from "../types/agreement";
+import type { AgreementData, AgreementLanguage, AgreementSection } from "../types/agreement";
 import { fillTemplate, filledValue } from "../lib/agreement-formatters";
+
+const LABELS: Record<AgreementLanguage, {
+  whereas: string;
+  governingLaw: string;
+  witnesses: string;
+  pageOf: (current: number, total: number) => string;
+}> = {
+  en: {
+    whereas: "WHEREAS:",
+    governingLaw: "Governing Law & Dispute Resolution",
+    witnesses: "Witnesses:",
+    pageOf: (current, total) => `Page ${current} of ${total}`,
+  },
+  hi: {
+    whereas: "जबकि:",
+    governingLaw: "शासी विधि एवं विवाद समाधान",
+    witnesses: "साक्षी:",
+    pageOf: (current, total) => `पृष्ठ ${current} / ${total}`,
+  },
+};
 
 interface AgreementPreviewProps {
   data: AgreementData;
@@ -132,7 +153,7 @@ function Page({
             color: "#6b7280",
           }}
         >
-          Page {pageIndex + 1} of {pageCount}
+          {LABELS[data.language].pageOf(pageIndex + 1, pageCount)}
         </div>
       ) : null}
     </div>
@@ -190,7 +211,7 @@ function createBlocks(data: AgreementData): PreviewBlock[] {
       key: "whereas-heading",
       estimate: 28,
       keepWithNext: true,
-      node: <p style={{ ...paragraphStyle, fontWeight: 700, margin: "12px 0 8px" }}>WHEREAS:</p>,
+      node: <p style={{ ...paragraphStyle, fontWeight: 700, margin: "12px 0 8px" }}>{LABELS[data.language].whereas}</p>,
     });
 
     data.recitals.forEach((recital, index) => {
@@ -226,7 +247,7 @@ function createBlocks(data: AgreementData): PreviewBlock[] {
       key: "governing-law-heading",
       estimate: 26,
       keepWithNext: true,
-      node: <h3 style={sectionHeadingStyle}>Governing Law & Dispute Resolution</h3>,
+      node: <h3 style={sectionHeadingStyle}>{LABELS[data.language].governingLaw}</h3>,
     });
     blocks.push({
       key: "governing-law-body",
@@ -307,12 +328,11 @@ function appendSectionBlocks(
       ),
     });
 
-    clause.subPoints.forEach((sub, subIndex) => {
+    clause.subPoints.forEach((sub) => {
       const filledSub = fillTemplate(sub.text, data);
       blocks.push({
         key: `clause-${clause.id}-sub-${sub.id}`,
         estimate: 14 + estimateParagraphHeight(filledSub, 72),
-        keepWithNext: subIndex < clause.subPoints.length - 1,
         node: (
           <div
             style={{
@@ -366,7 +386,7 @@ function SignatureBlock({ data }: { data: AgreementData }) {
 function WitnessBlock({ data }: { data: AgreementData }) {
   return (
     <div style={{ marginTop: 28 }}>
-      <p style={{ margin: "0 0 12px", fontWeight: 700 }}>Witnesses:</p>
+      <p style={{ margin: "0 0 12px", fontWeight: 700 }}>{LABELS[data.language].witnesses}</p>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 36 }}>
         {data.witnesses.map((witness, index) => (
           <div key={witness.id}>
@@ -432,8 +452,10 @@ export function AgreementPreview({ data }: AgreementPreviewProps) {
     }
   }, [allBlocks, blockHeights]);
 
-  const firstCapacity = data.showLetterhead ? FIRST_PAGE_CAPACITY : FOLLOWING_PAGE_CAPACITY;
-  const pages = paginateBlocks(allBlocks, blockHeights, firstCapacity, FOLLOWING_PAGE_CAPACITY);
+  const footerReserve = data.showPageNumbers ? PAGE_NUMBER_FOOTER_HEIGHT : 0;
+  const firstCapacity = (data.showLetterhead ? FIRST_PAGE_CAPACITY : FOLLOWING_PAGE_CAPACITY) - footerReserve;
+  const followingCapacity = FOLLOWING_PAGE_CAPACITY - footerReserve;
+  const pages = paginateBlocks(allBlocks, blockHeights, firstCapacity, followingCapacity);
 
   return (
     <>

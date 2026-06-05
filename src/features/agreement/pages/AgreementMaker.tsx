@@ -1,4 +1,4 @@
-import { ArrowLeft, Columns2, Eye, Maximize2, Printer, RotateCcw, Save } from "lucide-react";
+import { ArrowLeft, Columns2, Eye, Languages, Maximize2, Printer, RotateCcw, Save } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Navigate, useBeforeUnload, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { MakerFeatureNav } from "@/components/MakerFeatureNav";
@@ -8,7 +8,9 @@ import { SaveAgreementDialog } from "../components/SaveAgreementDialog";
 import {
   createDefaultAgreementData,
   isAgreementTemplate,
+  isHindiSupported,
   normalizeAgreementData,
+  switchAgreementLanguage,
 } from "../lib/agreement-defaults";
 import {
   clearAgreementDraft,
@@ -17,7 +19,7 @@ import {
   saveAgreementDraft,
   saveAgreementRecord,
 } from "../lib/agreement-storage";
-import type { AgreementData, AgreementTemplate } from "../types/agreement";
+import type { AgreementData, AgreementLanguage, AgreementTemplate } from "../types/agreement";
 
 function cloneData(data: AgreementData) {
   return JSON.parse(JSON.stringify(data)) as AgreementData;
@@ -108,7 +110,22 @@ export function AgreementMaker() {
     if (!window.confirm("Reset the form to default values? Any unsaved edits will be lost.")) {
       return;
     }
-    setData(createDefaultAgreementData(explicitTemplate ?? data.template));
+    setData(createDefaultAgreementData(explicitTemplate ?? data.template, data.language));
+  }
+
+  function handleLanguageChange(next: AgreementLanguage) {
+    if (next === data.language) return;
+    if (!isHindiSupported(data.template) && next === "hi") return;
+    if (
+      !window.confirm(
+        next === "hi"
+          ? "Switch to Hindi? Template text will be replaced with the Hindi version. Your filled-in details (company, party, variables, witnesses) will be preserved, but any custom edits to clause text will be lost."
+          : "Switch to English? Template text will be replaced with the English version. Your filled-in details will be preserved, but any custom edits to clause text will be lost.",
+      )
+    ) {
+      return;
+    }
+    setData(switchAgreementLanguage(data, next));
   }
 
   const defaultSaveName = data.party.entityName || record?.name || data.title || "Untitled Agreement";
@@ -141,6 +158,31 @@ export function AgreementMaker() {
             <button className={`segment-button ${viewMode === "preview" ? "active" : ""}`} type="button" onClick={() => setViewMode("preview")}>
               <Eye size={16} />
               Preview
+            </button>
+          </div>
+          <div
+            className="segmented-control"
+            title={
+              isHindiSupported(data.template)
+                ? "Switch document language"
+                : "Hindi version is not yet available for this template"
+            }
+          >
+            <button
+              className={`segment-button ${data.language === "en" ? "active" : ""}`}
+              type="button"
+              onClick={() => handleLanguageChange("en")}
+            >
+              <Languages size={16} />
+              EN
+            </button>
+            <button
+              className={`segment-button ${data.language === "hi" ? "active" : ""}`}
+              type="button"
+              onClick={() => handleLanguageChange("hi")}
+              disabled={!isHindiSupported(data.template)}
+            >
+              हिं
             </button>
           </div>
           <button
