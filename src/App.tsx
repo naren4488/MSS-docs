@@ -34,7 +34,7 @@ function FeatureNavigation() {
 export default function App() {
   const location = useLocation();
   const isMakerRoute =
-    location.pathname.startsWith("/offer-letter") ||
+    (location.pathname.startsWith("/offer-letter") && location.pathname !== "/offer-letters") ||
     (location.pathname.startsWith("/agreement") && location.pathname !== "/agreements");
 
   return (

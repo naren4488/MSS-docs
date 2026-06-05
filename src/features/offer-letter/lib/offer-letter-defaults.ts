@@ -170,7 +170,7 @@ function createTermsForTemplate(template: OfferLetterTemplate): OfferLetterTerm[
 export function createDefaultOfferLetterData(template: OfferLetterTemplate = "fresh"): OfferLetterData {
   return {
     company: {
-      name: "Mahi Solar Solutions",
+      name: "Mahi Solar Solution",
       logoUrl: "",
       address: "Plot No. 44, Jai Bhawani Vihar Vistar, Kalwar Road, Govindpura, Jaipur, Rajasthan, 302012",
       phone: "+91 9928413501",

@@ -1,6 +1,5 @@
 export type AgreementTemplate =
   | "partnership"
-  | "vendor"
   | "inc-installation-assign"
   | "inc-goodwill-execution";
 

@@ -92,7 +92,7 @@ export function AgreementEditor({ data, onChange }: AgreementEditorProps) {
     onChange({ ...data, witnesses: next });
   }
 
-  const showApplicantFields = data.template === "vendor" || data.template === "inc-goodwill-execution";
+  const showApplicantFields = data.template === "inc-goodwill-execution";
 
   return (
     <div className="stack">
