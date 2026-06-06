@@ -1,13 +1,17 @@
-import { FileText, Handshake } from "lucide-react";
+import { FileText, Handshake, HeartHandshake, ReceiptIndianRupee } from "lucide-react";
 import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { AllOfferLetters, OfferLetterMaker } from "@/features/offer-letter";
 import { AgreementMaker, AllAgreements } from "@/features/agreement";
+import { AllPartnerAgreements, PartnerAgreementMaker } from "@/features/partner-agreement";
+import { AllQuotations, QuotationMaker } from "@/features/quotation";
 
 function FeatureNavigation() {
   const location = useLocation();
   const navigate = useNavigate();
   const isOfferList = location.pathname === "/offer-letters";
   const isAgreementList = location.pathname === "/agreements";
+  const isPartnerList = location.pathname === "/partner-agreements";
+  const isQuotationList = location.pathname === "/quotations";
 
   return (
     <nav className="feature-nav no-print">
@@ -27,6 +31,22 @@ function FeatureNavigation() {
         <Handshake size={16} />
         Agreements
       </button>
+      <button
+        className={`feature-nav-link ${isPartnerList ? "active" : ""}`}
+        type="button"
+        onClick={() => navigate("/partner-agreements")}
+      >
+        <HeartHandshake size={16} />
+        Partner Agreements
+      </button>
+      <button
+        className={`feature-nav-link ${isQuotationList ? "active" : ""}`}
+        type="button"
+        onClick={() => navigate("/quotations")}
+      >
+        <ReceiptIndianRupee size={16} />
+        Quotations
+      </button>
     </nav>
   );
 }
@@ -35,7 +55,9 @@ export default function App() {
   const location = useLocation();
   const isMakerRoute =
     (location.pathname.startsWith("/offer-letter") && location.pathname !== "/offer-letters") ||
-    (location.pathname.startsWith("/agreement") && location.pathname !== "/agreements");
+    (location.pathname.startsWith("/agreement") && location.pathname !== "/agreements") ||
+    (location.pathname.startsWith("/partner-agreement") && location.pathname !== "/partner-agreements") ||
+    (location.pathname.startsWith("/quotation") && location.pathname !== "/quotations");
 
   return (
     <div className="app-root">
@@ -48,6 +70,12 @@ export default function App() {
         <Route path="/agreement" element={<AgreementMaker />} />
         <Route path="/agreement/:id" element={<AgreementMaker />} />
         <Route path="/agreements" element={<AllAgreements />} />
+        <Route path="/partner-agreement" element={<PartnerAgreementMaker />} />
+        <Route path="/partner-agreement/:id" element={<PartnerAgreementMaker />} />
+        <Route path="/partner-agreements" element={<AllPartnerAgreements />} />
+        <Route path="/quotation" element={<QuotationMaker />} />
+        <Route path="/quotation/:id" element={<QuotationMaker />} />
+        <Route path="/quotations" element={<AllQuotations />} />
       </Routes>
     </div>
   );

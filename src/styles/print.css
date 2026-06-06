@@ -65,12 +65,16 @@
   }
 
   .offer-letter-measure-layer,
-  .agreement-measure-layer {
+  .agreement-measure-layer,
+  .partner-agreement-measure-layer,
+  .quotation-measure-layer {
     display: none !important;
   }
 
   #offer-letter-preview,
-  #agreement-preview {
+  #agreement-preview,
+  #partner-agreement-preview,
+  #quotation-preview {
     display: block !important;
     width: 210mm !important;
     max-width: 100% !important;
@@ -80,7 +84,9 @@
   }
 
   #offer-letter-preview > [data-export-page="true"],
-  #agreement-preview > [data-export-page="true"] {
+  #agreement-preview > [data-export-page="true"],
+  #partner-agreement-preview > [data-export-page="true"],
+  #quotation-preview > [data-export-page="true"] {
     page-break-after: always;
     break-after: page;
     width: 210mm !important;
@@ -95,7 +101,9 @@
   }
 
   #offer-letter-preview > [data-export-page="true"]:last-child,
-  #agreement-preview > [data-export-page="true"]:last-child {
+  #agreement-preview > [data-export-page="true"]:last-child,
+  #partner-agreement-preview > [data-export-page="true"]:last-child,
+  #quotation-preview > [data-export-page="true"]:last-child {
     page-break-after: auto;
     break-after: auto;
   }
