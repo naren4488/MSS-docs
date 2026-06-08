@@ -1,5 +1,15 @@
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
-import type { CSSProperties, ReactNode } from "react";
+import type { CSSProperties, ComponentType, ReactNode } from "react";
+import {
+  BadgeCheck,
+  ClipboardList,
+  FileCheck2,
+  PencilRuler,
+  PlugZap,
+  ShieldCheck,
+  Truck,
+  Wrench,
+} from "lucide-react";
 import {
   FIRST_PAGE_CAPACITY,
   FOLLOWING_PAGE_CAPACITY,
@@ -27,6 +37,19 @@ const MATERIAL_GRID = "24px 1.25fr 78px 84px 1.5fr";
 const COMMERCIAL_GRID = "30px 1fr 1.7fr";
 
 const TABLE_BORDER = "1px solid #c2cad6";
+const NAVY = "#14306b";
+const NAVY2 = "#1f4aa0";
+
+const STEP_ICONS: ComponentType<{ size?: number; color?: string }>[] = [
+  ClipboardList,
+  PencilRuler,
+  FileCheck2,
+  Truck,
+  Wrench,
+  ShieldCheck,
+  PlugZap,
+  BadgeCheck,
+];
 
 const pageBodyStyle: CSSProperties = {
   padding: `${PAGE_TOP_BOTTOM_PADDING}px ${PAGE_SIDE_PADDING}px`,
@@ -39,14 +62,15 @@ const paragraphStyle: CSSProperties = {
 };
 
 const sectionHeadingStyle: CSSProperties = {
-  fontSize: 12.5,
+  fontSize: 12,
   fontWeight: 700,
-  letterSpacing: 0.5,
+  letterSpacing: 0.6,
   textTransform: "uppercase",
-  margin: "14px 0 8px",
-  color: "#152036",
-  borderBottom: "2px solid #152036",
-  paddingBottom: 3,
+  margin: "16px 0 10px",
+  color: "#ffffff",
+  background: `linear-gradient(90deg, ${NAVY}, ${NAVY2})`,
+  padding: "7px 12px",
+  borderRadius: 4,
 };
 
 function estimateTextLines(text: string, charsPerLine: number) {
@@ -157,7 +181,7 @@ function tableCell(extra?: CSSProperties): CSSProperties {
 }
 
 function headerCell(extra?: CSSProperties): CSSProperties {
-  return tableCell({ borderTop: TABLE_BORDER, background: "#152036", color: "#ffffff", fontWeight: 700, ...extra });
+  return tableCell({ borderTop: TABLE_BORDER, background: NAVY, color: "#ffffff", fontWeight: 700, ...extra });
 }
 
 function MaterialHeader() {
@@ -264,6 +288,103 @@ function RepBlock({ data }: { data: QuotationData }) {
   );
 }
 
+function CoverBand({ data }: { data: QuotationData }) {
+  const tagline = data.tagline.trim();
+  return (
+    <div style={{ margin: "2px 0 14px" }}>
+      {data.coverImageUrl ? (
+        <img
+          alt="Cover"
+          crossOrigin="anonymous"
+          src={data.coverImageUrl}
+          style={{ width: "100%", height: 180, objectFit: "cover", borderRadius: "8px 8px 0 0", display: "block" }}
+        />
+      ) : null}
+      {tagline ? (
+        <div
+          style={{
+            background: `linear-gradient(90deg, ${NAVY}, ${NAVY2})`,
+            color: "#ffffff",
+            textAlign: "center",
+            fontWeight: 700,
+            letterSpacing: 1.5,
+            fontSize: 11,
+            padding: "8px 10px",
+            borderRadius: data.coverImageUrl ? "0 0 8px 8px" : 6,
+          }}
+        >
+          {tagline}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function WarrantyBadges({ data }: { data: QuotationData }) {
+  const badge = (years: string, label: string) => (
+    <div style={{ textAlign: "center" }}>
+      <div
+        style={{
+          width: 96,
+          height: 96,
+          borderRadius: "50%",
+          background: `linear-gradient(135deg, ${NAVY}, ${NAVY2})`,
+          color: "#ffffff",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          margin: "0 auto 8px",
+        }}
+      >
+        <span style={{ fontSize: 10, opacity: 0.9 }}>Up to</span>
+        <span style={{ fontSize: 20, fontWeight: 800, lineHeight: 1 }}>{years || "—"}</span>
+        <span style={{ fontSize: 11, fontWeight: 600 }}>Years</span>
+      </div>
+      <div style={{ background: NAVY, color: "#ffffff", fontSize: 9.5, fontWeight: 700, letterSpacing: 0.5, padding: "4px 10px", borderRadius: 4, display: "inline-block" }}>
+        {label}
+      </div>
+    </div>
+  );
+  return (
+    <div style={{ display: "flex", justifyContent: "center", gap: 60, margin: "10px 0 4px" }}>
+      {badge(data.warrantyProductYears, "PRODUCT WARRANTY")}
+      {badge(data.warrantyPerformanceYears, "PERFORMANCE WARRANTY")}
+    </div>
+  );
+}
+
+function InstallationProcess({ data }: { data: QuotationData }) {
+  const steps = data.installationSteps.filter((step) => step.trim());
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "14px 8px", marginTop: 4 }}>
+      {steps.map((step, index) => {
+        const Icon = STEP_ICONS[index % STEP_ICONS.length];
+        return (
+          <div key={`${step}-${index}`} style={{ textAlign: "center" }}>
+            <div
+              style={{
+                width: 46,
+                height: 46,
+                borderRadius: "50%",
+                background: `linear-gradient(135deg, ${NAVY}, ${NAVY2})`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                margin: "0 auto 6px",
+              }}
+            >
+              <Icon size={22} color="#ffffff" />
+            </div>
+            <div style={{ fontSize: 9, color: "#6b7280", fontWeight: 600 }}>Step {String(index + 1).padStart(2, "0")}</div>
+            <div style={{ fontSize: 10, fontWeight: 700, color: NAVY, lineHeight: 1.3 }}>{step}</div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 // ---------- Block helpers ----------
 
 function pushHeading(blocks: PreviewBlock[], key: string, text: string) {
@@ -301,6 +422,15 @@ function createBlocks(data: QuotationData): PreviewBlock[] {
       </div>
     ),
   });
+
+  if (data.coverImageUrl || data.tagline.trim()) {
+    blocks.push({
+      key: "cover-band",
+      estimate: data.coverImageUrl ? 210 : 40,
+      keepWithNext: true,
+      node: <CoverBand data={data} />,
+    });
+  }
 
   blocks.push({ key: "summary", estimate: 120, keepWithNext: true, node: <SummaryBox data={data} /> });
 
@@ -352,10 +482,27 @@ function createBlocks(data: QuotationData): PreviewBlock[] {
     });
   }
 
+  // Warranty Coverage badges
+  if (data.showWarrantyBadges) {
+    pushHeading(blocks, "warranty-badges-heading", "Warranty Coverage");
+    blocks.push({ key: "warranty-badges", estimate: 150, node: <WarrantyBadges data={data} /> });
+  }
+
   // Solar Power Generation
   if (data.showGeneration) {
     pushHeading(blocks, "gen-heading", "Solar Power Generation");
     blocks.push({ key: "gen-table", estimate: 52, node: <GenerationTable data={data} /> });
+  }
+
+  // Installation Process diagram
+  if (data.showInstallationProcess && data.installationSteps.some((step) => step.trim())) {
+    pushHeading(blocks, "install-process-heading", "Installation Process");
+    const stepCount = data.installationSteps.filter((step) => step.trim()).length;
+    blocks.push({
+      key: "install-process",
+      estimate: 20 + Math.ceil(stepCount / 4) * 84,
+      node: <InstallationProcess data={data} />,
+    });
   }
 
   // Subsidy & notes

@@ -126,6 +126,8 @@ const defaultSubsidyDocuments = [
 export function createDefaultQuotationData(): QuotationData {
   return {
     title: "SOLAR PROPOSAL",
+    tagline: "SMART  |  SUSTAINABLE  |  COST EFFECTIVE",
+    coverImageUrl: "",
     customerName: "",
     capacity: "3 KW 1PH",
     address: "Jaipur",
@@ -145,6 +147,20 @@ export function createDefaultQuotationData(): QuotationData {
       perYear: "4320 Units / Year",
       savingPerYear: "₹ 34,560",
     },
+    showWarrantyBadges: true,
+    warrantyProductYears: "12",
+    warrantyPerformanceYears: "25",
+    showInstallationProcess: true,
+    installationSteps: [
+      "Site Survey",
+      "System Design",
+      "Documentation",
+      "Material Dispatch",
+      "Installation",
+      "Testing & Commissioning",
+      "Net Metering & Activation",
+      "Handover",
+    ],
     subsidyAmount: "78000",
     netMeteringNote: "Net metering period will be covered in 25–30 days.",
     loadExtensionNote:
@@ -179,5 +195,6 @@ export function normalizeQuotationData(input?: Partial<QuotationData> | null): Q
     commercialOffer: input?.commercialOffer ?? defaults.commercialOffer,
     terms: input?.terms ?? defaults.terms,
     subsidyDocuments: input?.subsidyDocuments ?? defaults.subsidyDocuments,
+    installationSteps: input?.installationSteps ?? defaults.installationSteps,
   };
 }

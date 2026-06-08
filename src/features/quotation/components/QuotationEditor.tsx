@@ -81,6 +81,14 @@ export function QuotationEditor({ data, onChange }: QuotationEditorProps) {
         </div>
       </AccordionSection>
 
+      <AccordionSection title="Cover & Branding" helper="Hero image and tagline shown at the top of the proposal.">
+        <ImageUploader label="Cover / Hero Image" value={data.coverImageUrl} onChange={(value) => update("coverImageUrl", value)} />
+        <div className="field full-span">
+          <label>Tagline</label>
+          <input value={data.tagline} onChange={(event) => update("tagline", event.target.value)} />
+        </div>
+      </AccordionSection>
+
       <AccordionSection title="Company (Letterhead)" helper="Appears in the header on page 1.">
         <ImageUploader label="Company Logo" value={data.company.logoUrl} onChange={(value) => updateCompany("logoUrl", value)} />
         <div className="field-grid">
@@ -164,6 +172,47 @@ export function QuotationEditor({ data, onChange }: QuotationEditorProps) {
               <input value={data.generation.savingPerYear} onChange={(event) => updateGeneration("savingPerYear", event.target.value)} />
             </div>
           </div>
+        ) : null}
+      </AccordionSection>
+
+      <AccordionSection title="Warranty Badges" helper="The 'Up to N Years' circular badges.">
+        <div className="toggle-row" style={{ marginBottom: 12 }}>
+          <span>Show Warranty Badges</span>
+          <button
+            className={`toggle ${data.showWarrantyBadges ? "on" : ""}`}
+            type="button"
+            onClick={() => update("showWarrantyBadges", !data.showWarrantyBadges)}
+          >
+            <span className="toggle-thumb" />
+          </button>
+        </div>
+        {data.showWarrantyBadges ? (
+          <div className="field-grid">
+            <div className="field">
+              <label>Product Warranty (years)</label>
+              <input value={data.warrantyProductYears} onChange={(event) => update("warrantyProductYears", event.target.value)} />
+            </div>
+            <div className="field">
+              <label>Performance Warranty (years)</label>
+              <input value={data.warrantyPerformanceYears} onChange={(event) => update("warrantyPerformanceYears", event.target.value)} />
+            </div>
+          </div>
+        ) : null}
+      </AccordionSection>
+
+      <AccordionSection title="Installation Process" helper="Numbered step diagram. Edit or reorder the steps.">
+        <div className="toggle-row" style={{ marginBottom: 12 }}>
+          <span>Show Installation Process</span>
+          <button
+            className={`toggle ${data.showInstallationProcess ? "on" : ""}`}
+            type="button"
+            onClick={() => update("showInstallationProcess", !data.showInstallationProcess)}
+          >
+            <span className="toggle-thumb" />
+          </button>
+        </div>
+        {data.showInstallationProcess ? (
+          <BulletListEditor label="Steps" items={data.installationSteps} onChange={(next) => update("installationSteps", next)} />
         ) : null}
       </AccordionSection>
 

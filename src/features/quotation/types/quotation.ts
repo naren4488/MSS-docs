@@ -32,6 +32,8 @@ export interface QuotationGeneration {
 
 export interface QuotationData {
   title: string;
+  tagline: string;
+  coverImageUrl: string;
 
   // Top summary
   customerName: string;
@@ -51,6 +53,13 @@ export interface QuotationData {
 
   showGeneration: boolean;
   generation: QuotationGeneration;
+
+  showWarrantyBadges: boolean;
+  warrantyProductYears: string;
+  warrantyPerformanceYears: string;
+
+  showInstallationProcess: boolean;
+  installationSteps: string[];
 
   subsidyAmount: string;
   netMeteringNote: string;
