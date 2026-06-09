@@ -1,4 +1,4 @@
-import { FileText, Handshake, HeartHandshake, ReceiptIndianRupee } from "lucide-react";
+import { Building2, FileText, Handshake, HeartHandshake, ReceiptIndianRupee } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 interface MakerFeatureNavProps {
@@ -12,6 +12,7 @@ export function MakerFeatureNav({ isDirty = false }: MakerFeatureNavProps) {
   const isOfferMaker = location.pathname.startsWith("/offer-letter");
   const isAgreementMaker = location.pathname.startsWith("/agreement") && !isPartnerMaker;
   const isQuotationMaker = location.pathname.startsWith("/quotation");
+  const isCompanyMaker = location.pathname.startsWith("/company-profile");
 
   function navigateTo(path: string) {
     if (isDirty && !window.confirm("You have unsaved changes. Leave this document anyway?")) {
@@ -53,6 +54,14 @@ export function MakerFeatureNav({ isDirty = false }: MakerFeatureNavProps) {
       >
         <ReceiptIndianRupee size={14} />
         Quotations
+      </button>
+      <button
+        className={`maker-feature-nav-link ${isCompanyMaker ? "active" : ""}`}
+        type="button"
+        onClick={() => navigateTo("/company-profiles")}
+      >
+        <Building2 size={14} />
+        Company Details
       </button>
     </div>
   );

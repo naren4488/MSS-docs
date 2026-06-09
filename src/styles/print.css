@@ -74,7 +74,8 @@
   #offer-letter-preview,
   #agreement-preview,
   #partner-agreement-preview,
-  #quotation-preview {
+  #quotation-preview,
+  #company-profile-preview {
     display: block !important;
     width: 210mm !important;
     max-width: 100% !important;
@@ -86,7 +87,8 @@
   #offer-letter-preview > [data-export-page="true"],
   #agreement-preview > [data-export-page="true"],
   #partner-agreement-preview > [data-export-page="true"],
-  #quotation-preview > [data-export-page="true"] {
+  #quotation-preview > [data-export-page="true"],
+  #company-profile-preview > [data-export-page="true"] {
     page-break-after: always;
     break-after: page;
     width: 210mm !important;
