@@ -26,6 +26,8 @@ export interface AgreementParty {
   representativeTitle: string;
   consumerNumber: string;
   discom: string;
+  aadhaar?: string;
+  gst?: string;
 }
 
 export interface AgreementVariableField {
@@ -82,6 +84,7 @@ export interface AgreementData {
 
   governingLawParagraph: string;
 
+  partyIsIndividual: boolean;
   showWitnesses: boolean;
   witnesses: AgreementWitness[];
   showPageNumbers: boolean;

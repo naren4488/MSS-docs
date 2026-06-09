@@ -289,14 +289,22 @@ function appendSectionBlocks(
   sectionIndex: number,
   data: AgreementData,
 ) {
+  // When a section holds a single clause, the clause number rides on the
+  // section heading and is suppressed in the body (avoids "2. … 2. …"). When a
+  // section groups several clauses, the heading is unnumbered and each clause
+  // keeps its own number.
+  const soleClause = section.clauses.length === 1;
+
   if (section.heading.trim()) {
+    const headingNumber = soleClause && section.clauses[0] ? `${section.clauses[0].number}. ` : "";
     blocks.push({
       key: `section-${section.id}-heading`,
       estimate: 30,
       keepWithNext: true,
       node: (
         <h3 style={sectionHeadingStyle}>
-          {sectionIndex + 1}. {section.heading}
+          {headingNumber}
+          {section.heading}
         </h3>
       ),
     });
@@ -327,8 +335,15 @@ function appendSectionBlocks(
             <p style={{ ...paragraphStyle, marginBottom: 4 }}>
               {pIndex === 0 ? (
                 <>
-                  <strong>{clause.number}.</strong>
-                  {clause.title ? <strong> {clause.title}: </strong> : " "}
+                  {soleClause ? null : <strong>{clause.number}.</strong>}
+                  {clause.title ? (
+                    <strong>
+                      {soleClause ? "" : " "}
+                      {clause.title}:{" "}
+                    </strong>
+                  ) : (
+                    !soleClause && " "
+                  )}
                 </>
               ) : null}
               {para}
@@ -386,11 +401,25 @@ function SignatureBlock({ data }: { data: AgreementData }) {
       </div>
       <div>
         <div style={{ height: 48, borderBottom: "1px solid #111827", marginBottom: 8 }} />
-        <p style={{ margin: "0 0 2px", fontWeight: 700 }}>{filledValue(data.party.representativeName)}</p>
-        {data.party.representativeTitle ? (
-          <p style={{ margin: "0 0 2px", fontSize: 11 }}>{data.party.representativeTitle}</p>
-        ) : null}
-        <p style={{ margin: 0, fontSize: 11 }}>{filledValue(data.party.entityName)}</p>
+        {data.partyIsIndividual ? (
+          <>
+            <p style={{ margin: "0 0 2px", fontWeight: 700 }}>{filledValue(data.party.entityName)}</p>
+            {data.party.aadhaar?.trim() ? (
+              <p style={{ margin: 0, fontSize: 11 }}>Aadhaar No.: {data.party.aadhaar}</p>
+            ) : null}
+          </>
+        ) : (
+          <>
+            <p style={{ margin: "0 0 2px", fontWeight: 700 }}>{filledValue(data.party.representativeName)}</p>
+            {data.party.representativeTitle ? (
+              <p style={{ margin: "0 0 2px", fontSize: 11 }}>{data.party.representativeTitle}</p>
+            ) : null}
+            <p style={{ margin: 0, fontSize: 11 }}>{filledValue(data.party.entityName)}</p>
+            {data.party.gst?.trim() ? (
+              <p style={{ margin: "2px 0 0", fontSize: 11 }}>GST: {data.party.gst}</p>
+            ) : null}
+          </>
+        )}
       </div>
     </div>
   );

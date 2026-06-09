@@ -105,7 +105,7 @@ function defaultRateCards(): PartnerRateCard[] {
 // =====================================================================
 
 const baseVariableFields: PartnerVariableField[] = [
-  { key: "region", label: "Operating Region / Territory", helper: "e.g. Jaipur Rural, Rajasthan" },
+  { key: "region", label: "Operating Region / Territory", helper: "e.g. Jaipur Discom (JVVNL) area, Rajasthan" },
   { key: "scheme", label: "Scheme Name", helper: "e.g. PM Surya Ghar: Muft Bijli Yojana" },
   { key: "discom", label: "DISCOM", helper: "e.g. JVVNL" },
   { key: "oAndMYears", label: "Operation & Maintenance Tenure (years)" },
@@ -125,7 +125,7 @@ const profitShareVariableFields: PartnerVariableField[] = [
 ];
 
 const baseVariableDefaults: Record<string, string> = {
-  region: "Jaipur Rural, Rajasthan",
+  region: "Jaipur Discom (JVVNL) area, Rajasthan",
   scheme: "PM Surya Ghar: Muft Bijli Yojana",
   discom: "JVVNL",
   oAndMYears: "5",

@@ -96,8 +96,8 @@ const today = new Date().toISOString().slice(0, 10);
 // ---------- Partnership template ----------
 
 const partnershipVariableFields: AgreementVariableField[] = [
-  { key: "region", label: "Operating Region / Territory", helper: "e.g. Jaipur Rural, Rajasthan" },
-  { key: "scheme", label: "Scheme Name", helper: "e.g. DBT Subsidy Scheme" },
+  { key: "region", label: "Operating Region / Territory", helper: "e.g. Jaipur Discom (JVVNL) area, Rajasthan" },
+  { key: "scheme", label: "Scheme Name", helper: "e.g. PM Surya Ghar: Muft Bijli Yojana" },
   { key: "discom", label: "DISCOM", helper: "e.g. JVVNL" },
   { key: "oAndMYears", label: "Operation & Maintenance Tenure (years)" },
   { key: "commissionMonths", label: "Commission Survival Period (months)", helper: "e.g. 12" },
@@ -105,8 +105,8 @@ const partnershipVariableFields: AgreementVariableField[] = [
 ];
 
 const partnershipVariableDefaults: Record<string, string> = {
-  region: "Jaipur Rural, Rajasthan",
-  scheme: "DBT Subsidy Scheme",
+  region: "Jaipur Discom (JVVNL) area, Rajasthan",
+  scheme: "PM Surya Ghar: Muft Bijli Yojana",
   discom: "JVVNL",
   oAndMYears: "5",
   commissionMonths: "12",
@@ -288,8 +288,34 @@ function createPartnershipSections(): AgreementSection[] {
       clause({
         number: "7",
         title: "Term & Termination",
-        content:
-          "(a) This Agreement shall be effective from the Effective Date and shall continue in force until terminated in accordance with this clause.\n\n(b) Either Party may terminate this Agreement for convenience by giving thirty (30) days' prior written notice to the other Party.\n\n(c) {{company.name}} may terminate this Agreement immediately and without notice (\"For Cause\") upon the occurrence of any of the following: (i) misuse of {{company.name}}'s Vendor Code, name, brand, empanelment or credentials by Authorised Firm; (ii) fraud, wilful misconduct, or material non-compliance with applicable law or scheme rules by Authorised Firm; (iii) suspension, blacklisting, debarment or other adverse action against Authorised Firm by any DISCOM or government authority; (iv) failure by Authorised Firm to remedy any customer complaint or punch point within the time required under this Agreement; or (v) any other material breach of this Agreement not cured within fifteen (15) days of written notice from {{company.name}}.\n\n(d) Survival: The provisions of this Agreement that by their nature are intended to survive termination shall survive, including without limitation confidentiality, indemnification, back-to-back warranty, operation & maintenance commitments to customers whose projects have already been executed, customer-service obligations for existing customers, and {{company.name}}'s right of set-off.\n\n(e) Effects of Termination: Upon termination, all amounts payable to Authorised Firm shall be subject to {{company.name}}'s right of set-off against any losses and indemnification claims under this Agreement. Commissions shall be paid only so long as the relevant customer remains a {{company.name}} customer and this Agreement has not been terminated, and in any event for a period not exceeding {{var.commissionMonths}} months from commissioning. Upon termination by {{company.name}} For Cause, no further commission shall be payable to Authorised Firm in respect of any customer.",
+        content: "The term and termination of this Agreement shall be governed as follows:",
+        subPoints: [
+          {
+            label: "a",
+            text:
+              "This Agreement shall be effective from the Effective Date and shall continue in force until terminated in accordance with this clause.",
+          },
+          {
+            label: "b",
+            text:
+              "Either Party may terminate this Agreement for convenience by giving thirty (30) days' prior written notice to the other Party.",
+          },
+          {
+            label: "c",
+            text:
+              '{{company.name}} may terminate this Agreement immediately and without notice ("For Cause") upon the occurrence of any of the following: (i) misuse of {{company.name}}\'s Vendor Code, name, brand, empanelment or credentials by Authorised Firm; (ii) fraud, wilful misconduct, or material non-compliance with applicable law or scheme rules by Authorised Firm; (iii) suspension, blacklisting, debarment or other adverse action against Authorised Firm by any DISCOM or government authority; (iv) failure by Authorised Firm to remedy any customer complaint or punch point within the time required under this Agreement; or (v) any other material breach of this Agreement not cured within fifteen (15) days of written notice from {{company.name}}.',
+          },
+          {
+            label: "d",
+            text:
+              "Survival: The provisions of this Agreement that by their nature are intended to survive termination shall survive, including without limitation confidentiality, indemnification, back-to-back warranty, operation & maintenance commitments to customers whose projects have already been executed, customer-service obligations for existing customers, and {{company.name}}'s right of set-off.",
+          },
+          {
+            label: "e",
+            text:
+              "Effects of Termination: Upon termination, all amounts payable to Authorised Firm shall be subject to {{company.name}}'s right of set-off against any losses and indemnification claims under this Agreement. Commissions shall be paid only so long as the relevant customer remains a {{company.name}} customer and this Agreement has not been terminated, and in any event for a period not exceeding {{var.commissionMonths}} months from commissioning. Upon termination by {{company.name}} For Cause, no further commission shall be payable to Authorised Firm in respect of any customer.",
+          },
+        ],
       }),
     ]),
   ];
@@ -504,8 +530,33 @@ function createPartnershipSectionsHi(): AgreementSection[] {
       clause({
         number: "7",
         title: "अवधि एवं समाप्ति",
-        content:
-          "(क) यह समझौता प्रभावी तिथि से लागू होगा एवं इस खंड के अनुसार समाप्त होने तक प्रवृत्त रहेगा।\n\n(ख) कोई भी पक्ष दूसरे पक्ष को तीस (30) दिनों की पूर्व लिखित सूचना देकर सुविधा के अनुसार इस समझौते को समाप्त कर सकता है।\n\n(ग) {{company.name}} निम्नलिखित में से किसी की घटना पर इस समझौते को बिना सूचना के तत्काल समाप्त कर सकता है (\"वजह सहित\"): (i) अधिकृत फर्म द्वारा {{company.name}} के विक्रेता कोड, नाम, ब्रांड, सूचीयन अथवा क्रेडेंशियल का दुरुपयोग; (ii) अधिकृत फर्म द्वारा धोखाधड़ी, जानबूझकर दुराचरण अथवा लागू विधि या योजना नियमों का सारवान् अननुपालन; (iii) किसी DISCOM अथवा सरकारी प्राधिकरण द्वारा अधिकृत फर्म के विरुद्ध निलंबन, ब्लैकलिस्ट, डिबारमेंट अथवा अन्य प्रतिकूल कार्रवाई; (iv) अधिकृत फर्म द्वारा इस समझौते के अंतर्गत अपेक्षित समयावधि में किसी ग्राहक शिकायत अथवा पंच पॉइंट का निवारण न करना; अथवा (v) इस समझौते का कोई अन्य सारवान् उल्लंघन जो {{company.name}} की लिखित सूचना के पंद्रह (15) दिनों के भीतर ठीक नहीं किया जाता।\n\n(घ) उत्तरजीविता: इस समझौते के वे प्रावधान जो स्वभाव से समाप्ति के पश्चात् प्रवृत्त रहने का अभिप्रेत हैं, प्रवृत्त रहेंगे, जिसमें सीमा के बिना गोपनीयता, क्षतिपूर्ति, बैक-टू-बैक वारंटी, पूर्व में निष्पादित परियोजनाओं के ग्राहकों के प्रति संचालन व रखरखाव प्रतिबद्धताएँ, मौजूदा ग्राहकों के प्रति ग्राहक-सेवा दायित्व एवं {{company.name}} का समायोजन का अधिकार सम्मिलित हैं।\n\n(ङ) समाप्ति का प्रभाव: समाप्ति पर, अधिकृत फर्म को देय समस्त राशियाँ इस समझौते के अंतर्गत किसी हानि एवं क्षतिपूर्ति दावों के विरुद्ध {{company.name}} के समायोजन के अधिकार के अधीन होंगी। कमीशन का भुगतान केवल तब तक किया जाएगा जब तक संबंधित ग्राहक {{company.name}} का ग्राहक बना रहता है तथा यह समझौता समाप्त नहीं हुआ हो, तथा किसी भी स्थिति में कमीशनिंग से अधिकतम {{var.commissionMonths}} माह की अवधि हेतु। {{company.name}} द्वारा वजह सहित समाप्ति पर, अधिकृत फर्म को किसी भी ग्राहक के संबंध में कोई और कमीशन देय नहीं होगा।",
+        content: "इस समझौते की अवधि एवं समाप्ति निम्नानुसार शासित होगी:",
+        subPoints: [
+          {
+            label: "क",
+            text: "यह समझौता प्रभावी तिथि से लागू होगा एवं इस खंड के अनुसार समाप्त होने तक प्रवृत्त रहेगा।",
+          },
+          {
+            label: "ख",
+            text:
+              "कोई भी पक्ष दूसरे पक्ष को तीस (30) दिनों की पूर्व लिखित सूचना देकर सुविधा के अनुसार इस समझौते को समाप्त कर सकता है।",
+          },
+          {
+            label: "ग",
+            text:
+              '{{company.name}} निम्नलिखित में से किसी की घटना पर इस समझौते को बिना सूचना के तत्काल समाप्त कर सकता है ("वजह सहित"): (i) अधिकृत फर्म द्वारा {{company.name}} के विक्रेता कोड, नाम, ब्रांड, सूचीयन अथवा क्रेडेंशियल का दुरुपयोग; (ii) अधिकृत फर्म द्वारा धोखाधड़ी, जानबूझकर दुराचरण अथवा लागू विधि या योजना नियमों का सारवान् अननुपालन; (iii) किसी DISCOM अथवा सरकारी प्राधिकरण द्वारा अधिकृत फर्म के विरुद्ध निलंबन, ब्लैकलिस्ट, डिबारमेंट अथवा अन्य प्रतिकूल कार्रवाई; (iv) अधिकृत फर्म द्वारा इस समझौते के अंतर्गत अपेक्षित समयावधि में किसी ग्राहक शिकायत अथवा पंच पॉइंट का निवारण न करना; अथवा (v) इस समझौते का कोई अन्य सारवान् उल्लंघन जो {{company.name}} की लिखित सूचना के पंद्रह (15) दिनों के भीतर ठीक नहीं किया जाता।',
+          },
+          {
+            label: "घ",
+            text:
+              "उत्तरजीविता: इस समझौते के वे प्रावधान जो स्वभाव से समाप्ति के पश्चात् प्रवृत्त रहने का अभिप्रेत हैं, प्रवृत्त रहेंगे, जिसमें सीमा के बिना गोपनीयता, क्षतिपूर्ति, बैक-टू-बैक वारंटी, पूर्व में निष्पादित परियोजनाओं के ग्राहकों के प्रति संचालन व रखरखाव प्रतिबद्धताएँ, मौजूदा ग्राहकों के प्रति ग्राहक-सेवा दायित्व एवं {{company.name}} का समायोजन का अधिकार सम्मिलित हैं।",
+          },
+          {
+            label: "ङ",
+            text:
+              "समाप्ति का प्रभाव: समाप्ति पर, अधिकृत फर्म को देय समस्त राशियाँ इस समझौते के अंतर्गत किसी हानि एवं क्षतिपूर्ति दावों के विरुद्ध {{company.name}} के समायोजन के अधिकार के अधीन होंगी। कमीशन का भुगतान केवल तब तक किया जाएगा जब तक संबंधित ग्राहक {{company.name}} का ग्राहक बना रहता है तथा यह समझौता समाप्त नहीं हुआ हो, तथा किसी भी स्थिति में कमीशनिंग से अधिकतम {{var.commissionMonths}} माह की अवधि हेतु। {{company.name}} द्वारा वजह सहित समाप्ति पर, अधिकृत फर्म को किसी भी ग्राहक के संबंध में कोई और कमीशन देय नहीं होगा।",
+          },
+        ],
       }),
     ]),
   ];
@@ -520,8 +571,8 @@ const partnershipClosingHi =
 // ---------- INC Installation Assignment template ----------
 
 const incAssignVariableFields: AgreementVariableField[] = [
-  { key: "scheme", label: "Scheme / Programme", helper: "e.g. DBT Subsidy Scheme" },
-  { key: "region", label: "Assigned Region / Territory", helper: "e.g. Jaipur Rural, Rajasthan" },
+  { key: "scheme", label: "Scheme / Programme", helper: "e.g. PM Surya Ghar: Muft Bijli Yojana" },
+  { key: "region", label: "Assigned Region / Territory", helper: "e.g. Jaipur Discom (JVVNL) area, Rajasthan" },
   { key: "safetyStandards", label: "Safety Standards Reference", helper: "e.g. applicable electrical and height-work safety norms" },
   { key: "advancePct", label: "Advance Release %", helper: "e.g. 90" },
   { key: "balancePct", label: "Balance Release %", helper: "e.g. 10" },
@@ -529,8 +580,8 @@ const incAssignVariableFields: AgreementVariableField[] = [
 ];
 
 const incAssignVariableDefaults: Record<string, string> = {
-  scheme: "DBT Subsidy Scheme",
-  region: "Jaipur Rural, Rajasthan",
+  scheme: "PM Surya Ghar: Muft Bijli Yojana",
+  region: "Jaipur Discom (JVVNL) area, Rajasthan",
   safetyStandards: "applicable electrical safety, height-work, and site safety norms",
   advancePct: "90",
   balancePct: "10",
@@ -661,7 +712,7 @@ const incAssignPreamble =
 // ---------- INC Goodwill Execution template ----------
 
 const incGoodwillVariableFields: AgreementVariableField[] = [
-  { key: "scheme", label: "Scheme / Programme", helper: "e.g. Rooftop Solar Programme Ph-II" },
+  { key: "scheme", label: "Scheme / Programme", helper: "e.g. PM Surya Ghar: Muft Bijli Yojana" },
   { key: "ministry", label: "Issuing Ministry", helper: "e.g. MNRE" },
   { key: "capacity", label: "RTS System Capacity (kWp)" },
   { key: "estimatedTimeline", label: "Estimated Timeline", helper: "e.g. 45–60 days from site readiness" },
@@ -671,7 +722,7 @@ const incGoodwillVariableFields: AgreementVariableField[] = [
 ];
 
 const incGoodwillVariableDefaults: Record<string, string> = {
-  scheme: "Rooftop Solar Programme Ph-II",
+  scheme: "PM Surya Ghar: Muft Bijli Yojana",
   ministry: "MNRE",
   capacity: "5",
   estimatedTimeline: "45–60 days from site readiness and documentation completion",
@@ -793,6 +844,8 @@ export function createDefaultAgreementData(
         representativeTitle: "",
         consumerNumber: "",
         discom: "",
+        aadhaar: "",
+        gst: "",
       },
       variableFields: incAssignVariableFields,
       variables: { ...incAssignVariableDefaults },
@@ -802,6 +855,7 @@ export function createDefaultAgreementData(
       sections: createIncInstallationAssignSections(),
       closingParagraph: incAssignClosing,
       governingLawParagraph: incAssignGoverningLaw,
+      partyIsIndividual: false,
       showWitnesses: true,
       witnesses: baseWitnesses,
       showPageNumbers: true,
@@ -824,6 +878,8 @@ export function createDefaultAgreementData(
         representativeTitle: "",
         consumerNumber: "",
         discom: "JVVNL",
+        aadhaar: "",
+        gst: "",
       },
       variableFields: incGoodwillVariableFields,
       variables: { ...incGoodwillVariableDefaults },
@@ -833,6 +889,7 @@ export function createDefaultAgreementData(
       sections: createIncGoodwillSections(),
       closingParagraph: incGoodwillClosing,
       governingLawParagraph: incGoodwillGoverningLaw,
+      partyIsIndividual: false,
       showWitnesses: true,
       witnesses: baseWitnesses,
       showPageNumbers: true,
@@ -855,6 +912,8 @@ export function createDefaultAgreementData(
       representativeTitle: "",
       consumerNumber: "",
       discom: "",
+      aadhaar: "",
+      gst: "",
     },
     variableFields: partnershipVariableFields,
     variables: { ...partnershipVariableDefaults },
@@ -864,6 +923,7 @@ export function createDefaultAgreementData(
     sections: isHindi ? createPartnershipSectionsHi() : createPartnershipSections(),
     closingParagraph: isHindi ? partnershipClosingHi : partnershipClosing,
     governingLawParagraph: isHindi ? partnershipGoverningLawHi : partnershipGoverningLaw,
+    partyIsIndividual: false,
     showWitnesses: true,
     witnesses: baseWitnesses,
     showPageNumbers: true,
@@ -892,6 +952,7 @@ export function switchAgreementLanguage(
     party: { ...fresh.party, ...data.party, partyLabel: fresh.party.partyLabel },
     variables: { ...fresh.variables, ...data.variables },
     witnesses: data.witnesses.length ? data.witnesses : fresh.witnesses,
+    partyIsIndividual: data.partyIsIndividual,
     showWitnesses: data.showWitnesses,
     showPageNumbers: data.showPageNumbers,
     showLetterhead: data.showLetterhead,

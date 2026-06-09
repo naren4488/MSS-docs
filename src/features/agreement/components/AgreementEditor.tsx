@@ -166,7 +166,22 @@ export function AgreementEditor({ data, onChange }: AgreementEditorProps) {
       </AccordionSection>
 
       <AccordionSection title="Counterparty" helper="The other side of this agreement — partner / applicant / client.">
-        <PartyEditor party={data.party} showApplicantFields={showApplicantFields} onChange={(party) => update("party", party)} />
+        <div className="toggle-row" style={{ marginBottom: 12 }}>
+          <span>Counterparty is an individual (no firm name)</span>
+          <button
+            className={`toggle ${data.partyIsIndividual ? "on" : ""}`}
+            type="button"
+            onClick={() => update("partyIsIndividual", !data.partyIsIndividual)}
+          >
+            <span className="toggle-thumb" />
+          </button>
+        </div>
+        <PartyEditor
+          party={data.party}
+          showApplicantFields={showApplicantFields}
+          individual={data.partyIsIndividual}
+          onChange={(party) => update("party", party)}
+        />
       </AccordionSection>
 
       {data.variableFields.length > 0 ? (
