@@ -69,16 +69,16 @@ function section(heading: string, clauses: PartnerClause[], intro = ""): Partner
 
 function defaultCompany(): PartnerCompany {
   return {
-    name: "Mahi Solar Solution",
-    logoUrl: "",
-    address: "Plot No. 44, Jai Bhawani Vihar Vistar, Kalwar Road, Govindpura, Jaipur, Rajasthan, 302012",
+    name: "Mahi Solar Solution Private Limited",
+    logoUrl: "/assets/mss-logo.png",
+    address: "Plot No. 44, Jai Bhawani Vihar Vistar, Radha Vihar, Govindpura, Jaipur, Rajasthan – 302044",
     phone: "+91 9928413501",
     email: "mahisolarsolution@gmail.com",
     website: "",
     cin: "",
-    gst: "08GPEPK1479A1ZZ",
+    gst: "08AAUCM4104G1ZD",
     representativeName: "Mahendra Kumawat",
-    representativeTitle: "Founder",
+    representativeTitle: "Director",
   };
 }
 

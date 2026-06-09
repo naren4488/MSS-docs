@@ -14,10 +14,10 @@ const today = new Date().toISOString().slice(0, 10);
 
 function defaultCompany(): AgreementCompany {
   return {
-    name: "MAHI SOLAR SOLUTION PRIVATE LIMITED",
-    logoUrl: "",
-    address: "Plot No. 44, Jai Bhawani Vihar Vistar, Kalwar Road, Govindpura, Jaipur, Rajasthan, 302012",
-    phone: "+91 9928413501, +91 8005950063",
+    name: "Mahi Solar Solution Private Limited",
+    logoUrl: "/assets/mss-logo.png",
+    address: "Plot No. 44, Jai Bhawani Vihar Vistar, Radha Vihar, Govindpura, Jaipur, Rajasthan – 302044",
+    phone: "+91 9928413501",
     email: "mahisolarsolution@gmail.com",
     website: "",
     cin: "",
@@ -175,7 +175,7 @@ export function createDefaultQuotationData(): QuotationData {
     repName: "MAHENDRA KUMAWAT",
     repTitle: "Director",
     repCompany: "MAHI SOLAR SOLUTION PRIVATE LIMITED",
-    repMobiles: "9928413501, 8005950063",
+    repMobiles: "9928413501",
     showLetterhead: true,
     showPageNumbers: true,
   };

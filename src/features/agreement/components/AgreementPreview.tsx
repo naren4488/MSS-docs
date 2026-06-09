@@ -87,7 +87,7 @@ function Header({ data }: { data: AgreementData }) {
             alt="Company logo"
             crossOrigin="anonymous"
             src={data.company.logoUrl}
-            style={{ maxHeight: 64, width: "auto", objectFit: "contain", overflow: "visible" }}
+            style={{ maxHeight: 88, width: "auto", objectFit: "contain", overflow: "visible" }}
           />
         </div>
       ) : null}
@@ -313,41 +313,54 @@ function appendSectionBlocks(
 
   section.clauses.forEach((clause) => {
     const filledContent = fillTemplate(clause.content, data);
-    blocks.push({
-      key: `clause-${clause.id}-content`,
-      estimate: 18 + estimateParagraphHeight(filledContent, 78) + (clause.title ? 18 : 0),
-      keepWithNext: clause.subPoints.length > 0,
-      node: (
-        <div style={{ marginBottom: 12 }}>
-          <p style={{ ...paragraphStyle, marginBottom: 6 }}>
-            <strong>{clause.number}.</strong>
-            {clause.title ? <strong> {clause.title}: </strong> : " "}
-            {filledContent}
-          </p>
-        </div>
-      ),
+    // Split the clause body on blank lines so each paragraph is its own block.
+    // This lets a long clause flow across a page boundary instead of jumping to
+    // a fresh page whole and leaving a gap. The number/title rides on para 1.
+    const contentParas = filledContent.split(/\n\n+/).map((p) => p.trim()).filter(Boolean);
+    (contentParas.length ? contentParas : [""]).forEach((para, pIndex) => {
+      blocks.push({
+        key: `clause-${clause.id}-content-${pIndex}`,
+        estimate: 14 + estimateParagraphHeight(para, 78) + (pIndex === 0 && clause.title ? 18 : 0),
+        keepWithNext: false,
+        node: (
+          <div style={{ marginBottom: 8 }}>
+            <p style={{ ...paragraphStyle, marginBottom: 4 }}>
+              {pIndex === 0 ? (
+                <>
+                  <strong>{clause.number}.</strong>
+                  {clause.title ? <strong> {clause.title}: </strong> : " "}
+                </>
+              ) : null}
+              {para}
+            </p>
+          </div>
+        ),
+      });
     });
 
     clause.subPoints.forEach((sub) => {
       const filledSub = fillTemplate(sub.text, data);
-      blocks.push({
-        key: `clause-${clause.id}-sub-${sub.id}`,
-        estimate: 14 + estimateParagraphHeight(filledSub, 72),
-        node: (
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "32px 1fr",
-              gap: 8,
-              marginLeft: 28,
-              marginBottom: 8,
-              lineHeight: 1.7,
-            }}
-          >
-            <span style={{ fontWeight: 600 }}>{sub.label}.</span>
-            <span style={{ textAlign: "justify" }}>{filledSub}</span>
-          </div>
-        ),
+      const subParas = filledSub.split(/\n\n+/).map((p) => p.trim()).filter(Boolean);
+      (subParas.length ? subParas : [""]).forEach((para, pIndex) => {
+        blocks.push({
+          key: `clause-${clause.id}-sub-${sub.id}-${pIndex}`,
+          estimate: 12 + estimateParagraphHeight(para, 72),
+          node: (
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "32px 1fr",
+                gap: 8,
+                marginLeft: 28,
+                marginBottom: 6,
+                lineHeight: 1.7,
+              }}
+            >
+              <span style={{ fontWeight: 600 }}>{pIndex === 0 ? `${sub.label}.` : ""}</span>
+              <span style={{ textAlign: "justify" }}>{para}</span>
+            </div>
+          ),
+        });
       });
     });
   });

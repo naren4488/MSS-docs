@@ -93,7 +93,7 @@ function Header({ data }: { data: PartnerAgreementData }) {
             alt="Company logo"
             crossOrigin="anonymous"
             src={data.company.logoUrl}
-            style={{ maxHeight: 64, width: "auto", objectFit: "contain", overflow: "visible" }}
+            style={{ maxHeight: 88, width: "auto", objectFit: "contain", overflow: "visible" }}
           />
         </div>
       ) : null}

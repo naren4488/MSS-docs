@@ -52,7 +52,7 @@ function Header({ data }: { data: CompanyProfileData }) {
     <div style={{ textAlign: "center", borderBottom: `3px solid ${NAVY}`, paddingBottom: 16, marginBottom: 4 }}>
       {data.logoUrl ? (
         <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
-          <img alt="Logo" crossOrigin="anonymous" src={data.logoUrl} style={{ maxHeight: 80, width: "auto", objectFit: "contain" }} />
+          <img alt="Logo" crossOrigin="anonymous" src={data.logoUrl} style={{ maxHeight: 100, width: "auto", objectFit: "contain" }} />
         </div>
       ) : null}
       <div style={{ fontSize: 24, fontWeight: 800, letterSpacing: 1, color: NAVY, textTransform: "uppercase" }}>

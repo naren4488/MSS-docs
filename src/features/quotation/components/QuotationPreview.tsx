@@ -86,7 +86,7 @@ function Header({ data }: { data: QuotationData }) {
     <div style={{ background: "#ffffff", textAlign: "center", borderBottom: "2px solid #e5e7eb", padding: "24px 0 18px" }}>
       {data.company.logoUrl ? (
         <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
-          <img alt="Company logo" crossOrigin="anonymous" src={data.company.logoUrl} style={{ maxHeight: 64, width: "auto", objectFit: "contain" }} />
+          <img alt="Company logo" crossOrigin="anonymous" src={data.company.logoUrl} style={{ maxHeight: 88, width: "auto", objectFit: "contain" }} />
         </div>
       ) : null}
       <div style={{ fontSize: 21, fontWeight: 700, letterSpacing: 1.2, textTransform: "uppercase" }}>{filledValue(data.company.name)}</div>

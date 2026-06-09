@@ -26,14 +26,14 @@ export function getCompanyFirmLabel(firm: CompanyFirm): string {
 // Shared between the two firms (same premises, same proprietor/contact line).
 const SHARED_ADDRESS = "Plot No. 44, Jai Bhawani Vihar Vistar, Radha Vihar, Govindpura, Jaipur, Rajasthan – 302044";
 const SHARED_PHONE = "+91 9928413501";
-const SHARED_ALT_PHONE = "+91 8005950063";
+const SHARED_ALT_PHONE = "";
 const SHARED_TAGLINE = "Powering Homes with Clean & Sustainable Energy";
 
 export function createDefaultCompanyProfileData(firm: CompanyFirm = "mahi-solar-solution"): CompanyProfileData {
   const base: CompanyProfileData = {
     firm,
     title: "COMPANY DETAILS",
-    logoUrl: "",
+    logoUrl: "/assets/mss-logo.png",
     legalName: "",
     tagline: SHARED_TAGLINE,
     address: SHARED_ADDRESS,
