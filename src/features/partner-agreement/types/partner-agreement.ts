@@ -64,6 +64,7 @@ export interface PartnerAgreementData {
   closingParagraph: string;
   governingLawParagraph: string;
 
+  partyIsIndividual: boolean;
   showWitnesses: boolean;
   witnesses: AgreementWitness[];
   showPageNumbers: boolean;

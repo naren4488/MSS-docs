@@ -310,3 +310,423 @@
   gap: 10px;
   margin-top: 18px;
 }
+
+/* ----- MSS Sites (wide tabular preview) ----- */
+.page-shell--mss-sites {
+  max-width: none;
+  width: 100%;
+  padding-bottom: 48px;
+}
+
+.mss-sites-toolbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.mss-sites-pdf-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px;
+  border: 1px solid #dce3ef;
+  border-radius: 999px;
+  background: #f8fafc;
+}
+
+.mss-sites-pdf-option-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #52607a;
+  white-space: nowrap;
+}
+
+.mss-sites-preview-shell {
+  padding: 0;
+  /* Page scrolls vertically; filter dropdowns use a portal so no overflow clip needed here. */
+  overflow: visible;
+}
+
+.mss-sites-preview {
+  width: 100%;
+  font-family: Lexend, sans-serif;
+  color: #111827;
+}
+
+.mss-sites-preview-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 20px 24px 12px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.mss-sites-preview-header-main {
+  min-width: 0;
+}
+
+.mss-sites-preview-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.projects-filter {
+  display: grid;
+  gap: 6px;
+  min-width: 220px;
+}
+
+.projects-filter-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.35px;
+  text-transform: uppercase;
+  color: #6b7280;
+}
+
+.projects-search-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-width: 220px;
+}
+
+.projects-search-icon {
+  position: absolute;
+  left: 12px;
+  color: #9ca3af;
+  pointer-events: none;
+}
+
+.projects-search-input {
+  width: 100%;
+  min-width: 220px;
+  padding: 10px 36px 10px 38px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #111827;
+  font-size: 13px;
+  font-weight: 500;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.projects-search-input::placeholder {
+  color: #9ca3af;
+  font-weight: 400;
+}
+
+.projects-search-input:hover,
+.projects-search-input:focus {
+  border-color: #14306b;
+  box-shadow: 0 0 0 3px rgba(20, 48, 107, 0.08);
+}
+
+.projects-search-clear {
+  position: absolute;
+  right: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #6b7280;
+  cursor: pointer;
+}
+
+.projects-search-clear:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.projects-multiselect {
+  position: relative;
+}
+
+.projects-multiselect-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  min-width: 220px;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #111827;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.projects-multiselect-trigger:hover,
+.projects-multiselect--open .projects-multiselect-trigger {
+  border-color: #14306b;
+  box-shadow: 0 0 0 3px rgba(20, 48, 107, 0.08);
+}
+
+.projects-multiselect-summary {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.projects-multiselect-chevron {
+  flex-shrink: 0;
+  color: #6b7280;
+  transition: transform 0.15s ease;
+}
+
+.projects-multiselect--open .projects-multiselect-chevron {
+  transform: rotate(180deg);
+}
+
+.projects-multiselect-panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 30;
+  width: min(280px, 90vw);
+  padding: 8px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 16px 32px rgba(15, 35, 77, 0.14);
+}
+
+.projects-multiselect-panel--portal {
+  position: fixed;
+  z-index: 1200;
+}
+
+.projects-multiselect-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 4px 6px 8px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.projects-multiselect-actions button {
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #14306b;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.projects-multiselect-actions button:hover {
+  text-decoration: underline;
+}
+
+.projects-multiselect-options {
+  display: grid;
+  gap: 2px;
+  max-height: 280px;
+  overflow-y: auto;
+  padding-top: 4px;
+}
+
+.projects-multiselect-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #111827;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.projects-multiselect-option:hover,
+.projects-multiselect-option--selected {
+  background: #f8fafc;
+}
+
+.projects-multiselect-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid #d1d5db;
+  border-radius: 4px;
+  color: #14306b;
+  flex-shrink: 0;
+}
+
+.projects-multiselect-option--selected .projects-multiselect-check {
+  border-color: #14306b;
+  background: #eef2ff;
+}
+
+.projects-empty-filter {
+  min-height: 120px;
+  padding: 32px 24px;
+  text-align: center;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.projects-empty-filter p {
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .mss-sites-preview-header {
+    flex-direction: column;
+  }
+
+  .mss-sites-preview-filters,
+  .projects-filter,
+  .projects-multiselect-trigger,
+  .projects-search-input-wrap,
+  .projects-search-input {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+.mss-sites-preview-header h1 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: #14306b;
+  text-transform: uppercase;
+}
+
+.mss-sites-preview-meta {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.mss-sites-table-wrap {
+  width: 100%;
+  max-height: none;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overflow-y: clip;
+  padding: 0 0 16px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.mss-sites-table {
+  width: max-content;
+  min-width: 100%;
+  border-collapse: collapse;
+  table-layout: auto;
+}
+
+.mss-sites-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.projects-more-empty {
+  color: #9ca3af;
+}
+
+.projects-more-cell {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.projects-more-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: #f8fafc;
+  color: #14306b;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.projects-more-trigger:hover,
+.projects-more-trigger:focus-visible,
+.projects-more-trigger--open {
+  background: #eef2ff;
+  border-color: #14306b;
+  outline: none;
+}
+
+.projects-more-tooltip {
+  min-width: 220px;
+  max-width: 280px;
+  padding: 10px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 10px 24px rgba(15, 35, 77, 0.14);
+  text-align: left;
+}
+
+.projects-more-tooltip--portal {
+  position: fixed;
+  z-index: 1200;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.projects-more-tooltip-list {
+  margin: 0;
+}
+
+.projects-more-tooltip-item + .projects-more-tooltip-item {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #f3f4f6;
+}
+
+.projects-more-tooltip-item dt {
+  margin: 0;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.35px;
+  text-transform: uppercase;
+  color: #6b7280;
+}
+
+.projects-more-tooltip-item dd {
+  margin: 2px 0 0;
+  font-size: 11px;
+  line-height: 1.4;
+  color: #111827;
+  word-break: break-word;
+}
+
+.projects-more-print {
+  display: none;
+}
+

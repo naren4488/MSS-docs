@@ -489,11 +489,25 @@ function SignatureBlock({ data }: { data: PartnerAgreementData }) {
       </div>
       <div>
         <div style={{ height: 48, borderBottom: "1px solid #111827", marginBottom: 8 }} />
-        <p style={{ margin: "0 0 2px", fontWeight: 700 }}>{filledValue(data.party.representativeName)}</p>
-        {data.party.representativeTitle ? (
-          <p style={{ margin: "0 0 2px", fontSize: 11 }}>{data.party.representativeTitle}</p>
-        ) : null}
-        <p style={{ margin: 0, fontSize: 11 }}>{filledValue(data.party.entityName)}</p>
+        {data.partyIsIndividual ? (
+          <>
+            <p style={{ margin: "0 0 2px", fontWeight: 700 }}>{filledValue(data.party.entityName)}</p>
+            {data.party.aadhaar?.trim() ? (
+              <p style={{ margin: 0, fontSize: 11 }}>Aadhaar No.: {data.party.aadhaar}</p>
+            ) : null}
+          </>
+        ) : (
+          <>
+            <p style={{ margin: "0 0 2px", fontWeight: 700 }}>{filledValue(data.party.representativeName)}</p>
+            {data.party.representativeTitle ? (
+              <p style={{ margin: "0 0 2px", fontSize: 11 }}>{data.party.representativeTitle}</p>
+            ) : null}
+            <p style={{ margin: 0, fontSize: 11 }}>{filledValue(data.party.entityName)}</p>
+            {data.party.gst?.trim() ? (
+              <p style={{ margin: "2px 0 0", fontSize: 11 }}>GST: {data.party.gst}</p>
+            ) : null}
+          </>
+        )}
       </div>
     </div>
   );

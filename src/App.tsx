@@ -1,65 +1,12 @@
-import { Building2, FileText, Handshake, HeartHandshake, ReceiptIndianRupee } from "lucide-react";
-import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
+import { FeatureNavigation } from "@/components/FeatureNavigation";
 import { AllOfferLetters, OfferLetterMaker } from "@/features/offer-letter";
 import { AgreementMaker, AllAgreements } from "@/features/agreement";
 import { AllPartnerAgreements, PartnerAgreementMaker } from "@/features/partner-agreement";
 import { AllQuotations, QuotationMaker } from "@/features/quotation";
 import { AllCompanyProfiles, CompanyProfileMaker } from "@/features/company-profile";
-
-function FeatureNavigation() {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const isOfferList = location.pathname === "/offer-letters";
-  const isAgreementList = location.pathname === "/agreements";
-  const isPartnerList = location.pathname === "/partner-agreements";
-  const isQuotationList = location.pathname === "/quotations";
-  const isCompanyList = location.pathname === "/company-profiles";
-
-  return (
-    <nav className="feature-nav no-print">
-      <button
-        className={`feature-nav-link ${isOfferList ? "active" : ""}`}
-        type="button"
-        onClick={() => navigate("/offer-letters")}
-      >
-        <FileText size={16} />
-        Offer Letters
-      </button>
-      <button
-        className={`feature-nav-link ${isAgreementList ? "active" : ""}`}
-        type="button"
-        onClick={() => navigate("/agreements")}
-      >
-        <Handshake size={16} />
-        Agreements
-      </button>
-      <button
-        className={`feature-nav-link ${isPartnerList ? "active" : ""}`}
-        type="button"
-        onClick={() => navigate("/partner-agreements")}
-      >
-        <HeartHandshake size={16} />
-        Partner Agreements
-      </button>
-      <button
-        className={`feature-nav-link ${isQuotationList ? "active" : ""}`}
-        type="button"
-        onClick={() => navigate("/quotations")}
-      >
-        <ReceiptIndianRupee size={16} />
-        Quotations
-      </button>
-      <button
-        className={`feature-nav-link ${isCompanyList ? "active" : ""}`}
-        type="button"
-        onClick={() => navigate("/company-profiles")}
-      >
-        <Building2 size={16} />
-        Company Details
-      </button>
-    </nav>
-  );
-}
+import { AllEmployeeDirectories, EmployeeDirectoryMaker } from "@/features/employee-directory";
+import { MssSitesPage } from "@/features/mss-sites";
 
 export default function App() {
   const location = useLocation();
@@ -68,12 +15,13 @@ export default function App() {
     (location.pathname.startsWith("/agreement") && location.pathname !== "/agreements") ||
     (location.pathname.startsWith("/partner-agreement") && location.pathname !== "/partner-agreements") ||
     (location.pathname.startsWith("/quotation") && location.pathname !== "/quotations") ||
-    (location.pathname.startsWith("/company-profile") && location.pathname !== "/company-profiles");
+    (location.pathname.startsWith("/company-profile") && location.pathname !== "/company-profiles") ||
+    (location.pathname.startsWith("/employee-directory") && location.pathname !== "/employees");
 
   return (
     <div className="app-root">
       {!isMakerRoute && <FeatureNavigation />}
-      <Routes>
+      <Routes location={location} key={location.pathname}>
         <Route path="/" element={<Navigate replace to="/offer-letters" />} />
         <Route path="/offer-letter" element={<OfferLetterMaker />} />
         <Route path="/offer-letter/:id" element={<OfferLetterMaker />} />
@@ -90,6 +38,11 @@ export default function App() {
         <Route path="/company-profile" element={<CompanyProfileMaker />} />
         <Route path="/company-profile/:id" element={<CompanyProfileMaker />} />
         <Route path="/company-profiles" element={<AllCompanyProfiles />} />
+        <Route path="/employee-directory" element={<EmployeeDirectoryMaker />} />
+        <Route path="/employee-directory/:id" element={<EmployeeDirectoryMaker />} />
+        <Route path="/employees" element={<AllEmployeeDirectories />} />
+        <Route path="/mss-sites" element={<Navigate replace to="/projects" />} />
+        <Route path="/projects" element={<MssSitesPage />} />
       </Routes>
     </div>
   );

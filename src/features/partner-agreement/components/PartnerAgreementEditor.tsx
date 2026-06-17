@@ -65,7 +65,7 @@ export function PartnerAgreementEditor({ data, onChange }: PartnerAgreementEdito
     onChange({ ...data, variables: { ...data.variables, [key]: value } });
   }
 
-  // Profit-share split: edit MSS's percentage, auto-derive the Partner's as the
+  // Profit-share split: edit MSE's percentage, auto-derive the Partner's as the
   // remainder of 100%. Both are stored as "N%" so they flow into the clauses.
   function updateMssShare(raw: string) {
     if (raw.trim() === "") {
@@ -146,7 +146,7 @@ export function PartnerAgreementEditor({ data, onChange }: PartnerAgreementEdito
         </div>
       </AccordionSection>
 
-      <AccordionSection title="Our Side (MSS)" helper="This appears in the letterhead on page 1 and in the left signature block.">
+      <AccordionSection title="Our Side (MSE)" helper="This appears in the letterhead on page 1 and in the left signature block.">
         <ImageUploader label="Company Logo" value={data.company.logoUrl} onChange={(value) => updateCompany("logoUrl", value)} />
         <div className="field-grid">
           <div className="field">
@@ -194,8 +194,23 @@ export function PartnerAgreementEditor({ data, onChange }: PartnerAgreementEdito
         </div>
       </AccordionSection>
 
-      <AccordionSection title="Partner (Counterparty)" helper="The partner who brings projects to MSS.">
-        <PartyEditor party={data.party} showApplicantFields={false} onChange={(party) => update("party", party)} />
+      <AccordionSection title="Partner (Counterparty)" helper="The partner who brings projects to MSE.">
+        <div className="toggle-row" style={{ marginBottom: 12 }}>
+          <span>Counterparty is an individual (no firm name)</span>
+          <button
+            className={`toggle ${data.partyIsIndividual ? "on" : ""}`}
+            type="button"
+            onClick={() => update("partyIsIndividual", !data.partyIsIndividual)}
+          >
+            <span className="toggle-thumb" />
+          </button>
+        </div>
+        <PartyEditor
+          party={data.party}
+          showApplicantFields={false}
+          individual={data.partyIsIndividual}
+          onChange={(party) => update("party", party)}
+        />
       </AccordionSection>
 
       {data.variableFields.length > 0 ? (
@@ -232,7 +247,7 @@ export function PartnerAgreementEditor({ data, onChange }: PartnerAgreementEdito
               <label style={{ display: "block", fontWeight: 600, marginBottom: 8 }}>Profit Split</label>
               <div className="field-grid">
                 <div className="field">
-                  <label>MSS Share (%)</label>
+                  <label>MSE Share (%)</label>
                   <input
                     type="number"
                     min={0}
@@ -249,7 +264,7 @@ export function PartnerAgreementEditor({ data, onChange }: PartnerAgreementEdito
                 </div>
               </div>
               <p className="helper-text">
-                Enter MSS's share — the Partner's share is calculated automatically as the remainder of 100%.
+                Enter MSE's share — the Partner's share is calculated automatically as the remainder of 100%.
               </p>
             </div>
           ) : null}

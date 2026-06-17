@@ -212,6 +212,39 @@ export function AgreementEditor({ data, onChange }: AgreementEditorProps) {
         </AccordionSection>
       ) : null}
 
+      {data.template === "partnership" ? (
+        <AccordionSection
+          title="Vendor Charge (Per Watt)"
+          helper="Optional clause for the vendor charge payable to the company, expressed in ₹ per watt of installed capacity."
+          defaultOpen
+        >
+          <div className="toggle-row" style={{ marginBottom: 12 }}>
+            <span>Include vendor charge clause on agreement</span>
+            <button
+              className={`toggle ${data.showVendorChargePerWatt ? "on" : ""}`}
+              type="button"
+              onClick={() => update("showVendorChargePerWatt", !data.showVendorChargePerWatt)}
+            >
+              <span className="toggle-thumb" />
+            </button>
+          </div>
+          {data.showVendorChargePerWatt ? (
+            <div className="field-grid">
+              <div className="field">
+                <label>Vendor Charge (₹ per watt) *</label>
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  value={data.vendorChargePerWatt ?? ""}
+                  placeholder="e.g. 1"
+                  onChange={(event) => update("vendorChargePerWatt", event.target.value)}
+                />
+              </div>
+            </div>
+          ) : null}
+        </AccordionSection>
+      ) : null}
+
       <AccordionSection title="Intro & Recitals (WHEREAS)" helper="Edit the opening paragraph and the WHEREAS bullets.">
         <div className="field full-span">
           <label>Intro Paragraph</label>

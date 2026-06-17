@@ -8,28 +8,65 @@
   top: 0;
   z-index: 30;
   display: flex;
-  gap: 10px;
   justify-content: center;
-  padding: 18px 16px 0;
+  padding: 10px 12px 0;
+}
+
+.feature-nav-inner {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 3px;
+  max-width: min(100%, 1080px);
+  padding: 4px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid #dce3ef;
+  box-shadow: 0 8px 28px rgba(21, 32, 54, 0.07);
+  backdrop-filter: blur(16px);
 }
 
 .feature-nav-link {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 12px 16px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.78);
-  border: 1px solid rgba(255, 255, 255, 0.92);
-  box-shadow: 0 18px 45px rgba(21, 32, 54, 0.08);
-  backdrop-filter: blur(18px);
+  gap: 5px;
+  padding: 7px 11px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
   color: #5d6b84;
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background 0.18s ease,
+    color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.feature-nav-link span {
+  letter-spacing: 0.01em;
+}
+
+.feature-nav-link:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.95);
+  color: #152036;
 }
 
 .feature-nav-link.active {
   background: linear-gradient(135deg, #152036, #26406d);
   color: #fff;
+  box-shadow: 0 6px 14px rgba(21, 32, 54, 0.16);
+}
+
+.feature-nav-link:focus-visible {
+  outline: 2px solid #26406d;
+  outline-offset: 2px;
 }
 
 .page-shell {
@@ -187,19 +224,76 @@
 
 .sticky-topbar {
   position: sticky;
-  top: 16px;
+  top: 10px;
   z-index: 20;
+  display: grid;
+  gap: 8px;
+  padding: 10px 12px;
+  margin-bottom: 14px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  box-shadow: 0 10px 28px rgba(21, 32, 54, 0.08);
+  backdrop-filter: blur(16px);
+}
+
+.sticky-topbar-nav {
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.sticky-topbar-controls {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  padding: 14px 18px;
-  margin-bottom: 18px;
-  background: rgba(255, 255, 255, 0.72);
-  border: 1px solid rgba(255, 255, 255, 0.92);
-  border-radius: 24px;
-  box-shadow: 0 18px 45px rgba(21, 32, 54, 0.12);
-  backdrop-filter: blur(20px);
+  gap: 10px;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.sticky-topbar-controls-start,
+.sticky-topbar-controls-end {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.sticky-topbar-controls-end {
+  margin-left: auto;
+  justify-content: flex-end;
+}
+
+.sticky-topbar-action-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.sticky-topbar .toolbar-button {
+  padding: 6px 10px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  gap: 5px;
+  border-radius: 8px;
+  line-height: 1.2;
+}
+
+.sticky-topbar .ghost-button.toolbar-button {
+  background: #f8fafc;
+}
+
+.sticky-topbar .ghost-button.toolbar-button:hover,
+.sticky-topbar .primary-button.toolbar-button:hover {
+  transform: none;
+}
+
+.sticky-topbar .primary-button.toolbar-button {
+  padding: 6px 12px;
+  box-shadow: 0 4px 12px rgba(21, 32, 54, 0.14);
 }
 
 .sticky-topbar-left {
@@ -213,40 +307,53 @@
 .maker-feature-nav {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
   padding: 4px;
-  border-radius: 999px;
+  border-radius: 12px;
   background: #eef2f8;
   border: 1px solid #dce3ef;
+  max-width: 100%;
+  overflow-x: auto;
+  flex-wrap: nowrap;
+  scrollbar-width: thin;
 }
 
 .maker-feature-nav-link {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 8px 12px;
+  gap: 5px;
+  padding: 7px 11px;
   border: none;
-  border-radius: 999px;
+  border-radius: 8px;
   background: transparent;
   color: #5d6b84;
-  font-size: 0.85rem;
+  font-size: 0.78rem;
   font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  flex-shrink: 0;
   cursor: pointer;
   transition:
-    background 0.2s ease,
-    color 0.2s ease;
+    background 0.18s ease,
+    color 0.18s ease,
+    box-shadow 0.18s ease;
 }
 
 .maker-feature-nav-link.active {
   background: linear-gradient(135deg, #152036, #26406d);
   color: #fff;
-  box-shadow: 0 8px 18px rgba(21, 32, 54, 0.18);
+  box-shadow: 0 6px 14px rgba(21, 32, 54, 0.16);
 }
 
 .maker-feature-nav-link:hover:not(.active) {
   background: rgba(255, 255, 255, 0.85);
   color: #152036;
+}
+
+.maker-feature-nav-link:focus-visible {
+  outline: 2px solid #26406d;
+  outline-offset: 2px;
 }
 
 .topbar-actions {
@@ -260,17 +367,24 @@
 .status-pill {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 7px 12px;
+  gap: 6px;
+  padding: 4px 8px;
   border-radius: 999px;
-  background: #f1f5f9;
-  font-size: 0.9rem;
-  color: #44516b;
+  background: #eef4ff;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #3b4f73;
+  white-space: nowrap;
 }
 
 .status-pill.dirty {
   background: #fff4d6;
   color: #8a5300;
+}
+
+.sticky-topbar .status-pill {
+  padding: 4px 8px;
+  font-size: 0.72rem;
 }
 
 .editor-shell,
@@ -309,27 +423,44 @@
 .segmented-control {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px;
-  border-radius: 999px;
-  background: rgba(241, 245, 249, 0.9);
-  border: 1px solid #e2e8f0;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 8px;
+  background: #eef2f8;
+  border: 1px solid #dce3ef;
 }
 
 .segment-button {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
   border: none;
   background: transparent;
   color: #52607a;
-  padding: 10px 14px;
-  border-radius: 999px;
+  padding: 5px 8px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
   cursor: pointer;
+  transition:
+    background 0.18s ease,
+    color 0.18s ease,
+    box-shadow 0.18s ease;
 }
 
 .segment-button.active {
   background: #ffffff;
   color: #152036;
-  box-shadow: 0 8px 20px rgba(21, 32, 54, 0.08);
+  box-shadow: 0 2px 8px rgba(21, 32, 54, 0.08);
+}
+
+.segment-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.sticky-topbar .segmented-control {
+  flex-shrink: 0;
 }

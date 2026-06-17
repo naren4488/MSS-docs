@@ -11,6 +11,7 @@ import {
 } from "../constants/sheet-layout";
 import type { AgreementData, AgreementLanguage, AgreementSection } from "../types/agreement";
 import { fillTemplate, filledValue } from "../lib/agreement-formatters";
+import { getPartnershipVendorChargeContent } from "../lib/agreement-defaults";
 
 const LABELS: Record<AgreementLanguage, {
   whereas: string;
@@ -61,6 +62,29 @@ const paragraphStyle: CSSProperties = {
   lineHeight: 1.7,
   textAlign: "justify",
 };
+
+const vendorChargeHighlightStyle: CSSProperties = {
+  fontWeight: 700,
+};
+
+function highlightVendorChargePhrase(text: string, language: AgreementLanguage): ReactNode {
+  const pattern =
+    language === "hi" ? /(₹\s[\d.]+\s+प्रति वाट)/ : /(₹\s[\d.]+\s+per watt)/i;
+  const match = text.match(pattern);
+  if (!match || match.index === undefined) {
+    return text;
+  }
+
+  const phrase = match[1];
+  const start = match.index;
+  return (
+    <>
+      {text.slice(0, start)}
+      <span style={vendorChargeHighlightStyle}>{phrase}</span>
+      {text.slice(start + phrase.length)}
+    </>
+  );
+}
 
 function estimateTextLines(text: string, charsPerLine: number) {
   return Math.max(1, Math.ceil((text || "").trim().length / charsPerLine));
@@ -239,6 +263,9 @@ function createBlocks(data: AgreementData): PreviewBlock[] {
 
   data.sections.forEach((section, sectionIndex) => {
     appendSectionBlocks(blocks, section, sectionIndex, data);
+    if (data.template === "partnership" && data.showVendorChargePerWatt && sectionIndex === 1) {
+      appendVendorChargeBlocks(blocks, data);
+    }
   });
 
   if (data.governingLawParagraph.trim()) {
@@ -281,6 +308,23 @@ function createBlocks(data: AgreementData): PreviewBlock[] {
   }
 
   return blocks;
+}
+
+function appendVendorChargeBlocks(blocks: PreviewBlock[], data: AgreementData) {
+  const { heading, text } = getPartnershipVendorChargeContent(data);
+  const filled = fillTemplate(text, data);
+
+  blocks.push({
+    key: "vendor-charge-heading",
+    estimate: 30,
+    keepWithNext: true,
+    node: <h3 style={sectionHeadingStyle}>{heading}</h3>,
+  });
+  blocks.push({
+    key: "vendor-charge-body",
+    estimate: 18 + estimateParagraphHeight(filled, 78),
+    node: <p style={paragraphStyle}>{highlightVendorChargePhrase(filled, data.language)}</p>,
+  });
 }
 
 function appendSectionBlocks(

@@ -1,3 +1,12 @@
+import {
+  createNarpatSinghVendorAgreementData,
+  createRaviSharmaVendorAgreementData,
+  createSunnyMeenaVendorAgreementData,
+  normalizeAgreementData,
+  NARPAT_SINGH_VENDOR_AGREEMENT_ID,
+  RAVI_SHARMA_VENDOR_AGREEMENT_ID,
+  SUNNY_MEENA_VENDOR_AGREEMENT_ID,
+} from "./agreement-defaults";
 import type { AgreementData, AgreementRecord } from "../types/agreement";
 
 const RECORDS_KEY = "agreement-records";
@@ -74,4 +83,73 @@ export function getAgreementDraft() {
 
 export function clearAgreementDraft() {
   localStorage.removeItem(DRAFT_KEY);
+}
+
+const SEEDED_VENDOR_AGREEMENTS = [
+  {
+    id: SUNNY_MEENA_VENDOR_AGREEMENT_ID,
+    name: "Vikrant Meena — Vendor Code Agreement",
+    create: createSunnyMeenaVendorAgreementData,
+  },
+  {
+    id: RAVI_SHARMA_VENDOR_AGREEMENT_ID,
+    name: "Ravi Sharma — Vendor Code Agreement",
+    create: createRaviSharmaVendorAgreementData,
+  },
+  {
+    id: NARPAT_SINGH_VENDOR_AGREEMENT_ID,
+    name: "Narpat Singh — Vendor Code Agreement",
+    create: createNarpatSinghVendorAgreementData,
+  },
+] as const;
+
+/** Creates sample vendor agreements on first run; never overwrites user edits on reload. */
+export function seedSampleAgreements() {
+  let records = readRecords();
+  const now = new Date().toISOString();
+
+  for (const seed of SEEDED_VENDOR_AGREEMENTS) {
+    const seedContent = seed.create();
+    const existing = records.find((record) => record.id === seed.id);
+
+    if (!existing) {
+      records = [
+        {
+          id: seed.id,
+          name: seed.name,
+          content: seedContent,
+          createdAt: now,
+          updatedAt: now,
+        },
+        ...records,
+      ];
+      continue;
+    }
+
+    const content = normalizeAgreementData(existing.content);
+    const nextContent: AgreementData = {
+      ...content,
+      partyIsIndividual: seedContent.partyIsIndividual,
+      party: { ...content.party, ...seedContent.party },
+      showVendorChargePerWatt: seedContent.showVendorChargePerWatt,
+      vendorChargePerWatt: seedContent.vendorChargePerWatt,
+    };
+
+    if (JSON.stringify(existing.content) === JSON.stringify(nextContent)) {
+      continue;
+    }
+
+    records = records.map((item) =>
+      item.id === seed.id
+        ? {
+            ...item,
+            name: seed.name,
+            content: nextContent,
+            updatedAt: now,
+          }
+        : item,
+    );
+  }
+
+  writeRecords(records);
 }

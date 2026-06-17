@@ -1,38 +1,43 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useBeforeUnload, useNavigate, useParams } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { Navigate, useBeforeUnload, useNavigate, useParams } from "react-router-dom";
 import { MakerStickyTopbar } from "@/components/MakerStickyTopbar";
-import { QuotationEditor } from "../components/QuotationEditor";
-import { QuotationPreview } from "../components/QuotationPreview";
-import { SaveQuotationDialog } from "../components/SaveQuotationDialog";
-import { createDefaultQuotationData, normalizeQuotationData } from "../lib/quotation-defaults";
+import { EmployeeDirectoryEditor } from "../components/EmployeeDirectoryEditor";
+import { EmployeeDirectoryPreview } from "../components/EmployeeDirectoryPreview";
+import { SaveEmployeeDirectoryDialog } from "../components/SaveEmployeeDirectoryDialog";
+import { createDefaultEmployeeDirectoryData, normalizeEmployeeDirectoryData } from "../lib/employee-directory-defaults";
 import {
-  clearQuotationDraft,
-  getQuotation,
-  getQuotationDraft,
-  saveQuotationDraft,
-  saveQuotationRecord,
-} from "../lib/quotation-storage";
-import type { QuotationData } from "../types/quotation";
+  clearEmployeeDirectoryDraft,
+  getEmployeeDirectory,
+  getEmployeeDirectoryDraft,
+  saveEmployeeDirectoryDraft,
+  saveEmployeeDirectoryRecord,
+} from "../lib/employee-directory-storage";
+import type { EmployeeDirectoryData } from "../types/employee-directory";
 
-function cloneData(data: QuotationData) {
-  return JSON.parse(JSON.stringify(data)) as QuotationData;
+function cloneData(data: EmployeeDirectoryData) {
+  return JSON.parse(JSON.stringify(data)) as EmployeeDirectoryData;
 }
 
-export function QuotationMaker() {
+export function EmployeeDirectoryMaker() {
   const params = useParams();
   const navigate = useNavigate();
-  const previewRef = useRef<HTMLDivElement | null>(null);
-  const record = params.id ? getQuotation(params.id) : null;
+  const recordId = params.id;
+  const record = recordId ? getEmployeeDirectory(recordId) : null;
+  const draft = !record ? getEmployeeDirectoryDraft() : null;
+  const shouldRedirectToList = !record && !draft;
 
   const initialData = useMemo(() => {
-    if (record) {
-      return normalizeQuotationData(cloneData(record.content));
+    if (recordId) {
+      const loaded = getEmployeeDirectory(recordId);
+      if (loaded) {
+        return normalizeEmployeeDirectoryData(cloneData(loaded.content));
+      }
     }
-    const draft = getQuotationDraft();
-    return draft ? normalizeQuotationData(draft) : createDefaultQuotationData();
-  }, [record]);
+    const existingDraft = getEmployeeDirectoryDraft();
+    return existingDraft ? normalizeEmployeeDirectoryData(existingDraft) : createDefaultEmployeeDirectoryData();
+  }, [recordId]);
 
-  const [data, setData] = useState<QuotationData>(initialData);
+  const [data, setData] = useState<EmployeeDirectoryData>(initialData);
   const [viewMode, setViewMode] = useState<"split" | "editor" | "preview">("split");
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [savedSnapshot, setSavedSnapshot] = useState(JSON.stringify(initialData));
@@ -46,7 +51,7 @@ export function QuotationMaker() {
   useEffect(() => {
     const timer = window.setTimeout(() => {
       if (!record) {
-        saveQuotationDraft(data);
+        saveEmployeeDirectoryDraft(data);
       }
     }, 400);
     return () => window.clearTimeout(timer);
@@ -69,30 +74,34 @@ export function QuotationMaker() {
   }
 
   function handleSave(name: string) {
-    const saved = saveQuotationRecord({ id: record?.id, name, content: data });
-    clearQuotationDraft();
+    const saved = saveEmployeeDirectoryRecord({ id: record?.id, name, content: data });
+    clearEmployeeDirectoryDraft();
     setSavedSnapshot(JSON.stringify(data));
     setSaveDialogOpen(false);
     if (!record) {
-      navigate(`/quotation/${saved.id}`, { replace: true });
+      navigate(`/employee-directory/${saved.id}`, { replace: true });
     }
   }
 
   function handleBack() {
-    if (isDirty && !window.confirm("You have unsaved changes. Go back to all quotations anyway?")) {
+    if (isDirty && !window.confirm("You have unsaved changes. Go back to all employee registers anyway?")) {
       return;
     }
-    navigate("/quotations");
+    navigate("/employees");
   }
 
   function handleReset() {
     if (!window.confirm("Reset the form to default values? Any unsaved edits will be lost.")) {
       return;
     }
-    setData(createDefaultQuotationData());
+    setData(createDefaultEmployeeDirectoryData());
   }
 
-  const defaultSaveName = data.customerName || record?.name || data.capacity || "Untitled Quotation";
+  const defaultSaveName = record?.name || data.companyName || "Employee Register";
+
+  if (shouldRedirectToList) {
+    return <Navigate replace to="/employees" />;
+  }
 
   return (
     <div className="page-shell page-shell--maker page-shell--maker-agreement">
@@ -112,36 +121,35 @@ export function QuotationMaker() {
             <div className="panel-header">
               <div>
                 <p className="eyebrow">Editor</p>
-                <h2>Quotation Details</h2>
+                <h2>Employee Register</h2>
               </div>
-              <p className="muted-text">Fill each section — line totals and the grand total are calculated automatically.</p>
+              <p className="muted-text">Add all employees here — they appear together in one PDF.</p>
             </div>
-            <QuotationEditor data={data} onChange={setData} />
+            <EmployeeDirectoryEditor data={data} onChange={setData} />
           </section>
         ) : null}
 
         <section
-          ref={previewRef}
           className={`content-card preview-shell ${viewMode === "editor" ? "preview-shell--offscreen-screen" : ""}`}
           aria-hidden={viewMode === "editor"}
         >
           <div className="panel-header no-print">
             <div>
               <p className="eyebrow">Preview</p>
-              <h2>Page-by-Page Document</h2>
+              <h2>Employee Details PDF</h2>
             </div>
-            <p className="muted-text">Save as PDF uses your browser — same layout as below.</p>
+            <p className="muted-text">All employees in one document — paginated for print.</p>
           </div>
           <div className="preview-scale-note no-print">
             Each page is <strong>210 × 297 mm (A4)</strong>. Use <strong>Save as PDF</strong> in the print dialog to download.
           </div>
           <div className="preview-a4-viewport">
-            <QuotationPreview data={data} />
+            <EmployeeDirectoryPreview data={data} />
           </div>
         </section>
       </div>
 
-      <SaveQuotationDialog
+      <SaveEmployeeDirectoryDialog
         defaultName={defaultSaveName}
         open={saveDialogOpen}
         onClose={() => setSaveDialogOpen(false)}

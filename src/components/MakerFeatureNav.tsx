@@ -1,4 +1,4 @@
-import { Building2, FileText, Handshake, HeartHandshake, ReceiptIndianRupee } from "lucide-react";
+import { Building2, FileText, FolderKanban, Handshake, HeartHandshake, ReceiptIndianRupee, Users } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 interface MakerFeatureNavProps {
@@ -13,6 +13,7 @@ export function MakerFeatureNav({ isDirty = false }: MakerFeatureNavProps) {
   const isAgreementMaker = location.pathname.startsWith("/agreement") && !isPartnerMaker;
   const isQuotationMaker = location.pathname.startsWith("/quotation");
   const isCompanyMaker = location.pathname.startsWith("/company-profile");
+  const isEmployeeMaker = location.pathname.startsWith("/employee-directory");
 
   function navigateTo(path: string) {
     if (isDirty && !window.confirm("You have unsaved changes. Leave this document anyway?")) {
@@ -29,7 +30,7 @@ export function MakerFeatureNav({ isDirty = false }: MakerFeatureNavProps) {
         onClick={() => navigateTo("/offer-letters")}
       >
         <FileText size={14} />
-        Offer Letters
+        Offers
       </button>
       <button
         className={`maker-feature-nav-link ${isAgreementMaker ? "active" : ""}`}
@@ -45,7 +46,7 @@ export function MakerFeatureNav({ isDirty = false }: MakerFeatureNavProps) {
         onClick={() => navigateTo("/partner-agreements")}
       >
         <HeartHandshake size={14} />
-        Partner Agreements
+        Partners
       </button>
       <button
         className={`maker-feature-nav-link ${isQuotationMaker ? "active" : ""}`}
@@ -61,7 +62,23 @@ export function MakerFeatureNav({ isDirty = false }: MakerFeatureNavProps) {
         onClick={() => navigateTo("/company-profiles")}
       >
         <Building2 size={14} />
-        Company Details
+        Company
+      </button>
+      <button
+        className={`maker-feature-nav-link ${location.pathname === "/projects" ? "active" : ""}`}
+        type="button"
+        onClick={() => navigateTo("/projects")}
+      >
+        <FolderKanban size={14} />
+        Projects
+      </button>
+      <button
+        className={`maker-feature-nav-link ${isEmployeeMaker ? "active" : ""}`}
+        type="button"
+        onClick={() => navigateTo("/employees")}
+      >
+        <Users size={14} />
+        Employees
       </button>
     </div>
   );

@@ -67,7 +67,8 @@
   .offer-letter-measure-layer,
   .agreement-measure-layer,
   .partner-agreement-measure-layer,
-  .quotation-measure-layer {
+  .quotation-measure-layer,
+  .employee-directory-measure-layer {
     display: none !important;
   }
 
@@ -75,7 +76,8 @@
   #agreement-preview,
   #partner-agreement-preview,
   #quotation-preview,
-  #company-profile-preview {
+  #company-profile-preview,
+  #employee-directory-preview {
     display: block !important;
     width: 210mm !important;
     max-width: 100% !important;
@@ -88,7 +90,8 @@
   #agreement-preview > [data-export-page="true"],
   #partner-agreement-preview > [data-export-page="true"],
   #quotation-preview > [data-export-page="true"],
-  #company-profile-preview > [data-export-page="true"] {
+  #company-profile-preview > [data-export-page="true"],
+  #employee-directory-preview > [data-export-page="true"] {
     page-break-after: always;
     break-after: page;
     width: 210mm !important;
@@ -112,5 +115,138 @@
 
   .dialog-overlay {
     display: none !important;
+  }
+
+  /* MSS Sites — spreadsheet-style wide print (page width set dynamically in JS) */
+  @page mss-sites-page {
+    margin: 4mm;
+  }
+
+  html.print-mss-sites,
+  html.print-mss-sites body,
+  html.print-mss-sites .app-root {
+    width: auto !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    page: mss-sites-page;
+  }
+
+  html.print-mss-sites .page-shell--mss-sites {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: none !important;
+    width: auto !important;
+  }
+
+  html.print-mss-sites .page-shell--mss-sites .content-card {
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+    width: auto !important;
+    max-width: none !important;
+    overflow: visible !important;
+  }
+
+  html.print-mss-sites #mss-sites-preview {
+    display: block !important;
+    width: auto !important;
+    max-width: none !important;
+    margin: 0 !important;
+    overflow: visible !important;
+  }
+
+  html.print-mss-sites .mss-sites-table-wrap {
+    overflow: visible !important;
+    padding: 0 !important;
+    width: auto !important;
+  }
+
+  html.print-mss-sites .mss-sites-table {
+    width: max-content !important;
+    min-width: max-content !important;
+    max-width: none !important;
+    font-size: 10px !important;
+    table-layout: auto !important;
+    border-collapse: collapse !important;
+  }
+
+  html.print-mss-sites .mss-sites-table.mss-sites-table--print-prepared {
+    table-layout: fixed !important;
+  }
+
+  html.print-mss-sites .mss-sites-table thead th {
+    position: static !important;
+  }
+
+  html.print-mss-sites .mss-sites-table th,
+  html.print-mss-sites .mss-sites-table td {
+    padding: 6px 10px !important;
+    font-size: 10px !important;
+    line-height: 1.45 !important;
+    white-space: nowrap !important;
+    word-break: normal !important;
+    overflow-wrap: normal !important;
+    vertical-align: top !important;
+    border-bottom: 1px solid #e5e7eb !important;
+  }
+
+  html.print-mss-sites .mss-sites-table th {
+    background: #14306b !important;
+    color: #fff !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.3px !important;
+    border-bottom: 2px solid #0f234d !important;
+  }
+
+  html.print-mss-sites .mss-sites-preview-header {
+    padding: 20px 24px 12px !important;
+    border-bottom: 1px solid #e5e7eb !important;
+  }
+
+  html.print-mss-sites .mss-sites-preview-header h1 {
+    font-size: 22px !important;
+    margin: 0 !important;
+  }
+
+  html.print-mss-sites .mss-sites-preview-meta {
+    font-size: 12px !important;
+    margin: 6px 0 0 !important;
+  }
+
+  html.print-mss-sites .projects-more-trigger,
+  html.print-mss-sites .projects-more-tooltip {
+    display: none !important;
+  }
+
+  html.print-mss-sites .projects-more-print {
+    display: block !important;
+    text-align: left !important;
+    white-space: normal !important;
+    font-size: 9px !important;
+    line-height: 1.35 !important;
+  }
+
+  html.print-mss-sites .projects-more-print p {
+    margin: 0 0 4px !important;
+  }
+
+  html.print-mss-sites .projects-more-print p:last-child {
+    margin-bottom: 0 !important;
+  }
+
+  html.print-mss-sites.print-mss-sites--hide-more .mss-sites-table-more-col {
+    display: none !important;
+  }
+
+  html.print-mss-sites .mss-sites-table-totals-row td {
+    font-weight: 700 !important;
+    background: #eef2ff !important;
+    color: #14306b !important;
+    border-bottom: 2px solid #c7d2fe !important;
   }
 }

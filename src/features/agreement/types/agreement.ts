@@ -85,6 +85,8 @@ export interface AgreementData {
   governingLawParagraph: string;
 
   partyIsIndividual: boolean;
+  showVendorChargePerWatt: boolean;
+  vendorChargePerWatt: string;
   showWitnesses: boolean;
   witnesses: AgreementWitness[];
   showPageNumbers: boolean;

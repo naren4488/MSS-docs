@@ -339,6 +339,20 @@ const partnershipRecitals = [
 const partnershipPreamble =
   "NOW, THEREFORE, in consideration of the mutual promises hereinafter set forth, {{company.name}} and Authorised Firm do hereby agree as follows:";
 
+export const partnershipVendorChargeHeadingEn = "Vendor Charges";
+export const partnershipVendorChargeTextEn =
+  "As consideration for {{company.name}}'s authorisation to use the Vendor Code and for facilitation under {{var.scheme}}, Authorised Firm agrees to pay {{company.name}} a vendor charge of ₹ {{vendorChargePerWatt}} per watt of installed plant capacity for each project executed under this Agreement. This charge shall be calculated on the total installed capacity of the rooftop solar plant and may be deducted by {{company.name}} from loan disbursements or other amounts received on behalf of Authorised Firm before release of the balance to Authorised Firm, in accordance with the payment flow set out in Clause 1(i).";
+
+export const partnershipVendorChargeHeadingHi = "विक्रेता शुल्क";
+export const partnershipVendorChargeTextHi =
+  "{{company.name}} द्वारा विक्रेता कोड के प्राधिकरण एवं {{var.scheme}} के अंतर्गत सुगम क्रियान्वयन के प्रतिफल में, अधिकृत फर्म सहमत है कि वह इस समझौते के अंतर्गत निष्पादित प्रत्येक परियोजना की कुल स्थापित क्षमता पर ₹ {{vendorChargePerWatt}} प्रति वाट का विक्रेता शुल्क {{company.name}} को देगा। यह शुल्क छत पर स्थापित सौर संयंत्र की कुल स्थापित कक्षमता पर गणना किया जाएगा तथा धारा 1(झ) में वर्णित भुगतान प्रवाह के अनुसार, ऋण संवितरण या अधिकृत फर्म की ओर से प्राप्त अन्य राशियों से कटौती कर {{company.name}} द्वारा अधिकृत फर्म को शेष राशि निर्गत करने से पूर्व वसूला जा सकता है।";
+
+export function getPartnershipVendorChargeContent(data: AgreementData): { heading: string; text: string } {
+  return data.language === "hi"
+    ? { heading: partnershipVendorChargeHeadingHi, text: partnershipVendorChargeTextHi }
+    : { heading: partnershipVendorChargeHeadingEn, text: partnershipVendorChargeTextEn };
+}
+
 // ---------- Partnership template (Hindi) ----------
 
 const partnershipTitleHi = "विक्रेता कोड प्राधिकरण समझौता";
@@ -820,6 +834,67 @@ export function isHindiSupported(template: AgreementTemplate): boolean {
   return HINDI_SUPPORTED_TEMPLATES.includes(template);
 }
 
+export const SUNNY_MEENA_VENDOR_AGREEMENT_ID = "a1b2c3d4-e5f6-4789-a012-sunnymeena01";
+export const RAVI_SHARMA_VENDOR_AGREEMENT_ID = "a1b2c3d4-e5f6-4789-a012-ravisharma01";
+export const NARPAT_SINGH_VENDOR_AGREEMENT_ID = "a1b2c3d4-e5f6-4789-a012-narpatsingh01";
+
+export function createSunnyMeenaVendorAgreementData(): AgreementData {
+  const base = createDefaultAgreementData("partnership", "en");
+  return {
+    ...base,
+    partyIsIndividual: true,
+    party: {
+      ...base.party,
+      entityName: "Vikrant Meena",
+      address: "Jobner",
+      aadhaar: "9687 4732 3080",
+      representativeName: "",
+      representativeTitle: "",
+      gst: "",
+    },
+    showVendorChargePerWatt: true,
+    vendorChargePerWatt: "1",
+  };
+}
+
+export function createRaviSharmaVendorAgreementData(): AgreementData {
+  const base = createDefaultAgreementData("partnership", "en");
+  return {
+    ...base,
+    partyIsIndividual: true,
+    party: {
+      ...base.party,
+      entityName: "Ravi Sharma",
+      address: "34, Ladu baba ki dhani, ajmer road, sanjhariya, thikariya, Sanganer, Jaipur, Rajasthan, 302026",
+      aadhaar: "8253 3187 3865",
+      representativeName: "",
+      representativeTitle: "",
+      gst: "",
+    },
+    showVendorChargePerWatt: true,
+    vendorChargePerWatt: "1",
+  };
+}
+
+export function createNarpatSinghVendorAgreementData(): AgreementData {
+  const base = createDefaultAgreementData("partnership", "en");
+  return {
+    ...base,
+    partyIsIndividual: false,
+    party: {
+      ...base.party,
+      entityName: "Shri Harivansh Construction",
+      address: "Rajpota ka mohalla, Dhanani, Nagaur, Rajasthan, 341022",
+      representativeName: "Narpat Singh",
+      representativeTitle: "Proprietor",
+      aadhaar: "6220 0589 6993",
+      gst: "08DYVPS1105L1ZT",
+    },
+    showVendorChargePerWatt: true,
+    vendorChargePerWatt: "1",
+  };
+}
+
 export function createDefaultAgreementData(
   template: AgreementTemplate = "partnership",
   language: AgreementLanguage = "en",
@@ -856,6 +931,8 @@ export function createDefaultAgreementData(
       closingParagraph: incAssignClosing,
       governingLawParagraph: incAssignGoverningLaw,
       partyIsIndividual: false,
+      showVendorChargePerWatt: false,
+      vendorChargePerWatt: "",
       showWitnesses: true,
       witnesses: baseWitnesses,
       showPageNumbers: true,
@@ -890,6 +967,8 @@ export function createDefaultAgreementData(
       closingParagraph: incGoodwillClosing,
       governingLawParagraph: incGoodwillGoverningLaw,
       partyIsIndividual: false,
+      showVendorChargePerWatt: false,
+      vendorChargePerWatt: "",
       showWitnesses: true,
       witnesses: baseWitnesses,
       showPageNumbers: true,
@@ -924,6 +1003,8 @@ export function createDefaultAgreementData(
     closingParagraph: isHindi ? partnershipClosingHi : partnershipClosing,
     governingLawParagraph: isHindi ? partnershipGoverningLawHi : partnershipGoverningLaw,
     partyIsIndividual: false,
+    showVendorChargePerWatt: false,
+    vendorChargePerWatt: "",
     showWitnesses: true,
     witnesses: baseWitnesses,
     showPageNumbers: true,
@@ -953,6 +1034,8 @@ export function switchAgreementLanguage(
     variables: { ...fresh.variables, ...data.variables },
     witnesses: data.witnesses.length ? data.witnesses : fresh.witnesses,
     partyIsIndividual: data.partyIsIndividual,
+    showVendorChargePerWatt: data.showVendorChargePerWatt,
+    vendorChargePerWatt: data.vendorChargePerWatt,
     showWitnesses: data.showWitnesses,
     showPageNumbers: data.showPageNumbers,
     showLetterhead: data.showLetterhead,
@@ -977,5 +1060,7 @@ export function normalizeAgreementData(input?: Partial<AgreementData> | null): A
     recitals: input?.recitals ?? defaults.recitals,
     sections: input?.sections ?? defaults.sections,
     witnesses: input?.witnesses ?? defaults.witnesses,
+    showVendorChargePerWatt: input?.showVendorChargePerWatt ?? defaults.showVendorChargePerWatt,
+    vendorChargePerWatt: input?.vendorChargePerWatt ?? defaults.vendorChargePerWatt,
   };
 }

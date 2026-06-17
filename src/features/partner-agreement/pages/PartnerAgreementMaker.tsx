@@ -1,7 +1,7 @@
-import { ArrowLeft, Columns2, Eye, Languages, Maximize2, Printer, RotateCcw, Save } from "lucide-react";
+import { Languages } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Navigate, useBeforeUnload, useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { MakerFeatureNav } from "@/components/MakerFeatureNav";
+import { MakerStickyTopbar } from "@/components/MakerStickyTopbar";
 import { SaveAgreementDialog } from "@/features/agreement/components/SaveAgreementDialog";
 import { PartnerAgreementEditor } from "../components/PartnerAgreementEditor";
 import { PartnerAgreementPreview } from "../components/PartnerAgreementPreview";
@@ -135,37 +135,22 @@ export function PartnerAgreementMaker() {
 
   return (
     <div className="page-shell page-shell--maker page-shell--maker-agreement">
-      <div className="sticky-topbar no-print">
-        <div className="sticky-topbar-left">
-          <MakerFeatureNav isDirty={isDirty} />
-          <button className="ghost-button" type="button" onClick={handleBack}>
-            <ArrowLeft size={16} />
-            Back
-          </button>
-        </div>
-        <div className="topbar-actions">
-          <div className={`status-pill ${isDirty ? "dirty" : ""}`}>{isDirty ? "Unsaved changes" : "All changes saved"}</div>
-          <div className="segmented-control">
-            <button className={`segment-button ${viewMode === "split" ? "active" : ""}`} type="button" onClick={() => setViewMode("split")}>
-              <Columns2 size={16} />
-              Split
-            </button>
-            <button className={`segment-button ${viewMode === "editor" ? "active" : ""}`} type="button" onClick={() => setViewMode("editor")}>
-              <Maximize2 size={16} />
-              Editor
-            </button>
-            <button className={`segment-button ${viewMode === "preview" ? "active" : ""}`} type="button" onClick={() => setViewMode("preview")}>
-              <Eye size={16} />
-              Preview
-            </button>
-          </div>
+      <MakerStickyTopbar
+        isDirty={isDirty}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+        onBack={handleBack}
+        onReset={handleReset}
+        onSaveAsPdf={() => void handleSaveAsPdf()}
+        onSave={() => setSaveDialogOpen(true)}
+        extraControls={
           <div className="segmented-control" title="Switch document language">
             <button
               className={`segment-button ${data.language === "en" ? "active" : ""}`}
               type="button"
               onClick={() => handleLanguageChange("en")}
             >
-              <Languages size={16} />
+              <Languages size={14} aria-hidden />
               EN
             </button>
             <button
@@ -177,30 +162,8 @@ export function PartnerAgreementMaker() {
               हिं
             </button>
           </div>
-          <button
-            className="ghost-button"
-            type="button"
-            onClick={handleReset}
-            title="Replace the current form with the default values"
-          >
-            <RotateCcw size={16} />
-            Reset
-          </button>
-          <button
-            className="ghost-button"
-            type="button"
-            onClick={() => void handleSaveAsPdf()}
-            title="Opens the print dialog — choose Save as PDF for a vector PDF matching the preview"
-          >
-            <Printer size={16} />
-            Save as PDF
-          </button>
-          <button className="primary-button" type="button" onClick={() => setSaveDialogOpen(true)}>
-            <Save size={16} />
-            Save
-          </button>
-        </div>
-      </div>
+        }
+      />
 
       <div className={`layout-grid ${viewMode === "editor" ? "editor-only-grid" : viewMode === "preview" ? "preview-only-grid" : ""}`}>
         {viewMode !== "preview" ? (

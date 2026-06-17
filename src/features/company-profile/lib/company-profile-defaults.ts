@@ -29,6 +29,16 @@ const SHARED_PHONE = "+91 9928413501";
 const SHARED_ALT_PHONE = "";
 const SHARED_TAGLINE = "Powering Homes with Clean & Sustainable Energy";
 
+export const MSE_LOGO_URL = "/assets/mse-logo.png";
+
+const MSE_BANK_DETAILS = {
+  bankAccountName: "MAHI SOLAR ENERGY",
+  bankName: "AU Small Finance Bank",
+  bankAccountNo: "2021244429857480",
+  bankIfsc: "AUBL0002444",
+  bankBranch: "Kalwar Road Jaipur",
+} as const;
+
 export function createDefaultCompanyProfileData(firm: CompanyFirm = "mahi-solar-solution"): CompanyProfileData {
   const base: CompanyProfileData = {
     firm,
@@ -64,10 +74,12 @@ export function createDefaultCompanyProfileData(firm: CompanyFirm = "mahi-solar-
   if (firm === "mahi-solar-energy") {
     return {
       ...base,
+      logoUrl: MSE_LOGO_URL,
       legalName: "MAHI SOLAR ENERGY",
       email: "mahisolarenergy77@gmail.com",
       gst: "08GPEPK1479A1ZZ",
       contactTitle: "Proprietor",
+      ...MSE_BANK_DETAILS,
     };
   }
 
@@ -89,9 +101,20 @@ export function normalizeCompanyProfileData(input?: Partial<CompanyProfileData> 
   const rawFirm = input?.firm ?? null;
   const firm: CompanyFirm = isCompanyFirm(rawFirm) ? rawFirm : "mahi-solar-solution";
   const defaults = createDefaultCompanyProfileData(firm);
-  return {
+  const merged = {
     ...defaults,
     ...input,
     firm,
   };
+  if (firm === "mahi-solar-energy" && !merged.logoUrl.trim()) {
+    merged.logoUrl = MSE_LOGO_URL;
+  }
+  if (firm === "mahi-solar-energy") {
+    for (const key of Object.keys(MSE_BANK_DETAILS) as (keyof typeof MSE_BANK_DETAILS)[]) {
+      if (!merged[key].trim()) {
+        merged[key] = MSE_BANK_DETAILS[key];
+      }
+    }
+  }
+  return merged;
 }
