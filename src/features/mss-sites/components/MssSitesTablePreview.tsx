@@ -10,17 +10,22 @@ import {
   getVendorsFromRows,
   getVisibleColumnIndices,
   getWorkStatusesFromRows,
+  isProjectPrintHighlightColumn,
   PROJECT_MORE_COLUMN_HEADER,
   PROJECT_S_NO_COLUMN_INDEX,
   withSequentialSerialNumbers,
 } from "../lib/projects-columns";
 import type { MssSitesTable } from "../types/mss-sites";
 import { ClientNameSearch } from "./ClientNameSearch";
+import { MssSitesAnalytics } from "./MssSitesAnalytics";
 import { ProjectRowMoreCell } from "./ProjectRowMoreCell";
 import { ProjectsMultiselectFilter } from "./ProjectsMultiselectFilter";
 
+export type MssSitesViewMode = "table" | "analytics";
+
 interface MssSitesTablePreviewProps {
   table: MssSitesTable;
+  viewMode: MssSitesViewMode;
 }
 
 const thStyle = {
@@ -86,7 +91,7 @@ const totalsSNoTdStyle = {
   textAlign: "center" as const,
 };
 
-export function MssSitesTablePreview({ table }: MssSitesTablePreviewProps) {
+export function MssSitesTablePreview({ table, viewMode }: MssSitesTablePreviewProps) {
   const visibleColumnIndices = useMemo(() => getVisibleColumnIndices(table.headers), [table.headers]);
   const projectTypes = useMemo(() => getProjectTypesFromRows(table.rows), [table.rows]);
   const vendors = useMemo(() => getVendorsFromRows(table.rows), [table.rows]);
@@ -179,18 +184,31 @@ export function MssSitesTablePreview({ table }: MssSitesTablePreviewProps) {
           <div className="projects-empty-filter">
             <p>No projects match the selected filters.</p>
           </div>
+        ) : viewMode === "analytics" ? (
+          <MssSitesAnalytics
+            headers={table.headers}
+            rows={filteredRows}
+            totalRowCount={table.rows.length}
+          />
         ) : (
           <table className="mss-sites-table">
             <thead>
               <tr>
-                {visibleColumnIndices.map((columnIndex) => (
+                {visibleColumnIndices.map((columnIndex) => {
+                  const header = table.headers[columnIndex];
+                  const highlightClass = isProjectPrintHighlightColumn(header)
+                    ? " mss-sites-table-highlight-col"
+                    : "";
+                  return (
                   <th
                     key={`header-${columnIndex}`}
+                    className={`mss-sites-table-col${highlightClass}`.trim()}
                     style={columnIndex === 0 ? sNoThStyle : thStyle}
                   >
-                    {table.headers[columnIndex]}
+                    {header}
                   </th>
-                ))}
+                  );
+                })}
                 <th className="mss-sites-table-more-col" style={moreThStyle}>{PROJECT_MORE_COLUMN_HEADER}</th>
               </tr>
             </thead>
@@ -198,9 +216,14 @@ export function MssSitesTablePreview({ table }: MssSitesTablePreviewProps) {
               <tr className="mss-sites-table-totals-row">
                 {visibleColumnIndices.map((columnIndex) => {
                   const totalValue = columnTotals.get(columnIndex);
+                  const header = table.headers[columnIndex];
+                  const highlightClass = isProjectPrintHighlightColumn(header)
+                    ? " mss-sites-table-highlight-col"
+                    : "";
                   return (
                     <td
                       key={`total-${columnIndex}`}
+                      className={`mss-sites-table-col${highlightClass}`.trim()}
                       style={columnIndex === PROJECT_S_NO_COLUMN_INDEX ? totalsSNoTdStyle : totalsTdStyle}
                     >
                       {totalValue ?? (columnIndex === PROJECT_S_NO_COLUMN_INDEX + 1 ? "TOTAL" : "—")}
@@ -211,14 +234,21 @@ export function MssSitesTablePreview({ table }: MssSitesTablePreviewProps) {
               </tr>
               {filteredRows.map((row, rowIndex) => (
                 <tr key={`row-${rowIndex}`} style={{ background: rowIndex % 2 === 0 ? "#ffffff" : "#f8fafc" }}>
-                  {visibleColumnIndices.map((columnIndex) => (
+                  {visibleColumnIndices.map((columnIndex) => {
+                    const header = table.headers[columnIndex];
+                    const highlightClass = isProjectPrintHighlightColumn(header)
+                      ? " mss-sites-table-highlight-col"
+                      : "";
+                    return (
                     <td
                       key={`${rowIndex}-${columnIndex}`}
+                      className={`mss-sites-table-col${highlightClass}`.trim()}
                       style={columnIndex === 0 ? sNoTdStyle : tdStyle}
                     >
                       {row[columnIndex] || (columnIndex === 0 ? String(rowIndex + 1) : "—")}
                     </td>
-                  ))}
+                    );
+                  })}
                   <td className="mss-sites-table-more-col" style={moreTdStyle}>
                     <ProjectRowMoreCell fields={getHiddenProjectFields(table.headers, row)} />
                   </td>

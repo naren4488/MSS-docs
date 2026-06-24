@@ -53,7 +53,10 @@ export function canonicalizeSheetHeader(label: string): string {
 }
 
 function hasNameHeader(headers: readonly string[]) {
-  return headers.some((header) => header.trim().toUpperCase() === "NAME");
+  return headers.some((header) => {
+    const upper = header.trim().replace(/\s+/g, " ").toUpperCase();
+    return upper === "NAME" || upper === "CLIENT" || upper === "SITE NAME" || upper.startsWith("SITE NAME");
+  });
 }
 
 function trimSheetColumns(headers: string[], rows: string[][]): GvizSheet {
@@ -107,24 +110,54 @@ export function parseGvizSheet(text: string): GvizSheet {
 export async function fetchGvizSheet(
   sheetName: string,
   buildUrl: (sheetName: string, headerRows?: number) => string,
+  preferredHeaderRows = 1,
+  options?: {
+    /** When gviz cannot find a tab it silently returns the first sheet — pass reference to detect that. */
+    referenceTab?: string;
+    referenceResponseText?: string;
+  },
 ): Promise<GvizSheet> {
   async function load(headerRows?: number) {
     const response = await fetch(buildUrl(sheetName, headerRows));
     if (!response.ok) {
       throw new Error(`Could not load "${sheetName}" (HTTP ${response.status})`);
     }
-    return parseGvizSheet(await response.text());
+
+    const text = await response.text();
+    if (
+      options?.referenceTab &&
+      options.referenceResponseText &&
+      sheetName !== options.referenceTab &&
+      text === options.referenceResponseText
+    ) {
+      throw new Error(
+        `Sheet tab "${sheetName}" was not found. Google Sheets returned "${options.referenceTab}" instead.`,
+      );
+    }
+
+    return parseGvizSheet(text);
   }
 
-  const primarySheet = await load();
+  const primarySheet = await load(preferredHeaderRows);
   if (hasNameHeader(primarySheet.headers)) {
     return primarySheet;
   }
 
-  const fallbackSheet = await load(2);
-  if (!hasNameHeader(fallbackSheet.headers)) {
-    throw new Error(`Sheet "${sheetName}" has no NAME column`);
+  if (preferredHeaderRows !== 2) {
+    const fallbackSheet = await load(2);
+    if (hasNameHeader(fallbackSheet.headers)) {
+      return fallbackSheet;
+    }
   }
 
-  return fallbackSheet;
+  if (primarySheet.headers.some((header) => isNameLikeHeader(header))) {
+    return primarySheet;
+  }
+
+  throw new Error(`Sheet "${sheetName}" has no NAME / Client / SITE NAME column`);
+}
+
+function isNameLikeHeader(header: string) {
+  const upper = header.trim().replace(/\s+/g, " ").toUpperCase();
+  return upper === "CLIENT" || upper === "SITE NAME" || upper.startsWith("SITE NAME");
 }

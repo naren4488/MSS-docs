@@ -31,7 +31,8 @@ export const PROJECT_TABLE_HEADERS = [
   "Payment with partner",
   "Bank due",
   "CASH DUE",
-  "DUE TO MSS",
+  "Total Due to MSS",
+  "Cash due to MSS",
   "TOTAL Payment recieved",
   "REMARK",
 ] as const;
@@ -55,6 +56,17 @@ export const HIDDEN_PROJECT_COLUMNS = new Set<string>([
 ]);
 
 export const PROJECT_MORE_COLUMN_HEADER = "MORE";
+
+/** Payment columns — extra emphasis in print / PDF export. */
+export const PROJECT_PRINT_HIGHLIGHT_COLUMNS = new Set<string>([
+  "Bank due",
+  "Total Due to MSS",
+  "Cash due to MSS",
+]);
+
+export function isProjectPrintHighlightColumn(header: string): boolean {
+  return PROJECT_PRINT_HIGHLIGHT_COLUMNS.has(header);
+}
 
 export const PROJECT_TYPE_COLUMN = "PROJECT TYPE";
 
@@ -112,7 +124,8 @@ export const PROJECT_TOTAL_COLUMNS = new Set<string>([
   "Payment with partner",
   "Bank due",
   "CASH DUE",
-  "DUE TO MSS",
+  "Total Due to MSS",
+  "Cash due to MSS",
   "TOTAL Payment recieved",
 ]);
 
@@ -128,6 +141,15 @@ export function parseProjectAmount(value: string): number {
 
 export function formatProjectAmount(total: number): string {
   return total.toLocaleString("en-IN");
+}
+
+function computeCashDueToMss(totalDueToMss: string, bankDue: string): string {
+  if (!totalDueToMss.trim() && !bankDue.trim()) {
+    return "";
+  }
+
+  const result = parseProjectAmount(totalDueToMss) - parseProjectAmount(bankDue);
+  return formatProjectAmount(result);
 }
 
 export function computeVisibleColumnTotals(
@@ -270,7 +292,7 @@ function sheetCell(
 }
 
 export function sheetRowHasName(headers: readonly string[], row: readonly string[]): boolean {
-  return sheetCell(headers, row, "NAME").length > 0;
+  return sheetCell(headers, row, ["NAME", "Client", "CLIENT", "SITE NAME"]).length > 0;
 }
 
 function sheetCellGpsLink(headers: readonly string[], row: readonly string[]): string {
@@ -283,22 +305,25 @@ export function mapSheetRowToProjectRow(
   projectType: string,
   vendor: string,
 ): string[] {
+  const bankDue = sheetCell(headers, row, ["Bank due", "BANK DUE PAYMENT", "BANK DUE"]);
+  const totalDueToMss = sheetCell(headers, row, "DUE TO MSS");
+
   return [
     projectType,
     vendor,
     sheetCell(headers, row, "NO"),
     sheetCell(headers, row, "UPDATE"),
-    sheetCell(headers, row, "NAME"),
+    sheetCell(headers, row, ["NAME", "Client", "CLIENT", "SITE NAME"]),
     sheetCell(headers, row, "KW"),
     sheetCell(headers, row, "PH"),
-    sheetCell(headers, row, "LOCATION", 0),
+    sheetCell(headers, row, ["LOCATION", "Location"], 0),
     sheetCell(headers, row, "DISCOM"),
     sheetCell(headers, row, ["K.NO", "K. NO"]),
     sheetCell(headers, row, "MOBILE"),
     sheetCell(headers, row, "GMAIL"),
     sheetCellGpsLink(headers, row),
     sheetCell(headers, row, "QUATATION"),
-    sheetCell(headers, row, ["FINAL DEAL with client", "FINAL DEAL"]),
+    sheetCell(headers, row, ["FINAL DEAL with client", "FINAL DEAL", "AMOUNT"]),
     sheetCell(headers, row, "Deal with MSS"),
     sheetCell(headers, row, "LOAN"),
     sheetCell(headers, row, ["Cash", "CASH"]),
@@ -312,9 +337,10 @@ export function mapSheetRowToProjectRow(
     sheetCell(headers, row, ["2ND INATALLMENT", "2ND INSTALLMENT"]),
     sheetCell(headers, row, ["CASH TO MSS", "CASH TO US"]),
     sheetCell(headers, row, "Payment with partner"),
-    sheetCell(headers, row, ["Bank due", "BANK DUE PAYMENT", "BANK DUE"]),
+    bankDue,
     sheetCell(headers, row, ["CASH DUE", "Cash due"]),
-    sheetCell(headers, row, "DUE TO MSS"),
+    totalDueToMss,
+    computeCashDueToMss(totalDueToMss, bankDue),
     sheetCell(headers, row, ["TOTAL Payment recieved", "TOTAL"]),
     sheetCell(headers, row, "REMARK"),
   ];

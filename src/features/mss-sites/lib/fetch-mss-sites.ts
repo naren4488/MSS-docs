@@ -1,67 +1,94 @@
-import { dedupeProjectRows, getSheetTabSignature } from "./dedupe-project-rows";
 import {
   ARKSHAKTI_SHEET_TABS,
+  PROJECT_SHEET_SOURCE_RULES,
   PROJECT_SHEET_TABS,
   PROJECT_VENDORS,
+  type ProjectSheetTab,
   decToFebSheetGvizUrl,
   projectsSheetGvizUrl,
 } from "./projects-config";
-import { PROJECT_TABLE_HEADERS, mapSheetRowToProjectRow, sheetRowHasName } from "./projects-columns";
+import { dedupeProjectRows } from "./dedupe-project-rows";
+import { normalizeSheetForTab } from "./normalize-sheet-rows";
 import { fetchGvizSheet } from "./parse-gviz-sheet";
+import { PROJECT_TABLE_HEADERS, mapSheetRowToProjectRow, sheetRowHasName } from "./projects-columns";
 import type { MssSitesTable } from "../types/mss-sites";
 
 type GvizUrlBuilder = (sheetName: string, headerRows?: number) => string;
 
 async function fetchProjectSheetTab(
-  sheetName: string,
-  projectType: string,
+  tab: ProjectSheetTab,
   vendor: string,
   buildUrl: GvizUrlBuilder,
+  referenceTab: string,
+  referenceResponseText: string,
 ) {
-  const sheet = await fetchGvizSheet(sheetName, buildUrl);
+  const rawSheet = await fetchGvizSheet(tab.sheetName, buildUrl, tab.headerRows ?? 1, {
+    referenceTab,
+    referenceResponseText,
+  });
+  const sheet = normalizeSheetForTab(rawSheet, tab);
 
   const rows = sheet.rows
     .filter((row) => sheetRowHasName(sheet.headers, row))
-    .map((row) => mapSheetRowToProjectRow(sheet.headers, row, projectType, vendor));
+    .map((row) => mapSheetRowToProjectRow(sheet.headers, row, tab.projectType, vendor));
 
   return {
-    sheetName,
-    headers: sheet.headers,
-    rawRows: sheet.rows.filter((row) => sheetRowHasName(sheet.headers, row)),
+    sheetName: tab.sheetName,
+    projectType: tab.projectType,
+    vendor,
+    rowCount: rows.length,
     rows,
   };
 }
 
-export async function fetchMssSitesTable(): Promise<MssSitesTable> {
-  const [mssTab, ...partnerTabs] = PROJECT_SHEET_TABS;
-  const mssResult = await fetchProjectSheetTab(
-    mssTab.sheetName,
-    mssTab.projectType,
-    PROJECT_VENDORS.MSS,
-    projectsSheetGvizUrl,
-  );
-  const mssSignature = getSheetTabSignature(mssResult.headers, mssResult.rawRows);
+async function fetchSpreadsheetTabs(
+  tabs: readonly ProjectSheetTab[],
+  vendor: string,
+  buildUrl: GvizUrlBuilder,
+  referenceTab: string,
+) {
+  const referenceResponse = await fetch(buildUrl(referenceTab));
+  if (!referenceResponse.ok) {
+    throw new Error(`Could not load reference tab "${referenceTab}" (HTTP ${referenceResponse.status})`);
+  }
+  const referenceResponseText = await referenceResponse.text();
 
-  const [partnerResults, arkshaktiResults] = await Promise.all([
-    Promise.all(
-      partnerTabs.map((tab) =>
-        fetchProjectSheetTab(tab.sheetName, tab.projectType, PROJECT_VENDORS.MSS, projectsSheetGvizUrl),
-      ),
+  const results = [];
+
+  for (const tab of tabs) {
+    results.push(
+      await fetchProjectSheetTab(tab, vendor, buildUrl, referenceTab, referenceResponseText),
+    );
+  }
+
+  return results;
+}
+
+export async function fetchMssSitesTable(): Promise<MssSitesTable> {
+  const [mssResults, arkshaktiResults] = await Promise.all([
+    fetchSpreadsheetTabs(
+      PROJECT_SHEET_TABS,
+      PROJECT_VENDORS.MSS,
+      projectsSheetGvizUrl,
+      PROJECT_SHEET_SOURCE_RULES.mss.referenceTab,
     ),
-    Promise.all(
-      ARKSHAKTI_SHEET_TABS.map((tab) =>
-        fetchProjectSheetTab(tab.sheetName, tab.projectType, PROJECT_VENDORS.ARKSHAKTI, decToFebSheetGvizUrl),
-      ),
+    fetchSpreadsheetTabs(
+      ARKSHAKTI_SHEET_TABS,
+      PROJECT_VENDORS.ARKSHAKTI,
+      decToFebSheetGvizUrl,
+      PROJECT_SHEET_SOURCE_RULES.decToFeb.referenceTab,
     ),
   ]);
 
-  const mergedRows = [
-    ...mssResult.rows,
-    ...partnerResults
-      .filter((result) => getSheetTabSignature(result.headers, result.rawRows) !== mssSignature)
-      .flatMap((result) => result.rows),
-    ...arkshaktiResults.flatMap((result) => result.rows),
-  ];
+  const failedTabs = [...mssResults, ...arkshaktiResults].filter((result) => result.rowCount === 0);
+  if (failedTabs.length > 0) {
+    console.warn(
+      "Projects: tabs loaded with zero NAME/Client rows:",
+      failedTabs.map((tab) => `${tab.sheetName} (${tab.projectType})`).join(", "),
+    );
+  }
+
+  const mergedRows = [...mssResults, ...arkshaktiResults].flatMap((result) => result.rows);
 
   const headers = [...PROJECT_TABLE_HEADERS];
   const dedupedRows = dedupeProjectRows(
@@ -81,4 +108,29 @@ export async function fetchMssSitesTable(): Promise<MssSitesTable> {
     rows,
     fetchedAt: new Date().toISOString(),
   };
+}
+
+/** Dev helper: per-tab row counts after fetch (before dedupe). */
+export async function fetchMssSitesTabSummary() {
+  const [mssResults, arkshaktiResults] = await Promise.all([
+    fetchSpreadsheetTabs(
+      PROJECT_SHEET_TABS,
+      PROJECT_VENDORS.MSS,
+      projectsSheetGvizUrl,
+      PROJECT_SHEET_SOURCE_RULES.mss.referenceTab,
+    ),
+    fetchSpreadsheetTabs(
+      ARKSHAKTI_SHEET_TABS,
+      PROJECT_VENDORS.ARKSHAKTI,
+      decToFebSheetGvizUrl,
+      PROJECT_SHEET_SOURCE_RULES.decToFeb.referenceTab,
+    ),
+  ]);
+
+  return [...mssResults, ...arkshaktiResults].map((result) => ({
+    sheetName: result.sheetName,
+    projectType: result.projectType,
+    vendor: result.vendor,
+    rowCount: result.rowCount,
+  }));
 }

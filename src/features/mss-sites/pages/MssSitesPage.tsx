@@ -1,6 +1,6 @@
-import { FolderKanban, Printer, RefreshCw } from "lucide-react";
+import { FolderKanban, LayoutGrid, Printer, RefreshCw, Table2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
-import { MssSitesTablePreview } from "../components/MssSitesTablePreview";
+import { MssSitesTablePreview, type MssSitesViewMode } from "../components/MssSitesTablePreview";
 import { fetchMssSitesTable } from "../lib/fetch-mss-sites";
 import { prepareMssSitesPrint } from "../lib/prepare-mss-sites-print";
 import type { MssSitesTable } from "../types/mss-sites";
@@ -10,6 +10,7 @@ export function MssSitesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [includeMoreColumnInPdf, setIncludeMoreColumnInPdf] = useState(true);
+  const [viewMode, setViewMode] = useState<MssSitesViewMode>("table");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -55,26 +56,50 @@ export function MssSitesPage() {
           </p>
         </div>
         <div className="topbar-actions">
-          <div className="mss-sites-pdf-option no-print">
-            <span className="mss-sites-pdf-option-label">MORE column in PDF</span>
+          <div className="segmented-control mss-sites-view-toggle" role="group" aria-label="Projects view">
             <button
+              className={`segment-button ${viewMode === "table" ? "active" : ""}`}
               type="button"
-              className={`toggle ${includeMoreColumnInPdf ? "on" : ""}`}
-              aria-pressed={includeMoreColumnInPdf}
-              aria-label="Include MORE column in PDF"
-              onClick={() => setIncludeMoreColumnInPdf((current) => !current)}
+              title="Table view"
+              onClick={() => setViewMode("table")}
             >
-              <span className="toggle-thumb" />
+              <Table2 size={14} aria-hidden />
+              Table
+            </button>
+            <button
+              className={`segment-button ${viewMode === "analytics" ? "active" : ""}`}
+              type="button"
+              title="Analytics view"
+              onClick={() => setViewMode("analytics")}
+            >
+              <LayoutGrid size={14} aria-hidden />
+              Analytics
             </button>
           </div>
+          {viewMode === "table" ? (
+            <div className="mss-sites-pdf-option no-print">
+              <span className="mss-sites-pdf-option-label">MORE column in PDF</span>
+              <button
+                type="button"
+                className={`toggle ${includeMoreColumnInPdf ? "on" : ""}`}
+                aria-pressed={includeMoreColumnInPdf}
+                aria-label="Include MORE column in PDF"
+                onClick={() => setIncludeMoreColumnInPdf((current) => !current)}
+              >
+                <span className="toggle-thumb" />
+              </button>
+            </div>
+          ) : null}
           <button className="ghost-button" type="button" disabled={loading} onClick={() => void load()}>
             <RefreshCw size={16} />
             Refresh
           </button>
-          <button className="primary-button" type="button" disabled={!table || loading} onClick={() => void handlePrint()}>
-            <Printer size={16} />
-            Save as PDF
-          </button>
+          {viewMode === "table" ? (
+            <button className="primary-button" type="button" disabled={!table || loading} onClick={() => void handlePrint()}>
+              <Printer size={16} />
+              Save as PDF
+            </button>
+          ) : null}
         </div>
       </div>
 
@@ -98,7 +123,7 @@ export function MssSitesPage() {
 
       {table && !loading ? (
         <section className="content-card mss-sites-preview-shell">
-          <MssSitesTablePreview table={table} />
+          <MssSitesTablePreview table={table} viewMode={viewMode} />
         </section>
       ) : null}
     </div>
