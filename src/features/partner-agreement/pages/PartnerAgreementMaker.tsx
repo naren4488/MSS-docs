@@ -32,20 +32,27 @@ export function PartnerAgreementMaker() {
   const dealParam = searchParams.get("deal");
   const explicitDeal: PartnerDealType | null = isPartnerDealType(dealParam) ? dealParam : null;
   const previewRef = useRef<HTMLDivElement | null>(null);
-  const record = params.id ? getPartnerAgreement(params.id) : null;
+  const agreementId = params.id;
+  const record = agreementId ? getPartnerAgreement(agreementId) : null;
   const draft = !record ? getPartnerAgreementDraft() : null;
   const shouldRedirectToList = !record && !explicitDeal && !draft;
+  const recordUpdatedAt = record?.updatedAt ?? null;
 
   const initialData = useMemo(() => {
-    if (record) {
-      return normalizePartnerAgreementData(cloneData(record.content));
+    if (agreementId) {
+      const loaded = getPartnerAgreement(agreementId);
+      if (loaded) {
+        return normalizePartnerAgreementData(cloneData(loaded.content));
+      }
     }
     if (explicitDeal) {
       return createDefaultPartnerAgreementData(explicitDeal);
     }
     const existingDraft = getPartnerAgreementDraft();
-    return existingDraft ? normalizePartnerAgreementData(existingDraft) : createDefaultPartnerAgreementData();
-  }, [record, explicitDeal]);
+    return existingDraft
+      ? normalizePartnerAgreementData(existingDraft)
+      : createDefaultPartnerAgreementData();
+  }, [agreementId, recordUpdatedAt, explicitDeal]);
 
   const [data, setData] = useState<PartnerAgreementData>(initialData);
   const [viewMode, setViewMode] = useState<"split" | "editor" | "preview">("split");

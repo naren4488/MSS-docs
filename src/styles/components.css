@@ -1051,6 +1051,14 @@
   background: #f1f5f9;
 }
 
+.mss-analytics-deals-profit-row th,
+.mss-analytics-deals-profit-row td {
+  background: #eef2ff !important;
+  border-top: 2px solid #c7d2fe;
+  font-weight: 800;
+  color: #14306b;
+}
+
 .mss-sites-analytics-table--ledger thead th,
 .mss-sites-analytics-table--partners thead th {
   position: sticky;

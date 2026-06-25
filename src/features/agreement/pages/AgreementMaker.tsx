@@ -32,20 +32,25 @@ export function AgreementMaker() {
   const templateParam = searchParams.get("template");
   const explicitTemplate: AgreementTemplate | null = isAgreementTemplate(templateParam) ? templateParam : null;
   const previewRef = useRef<HTMLDivElement | null>(null);
-  const record = params.id ? getAgreement(params.id) : null;
+  const agreementId = params.id;
+  const record = agreementId ? getAgreement(agreementId) : null;
   const draft = !record ? getAgreementDraft() : null;
   const shouldRedirectToList = !record && !explicitTemplate && !draft;
+  const recordUpdatedAt = record?.updatedAt ?? null;
 
   const initialData = useMemo(() => {
-    if (record) {
-      return normalizeAgreementData(cloneData(record.content));
+    if (agreementId) {
+      const loaded = getAgreement(agreementId);
+      if (loaded) {
+        return normalizeAgreementData(cloneData(loaded.content));
+      }
     }
     if (explicitTemplate) {
       return createDefaultAgreementData(explicitTemplate);
     }
-    const draft = getAgreementDraft();
-    return draft ? normalizeAgreementData(draft) : createDefaultAgreementData();
-  }, [record, explicitTemplate]);
+    const existingDraft = getAgreementDraft();
+    return existingDraft ? normalizeAgreementData(existingDraft) : createDefaultAgreementData();
+  }, [agreementId, recordUpdatedAt, explicitTemplate]);
 
   const [data, setData] = useState<AgreementData>(initialData);
   const [viewMode, setViewMode] = useState<"split" | "editor" | "preview">("split");

@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { ArrowDown, ArrowUp, Building2, Handshake, Landmark, Wallet } from "lucide-react";
+import { ArrowDown, ArrowUp, Building2, Handshake, IndianRupee, Landmark, Wallet } from "lucide-react";
 import {
   computeProjectAnalytics,
   formatSignedLedgerAmount,
@@ -19,6 +19,7 @@ interface MssSitesAnalyticsProps {
 
 const ANALYTICS_SECTIONS = [
   { id: "analytics-overview", label: "Overview" },
+  { id: "analytics-deals", label: "Deal totals" },
   { id: "analytics-dues", label: "Payment dues" },
   { id: "analytics-ledger", label: "Partner ledger" },
   { id: "analytics-partners", label: "By partner" },
@@ -94,7 +95,33 @@ function VendorSplitBar({ breakdown }: { breakdown: VendorBreakdown }) {
   );
 }
 
-function VendorDueTable({ rows }: { rows: { label: string; breakdown: VendorBreakdown }[] }) {
+function VendorDueTable({
+  rows,
+  neutralAmounts = false,
+  summaryRow,
+}: {
+  rows: { label: string; breakdown: VendorBreakdown }[];
+  neutralAmounts?: boolean;
+  summaryRow?: { label: string; breakdown: VendorBreakdown };
+}) {
+  const amountClass = (amount: number, emphasis = false) =>
+    [
+      "mss-sites-analytics-table-num",
+      emphasis ? "mss-sites-analytics-table-num--emphasis" : "",
+      neutralAmounts ? "" : ledgerAmountClassName(signedSign(amount)),
+    ]
+      .filter(Boolean)
+      .join(" ");
+
+  const signedAmountClass = (amount: number, emphasis = false) =>
+    [
+      "mss-sites-analytics-table-num",
+      emphasis ? "mss-sites-analytics-table-num--emphasis" : "",
+      ledgerAmountClassName(signedSign(amount)),
+    ]
+      .filter(Boolean)
+      .join(" ");
+
   return (
     <div className="mss-sites-analytics-table-wrap mss-sites-analytics-table-wrap--dues">
       <table className="mss-sites-analytics-table mss-sites-analytics-table--dues">
@@ -110,24 +137,30 @@ function VendorDueTable({ rows }: { rows: { label: string; breakdown: VendorBrea
           {rows.map((row) => (
             <tr key={row.label}>
               <th scope="row">{row.label}</th>
-              <td
-                className={`mss-sites-analytics-table-num ${ledgerAmountClassName(signedSign(row.breakdown.mss))}`}
-              >
-                {formatAmountOrDash(row.breakdown.mss)}
-              </td>
-              <td
-                className={`mss-sites-analytics-table-num ${ledgerAmountClassName(signedSign(row.breakdown.arkshakti))}`}
-              >
+              <td className={amountClass(row.breakdown.mss)}>{formatAmountOrDash(row.breakdown.mss)}</td>
+              <td className={amountClass(row.breakdown.arkshakti)}>
                 {formatAmountOrDash(row.breakdown.arkshakti)}
               </td>
-              <td
-                className={`mss-sites-analytics-table-num mss-sites-analytics-table-num--emphasis ${ledgerAmountClassName(signedSign(row.breakdown.total))}`}
-              >
-                {formatAmountOrDash(row.breakdown.total)}
-              </td>
+              <td className={amountClass(row.breakdown.total, true)}>{formatAmountOrDash(row.breakdown.total)}</td>
             </tr>
           ))}
         </tbody>
+        {summaryRow ? (
+          <tfoot>
+            <tr className="mss-analytics-deals-profit-row">
+              <th scope="row">{summaryRow.label}</th>
+              <td className={signedAmountClass(summaryRow.breakdown.mss, true)}>
+                {formatAmountOrDash(summaryRow.breakdown.mss)}
+              </td>
+              <td className={signedAmountClass(summaryRow.breakdown.arkshakti, true)}>
+                {formatAmountOrDash(summaryRow.breakdown.arkshakti)}
+              </td>
+              <td className={signedAmountClass(summaryRow.breakdown.total, true)}>
+                {formatAmountOrDash(summaryRow.breakdown.total)}
+              </td>
+            </tr>
+          </tfoot>
+        ) : null}
       </table>
     </div>
   );
@@ -158,6 +191,7 @@ export function MssSitesAnalytics({ headers, rows, totalRowCount }: MssSitesAnal
   const analytics = useMemo(() => computeProjectAnalytics(headers, rows), [headers, rows]);
   const { summary } = analytics;
   const netSign = summary.netPartnerBalance >= 0 ? "credit" : "debit";
+  const profitSign = summary.totalPartnerProfit >= 0 ? "credit" : "debit";
   const isFiltered = totalRowCount !== undefined && totalRowCount !== rows.length;
 
   const partnerTotals = useMemo(
@@ -222,6 +256,23 @@ export function MssSitesAnalytics({ headers, rows, totalRowCount }: MssSitesAnal
           </p>
           <p className="mss-analytics-hero-hint">From site register columns</p>
         </article>
+        <article className="mss-analytics-hero-card">
+          <p className="mss-analytics-hero-label">Final deal with client</p>
+          <p className="mss-analytics-hero-value">{formatSignedLedgerAmount(summary.totalFinalDealWithClient)}</p>
+          <p className="mss-analytics-hero-hint">What partner charged clients</p>
+        </article>
+        <article className="mss-analytics-hero-card">
+          <p className="mss-analytics-hero-label">Deal with MSS</p>
+          <p className="mss-analytics-hero-value">{formatSignedLedgerAmount(summary.totalDealWithMss)}</p>
+          <p className="mss-analytics-hero-hint">What partner paid MSS</p>
+        </article>
+        <article className={`mss-analytics-hero-card mss-analytics-hero-card--balance-${profitSign}`}>
+          <p className="mss-analytics-hero-label">Partner profit</p>
+          <p className={`mss-analytics-hero-value ${ledgerAmountClassName(profitSign)}`}>
+            {formatSignedLedgerAmount(summary.totalPartnerProfit)}
+          </p>
+          <p className="mss-analytics-hero-hint">Final deal with client − Deal with MSS</p>
+        </article>
       </section>
 
       <div className="mss-analytics-grid">
@@ -253,6 +304,30 @@ export function MssSitesAnalytics({ headers, rows, totalRowCount }: MssSitesAnal
           </div>
 
           <VendorSplitBar breakdown={summary.sitesByVendor} />
+        </section>
+
+        <section className="mss-sites-analytics-panel" id="analytics-deals">
+          <header className="mss-sites-analytics-panel-header">
+            <IndianRupee size={18} aria-hidden />
+            <div>
+              <h2 className="mss-sites-analytics-panel-title">Deal totals</h2>
+              <p className="mss-sites-analytics-panel-subtitle">
+                Client billing vs MSS cost; profit is the difference
+              </p>
+            </div>
+          </header>
+
+          <VendorDueTable
+            neutralAmounts
+            rows={[
+              { label: "Final deal with client", breakdown: summary.finalDealWithClientByVendor },
+              { label: "Deal with MSS", breakdown: summary.dealWithMssByVendor },
+            ]}
+            summaryRow={{
+              label: "Partner profit (client − MSS)",
+              breakdown: summary.partnerProfitByVendor,
+            }}
+          />
         </section>
 
         <section className="mss-sites-analytics-panel" id="analytics-dues">

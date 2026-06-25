@@ -24,9 +24,16 @@ export interface ProjectAnalyticsSummary {
   bankDueByVendor: VendorBreakdown;
   cashDueToMssByVendor: VendorBreakdown;
   totalDueToMssByVendor: VendorBreakdown;
+  finalDealWithClientByVendor: VendorBreakdown;
+  dealWithMssByVendor: VendorBreakdown;
+  /** Final deal with client minus deal with MSS — partner margin on filtered sites. */
+  partnerProfitByVendor: VendorBreakdown;
   totalBankDue: number;
   totalCashDueToMss: number;
   totalDueToMss: number;
+  totalFinalDealWithClient: number;
+  totalDealWithMss: number;
+  totalPartnerProfit: number;
   /** Signed site dues: + partner pays MSS, − MSS pays partner. */
   totalSitesDueSigned: number;
   totalCredits: number;
@@ -119,6 +126,14 @@ function sumColumnByVendor(
   }
 
   return breakdown;
+}
+
+function subtractVendorBreakdown(minuend: VendorBreakdown, subtrahend: VendorBreakdown): VendorBreakdown {
+  return {
+    mss: minuend.mss - subtrahend.mss,
+    arkshakti: minuend.arkshakti - subtrahend.arkshakti,
+    total: minuend.total - subtrahend.total,
+  };
 }
 
 export function getLedgerSign(signedAmount: number): LedgerSign {
@@ -295,6 +310,9 @@ export function computeProjectAnalytics(
   const bankDueByVendor = sumColumnByVendor(headers, rows, "Bank due");
   const cashDueToMssByVendor = sumColumnByVendor(headers, rows, "Cash due to MSS");
   const totalDueToMssByVendor = sumColumnByVendor(headers, rows, "Total Due to MSS");
+  const finalDealWithClientByVendor = sumColumnByVendor(headers, rows, "FINAL DEAL with client");
+  const dealWithMssByVendor = sumColumnByVendor(headers, rows, "Deal with MSS");
+  const partnerProfitByVendor = subtractVendorBreakdown(finalDealWithClientByVendor, dealWithMssByVendor);
 
   return {
     summary: {
@@ -303,9 +321,15 @@ export function computeProjectAnalytics(
       bankDueByVendor,
       cashDueToMssByVendor,
       totalDueToMssByVendor,
+      finalDealWithClientByVendor,
+      dealWithMssByVendor,
+      partnerProfitByVendor,
       totalBankDue: bankDueByVendor.total,
       totalCashDueToMss: cashDueToMssByVendor.total,
       totalDueToMss: totalDueToMssByVendor.total,
+      totalFinalDealWithClient: finalDealWithClientByVendor.total,
+      totalDealWithMss: dealWithMssByVendor.total,
+      totalPartnerProfit: partnerProfitByVendor.total,
       totalSitesDueSigned,
       totalCredits,
       totalDebits,

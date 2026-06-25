@@ -1052,7 +1052,8 @@ export function normalizeAgreementData(input?: Partial<AgreementData> | null): A
     ...defaults,
     ...input,
     template,
-    language: defaults.language,
+    language:
+      input?.language === "hi" && isHindiSupported(template) ? "hi" : defaults.language,
     company: { ...defaults.company, ...input?.company },
     party: { ...defaults.party, ...input?.party },
     variableFields: input?.variableFields?.length ? input.variableFields : defaults.variableFields,
