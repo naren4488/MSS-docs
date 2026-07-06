@@ -365,7 +365,10 @@ export function mapSheetRowToProjectRow(
   vendor: string,
 ): string[] {
   const bankDue = sheetCell(headers, row, ["Bank due", "BANK DUE PAYMENT", "BANK DUE"]);
-  const totalDueToMss = sheetCell(headers, row, "DUE TO MSS");
+  const totalDueToMss = sheetCell(headers, row, ["Total Due to MSS", "NET DUE TO MSS", "DUE TO MSS"]);
+  const cashDueToMss =
+    sheetCell(headers, row, ["Cash due to MSS", "CASH DUE TO MSS"]) ||
+    computeCashDueToMss(totalDueToMss, bankDue);
 
   return [
     projectType,
@@ -381,7 +384,7 @@ export function mapSheetRowToProjectRow(
     sheetCell(headers, row, "MOBILE"),
     sheetCell(headers, row, "GMAIL"),
     sheetCellGpsLink(headers, row),
-    sheetCell(headers, row, "QUATATION"),
+    sheetCell(headers, row, ["QUATATION", "QUATATION IN BANK"]),
     sheetCell(headers, row, ["FINAL DEAL with client", "FINAL DEAL", "AMOUNT"]),
     sheetCell(headers, row, "Deal with MSS"),
     sheetCell(headers, row, "LOAN"),
@@ -397,9 +400,9 @@ export function mapSheetRowToProjectRow(
     sheetCell(headers, row, ["CASH TO MSS", "CASH TO US"]),
     sheetCell(headers, row, "Payment with partner"),
     bankDue,
-    sheetCell(headers, row, ["CASH DUE", "Cash due"]),
+    sheetCell(headers, row, ["CASH DUE", "CASH DUE FROM CLIENT", "Cash due"]),
     totalDueToMss,
-    computeCashDueToMss(totalDueToMss, bankDue),
+    cashDueToMss,
     sheetCell(headers, row, ["TOTAL Payment recieved", "TOTAL"]),
     sheetCell(headers, row, "REMARK"),
   ];

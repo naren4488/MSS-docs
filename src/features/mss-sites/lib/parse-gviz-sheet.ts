@@ -23,18 +23,27 @@ export function canonicalizeSheetHeader(label: string): string {
   const stripped = trimmed.replace(/^[\d,]+(?:\.\d+)?\s+/, "").replace(/\s+/g, " ").trim();
   const upper = stripped.toUpperCase();
 
-  if (upper === "FINAL DEAL") {
+  if (upper === "FINAL DEAL" || upper === "FINAL DEAL WITH CLIENT") {
     return "FINAL DEAL with client";
   }
   if (upper.includes("BANK DUE") || upper === "BANK AMOUT DUE") {
     return "Bank due";
   }
-  if (upper.includes("CASH DUE") || upper === "CASH AMOUNT DUE") {
+  // Order matters: "CASH DUE TO MSS" also contains "CASH DUE".
+  if (upper.includes("NET DUE TO MSS") || upper === "DUE TO MSS") {
+    return "Total Due to MSS";
+  }
+  if (upper.includes("CASH DUE TO MSS")) {
+    return "Cash due to MSS";
+  }
+  if (upper.includes("CASH DUE FROM CLIENT") || upper.includes("CASH DUE") || upper === "CASH AMOUNT DUE") {
     return "CASH DUE";
   }
+  if (upper.includes("QUATATION")) {
+    return "QUATATION";
+  }
   if (
-    upper.includes("TOTAL PAYMENT RECIEV") ||
-    upper.includes("TOTAL PAYMENT RECEIV") ||
+    (upper.includes("TOTAL") && upper.includes("PAYMENT") && (upper.includes("RECEIV") || upper.includes("RECIV"))) ||
     upper === "TOTAL"
   ) {
     return "TOTAL Payment recieved";
@@ -47,6 +56,9 @@ export function canonicalizeSheetHeader(label: string): string {
   }
   if (upper === "CASH TO MSS" || upper === "CASH TO US") {
     return upper === "CASH TO US" ? "CASH TO US" : "CASH TO MSS";
+  }
+  if (upper.startsWith("SIGNATURE")) {
+    return "UPDATE";
   }
 
   return stripped;
