@@ -837,6 +837,7 @@ export function isHindiSupported(template: AgreementTemplate): boolean {
 export const SUNNY_MEENA_VENDOR_AGREEMENT_ID = "a1b2c3d4-e5f6-4789-a012-sunnymeena01";
 export const RAVI_SHARMA_VENDOR_AGREEMENT_ID = "a1b2c3d4-e5f6-4789-a012-ravisharma01";
 export const NARPAT_SINGH_VENDOR_AGREEMENT_ID = "a1b2c3d4-e5f6-4789-a012-narpatsingh01";
+export const JITENDRA_MANETHIYA_VENDOR_AGREEMENT_ID = "a1b2c3d4-e5f6-4789-a012-jitendraman01";
 
 export function createSunnyMeenaVendorAgreementData(): AgreementData {
   const base = createDefaultAgreementData("partnership", "en");
@@ -853,7 +854,7 @@ export function createSunnyMeenaVendorAgreementData(): AgreementData {
       gst: "",
     },
     showVendorChargePerWatt: true,
-    vendorChargePerWatt: "1",
+    vendorChargePerWatt: "0",
   };
 }
 
@@ -872,7 +873,7 @@ export function createRaviSharmaVendorAgreementData(): AgreementData {
       gst: "",
     },
     showVendorChargePerWatt: true,
-    vendorChargePerWatt: "1",
+    vendorChargePerWatt: "0",
   };
 }
 
@@ -889,6 +890,24 @@ export function createNarpatSinghVendorAgreementData(): AgreementData {
       representativeTitle: "Proprietor",
       aadhaar: "6220 0589 6993",
       gst: "08DYVPS1105L1ZT",
+    },
+    showVendorChargePerWatt: true,
+    vendorChargePerWatt: "0",
+  };
+}
+
+export function createJitendraManethiyaVendorAgreementData(): AgreementData {
+  const base = createDefaultAgreementData("partnership", "en");
+  return {
+    ...base,
+    partyIsIndividual: false,
+    party: {
+      ...base.party,
+      entityName: "RJ Green Solar Energy",
+      address: "Phulera, Hirnoda, Jaipur, Rajasthan, 303338",
+      representativeName: "Jitendra Manethiya",
+      representativeTitle: "Proprietor",
+      gst: "08GCLPM7106J1Z6",
     },
     showVendorChargePerWatt: true,
     vendorChargePerWatt: "1",

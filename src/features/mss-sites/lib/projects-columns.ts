@@ -84,6 +84,28 @@ export const WORK_STATUS_COLUMN = "WORK STATUS";
 
 export const WORK_STATUS_COLUMN_INDEX = PROJECT_TABLE_HEADERS.indexOf(WORK_STATUS_COLUMN);
 
+export const TOTAL_DUE_TO_MSS_COLUMN = "Total Due to MSS";
+
+export const TOTAL_DUE_TO_MSS_COLUMN_INDEX = PROJECT_TABLE_HEADERS.indexOf(TOTAL_DUE_TO_MSS_COLUMN);
+
+export const TOTAL_PAYMENT_RECEIVED_COLUMN = "TOTAL Payment recieved";
+
+export const TOTAL_PAYMENT_RECEIVED_COLUMN_INDEX = PROJECT_TABLE_HEADERS.indexOf(TOTAL_PAYMENT_RECEIVED_COLUMN);
+
+export const PAYMENT_RECEIVED_LABEL = "Received";
+
+export const PAYMENT_NOT_RECEIVED_LABEL = "Not received";
+
+export const PAYMENT_RECEIVED_FILTER_OPTIONS = [PAYMENT_RECEIVED_LABEL, PAYMENT_NOT_RECEIVED_LABEL] as const;
+
+export type DueToMssFilter = "all" | "has-due" | "no-due";
+
+export const DUE_TO_MSS_FILTER_OPTIONS: ReadonlyArray<{ value: DueToMssFilter; label: string }> = [
+  { value: "all", label: "All projects" },
+  { value: "has-due", label: "Has due to MSS" },
+  { value: "no-due", label: "No due to MSS" },
+];
+
 export const EMPTY_WORK_STATUS_LABEL = "Not set";
 
 export function normalizeWorkStatus(value: string): string {
@@ -228,6 +250,43 @@ export function filterRowsByClientName(
     .filter((row) =>
       (row[CLIENT_NAME_COLUMN_INDEX]?.trim() ?? "").toLowerCase().includes(normalizedQuery),
     )
+    .map((row) => [...row]);
+}
+
+export function hasDueToMss(row: readonly string[]): boolean {
+  return parseProjectAmount(row[TOTAL_DUE_TO_MSS_COLUMN_INDEX] ?? "") !== 0;
+}
+
+export function isPaymentReceived(row: readonly string[]): boolean {
+  return parseProjectAmount(row[TOTAL_PAYMENT_RECEIVED_COLUMN_INDEX] ?? "") > 0;
+}
+
+export function filterRowsByDueToMss(
+  rows: readonly (readonly string[])[],
+  filter: DueToMssFilter,
+): string[][] {
+  if (filter === "all") {
+    return rows.map((row) => [...row]);
+  }
+
+  return rows
+    .filter((row) => (filter === "has-due" ? hasDueToMss(row) : !hasDueToMss(row)))
+    .map((row) => [...row]);
+}
+
+export function filterRowsByPaymentReceived(
+  rows: readonly (readonly string[])[],
+  selected: ReadonlySet<string>,
+): string[][] {
+  if (selected.size === 0) {
+    return [];
+  }
+
+  return rows
+    .filter((row) => {
+      const label = isPaymentReceived(row) ? PAYMENT_RECEIVED_LABEL : PAYMENT_NOT_RECEIVED_LABEL;
+      return selected.has(label);
+    })
     .map((row) => [...row]);
 }
 

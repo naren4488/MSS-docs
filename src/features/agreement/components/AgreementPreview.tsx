@@ -1,8 +1,8 @@
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties, ReactNode } from "react";
 import {
-  FIRST_PAGE_CAPACITY,
   FOLLOWING_PAGE_CAPACITY,
+  HEADER_HEIGHT,
   PAGE_HEIGHT,
   PAGE_NUMBER_FOOTER_HEIGHT,
   PAGE_SIDE_PADDING,
@@ -43,6 +43,13 @@ interface PreviewBlock {
   node: ReactNode;
   keepWithNext?: boolean;
 }
+
+/** Small cushion so minor measure/render drift never clips the last line on a page. */
+const PAGINATION_BLOCK_BUFFER = 4;
+const BODY_CHARS_PER_LINE = 78;
+const SUB_POINT_CHARS_PER_LINE = 58;
+const BODY_MAX_LINES_PER_CHUNK = 7;
+const SUB_POINT_MAX_LINES_PER_CHUNK = 5;
 
 const pageBodyStyle: CSSProperties = {
   padding: `${PAGE_TOP_BOTTOM_PADDING}px ${PAGE_SIDE_PADDING}px`,
@@ -90,8 +97,91 @@ function estimateTextLines(text: string, charsPerLine: number) {
   return Math.max(1, Math.ceil((text || "").trim().length / charsPerLine));
 }
 
-function estimateParagraphHeight(text: string, charsPerLine = 78) {
+function estimateParagraphHeight(text: string, charsPerLine = BODY_CHARS_PER_LINE) {
   return text.split("\n").reduce((total, line) => total + estimateTextLines(line, charsPerLine) * 22 + 4, 0);
+}
+
+function hardSplitAtWords(text: string, maxChars: number): string[] {
+  const chunks: string[] = [];
+  let remaining = text.trim();
+  while (remaining.length > maxChars) {
+    let splitAt = remaining.lastIndexOf(" ", maxChars);
+    if (splitAt <= 0) {
+      splitAt = maxChars;
+    }
+    chunks.push(remaining.slice(0, splitAt).trim());
+    remaining = remaining.slice(splitAt).trim();
+  }
+  if (remaining) {
+    chunks.push(remaining);
+  }
+  return chunks.length ? chunks : [""];
+}
+
+function mergeSegmentsIntoChunks(segments: string[], maxChars: number): string[] {
+  const chunks: string[] = [];
+  let current = "";
+
+  for (const segment of segments) {
+    const piece = segment.trim();
+    if (!piece) {
+      continue;
+    }
+
+    if (piece.length > maxChars) {
+      if (current) {
+        chunks.push(current);
+        current = "";
+      }
+      chunks.push(...hardSplitAtWords(piece, maxChars));
+      continue;
+    }
+
+    const candidate = current ? `${current} ${piece}` : piece;
+    if (candidate.length > maxChars && current) {
+      chunks.push(current);
+      current = piece;
+    } else {
+      current = candidate;
+    }
+  }
+
+  if (current) {
+    chunks.push(current);
+  }
+
+  return chunks.length ? chunks : [""];
+}
+
+/** Break long legal paragraphs into page-sized chunks so text flows instead of jumping whole. */
+function splitParagraphForPagination(text: string, charsPerLine: number, maxLines: number): string[] {
+  const trimmed = text.trim();
+  if (!trimmed) {
+    return [""];
+  }
+
+  const maxChars = charsPerLine * maxLines;
+  if (trimmed.length <= maxChars) {
+    return [trimmed];
+  }
+
+  const semicolonParts = trimmed.split(/(?<=;)\s+/);
+  if (semicolonParts.length > 1) {
+    const chunks = mergeSegmentsIntoChunks(semicolonParts, maxChars);
+    if (chunks.every((chunk) => chunk.length <= maxChars)) {
+      return chunks;
+    }
+  }
+
+  const sentenceParts = trimmed.split(/(?<=[.!?])\s+/);
+  if (sentenceParts.length > 1) {
+    const chunks = mergeSegmentsIntoChunks(sentenceParts, maxChars);
+    if (chunks.every((chunk) => chunk.length <= maxChars)) {
+      return chunks;
+    }
+  }
+
+  return hardSplitAtWords(trimmed, maxChars);
 }
 
 function Header({ data }: { data: AgreementData }) {
@@ -356,10 +446,12 @@ function appendSectionBlocks(
 
   if (section.intro.trim()) {
     const filled = fillTemplate(section.intro, data);
-    blocks.push({
-      key: `section-${section.id}-intro`,
-      estimate: 18 + estimateParagraphHeight(filled, 78),
-      node: <p style={paragraphStyle}>{filled}</p>,
+    splitParagraphForPagination(filled, BODY_CHARS_PER_LINE, BODY_MAX_LINES_PER_CHUNK).forEach((para, pIndex) => {
+      blocks.push({
+        key: `section-${section.id}-intro-${pIndex}`,
+        estimate: 18 + estimateParagraphHeight(para, BODY_CHARS_PER_LINE),
+        node: <p style={paragraphStyle}>{para}</p>,
+      });
     });
   }
 
@@ -369,10 +461,13 @@ function appendSectionBlocks(
     // This lets a long clause flow across a page boundary instead of jumping to
     // a fresh page whole and leaving a gap. The number/title rides on para 1.
     const contentParas = filledContent.split(/\n\n+/).map((p) => p.trim()).filter(Boolean);
-    (contentParas.length ? contentParas : [""]).forEach((para, pIndex) => {
+    const flatParas = (contentParas.length ? contentParas : [""]).flatMap((para) =>
+      splitParagraphForPagination(para, BODY_CHARS_PER_LINE, BODY_MAX_LINES_PER_CHUNK),
+    );
+    flatParas.forEach((para, pIndex) => {
       blocks.push({
         key: `clause-${clause.id}-content-${pIndex}`,
-        estimate: 14 + estimateParagraphHeight(para, 78) + (pIndex === 0 && clause.title ? 18 : 0),
+        estimate: 14 + estimateParagraphHeight(para, BODY_CHARS_PER_LINE) + (pIndex === 0 && clause.title ? 18 : 0),
         keepWithNext: false,
         node: (
           <div style={{ marginBottom: 8 }}>
@@ -400,10 +495,13 @@ function appendSectionBlocks(
     clause.subPoints.forEach((sub) => {
       const filledSub = fillTemplate(sub.text, data);
       const subParas = filledSub.split(/\n\n+/).map((p) => p.trim()).filter(Boolean);
-      (subParas.length ? subParas : [""]).forEach((para, pIndex) => {
+      const flatParas = (subParas.length ? subParas : [""]).flatMap((para) =>
+        splitParagraphForPagination(para, SUB_POINT_CHARS_PER_LINE, SUB_POINT_MAX_LINES_PER_CHUNK),
+      );
+      flatParas.forEach((para, pIndex) => {
         blocks.push({
           key: `clause-${clause.id}-sub-${sub.id}-${pIndex}`,
-          estimate: 12 + estimateParagraphHeight(para, 72),
+          estimate: 12 + estimateParagraphHeight(para, SUB_POINT_CHARS_PER_LINE),
           node: (
             <div
               style={{
@@ -487,17 +585,20 @@ function WitnessBlock({ data }: { data: AgreementData }) {
   );
 }
 
-function paginateBlocks(blocks: PreviewBlock[], heights: Record<string, number>, firstCapacity: number, nextCapacity: number) {
-  const heightOf = (block: PreviewBlock) => heights[block.key] ?? block.estimate;
+function blockHeight(heights: Record<string, number>, block: PreviewBlock) {
+  return (heights[block.key] ?? block.estimate) + PAGINATION_BLOCK_BUFFER;
+}
 
+function paginateBlocks(blocks: PreviewBlock[], heights: Record<string, number>, firstCapacity: number, nextCapacity: number) {
   const pages: PreviewBlock[][] = [];
   let currentPage: PreviewBlock[] = [];
-  let remaining = firstCapacity;
+  let pageUsed = 0;
+  let pageLimit = firstCapacity;
 
   for (const block of blocks) {
-    const blockHeight = heightOf(block);
+    const height = blockHeight(heights, block);
 
-    if (currentPage.length > 0 && blockHeight > remaining) {
+    if (currentPage.length > 0 && pageUsed + height > pageLimit) {
       const carryOver: PreviewBlock[] = [];
       while (currentPage.length > 0 && currentPage[currentPage.length - 1].keepWithNext) {
         carryOver.unshift(currentPage.pop() as PreviewBlock);
@@ -508,11 +609,12 @@ function paginateBlocks(blocks: PreviewBlock[], heights: Record<string, number>,
       }
 
       currentPage = carryOver;
-      remaining = nextCapacity - carryOver.reduce((sum, item) => sum + heightOf(item), 0);
+      pageUsed = carryOver.reduce((sum, item) => sum + blockHeight(heights, item), 0);
+      pageLimit = nextCapacity;
     }
 
     currentPage.push(block);
-    remaining -= blockHeight;
+    pageUsed += height;
   }
 
   if (currentPage.length > 0) {
@@ -525,7 +627,9 @@ function paginateBlocks(blocks: PreviewBlock[], heights: Record<string, number>,
 export function AgreementPreview({ data }: AgreementPreviewProps) {
   const allBlocks = useMemo(() => createBlocks(data), [data]);
   const measureRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const headerMeasureRef = useRef<HTMLDivElement | null>(null);
   const [blockHeights, setBlockHeights] = useState<Record<string, number>>({});
+  const [measuredHeaderHeight, setMeasuredHeaderHeight] = useState(HEADER_HEIGHT);
 
   useLayoutEffect(() => {
     const nextHeights = Object.fromEntries(
@@ -538,10 +642,26 @@ export function AgreementPreview({ data }: AgreementPreviewProps) {
     }
   }, [allBlocks, blockHeights]);
 
+  useLayoutEffect(() => {
+    const nextHeaderHeight = data.showLetterhead
+      ? Math.ceil(headerMeasureRef.current?.offsetHeight ?? HEADER_HEIGHT)
+      : 0;
+    if (nextHeaderHeight !== measuredHeaderHeight) {
+      setMeasuredHeaderHeight(nextHeaderHeight);
+    }
+  }, [data.showLetterhead, data.company, measuredHeaderHeight]);
+
   const footerReserve = data.showPageNumbers ? PAGE_NUMBER_FOOTER_HEIGHT : 0;
-  const firstCapacity = (data.showLetterhead ? FIRST_PAGE_CAPACITY : FOLLOWING_PAGE_CAPACITY) - footerReserve;
+  const firstCapacity =
+    (data.showLetterhead
+      ? PAGE_HEIGHT - measuredHeaderHeight - PAGE_TOP_BOTTOM_PADDING * 2
+      : FOLLOWING_PAGE_CAPACITY) - footerReserve;
   const followingCapacity = FOLLOWING_PAGE_CAPACITY - footerReserve;
-  const pages = paginateBlocks(allBlocks, blockHeights, firstCapacity, followingCapacity);
+
+  const pages = useMemo(
+    () => paginateBlocks(allBlocks, blockHeights, firstCapacity, followingCapacity),
+    [allBlocks, blockHeights, firstCapacity, followingCapacity],
+  );
 
   return (
     <>
@@ -557,6 +677,11 @@ export function AgreementPreview({ data }: AgreementPreviewProps) {
           pointerEvents: "none",
         }}
       >
+        {data.showLetterhead ? (
+          <div ref={headerMeasureRef}>
+            <Header data={data} />
+          </div>
+        ) : null}
         {allBlocks.map((block) => (
           <div
             key={`measure-${block.key}`}

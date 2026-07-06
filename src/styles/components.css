@@ -452,6 +452,26 @@
   color: #111827;
 }
 
+.projects-select-input {
+  width: 100%;
+  min-width: 220px;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #111827;
+  font-size: 13px;
+  font-weight: 500;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.projects-select-input:hover,
+.projects-select-input:focus {
+  border-color: #14306b;
+  box-shadow: 0 0 0 3px rgba(20, 48, 107, 0.08);
+}
+
 .projects-multiselect {
   position: relative;
 }

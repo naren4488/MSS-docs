@@ -1,8 +1,10 @@
 import {
+  createJitendraManethiyaVendorAgreementData,
   createNarpatSinghVendorAgreementData,
   createRaviSharmaVendorAgreementData,
   createSunnyMeenaVendorAgreementData,
   normalizeAgreementData,
+  JITENDRA_MANETHIYA_VENDOR_AGREEMENT_ID,
   NARPAT_SINGH_VENDOR_AGREEMENT_ID,
   RAVI_SHARMA_VENDOR_AGREEMENT_ID,
   SUNNY_MEENA_VENDOR_AGREEMENT_ID,
@@ -100,6 +102,11 @@ const SEEDED_VENDOR_AGREEMENTS = [
     id: NARPAT_SINGH_VENDOR_AGREEMENT_ID,
     name: "Narpat Singh — Vendor Code Agreement",
     create: createNarpatSinghVendorAgreementData,
+  },
+  {
+    id: JITENDRA_MANETHIYA_VENDOR_AGREEMENT_ID,
+    name: "Jitendra Manethiya — Vendor Code Agreement",
+    create: createJitendraManethiyaVendorAgreementData,
   },
 ] as const;
 

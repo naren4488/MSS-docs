@@ -1,7 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   computeVisibleColumnTotals,
+  DUE_TO_MSS_FILTER_OPTIONS,
   filterRowsByClientName,
+  filterRowsByDueToMss,
+  filterRowsByPaymentReceived,
   filterRowsByProjectTypes,
   filterRowsByVendors,
   filterRowsByWorkStatuses,
@@ -11,8 +14,10 @@ import {
   getVisibleColumnIndices,
   getWorkStatusesFromRows,
   isProjectPrintHighlightColumn,
+  PAYMENT_RECEIVED_FILTER_OPTIONS,
   PROJECT_MORE_COLUMN_HEADER,
   PROJECT_S_NO_COLUMN_INDEX,
+  type DueToMssFilter,
   withSequentialSerialNumbers,
 } from "../lib/projects-columns";
 import type { MssSitesTable } from "../types/mss-sites";
@@ -20,6 +25,7 @@ import { ClientNameSearch } from "./ClientNameSearch";
 import { MssSitesAnalytics } from "./MssSitesAnalytics";
 import { ProjectRowMoreCell } from "./ProjectRowMoreCell";
 import { ProjectsMultiselectFilter } from "./ProjectsMultiselectFilter";
+import { ProjectsSelectFilter } from "./ProjectsSelectFilter";
 
 export type MssSitesViewMode = "table" | "analytics";
 
@@ -99,6 +105,10 @@ export function MssSitesTablePreview({ table, viewMode }: MssSitesTablePreviewPr
   const [selectedProjectTypes, setSelectedProjectTypes] = useState<Set<string>>(() => new Set(projectTypes));
   const [selectedVendors, setSelectedVendors] = useState<Set<string>>(() => new Set(vendors));
   const [selectedWorkStatuses, setSelectedWorkStatuses] = useState<Set<string>>(() => new Set(workStatuses));
+  const [dueToMssFilter, setDueToMssFilter] = useState<DueToMssFilter>("all");
+  const [selectedPaymentReceived, setSelectedPaymentReceived] = useState<Set<string>>(
+    () => new Set(PAYMENT_RECEIVED_FILTER_OPTIONS),
+  );
   const [clientNameQuery, setClientNameQuery] = useState("");
 
   useEffect(() => {
@@ -117,14 +127,27 @@ export function MssSitesTablePreview({ table, viewMode }: MssSitesTablePreviewPr
     const byVendor = filterRowsByVendors(table.rows, selectedVendors);
     const byType = filterRowsByProjectTypes(byVendor, selectedProjectTypes);
     const byStatus = filterRowsByWorkStatuses(byType, selectedWorkStatuses);
-    const byName = filterRowsByClientName(byStatus, clientNameQuery);
+    const byDue = filterRowsByDueToMss(byStatus, dueToMssFilter);
+    const byPayment = filterRowsByPaymentReceived(byDue, selectedPaymentReceived);
+    const byName = filterRowsByClientName(byPayment, clientNameQuery);
     return withSequentialSerialNumbers(byName);
-  }, [clientNameQuery, selectedProjectTypes, selectedVendors, selectedWorkStatuses, table.rows]);
+  }, [
+    clientNameQuery,
+    dueToMssFilter,
+    selectedPaymentReceived,
+    selectedProjectTypes,
+    selectedVendors,
+    selectedWorkStatuses,
+    table.rows,
+  ]);
 
   const isFiltered =
     (selectedProjectTypes.size > 0 && selectedProjectTypes.size < projectTypes.length) ||
     (selectedVendors.size > 0 && selectedVendors.size < vendors.length) ||
     (selectedWorkStatuses.size > 0 && selectedWorkStatuses.size < workStatuses.length) ||
+    dueToMssFilter !== "all" ||
+    (selectedPaymentReceived.size > 0 &&
+      selectedPaymentReceived.size < PAYMENT_RECEIVED_FILTER_OPTIONS.length) ||
     clientNameQuery.trim().length > 0;
 
   const columnTotals = useMemo(
@@ -175,6 +198,20 @@ export function MssSitesTablePreview({ table, viewMode }: MssSitesTablePreviewPr
             onChange={setSelectedWorkStatuses}
             allSummaryLabel="All statuses"
             emptyOptionsLabel="No statuses"
+          />
+          <ProjectsSelectFilter
+            label="Due to MSS"
+            value={dueToMssFilter}
+            options={DUE_TO_MSS_FILTER_OPTIONS}
+            onChange={setDueToMssFilter}
+          />
+          <ProjectsMultiselectFilter
+            label="Payment Received"
+            options={[...PAYMENT_RECEIVED_FILTER_OPTIONS]}
+            selected={selectedPaymentReceived}
+            onChange={setSelectedPaymentReceived}
+            allSummaryLabel="All"
+            emptyOptionsLabel="None"
           />
         </div>
       </div>
