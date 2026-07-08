@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { RotateCcw } from "lucide-react";
 import {
   computeVisibleColumnTotals,
   DUE_TO_MSS_FILTER_OPTIONS,
@@ -14,6 +15,7 @@ import {
   getVisibleColumnIndices,
   getWorkStatusesFromRows,
   isProjectPrintHighlightColumn,
+  isProjectPdfOmitColumn,
   PAYMENT_RECEIVED_FILTER_OPTIONS,
   PROJECT_MORE_COLUMN_HEADER,
   PROJECT_S_NO_COLUMN_INDEX,
@@ -97,6 +99,17 @@ const totalsSNoTdStyle = {
   textAlign: "center" as const,
 };
 
+function tableColumnClassName(header: string): string {
+  const classes = ["mss-sites-table-col"];
+  if (isProjectPrintHighlightColumn(header)) {
+    classes.push("mss-sites-table-highlight-col");
+  }
+  if (isProjectPdfOmitColumn(header)) {
+    classes.push("mss-sites-table-omit-pdf-col");
+  }
+  return classes.join(" ");
+}
+
 export function MssSitesTablePreview({ table, viewMode }: MssSitesTablePreviewProps) {
   const visibleColumnIndices = useMemo(() => getVisibleColumnIndices(table.headers), [table.headers]);
   const projectTypes = useMemo(() => getProjectTypesFromRows(table.rows), [table.rows]);
@@ -155,26 +168,61 @@ export function MssSitesTablePreview({ table, viewMode }: MssSitesTablePreviewPr
     [filteredRows, table.headers, visibleColumnIndices],
   );
 
+  const clearAllFilters = useCallback(() => {
+    setSelectedProjectTypes(new Set(projectTypes));
+    setSelectedVendors(new Set(vendors));
+    setSelectedWorkStatuses(new Set(workStatuses));
+    setDueToMssFilter("all");
+    setSelectedPaymentReceived(new Set(PAYMENT_RECEIVED_FILTER_OPTIONS));
+    setClientNameQuery("");
+  }, [projectTypes, vendors, workStatuses]);
+
+  const vendorFilterActive = selectedVendors.size > 0 && selectedVendors.size < vendors.length;
+  const partnerFilterActive = selectedProjectTypes.size > 0 && selectedProjectTypes.size < projectTypes.length;
+  const statusFilterActive = selectedWorkStatuses.size > 0 && selectedWorkStatuses.size < workStatuses.length;
+  const dueFilterActive = dueToMssFilter !== "all";
+  const paymentFilterActive =
+    selectedPaymentReceived.size > 0 &&
+    selectedPaymentReceived.size < PAYMENT_RECEIVED_FILTER_OPTIONS.length;
+  const searchActive = clientNameQuery.trim().length > 0;
+
   return (
     <div id="mss-sites-preview" className="mss-sites-preview">
       <div className="mss-sites-preview-header">
-        <div className="mss-sites-preview-header-main">
-          <h1>{table.title}</h1>
-          <p className="mss-sites-preview-meta">
-            {isFiltered ? (
-              <>
-                {filteredRows.length} of {table.rows.length} projects · MSS, partner & Arkshakti tabs
-              </>
-            ) : (
-              <>
-                {table.rows.length} project{table.rows.length === 1 ? "" : "s"} · MSS, partner & Arkshakti tabs
-              </>
-            )}
-          </p>
+        <div className="mss-sites-preview-toolbar">
+          <div className="mss-sites-preview-stats">
+            <p className="mss-sites-preview-count">
+              <span className="mss-sites-preview-count-value">{filteredRows.length}</span>
+              {isFiltered ? (
+                <span className="mss-sites-preview-count-total"> of {table.rows.length}</span>
+              ) : null}
+              <span className="mss-sites-preview-count-label">
+                project{filteredRows.length === 1 ? "" : "s"}
+              </span>
+            </p>
+
+            <div className="mss-sites-preview-sources no-print" aria-label="Data sources">
+              <span className="mss-sites-source-badge mss-sites-source-badge--mss">MSS</span>
+              <span className="mss-sites-source-badge mss-sites-source-badge--partner">Partners</span>
+              <span className="mss-sites-source-badge mss-sites-source-badge--arkshakti">Arkshakti</span>
+            </div>
+          </div>
+
+          {isFiltered ? (
+            <button type="button" className="mss-sites-clear-filters no-print" onClick={clearAllFilters}>
+              <RotateCcw size={14} aria-hidden />
+              Clear filters
+            </button>
+          ) : null}
         </div>
 
         <div className="mss-sites-preview-filters no-print">
-          <ClientNameSearch value={clientNameQuery} onChange={setClientNameQuery} />
+          <ClientNameSearch
+            value={clientNameQuery}
+            onChange={setClientNameQuery}
+            isActive={searchActive}
+            className="projects-filter--search"
+          />
           <ProjectsMultiselectFilter
             label="Vendor"
             options={vendors}
@@ -182,36 +230,41 @@ export function MssSitesTablePreview({ table, viewMode }: MssSitesTablePreviewPr
             onChange={setSelectedVendors}
             allSummaryLabel="All vendors"
             emptyOptionsLabel="No vendors"
+            isActive={vendorFilterActive}
           />
           <ProjectsMultiselectFilter
-            label="Project Type"
+            label="Partner"
             options={projectTypes}
             selected={selectedProjectTypes}
             onChange={setSelectedProjectTypes}
-            allSummaryLabel="All types"
-            emptyOptionsLabel="No types"
+            allSummaryLabel="All partners"
+            emptyOptionsLabel="No partners"
+            isActive={partnerFilterActive}
           />
           <ProjectsMultiselectFilter
-            label="Work Status"
+            label="Work status"
             options={workStatuses}
             selected={selectedWorkStatuses}
             onChange={setSelectedWorkStatuses}
             allSummaryLabel="All statuses"
             emptyOptionsLabel="No statuses"
+            isActive={statusFilterActive}
           />
           <ProjectsSelectFilter
             label="Due to MSS"
             value={dueToMssFilter}
             options={DUE_TO_MSS_FILTER_OPTIONS}
             onChange={setDueToMssFilter}
+            isActive={dueFilterActive}
           />
           <ProjectsMultiselectFilter
-            label="Payment Received"
+            label="Payment"
             options={[...PAYMENT_RECEIVED_FILTER_OPTIONS]}
             selected={selectedPaymentReceived}
             onChange={setSelectedPaymentReceived}
             allSummaryLabel="All"
             emptyOptionsLabel="None"
+            isActive={paymentFilterActive}
           />
         </div>
       </div>
@@ -219,7 +272,14 @@ export function MssSitesTablePreview({ table, viewMode }: MssSitesTablePreviewPr
       <div className="mss-sites-table-wrap">
         {filteredRows.length === 0 ? (
           <div className="projects-empty-filter">
-            <p>No projects match the selected filters.</p>
+            <p className="projects-empty-filter-title">No projects match your filters</p>
+            <p className="projects-empty-filter-text">Try clearing filters or broadening your search.</p>
+            {isFiltered ? (
+              <button type="button" className="mss-sites-clear-filters" onClick={clearAllFilters}>
+                <RotateCcw size={14} aria-hidden />
+                Clear filters
+              </button>
+            ) : null}
           </div>
         ) : viewMode === "analytics" ? (
           <MssSitesAnalytics
@@ -233,13 +293,10 @@ export function MssSitesTablePreview({ table, viewMode }: MssSitesTablePreviewPr
               <tr>
                 {visibleColumnIndices.map((columnIndex) => {
                   const header = table.headers[columnIndex];
-                  const highlightClass = isProjectPrintHighlightColumn(header)
-                    ? " mss-sites-table-highlight-col"
-                    : "";
                   return (
                   <th
                     key={`header-${columnIndex}`}
-                    className={`mss-sites-table-col${highlightClass}`.trim()}
+                    className={tableColumnClassName(header)}
                     style={columnIndex === 0 ? sNoThStyle : thStyle}
                   >
                     {header}
@@ -254,13 +311,10 @@ export function MssSitesTablePreview({ table, viewMode }: MssSitesTablePreviewPr
                 {visibleColumnIndices.map((columnIndex) => {
                   const totalValue = columnTotals.get(columnIndex);
                   const header = table.headers[columnIndex];
-                  const highlightClass = isProjectPrintHighlightColumn(header)
-                    ? " mss-sites-table-highlight-col"
-                    : "";
                   return (
                     <td
                       key={`total-${columnIndex}`}
-                      className={`mss-sites-table-col${highlightClass}`.trim()}
+                      className={tableColumnClassName(header)}
                       style={columnIndex === PROJECT_S_NO_COLUMN_INDEX ? totalsSNoTdStyle : totalsTdStyle}
                     >
                       {totalValue ?? (columnIndex === PROJECT_S_NO_COLUMN_INDEX + 1 ? "TOTAL" : "—")}
@@ -273,13 +327,10 @@ export function MssSitesTablePreview({ table, viewMode }: MssSitesTablePreviewPr
                 <tr key={`row-${rowIndex}`} style={{ background: rowIndex % 2 === 0 ? "#ffffff" : "#f8fafc" }}>
                   {visibleColumnIndices.map((columnIndex) => {
                     const header = table.headers[columnIndex];
-                    const highlightClass = isProjectPrintHighlightColumn(header)
-                      ? " mss-sites-table-highlight-col"
-                      : "";
                     return (
                     <td
                       key={`${rowIndex}-${columnIndex}`}
-                      className={`mss-sites-table-col${highlightClass}`.trim()}
+                      className={tableColumnClassName(header)}
                       style={columnIndex === 0 ? sNoTdStyle : tdStyle}
                     >
                       {row[columnIndex] || (columnIndex === 0 ? String(rowIndex + 1) : "—")}

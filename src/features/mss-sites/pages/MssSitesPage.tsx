@@ -78,12 +78,12 @@ export function MssSitesPage() {
           </div>
           {viewMode === "table" ? (
             <div className="mss-sites-pdf-option no-print">
-              <span className="mss-sites-pdf-option-label">MORE column in PDF</span>
+              <span className="mss-sites-pdf-option-label">Extra columns in PDF</span>
               <button
                 type="button"
                 className={`toggle ${includeMoreColumnInPdf ? "on" : ""}`}
                 aria-pressed={includeMoreColumnInPdf}
-                aria-label="Include MORE column in PDF"
+                aria-label="Include MORE, quotation, status, remark and commission columns in PDF"
                 onClick={() => setIncludeMoreColumnInPdf((current) => !current)}
               >
                 <span className="toggle-thumb" />

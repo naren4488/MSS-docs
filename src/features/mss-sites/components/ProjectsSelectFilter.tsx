@@ -3,6 +3,7 @@ interface ProjectsSelectFilterProps<T extends string> {
   value: T;
   options: ReadonlyArray<{ value: T; label: string }>;
   onChange: (value: T) => void;
+  isActive?: boolean;
 }
 
 export function ProjectsSelectFilter<T extends string>({
@@ -10,9 +11,10 @@ export function ProjectsSelectFilter<T extends string>({
   value,
   options,
   onChange,
+  isActive = false,
 }: ProjectsSelectFilterProps<T>) {
   return (
-    <div className="projects-filter">
+    <div className={`projects-filter${isActive ? " projects-filter--active" : ""}`}>
       <span className="projects-filter-label">{label}</span>
       <select
         className="projects-select-input"

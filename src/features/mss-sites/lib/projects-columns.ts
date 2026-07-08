@@ -17,6 +17,7 @@ export const PROJECT_TABLE_HEADERS = [
   "QUATATION",
   "FINAL DEAL with client",
   "Deal with MSS",
+  "Partner commission",
   "LOAN",
   "Cash",
   "File login",
@@ -30,7 +31,7 @@ export const PROJECT_TABLE_HEADERS = [
   "CASH TO MSS",
   "Payment with partner",
   "Bank due",
-  "CASH DUE",
+  "CASH DUE FROM CLIENT",
   "Total Due to MSS",
   "Cash due to MSS",
   "TOTAL Payment recieved",
@@ -66,6 +67,19 @@ export const PROJECT_PRINT_HIGHLIGHT_COLUMNS = new Set<string>([
 
 export function isProjectPrintHighlightColumn(header: string): boolean {
   return PROJECT_PRINT_HIGHLIGHT_COLUMNS.has(header);
+}
+
+/** Omitted from PDF when compact export toggle is off (with MORE column). */
+export const PROJECT_PDF_OMIT_COLUMNS = new Set<string>([
+  "QUATATION",
+  "Partner commission",
+  "WORK STATUS",
+  "PAYMENT STATUS",
+  "REMARK",
+]);
+
+export function isProjectPdfOmitColumn(header: string): boolean {
+  return PROJECT_PDF_OMIT_COLUMNS.has(header);
 }
 
 export const PROJECT_TYPE_COLUMN = "PROJECT TYPE";
@@ -138,6 +152,7 @@ export const PROJECT_TOTAL_COLUMNS = new Set<string>([
   "QUATATION",
   "FINAL DEAL with client",
   "Deal with MSS",
+  "Partner commission",
   "LOAN",
   "Cash",
   "1ST INSTALLMENT",
@@ -145,7 +160,7 @@ export const PROJECT_TOTAL_COLUMNS = new Set<string>([
   "CASH TO MSS",
   "Payment with partner",
   "Bank due",
-  "CASH DUE",
+  "CASH DUE FROM CLIENT",
   "Total Due to MSS",
   "Cash due to MSS",
   "TOTAL Payment recieved",
@@ -163,6 +178,15 @@ export function parseProjectAmount(value: string): number {
 
 export function formatProjectAmount(total: number): string {
   return total.toLocaleString("en-IN");
+}
+
+export function computePartnerCommissionValue(finalDeal: string, dealWithMss: string): string {
+  if (!finalDeal.trim() && !dealWithMss.trim()) {
+    return "";
+  }
+
+  const commission = parseProjectAmount(finalDeal) - parseProjectAmount(dealWithMss);
+  return formatProjectAmount(commission);
 }
 
 function computeCashDueToMss(totalDueToMss: string, bankDue: string): string {
@@ -387,6 +411,10 @@ export function mapSheetRowToProjectRow(
     sheetCell(headers, row, ["QUATATION", "QUATATION IN BANK"]),
     sheetCell(headers, row, ["FINAL DEAL with client", "FINAL DEAL", "AMOUNT"]),
     sheetCell(headers, row, "Deal with MSS"),
+    computePartnerCommissionValue(
+      sheetCell(headers, row, ["FINAL DEAL with client", "FINAL DEAL", "AMOUNT"]),
+      sheetCell(headers, row, "Deal with MSS"),
+    ),
     sheetCell(headers, row, "LOAN"),
     sheetCell(headers, row, ["Cash", "CASH"]),
     sheetCell(headers, row, ["File login", "File Login"]),
@@ -400,7 +428,7 @@ export function mapSheetRowToProjectRow(
     sheetCell(headers, row, ["CASH TO MSS", "CASH TO US"]),
     sheetCell(headers, row, "Payment with partner"),
     bankDue,
-    sheetCell(headers, row, ["CASH DUE", "CASH DUE FROM CLIENT", "Cash due"]),
+    sheetCell(headers, row, ["CASH DUE FROM CLIENT", "CASH DUE", "Cash due"]),
     totalDueToMss,
     cashDueToMss,
     sheetCell(headers, row, ["TOTAL Payment recieved", "TOTAL"]),

@@ -36,8 +36,8 @@ export function canonicalizeSheetHeader(label: string): string {
   if (upper.includes("CASH DUE TO MSS")) {
     return "Cash due to MSS";
   }
-  if (upper.includes("CASH DUE FROM CLIENT") || upper.includes("CASH DUE") || upper === "CASH AMOUNT DUE") {
-    return "CASH DUE";
+  if (upper.includes("CASH DUE FROM CLIENT") || upper === "CASH DUE" || upper === "CASH AMOUNT DUE") {
+    return "CASH DUE FROM CLIENT";
   }
   if (upper.includes("QUATATION")) {
     return "QUATATION";

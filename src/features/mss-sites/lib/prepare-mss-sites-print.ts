@@ -2,8 +2,18 @@ const DYNAMIC_PRINT_STYLE_ID = "mss-sites-dynamic-print";
 const PX_TO_MM = 25.4 / 96;
 
 export interface PrepareMssSitesPrintOptions {
-  /** When false, the MORE / tooltip column is omitted from the PDF layout. */
+  /** When false, MORE and other non-essential columns are omitted from the PDF layout. */
   includeMoreColumn?: boolean;
+}
+
+function isPrintExcludedColumn(element: HTMLTableCellElement, includeMoreColumn: boolean): boolean {
+  if (includeMoreColumn) {
+    return false;
+  }
+  return (
+    element.classList.contains("mss-sites-table-more-col") ||
+    element.classList.contains("mss-sites-table-omit-pdf-col")
+  );
 }
 
 /**
@@ -25,7 +35,7 @@ export function prepareMssSitesPrint(options: PrepareMssSitesPrintOptions = {}):
   }
 
   const headers = Array.from(table.querySelectorAll<HTMLTableCellElement>("thead th")).filter(
-    (th) => includeMoreColumn || !th.classList.contains("mss-sites-table-more-col"),
+    (th) => !isPrintExcludedColumn(th, includeMoreColumn),
   );
   const widths = headers.map((th) => th.getBoundingClientRect().width);
 

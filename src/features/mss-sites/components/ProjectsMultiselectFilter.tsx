@@ -9,6 +9,7 @@ interface ProjectsMultiselectFilterProps {
   onChange: (next: Set<string>) => void;
   allSummaryLabel?: string;
   emptyOptionsLabel?: string;
+  isActive?: boolean;
 }
 
 const PANEL_WIDTH = 280;
@@ -58,6 +59,7 @@ export function ProjectsMultiselectFilter({
   onChange,
   allSummaryLabel = "All selected",
   emptyOptionsLabel = "No options",
+  isActive = false,
 }: ProjectsMultiselectFilterProps) {
   const [open, setOpen] = useState(false);
   const [panelPosition, setPanelPosition] = useState<{
@@ -178,7 +180,7 @@ export function ProjectsMultiselectFilter({
       : null;
 
   return (
-    <div className="projects-filter" ref={rootRef}>
+    <div className={`projects-filter${isActive ? " projects-filter--active" : ""}`} ref={rootRef}>
       <span className="projects-filter-label">{label}</span>
       <div className={`projects-multiselect${open ? " projects-multiselect--open" : ""}`}>
         <button

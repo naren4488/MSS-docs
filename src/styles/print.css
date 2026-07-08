@@ -204,18 +204,13 @@
   }
 
   html.print-mss-sites .mss-sites-preview-header {
-    padding: 20px 24px 12px !important;
+    padding: 12px 24px !important;
     border-bottom: 1px solid #e5e7eb !important;
+    background: #ffffff !important;
   }
 
-  html.print-mss-sites .mss-sites-preview-header h1 {
-    font-size: 22px !important;
-    margin: 0 !important;
-  }
-
-  html.print-mss-sites .mss-sites-preview-meta {
-    font-size: 12px !important;
-    margin: 6px 0 0 !important;
+  html.print-mss-sites .mss-sites-preview-count-value {
+    font-size: 18px !important;
   }
 
   html.print-mss-sites .projects-more-trigger,
@@ -239,7 +234,8 @@
     margin-bottom: 0 !important;
   }
 
-  html.print-mss-sites.print-mss-sites--hide-more .mss-sites-table-more-col {
+  html.print-mss-sites.print-mss-sites--hide-more .mss-sites-table-more-col,
+  html.print-mss-sites.print-mss-sites--hide-more .mss-sites-table-omit-pdf-col {
     display: none !important;
   }
 

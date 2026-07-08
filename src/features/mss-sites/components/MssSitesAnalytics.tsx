@@ -3,6 +3,7 @@ import { ArrowDown, ArrowUp, Building2, Handshake, IndianRupee, Landmark, Wallet
 import {
   computeProjectAnalytics,
   formatSignedLedgerAmount,
+  getLedgerSign,
   ledgerAmountClassName,
   ledgerSignLabel,
   netBalanceLabel,
@@ -30,7 +31,7 @@ function formatAmountOrDash(amount: number) {
 }
 
 function signedSign(amount: number): LedgerSign {
-  return amount >= 0 ? "credit" : "debit";
+  return getLedgerSign(amount);
 }
 
 function SignedAmount({
@@ -174,14 +175,14 @@ function LedgerLegend() {
           <ArrowUp size={12} aria-hidden />
           Credit
         </span>
-        <span>Partner pays MSS (receivable)</span>
+        <span>MSS will receive (from clients or partner recovery)</span>
       </div>
       <div className="mss-ledger-legend-item">
         <span className="mss-ledger-badge mss-ledger-badge--debit">
           <ArrowDown size={12} aria-hidden />
           Debit
         </span>
-        <span>MSS pays partner (payable)</span>
+        <span>Partner repaid MSS — reduces net receivable</span>
       </div>
     </div>
   );
@@ -190,7 +191,7 @@ function LedgerLegend() {
 export function MssSitesAnalytics({ headers, rows, totalRowCount }: MssSitesAnalyticsProps) {
   const analytics = useMemo(() => computeProjectAnalytics(headers, rows), [headers, rows]);
   const { summary } = analytics;
-  const netSign = summary.netPartnerBalance >= 0 ? "credit" : "debit";
+  const netSign = getLedgerSign(summary.netMssReceivable);
   const profitSign = summary.totalPartnerProfit >= 0 ? "credit" : "debit";
   const isFiltered = totalRowCount !== undefined && totalRowCount !== rows.length;
 
@@ -198,11 +199,11 @@ export function MssSitesAnalytics({ headers, rows, totalRowCount }: MssSitesAnal
     () =>
       analytics.byProjectType.reduce(
         (acc, entry) => ({
-          sitesDue: acc.sitesDue + entry.sitesDueSigned,
-          external: acc.external + entry.externalSigned,
-          net: acc.net + entry.netBalance,
+          dueFromClients: acc.dueFromClients + entry.dueFromClients,
+          partnerAdvances: acc.partnerAdvances + entry.partnerAdvancesRecoverable,
+          net: acc.net + entry.netMssReceivable,
         }),
-        { sitesDue: 0, external: 0, net: 0 },
+        { dueFromClients: 0, partnerAdvances: 0, net: 0 },
       ),
     [analytics.byProjectType],
   );
@@ -233,11 +234,11 @@ export function MssSitesAnalytics({ headers, rows, totalRowCount }: MssSitesAnal
 
       <section className="mss-analytics-hero" aria-label="Key metrics">
         <article className={`mss-analytics-hero-card mss-analytics-hero-card--balance-${netSign}`}>
-          <p className="mss-analytics-hero-label">Net partner balance</p>
+          <p className="mss-analytics-hero-label">Net MSS receivable</p>
           <p className={`mss-analytics-hero-value ${ledgerAmountClassName(netSign)}`}>
-            {formatSignedLedgerAmount(summary.netPartnerBalance)}
+            {formatSignedLedgerAmount(summary.netMssReceivable)}
           </p>
-          <p className="mss-analytics-hero-hint">{netBalanceLabel(summary.netPartnerBalance)}</p>
+          <p className="mss-analytics-hero-hint">{netBalanceLabel(summary.netMssReceivable)}</p>
         </article>
         <article className="mss-analytics-hero-card">
           <p className="mss-analytics-hero-label">Total sites</p>
@@ -249,12 +250,10 @@ export function MssSitesAnalytics({ headers, rows, totalRowCount }: MssSitesAnal
         </article>
         <article className="mss-analytics-hero-card">
           <p className="mss-analytics-hero-label">Total due to MSS</p>
-          <p
-            className={`mss-analytics-hero-value ${ledgerAmountClassName(signedSign(summary.totalDueToMss))}`}
-          >
+          <p className="mss-analytics-hero-value mss-ledger-amount--credit">
             {formatSignedLedgerAmount(summary.totalDueToMss)}
           </p>
-          <p className="mss-analytics-hero-hint">From site register columns</p>
+          <p className="mss-analytics-hero-hint">Pending from clients — will come to MSS</p>
         </article>
         <article className="mss-analytics-hero-card">
           <p className="mss-analytics-hero-label">Final deal with client</p>
@@ -312,7 +311,7 @@ export function MssSitesAnalytics({ headers, rows, totalRowCount }: MssSitesAnal
             <div>
               <h2 className="mss-sites-analytics-panel-title">Deal totals</h2>
               <p className="mss-sites-analytics-panel-subtitle">
-                Client billing vs MSS cost; profit is the difference
+                Client billing vs MSS cost; per-row commission is in the projects table
               </p>
             </div>
           </header>
@@ -335,12 +334,16 @@ export function MssSitesAnalytics({ headers, rows, totalRowCount }: MssSitesAnal
             <Landmark size={18} aria-hidden />
             <div>
               <h2 className="mss-sites-analytics-panel-title">MSS payment dues</h2>
-              <p className="mss-sites-analytics-panel-subtitle">Sheet totals compared by vendor</p>
+              <p className="mss-sites-analytics-panel-subtitle">
+                Pending client payments — positive amounts MSS will receive
+              </p>
             </div>
           </header>
 
           <VendorDueTable
+            neutralAmounts
             rows={[
+              { label: "Cash due from client", breakdown: summary.cashDueFromClientByVendor },
               { label: "Bank due", breakdown: summary.bankDueByVendor },
               { label: "Cash due to MSS", breakdown: summary.cashDueToMssByVendor },
               { label: "Total due to MSS", breakdown: summary.totalDueToMssByVendor },
@@ -367,21 +370,21 @@ export function MssSitesAnalytics({ headers, rows, totalRowCount }: MssSitesAnal
 
         <div className="mss-sites-analytics-ledger-summary">
           <article className={`mss-sites-analytics-card mss-sites-analytics-card--balance mss-sites-analytics-card--balance-${netSign}`}>
-            <p className="mss-sites-analytics-card-label">Net balance</p>
+            <p className="mss-sites-analytics-card-label">Net MSS receivable</p>
             <p className={`mss-sites-analytics-card-value ${ledgerAmountClassName(netSign)}`}>
-              {formatSignedLedgerAmount(summary.netPartnerBalance)}
+              {formatSignedLedgerAmount(summary.netMssReceivable)}
             </p>
           </article>
           <article className="mss-sites-analytics-card">
-            <p className="mss-sites-analytics-card-label">Credits</p>
+            <p className="mss-sites-analytics-card-label">Receivables (credit)</p>
             <p className={`mss-sites-analytics-card-value ${ledgerAmountClassName("credit")}`}>
               {formatSignedLedgerAmount(summary.totalCredits)}
             </p>
           </article>
           <article className="mss-sites-analytics-card">
-            <p className="mss-sites-analytics-card-label">Debits</p>
+            <p className="mss-sites-analytics-card-label">Repayments (debit)</p>
             <p className={`mss-sites-analytics-card-value ${ledgerAmountClassName("debit")}`}>
-              {formatSignedLedgerAmount(-summary.totalDebits)}
+              {formatSignedLedgerAmount(summary.totalDebits)}
             </p>
           </article>
           <article className="mss-sites-analytics-card">
@@ -436,7 +439,7 @@ export function MssSitesAnalytics({ headers, rows, totalRowCount }: MssSitesAnal
                       </td>
                       <td
                         className={`mss-sites-analytics-table-num mss-sites-analytics-table-num--emphasis ${ledgerAmountClassName(
-                          line.runningBalance >= 0 ? "credit" : "debit",
+                          getLedgerSign(line.runningBalance),
                         )}`}
                       >
                         {formatSignedLedgerAmount(line.runningBalance)}
@@ -453,9 +456,9 @@ export function MssSitesAnalytics({ headers, rows, totalRowCount }: MssSitesAnal
                     className={`mss-sites-analytics-table-num ${ledgerAmountClassName(netSign)}`}
                     colSpan={2}
                   >
-                    {formatSignedLedgerAmount(summary.netPartnerBalance)}
+                    {formatSignedLedgerAmount(summary.netMssReceivable)}
                   </td>
-                  <td>{netBalanceLabel(summary.netPartnerBalance)}</td>
+                  <td>{netBalanceLabel(summary.netMssReceivable)}</td>
                 </tr>
               </tfoot>
             </table>
@@ -467,8 +470,10 @@ export function MssSitesAnalytics({ headers, rows, totalRowCount }: MssSitesAnal
         <header className="mss-sites-analytics-panel-header">
           <Wallet size={18} aria-hidden />
           <div>
-            <h2 className="mss-sites-analytics-panel-title">Balance by partner</h2>
-            <p className="mss-sites-analytics-panel-subtitle">Signed totals per project type tab</p>
+            <h2 className="mss-sites-analytics-panel-title">MSS receivable by partner</h2>
+            <p className="mss-sites-analytics-panel-subtitle">
+              Due from clients plus net partner advances MSS will recover
+            </p>
           </div>
         </header>
 
@@ -484,31 +489,32 @@ export function MssSitesAnalytics({ headers, rows, totalRowCount }: MssSitesAnal
                 <tr>
                   <th>Partner</th>
                   <th className="mss-sites-analytics-table-num">Sites</th>
-                  <th className="mss-sites-analytics-table-num">Sites due</th>
-                  <th className="mss-sites-analytics-table-num">External</th>
-                  <th className="mss-sites-analytics-table-num">Net balance</th>
+                  <th className="mss-sites-analytics-table-num">Due from clients</th>
+                  <th className="mss-sites-analytics-table-num">Partner advances</th>
+                  <th className="mss-sites-analytics-table-num">Net MSS receivable</th>
                 </tr>
               </thead>
               <tbody>
                 {analytics.byProjectType.map((entry) => {
-                  const netSignForRow = signedSign(entry.netBalance);
-                  const hasActivity = entry.netBalance !== 0 || entry.externalSigned !== 0;
+                  const netSignForRow = signedSign(entry.netMssReceivable);
+                  const hasActivity =
+                    entry.netMssReceivable !== 0 || entry.partnerAdvancesRecoverable !== 0;
 
                   return (
                     <tr key={entry.projectType} className={hasActivity ? "mss-partner-row--active" : undefined}>
                       <td className="mss-ledger-cell-partner">{entry.projectType}</td>
                       <td className="mss-sites-analytics-table-num">{entry.count}</td>
                       <SignedAmount
-                        amount={entry.sitesDueSigned}
-                        sign={signedSign(entry.sitesDueSigned)}
+                        amount={entry.dueFromClients}
+                        sign={signedSign(entry.dueFromClients)}
                         dashWhenZero
                       />
                       <SignedAmount
-                        amount={entry.externalSigned}
-                        sign={signedSign(entry.externalSigned)}
+                        amount={entry.partnerAdvancesRecoverable}
+                        sign={signedSign(entry.partnerAdvancesRecoverable)}
                         dashWhenZero
                       />
-                      <SignedAmount amount={entry.netBalance} sign={netSignForRow} emphasis dashWhenZero />
+                      <SignedAmount amount={entry.netMssReceivable} sign={netSignForRow} emphasis dashWhenZero />
                     </tr>
                   );
                 })}
@@ -518,14 +524,14 @@ export function MssSitesAnalytics({ headers, rows, totalRowCount }: MssSitesAnal
                   <td>Total</td>
                   <td className="mss-sites-analytics-table-num">{summary.sitesByVendor.total}</td>
                   <td
-                    className={`mss-sites-analytics-table-num ${ledgerAmountClassName(signedSign(partnerTotals.sitesDue))}`}
+                    className={`mss-sites-analytics-table-num ${ledgerAmountClassName(signedSign(partnerTotals.dueFromClients))}`}
                   >
-                    {formatSignedLedgerAmount(partnerTotals.sitesDue)}
+                    {formatSignedLedgerAmount(partnerTotals.dueFromClients)}
                   </td>
                   <td
-                    className={`mss-sites-analytics-table-num ${ledgerAmountClassName(signedSign(partnerTotals.external))}`}
+                    className={`mss-sites-analytics-table-num ${ledgerAmountClassName(signedSign(partnerTotals.partnerAdvances))}`}
                   >
-                    {formatSignedLedgerAmount(partnerTotals.external)}
+                    {formatSignedLedgerAmount(partnerTotals.partnerAdvances)}
                   </td>
                   <td
                     className={`mss-sites-analytics-table-num ${ledgerAmountClassName(signedSign(partnerTotals.net))}`}

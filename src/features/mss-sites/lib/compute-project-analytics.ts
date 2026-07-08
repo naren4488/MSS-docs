@@ -22,6 +22,7 @@ export interface ProjectAnalyticsSummary {
   totalSites: number;
   sitesByVendor: VendorBreakdown;
   bankDueByVendor: VendorBreakdown;
+  cashDueFromClientByVendor: VendorBreakdown;
   cashDueToMssByVendor: VendorBreakdown;
   totalDueToMssByVendor: VendorBreakdown;
   finalDealWithClientByVendor: VendorBreakdown;
@@ -29,25 +30,28 @@ export interface ProjectAnalyticsSummary {
   /** Final deal with client minus deal with MSS — partner margin on filtered sites. */
   partnerProfitByVendor: VendorBreakdown;
   totalBankDue: number;
+  totalCashDueFromClient: number;
   totalCashDueToMss: number;
   totalDueToMss: number;
   totalFinalDealWithClient: number;
   totalDealWithMss: number;
   totalPartnerProfit: number;
-  /** Signed site dues: + partner pays MSS, − MSS pays partner. */
+  /** Signed site dues: + MSS will receive from clients once they pay. */
   totalSitesDueSigned: number;
   totalCredits: number;
   totalDebits: number;
-  /** Net partner balance: + receivable from partner, − payable to partner. */
-  netPartnerBalance: number;
+  /** Net MSS receivable: + MSS will receive, − MSS will pay. */
+  netMssReceivable: number;
 }
 
 export interface ProjectTypeLedgerSummary {
   projectType: string;
   count: number;
-  sitesDueSigned: number;
-  externalSigned: number;
-  netBalance: number;
+  /** Pending from clients — positive = MSS will receive. */
+  dueFromClients: number;
+  /** Net partner advances recoverable — positive = MSS will receive from partner. */
+  partnerAdvancesRecoverable: number;
+  netMssReceivable: number;
 }
 
 export interface UnifiedLedgerLine {
@@ -140,16 +144,23 @@ export function getLedgerSign(signedAmount: number): LedgerSign {
   return signedAmount >= 0 ? "credit" : "debit";
 }
 
-/** Partner paid MSS → debit (−). MSS paid partner → credit (+). */
+/** MSS advance to partner (+). Repayment or site expense (−). */
 export function signedExternalAmount(direction: PartnerLedgerDirection, amount: number): number {
-  return direction === "partner_to_mss" ? -amount : amount;
+  return direction === "mss_to_partner" ? amount : -amount;
 }
 
-export function externalLedgerDescription(direction: PartnerLedgerDirection, method?: string): string {
-  if (direction === "partner_to_mss") {
-    return method ? `Partner paid MSS (${method})` : "Partner paid MSS";
+export function externalLedgerDescription(
+  direction: PartnerLedgerDirection,
+  method?: string,
+  note?: string,
+): string {
+  if (direction === "site_expense") {
+    return note ?? "Sites expense";
   }
-  return "MSS paid to partner";
+  if (direction === "partner_to_mss") {
+    return method ? `Partner repaid MSS (${method})` : "Partner repaid MSS";
+  }
+  return note ? `MSS advance to partner — ${note}` : "MSS advance to partner";
 }
 
 function sumSignedColumnByProjectType(
@@ -205,7 +216,7 @@ function buildUnifiedLedger(
         id: "sites-summary",
         projectType: projectTypeLabel,
         source: "site",
-        description: `Site dues (${siteCount} site${siteCount === 1 ? "" : "s"})`,
+        description: `Due from clients (${siteCount} site${siteCount === 1 ? "" : "s"})`,
         signedAmount,
         sign: getLedgerSign(signedAmount),
         runningBalance: 0,
@@ -219,7 +230,7 @@ function buildUnifiedLedger(
       id: `external-${entry.projectType}-${index}`,
       projectType: entry.projectType,
       source: "external",
-      description: externalLedgerDescription(entry.direction, entry.method),
+      description: externalLedgerDescription(entry.direction, entry.method, entry.note),
       signedAmount,
       sign: getLedgerSign(signedAmount),
       runningBalance: 0,
@@ -286,28 +297,29 @@ export function computeProjectAnalytics(
   const externalSignedByType = sumExternalSignedByProjectType(projectTypes);
 
   const byProjectType = projectTypes.map((projectType) => {
-    const sitesDueSigned = sitesDueByType.get(projectType) ?? 0;
-    const externalSigned = externalSignedByType.get(projectType) ?? 0;
+    const dueFromClients = sitesDueByType.get(projectType) ?? 0;
+    const partnerAdvancesRecoverable = externalSignedByType.get(projectType) ?? 0;
     return {
       projectType,
       count: counts.get(projectType) ?? 0,
-      sitesDueSigned,
-      externalSigned,
-      netBalance: sitesDueSigned + externalSigned,
+      dueFromClients,
+      partnerAdvancesRecoverable,
+      netMssReceivable: dueFromClients + partnerAdvancesRecoverable,
     };
   });
 
   const ledgerLines = buildUnifiedLedger(headers, rows, projectTypes);
-  const netPartnerBalance = ledgerLines.reduce((total, line) => total + line.signedAmount, 0);
+  const netMssReceivable = ledgerLines.reduce((total, line) => total + line.signedAmount, 0);
   const totalCredits = ledgerLines
     .filter((line) => line.sign === "credit")
     .reduce((total, line) => total + line.signedAmount, 0);
   const totalDebits = ledgerLines
     .filter((line) => line.sign === "debit")
-    .reduce((total, line) => total + Math.abs(line.signedAmount), 0);
+    .reduce((total, line) => total + line.signedAmount, 0);
   const totalSitesDueSigned = sumColumn(headers, rows, "Total Due to MSS");
   const sitesByVendor = countRowsByVendor(rows);
   const bankDueByVendor = sumColumnByVendor(headers, rows, "Bank due");
+  const cashDueFromClientByVendor = sumColumnByVendor(headers, rows, "CASH DUE FROM CLIENT");
   const cashDueToMssByVendor = sumColumnByVendor(headers, rows, "Cash due to MSS");
   const totalDueToMssByVendor = sumColumnByVendor(headers, rows, "Total Due to MSS");
   const finalDealWithClientByVendor = sumColumnByVendor(headers, rows, "FINAL DEAL with client");
@@ -319,12 +331,14 @@ export function computeProjectAnalytics(
       totalSites: rows.length,
       sitesByVendor,
       bankDueByVendor,
+      cashDueFromClientByVendor,
       cashDueToMssByVendor,
       totalDueToMssByVendor,
       finalDealWithClientByVendor,
       dealWithMssByVendor,
       partnerProfitByVendor,
       totalBankDue: bankDueByVendor.total,
+      totalCashDueFromClient: cashDueFromClientByVendor.total,
       totalCashDueToMss: cashDueToMssByVendor.total,
       totalDueToMss: totalDueToMssByVendor.total,
       totalFinalDealWithClient: finalDealWithClientByVendor.total,
@@ -333,7 +347,7 @@ export function computeProjectAnalytics(
       totalSitesDueSigned,
       totalCredits,
       totalDebits,
-      netPartnerBalance,
+      netMssReceivable,
     },
     byProjectType,
     ledgerLines,
@@ -359,10 +373,10 @@ export function ledgerSignLabel(sign: LedgerSign) {
 
 export function netBalanceLabel(netBalance: number) {
   if (netBalance > 0) {
-    return "Partner pays MSS";
+    return "MSS will receive";
   }
   if (netBalance < 0) {
-    return "MSS pays partner";
+    return "MSS will pay";
   }
   return "Settled";
 }
