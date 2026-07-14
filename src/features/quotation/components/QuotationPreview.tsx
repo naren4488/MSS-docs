@@ -766,7 +766,7 @@ function createBlocks(data: QuotationData): PreviewBlock[] {
   // What's Included vs Excluded
   if (data.showComponentWarranty) {
     pushHeading(blocks, "included-excluded-heading", "What's Covered in Your Warranty");
-    blocks.push({ key: "included-excluded-matrix", estimate: 240, keepWithNext: true, node: <IncludedExcludedMatrix data={data} /> });
+    blocks.push({ key: "included-excluded-matrix", estimate: 320, keepWithNext: true, node: <IncludedExcludedMatrix data={data} /> });
   }
 
   // Manufacturing Defect Warranty
