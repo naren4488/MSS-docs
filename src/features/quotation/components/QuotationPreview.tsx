@@ -191,7 +191,41 @@ function MaterialHeader() {
       <div style={headerCell()}>Description</div>
       <div style={headerCell({ textAlign: "center" })}>Qty</div>
       <div style={headerCell({ textAlign: "center" })}>Unit</div>
-      <div style={headerCell()}>Make / Specification</div>
+      <div style={headerCell()}>Specification</div>
+    </div>
+  );
+}
+
+
+
+function parseWattageFromMaterials(materialItems: any[]): { panels: number; wattage: number } | null {
+  const solarPanelItem = materialItems.find(item => item.description.includes("Solar PV Modules"));
+  if (!solarPanelItem) return null;
+  
+  const qtyMatch = solarPanelItem.qty.match(/\d+/);
+  const unitMatch = solarPanelItem.unit.match(/\d+/);
+  
+  if (!qtyMatch || !unitMatch) return null;
+  
+  const panels = parseInt(qtyMatch[0]);
+  const wattagePerPanel = parseInt(unitMatch[0]);
+  
+  return {
+    panels,
+    wattage: panels * wattagePerPanel,
+  };
+}
+
+function WattageInfoBox({ data }: { data: QuotationData }) {
+  const wattageInfo = parseWattageFromMaterials(data.materialItems);
+  if (!wattageInfo) return null;
+  
+  return (
+    <div style={{ padding: "12px 16px", background: "#f0f4f8", border: `1px solid #d0d8e0`, borderRadius: 4, margin: "12px 0" }}>
+      <div style={{ fontSize: 11, fontWeight: 600, color: NAVY, letterSpacing: 0.4 }}>TOTAL SYSTEM WATTAGE</div>
+      <div style={{ fontSize: 13, fontWeight: 600, color: NAVY, marginTop: 4 }}>
+        {wattageInfo.panels} Panels × {Math.round(wattageInfo.wattage / wattageInfo.panels)} Wp = {wattageInfo.wattage.toLocaleString()} Watt ({(wattageInfo.wattage / 1000).toFixed(2)} KW)
+      </div>
     </div>
   );
 }
@@ -325,8 +359,8 @@ function WarrantyBadges({ data }: { data: QuotationData }) {
     <div style={{ textAlign: "center" }}>
       <div
         style={{
-          width: 96,
-          height: 96,
+          width: 88,
+          height: 88,
           borderRadius: "50%",
           background: `linear-gradient(135deg, ${NAVY}, ${NAVY2})`,
           color: "#ffffff",
@@ -347,9 +381,230 @@ function WarrantyBadges({ data }: { data: QuotationData }) {
     </div>
   );
   return (
-    <div style={{ display: "flex", justifyContent: "center", gap: 60, margin: "10px 0 4px" }}>
-      {badge(data.warrantyProductYears, "PRODUCT WARRANTY")}
-      {badge(data.warrantyPerformanceYears, "PERFORMANCE WARRANTY")}
+    <div style={{ display: "flex", justifyContent: "center", gap: 24, margin: "10px 0 4px", flexWrap: "wrap" }}>
+      {badge(data.warrantySolarPanelYears, "SOLAR PANEL WARRANTY")}
+      {badge(data.warrantyInverterYears, "INVERTER WARRANTY")}
+      {badge(data.warrantySetupBosYears, "SETUP & BOS WARRANTY")}
+    </div>
+  );
+}
+
+function EmiFinancingSection({ data }: { data: QuotationData }) {
+  return (
+    <div style={{ marginTop: 12, marginBottom: 12 }}>
+      <div style={{ fontSize: 11, fontWeight: 600, color: "#152036", marginBottom: 10 }}>
+        <span style={{ fontWeight: 700 }}>Government Bank Support Available Under PM Surya Ghar Scheme:</span>
+      </div>
+      <div style={{ fontSize: 11, lineHeight: 1.6, marginBottom: 8 }}>
+        <div>• Loans available up to ₹2,00,000 with <strong>Zero Down Payment</strong></div>
+        <div>• Interest rate: ~6% per annum (subject to bank approval)</div>
+      </div>
+      <div style={{ fontSize: 10.5, fontWeight: 600, color: "#152036", marginBottom: 6, marginTop: 10 }}>
+        EMI Examples (Indicative for ₹2,00,000 loan):
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, fontSize: 11 }}>
+        <div style={{ padding: 8, background: "#f5f5f5", borderRadius: 4 }}>
+          <div style={{ fontWeight: 600 }}>5-Year Tenure</div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: "#864797" }}>₹3,865/month</div>
+        </div>
+        <div style={{ padding: 8, background: "#f5f5f5", borderRadius: 4 }}>
+          <div style={{ fontWeight: 600 }}>7-Year Tenure</div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: "#864797" }}>₹2,790/month</div>
+        </div>
+        <div style={{ padding: 8, background: "#f5f5f5", borderRadius: 4, gridColumn: "1 / -1" }}>
+          <div style={{ fontWeight: 600 }}>10-Year Tenure</div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: "#864797" }}>₹1,983/month</div>
+        </div>
+      </div>
+      <div style={{ fontSize: 9.5, color: "#666", marginTop: 10, fontStyle: "italic" }}>
+        *Rates are indicative and subject to bank approval. Actual EMI may vary based on credit score and bank policy. Contact us for loan documentation and bank details.
+      </div>
+    </div>
+  );
+}
+
+function ComponentWarrantyTable({ data }: { data: QuotationData }) {
+  const components = [
+    { name: "Solar Panels (Product)", years: "30 Years" },
+    { name: "Solar Panels (Performance)", years: "25 Years" },
+    { name: "Inverter", years: "10 Years" },
+    { name: "Mounting Structure", years: "5 Years" },
+    { name: "Balance of System (BOS)", years: "5 Years" },
+    { name: "Installation & Service", years: "5 Years" },
+  ];
+
+  const GRID = "2fr 1fr";
+  const headerStyle: CSSProperties = { padding: "6px 8px", fontWeight: 700, background: "#14306b", color: "#ffffff", fontSize: 10.5, borderRight: TABLE_BORDER, textAlign: "left" };
+  const cellStyle: CSSProperties = { padding: "6px 8px", fontSize: 10.5, borderRight: TABLE_BORDER, borderBottom: TABLE_BORDER };
+
+  return (
+    <div style={{ marginTop: 12, marginBottom: 12 }}>
+      <div style={{ display: "grid", gridTemplateColumns: GRID }}>
+        <div style={headerStyle}>Component</div>
+        <div style={{ ...headerStyle, textAlign: "center", borderRight: "none" }}>Warranty Period</div>
+      </div>
+      {components.map((comp, idx) => (
+        <div key={idx} style={{ display: "grid", gridTemplateColumns: GRID }}>
+          <div style={cellStyle}>{comp.name}</div>
+          <div style={{ ...cellStyle, textAlign: "center", borderRight: "none", fontWeight: 600 }}>{comp.years}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function IncludedExcludedMatrix({ data }: { data: QuotationData }) {
+  const GRID = "1fr 1fr";
+  const headerStyle: CSSProperties = { padding: "8px 10px", fontWeight: 700, background: "#14306b", color: "#ffffff", fontSize: 11, borderRight: TABLE_BORDER };
+
+  const items = {
+    included: [
+      "Material & manufacturing defects",
+      "Inverter malfunction",
+      "Structure integrity issues",
+      "Free maintenance checks (2 years)",
+      "Generation performance monitoring",
+    ],
+    excluded: [
+      "Panel cleaning (customer responsibility)",
+      "External damage (accidents, vandalism)",
+      "Natural disasters",
+      "Unauthorized modifications",
+      "Negligence or misuse",
+    ],
+  };
+
+  return (
+    <div style={{ marginTop: 12, marginBottom: 12 }}>
+      <div style={{ display: "grid", gridTemplateColumns: GRID, gap: 12 }}>
+        {/* INCLUDED */}
+        <div>
+          <div style={{ ...headerStyle, borderRight: "none", textAlign: "center", borderRadius: "4px 4px 0 0" }}>✓ WHAT'S INCLUDED</div>
+          <div>
+            {items.included.map((item, idx) => (
+              <div key={idx} style={{ padding: "6px 10px", fontSize: 10.5, borderBottom: TABLE_BORDER, lineHeight: 1.4 }}>
+                • {item}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* EXCLUDED */}
+        <div>
+          <div style={{ ...headerStyle, borderRight: "none", textAlign: "center", borderRadius: "4px 4px 0 0" }}>✗ WHAT'S NOT INCLUDED</div>
+          <div>
+            {items.excluded.map((item, idx) => (
+              <div key={idx} style={{ padding: "6px 10px", fontSize: 10.5, borderBottom: TABLE_BORDER, lineHeight: 1.4 }}>
+                • {item}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div style={{ marginTop: 12, padding: "10px 12px", background: "#fff3cd", borderRadius: 4 }}>
+        <div style={{ fontWeight: 700, fontSize: 11, color: "#333", marginBottom: 6 }}>💰 After 2-Year Free Period:</div>
+        <div style={{ fontSize: 10.5, color: "#555", lineHeight: 1.5 }}>
+          Optional maintenance packages available at competitive rates | Annual service check-ups recommended | Emergency repairs on paid call-out basis
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MaintenanceServiceSection({ data }: { data: QuotationData }) {
+  return (
+    <div style={{ marginTop: 12, marginBottom: 12 }}>
+      <div style={{ fontSize: 11, fontWeight: 700, color: "#152036", marginBottom: 10 }}>
+        2 YEARS FREE MAINTENANCE CHECKS ({data.maintenanceFrequency} inspections)
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+        {/* INCLUDED */}
+        <div>
+          <div style={{ fontWeight: 700, fontSize: 10.5, color: "#27ae60", marginBottom: 6 }}>✓ Included:</div>
+          <div style={{ fontSize: 10.5, lineHeight: 1.6 }}>
+            <div>• Structure inspection</div>
+            <div>• Electrical safety verification</div>
+            <div>• Generation performance analysis</div>
+            <div>• System monitoring & diagnostics</div>
+            <div>• Minor adjustments if needed</div>
+          </div>
+        </div>
+
+        {/* NOT INCLUDED */}
+        <div>
+          <div style={{ fontWeight: 700, fontSize: 10.5, color: "#e74c3c", marginBottom: 6 }}>✗ Not Included:</div>
+          <div style={{ fontSize: 10.5, lineHeight: 1.6 }}>
+            <div>• Panel cleaning (customer to clean monthly)</div>
+            <div>• Part replacements</div>
+            <div>• External damage repairs</div>
+          </div>
+        </div>
+      </div>
+
+      <div style={{ marginTop: 12, padding: "10px 12px", background: "#e3f2fd", borderRadius: 4 }}>
+        <div style={{ fontWeight: 700, fontSize: 10.5, color: "#1565c0" }}>After Year 2:</div>
+        <div style={{ fontSize: 10.5, color: "#555", marginTop: 4 }}>{data.maintenanceAfterYears}</div>
+      </div>
+    </div>
+  );
+}
+
+function EffectiveInvestmentBox({ data }: { data: QuotationData }) {
+  const hasSubsidy = data.projectAmount.trim() || data.centralSubsidy.trim() || data.stateSubsidy.trim() || data.effectivePayableAmount.trim();
+  if (!hasSubsidy) return null;
+
+  const GREEN = "#2d7a3e";
+  const LIGHT_GREEN = "#e8f5f1";
+  const LINE_GREEN = "#4ade80";
+
+  return (
+    <div style={{ border: `3px solid ${GREEN}`, borderRadius: 12, padding: "20px 24px", background: LIGHT_GREEN, marginTop: 12, marginBottom: 12 }}>
+      <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: GREEN, marginBottom: 16, textAlign: "left" }}>
+        YOUR EFFECTIVE INVESTMENT AFTER SUBSIDY
+      </div>
+
+      {data.projectAmount.trim() && (
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", alignItems: "center", padding: "8px 0", fontSize: 12, color: GREEN }}>
+          <span style={{ fontWeight: 600 }}>Project amount (incl. GST)</span>
+          <span style={{ textAlign: "right", fontWeight: 700 }}>₹{data.projectAmount}</span>
+        </div>
+      )}
+
+      {(data.centralSubsidy.trim() || data.stateSubsidy.trim()) && (
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", alignItems: "center", padding: "8px 0", fontSize: 12, color: GREEN, marginBottom: 8 }}>
+          <span style={{ fontWeight: 600 }}>
+            Less total Govt. subsidy
+            {(data.centralSubsidy.trim() || data.stateSubsidy.trim()) && (
+              <span style={{ fontSize: 11, fontWeight: 500, marginLeft: 4 }}>
+                (₹ {data.centralSubsidy.trim() ? data.centralSubsidy : "0"}
+                {data.stateSubsidy.trim() && ` + ₹ ${data.stateSubsidy}`})
+              </span>
+            )}
+          </span>
+          <span style={{ textAlign: "right", fontWeight: 700 }}>
+            − ₹{data.stateSubsidy.trim() ?
+              String(parseInt(data.centralSubsidy.replace(/,/g, "") || "0") + parseInt(data.stateSubsidy.replace(/,/g, "") || "0")).replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+              : data.centralSubsidy}
+          </span>
+        </div>
+      )}
+
+      <div style={{ height: "2px", background: LINE_GREEN, margin: "12px 0" }} />
+
+      {data.effectivePayableAmount.trim() && (
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", alignItems: "center", padding: "10px 0", fontSize: 13 }}>
+          <span style={{ fontWeight: 800, color: GREEN }}>Effective payable amount</span>
+          <span style={{ textAlign: "right", fontWeight: 800, fontSize: 14, color: GREEN }}>₹{data.effectivePayableAmount}</span>
+        </div>
+      )}
+
+      {data.subsidyNote.trim() && (
+        <div style={{ fontSize: 10, color: "#555555", marginTop: 10, fontStyle: "italic", lineHeight: 1.5, paddingTop: 8, borderTop: `1px solid ${LINE_GREEN}` }}>
+          {data.subsidyNote}
+        </div>
+      )}
     </div>
   );
 }
@@ -442,6 +697,25 @@ function createBlocks(data: QuotationData): PreviewBlock[] {
       const tall = Math.max(estimateParagraphHeight(item.make, 34, 14), estimateParagraphHeight(item.description, 26, 14));
       blocks.push({ key: `material-${item.id}`, estimate: 16 + tall, node: <MaterialRow data={data} index={index} /> });
     });
+
+    // Add note about net meter provision
+    const hasNetMeterItem = data.materialItems.some(item => item.description.includes("Solar & Net Meter"));
+    if (hasNetMeterItem) {
+      blocks.push({
+        key: "net-meter-note",
+        estimate: 30,
+        node: (
+          <div style={{ paddingTop: "12px", paddingBottom: "12px", fontSize: "12px", color: "#666", fontStyle: "italic", borderTop: "1px solid #e0e0e0" }}>
+            * Net meter will be provided only if the client doesn't already have a smart meter installed.
+          </div>
+        ),
+      });
+    }
+    
+    // Show Solar Panel Wattage Info
+    if (data.showWattageInfo && parseWattageFromMaterials(data.materialItems)) {
+      blocks.push({ key: "wattage-info", estimate: 50, keepWithNext: true, node: <WattageInfoBox data={data} /> });
+    }
   }
 
   // Installation Work
@@ -472,6 +746,29 @@ function createBlocks(data: QuotationData): PreviewBlock[] {
     });
   }
 
+  // EMI & Financing Section
+  if (data.showEmiSection) {
+    pushHeading(blocks, "emi-heading", "EMI & Financing Options");
+    blocks.push({ key: "emi-section", estimate: 140, keepWithNext: true, node: <EmiFinancingSection data={data} /> });
+  }
+
+  // Effective Investment After Subsidy
+  if (data.projectAmount.trim() || data.centralSubsidy.trim() || data.stateSubsidy.trim() || data.effectivePayableAmount.trim()) {
+    blocks.push({ key: "effective-investment", estimate: 120, keepWithNext: true, node: <EffectiveInvestmentBox data={data} /> });
+  }
+
+  // Component Warranty Table
+  if (data.showComponentWarranty) {
+    pushHeading(blocks, "component-warranty-heading", "Component Warranty Breakdown");
+    blocks.push({ key: "component-warranty-table", estimate: 160, keepWithNext: true, node: <ComponentWarrantyTable data={data} /> });
+  }
+
+  // What's Included vs Excluded
+  if (data.showComponentWarranty) {
+    pushHeading(blocks, "included-excluded-heading", "What's Covered in Your Warranty");
+    blocks.push({ key: "included-excluded-matrix", estimate: 240, keepWithNext: true, node: <IncludedExcludedMatrix data={data} /> });
+  }
+
   // Manufacturing Defect Warranty
   if (data.warrantyText.trim()) {
     pushHeading(blocks, "warranty-heading", "Manufacturing Defect Warranty");
@@ -485,7 +782,7 @@ function createBlocks(data: QuotationData): PreviewBlock[] {
   // Warranty Coverage badges
   if (data.showWarrantyBadges) {
     pushHeading(blocks, "warranty-badges-heading", "Warranty Coverage");
-    blocks.push({ key: "warranty-badges", estimate: 150, node: <WarrantyBadges data={data} /> });
+    blocks.push({ key: "warranty-badges", estimate: 280, node: <WarrantyBadges data={data} /> });
   }
 
   // Solar Power Generation
@@ -507,21 +804,14 @@ function createBlocks(data: QuotationData): PreviewBlock[] {
 
   // Subsidy & notes
   const subsidyLines: ReactNode[] = [];
-  if (data.subsidyAmount.trim()) {
-    subsidyLines.push(
-      <p key="subsidy" style={{ ...paragraphStyle, fontSize: 11.5, fontWeight: 700, color: "#152036" }}>
-        Subsidy Amount: ₹ {data.subsidyAmount}
-      </p>,
-    );
-  }
-  if (data.netMeteringNote.trim()) {
+  if (data.netMeteringNote?.trim()) {
     subsidyLines.push(
       <p key="netmeter" style={{ ...paragraphStyle, fontSize: 11 }}>
         {data.netMeteringNote}
       </p>,
     );
   }
-  if (data.loadExtensionNote.trim()) {
+  if (data.loadExtensionNote?.trim()) {
     subsidyLines.push(
       <p key="loadext" style={{ ...paragraphStyle, fontSize: 11 }}>
         {data.loadExtensionNote}
@@ -530,6 +820,11 @@ function createBlocks(data: QuotationData): PreviewBlock[] {
   }
   if (subsidyLines.length > 0) {
     blocks.push({ key: "subsidy-block", estimate: 20 + subsidyLines.length * 26, node: <div style={{ marginTop: 8 }}>{subsidyLines}</div> });
+  }
+
+  // Maintenance & Service Section
+  if (data.showComponentWarranty) {
+    blocks.push({ key: "maintenance-section", estimate: 150, keepWithNext: true, node: <MaintenanceServiceSection data={data} /> });
   }
 
   // Terms & Conditions
