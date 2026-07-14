@@ -771,7 +771,7 @@ function createBlocks(data: QuotationData): PreviewBlock[] {
   if (data.showComponentWarranty) {
     pushHeading(blocks, "included-excluded-heading", "What's Covered in Your Warranty");
     blocks.push({ key: "included-excluded-matrix", estimate: 160, keepWithNext: true, node: <IncludedExcludedMatrix data={data} /> });
-    blocks.push({ key: "warranty-after-period", estimate: 80, keepWithNext: true, node: <WarrantyAfterPeriodBox /> });
+    blocks.push({ key: "warranty-after-period", estimate: 150, node: <WarrantyAfterPeriodBox /> });
   }
 
   // Manufacturing Defect Warranty
