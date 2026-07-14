@@ -501,12 +501,16 @@ function IncludedExcludedMatrix({ data }: { data: QuotationData }) {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
 
-      <div style={{ marginTop: 12, padding: "10px 12px", background: "#fff3cd", borderRadius: 4 }}>
-        <div style={{ fontWeight: 700, fontSize: 11, color: "#333", marginBottom: 6 }}>💰 After 2-Year Free Period:</div>
-        <div style={{ fontSize: 10.5, color: "#555", lineHeight: 1.5 }}>
-          Optional maintenance packages available at competitive rates | Annual service check-ups recommended | Emergency repairs on paid call-out basis
-        </div>
+function WarrantyAfterPeriodBox() {
+  return (
+    <div style={{ marginTop: 12, marginBottom: 12, padding: "10px 12px", background: "#fff3cd", borderRadius: 4 }}>
+      <div style={{ fontWeight: 700, fontSize: 11, color: "#333", marginBottom: 6 }}>💰 After 2-Year Free Period:</div>
+      <div style={{ fontSize: 10.5, color: "#555", lineHeight: 1.5 }}>
+        Optional maintenance packages available at competitive rates | Annual service check-ups recommended | Emergency repairs on paid call-out basis
       </div>
     </div>
   );
@@ -766,7 +770,8 @@ function createBlocks(data: QuotationData): PreviewBlock[] {
   // What's Included vs Excluded
   if (data.showComponentWarranty) {
     pushHeading(blocks, "included-excluded-heading", "What's Covered in Your Warranty");
-    blocks.push({ key: "included-excluded-matrix", estimate: 320, keepWithNext: true, node: <IncludedExcludedMatrix data={data} /> });
+    blocks.push({ key: "included-excluded-matrix", estimate: 160, keepWithNext: true, node: <IncludedExcludedMatrix data={data} /> });
+    blocks.push({ key: "warranty-after-period", estimate: 80, keepWithNext: true, node: <WarrantyAfterPeriodBox /> });
   }
 
   // Manufacturing Defect Warranty
