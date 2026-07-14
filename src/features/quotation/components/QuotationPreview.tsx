@@ -767,12 +767,12 @@ function createBlocks(data: QuotationData): PreviewBlock[] {
     blocks.push({ key: "component-warranty-table", estimate: 160, keepWithNext: true, node: <ComponentWarrantyTable data={data} /> });
   }
 
-  // What's Included vs Excluded - move to next page if combined height doesn't fit
+  // What's Included vs Excluded
   if (data.showComponentWarranty) {
     pushHeading(blocks, "included-excluded-heading", "What's Covered in Your Warranty");
     blocks.push({ key: "included-excluded-matrix", estimate: 160, keepWithNext: true, node: <IncludedExcludedMatrix data={data} /> });
-    // High estimate to force pagination to move yellow box to next page if space is tight
-    blocks.push({ key: "warranty-after-period", estimate: 180, node: <WarrantyAfterPeriodBox /> });
+    // Very high estimate to FORCE yellow box to next page - simple and effective
+    blocks.push({ key: "warranty-after-period", estimate: 600, node: <WarrantyAfterPeriodBox /> });
   }
 
   // Manufacturing Defect Warranty
