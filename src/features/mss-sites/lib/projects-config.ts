@@ -63,7 +63,7 @@ function projectTab(
 export const PROJECT_SHEET_TABS: readonly ProjectSheetTab[] = [
   projectTab("MSS res"),
   projectTab("SHRIPAL JI"),
-  projectTab("Rohit (shree shyam)"),
+  projectTab("Rohit (RJ GREEN)"),
   projectTab("SATAYNARAYAN JI"),
   projectTab("Ajay (everest)"),
   projectTab("RAVI JI SITES"),
@@ -77,14 +77,14 @@ export const PROJECT_SHEET_TABS: readonly ProjectSheetTab[] = [
 /**
  * DEC to FEB (Arkshakti) workbook — first 6 tabs only.
  * 1. MSS res  2. SHRIPAL JI  3. MSS COMMERCIAL  4. Ajay (everest)
- * 5. Rohit (shree shyam)  6. Pradeep (veer)
+ * 5. Rohit (RJ GREEN)  6. Pradeep (veer)
  */
 export const ARKSHAKTI_SHEET_TABS: readonly ProjectSheetTab[] = [
   projectTab("MSS res"),
   projectTab("SHRIPAL JI"),
   projectTab("MSS COMMERCIAL"),
   projectTab("Ajay (everest)"),
-  projectTab("Rohit (shree shyam)"),
+  projectTab("Rohit (RJ GREEN)"),
   projectTab("Pradeep (veer)"),
 ];
 

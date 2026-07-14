@@ -571,7 +571,7 @@ Reuses agreement types (`AgreementCompany`, `AgreementSection`, `AgreementClause
 | 1 | summary | 10 | 10 | 0 | No (dashboard) |
 | 2 | MSS res | 44 | 44 | 34 | Yes |
 | 3 | SHRIPAL JI | 21 | 21 | 20 | Yes |
-| 4 | Rohit (shree shyam) | 8 | 8 | 8 | Yes |
+| 4 | Rohit (RJ GREEN) | 8 | 8 | 8 | Yes |
 | 5 | SATAYNARAYAN JI | 20 | 20 | 20 | Yes |
 | 6 | Ajay (everest) | 17 | 17 | 16 | Yes |
 | 7 | RAVI JI SITES | 3 | 3 | 3 | Yes |
@@ -588,7 +588,7 @@ Tab 9 is spelled **KAVITA MAM** (not KAVITA MAAM). A wrong name makes Google gvi
 
 1. MSS res  
 2. SHRIPAL JI  
-3. Rohit (shree shyam)  
+3. Rohit (RJ GREEN)  
 4. SATAYNARAYAN JI  
 5. Ajay (everest)  
 6. RAVI JI SITES  
@@ -604,7 +604,7 @@ Tab 9 is spelled **KAVITA MAM** (not KAVITA MAAM). A wrong name makes Google gvi
 2. SHRIPAL JI  
 3. MSS COMMERCIAL  
 4. Ajay (everest)  
-5. Rohit (shree shyam)  
+5. Rohit (RJ GREEN)  
 6. Pradeep (veer)  
 
 **Not loaded:** MSS summary tab, MSS ALWAR SITES; Arkshakti RAVI, ARKSHKATI COMM, ALWAR SITES, and any later tabs.

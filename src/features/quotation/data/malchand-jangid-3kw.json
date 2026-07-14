@@ -1,0 +1,254 @@
+{
+  "id": "q-malchand-jangid-3kw-001",
+  "name": "Malchand Jangid - 3KW 1PH",
+  "createdAt": "2026-07-14T00:00:00Z",
+  "updatedAt": "2026-07-14T00:00:00Z",
+  "content": {
+    "title": "SOLAR PROPOSAL",
+    "tagline": "SMART  |  SUSTAINABLE  |  COST EFFECTIVE",
+    "coverImageUrl": "",
+    "customerName": "Malchand Jangid",
+    "capacity": "3 KW 1PH",
+    "systemPhase": "1 Phase",
+    "phase": "1PH",
+    "address": "Kheri Milk",
+    "proposalDate": "2026-07-14",
+    "company": {
+      "name": "Mahi Solar Solution Private Limited",
+      "logoUrl": "/assets/mss-logo.png",
+      "address": "Plot No. 44, Jai Bhawani Vihar Vistar, Radha Vihar, Govindpura, Jaipur, Rajasthan – 302044",
+      "phone": "+91 9928413501",
+      "email": "mahisolarsolution@gmail.com",
+      "website": "",
+      "cin": "",
+      "gst": "08AAUCM4104G1ZD",
+      "representativeName": "Mahendra Kumawat",
+      "representativeTitle": "Director"
+    },
+    "materialItems": [
+      {
+        "id": "mat-001",
+        "description": "Solar PV Modules",
+        "qty": "6 Panel",
+        "unit": "550 Wp",
+        "make": "Adani Topcon Bifacial / Silicon Technology with 30 Year Warranty"
+      },
+      {
+        "id": "mat-002",
+        "description": "Solar Inverter",
+        "qty": "1",
+        "unit": "1 Phase",
+        "make": "3.6 KW POLYCAB Inverter with 10 Year Warranty"
+      },
+      {
+        "id": "mat-003",
+        "description": "Mounting Structure (GI Apollo)",
+        "qty": "As per Requirement",
+        "unit": "",
+        "make": "Leg 75×75, Rafter 60×40, Purline 40×40"
+      },
+      {
+        "id": "mat-004",
+        "description": "AC Cable",
+        "qty": "As per Requirement",
+        "unit": "M",
+        "make": "2 Core 10 mm Aluminium Armoured Cable (1PH)"
+      },
+      {
+        "id": "mat-005",
+        "description": "DC Cable",
+        "qty": "As per Requirement",
+        "unit": "M",
+        "make": "4 sq mm Copper Wire, Polycab cable"
+      },
+      {
+        "id": "mat-006",
+        "description": "Lightning Arrestor Kit",
+        "qty": "1 No",
+        "unit": "1 No",
+        "make": "1 M, Copper bound"
+      },
+      {
+        "id": "mat-007",
+        "description": "Earthing Kit",
+        "qty": "3 Set",
+        "unit": "Set",
+        "make": "Earthing single core copper, cement earthing with GI and chemical solution, 1 Mtr"
+      },
+      {
+        "id": "mat-008",
+        "description": "ACDB / DCDB / MCB Distribution Box",
+        "qty": "1, 1 No",
+        "unit": "32 Amp / 1000 V DC",
+        "make": "L&T, Schneider"
+      },
+      {
+        "id": "mat-009",
+        "description": "Solar & Net Meter LT-CT",
+        "qty": "1, 1 No",
+        "unit": "",
+        "make": "Genus or HPL as per availability, tested by JVVNL"
+      },
+      {
+        "id": "mat-010",
+        "description": "DC Wire Duct & Casing, Connecting Cable, MC-4 Connector",
+        "qty": "15 M, 4 Set",
+        "unit": "6/4 mm 1500 V DC",
+        "make": "Polycab Copper 4 mm"
+      },
+      {
+        "id": "mat-011",
+        "description": "Designed Installation & Commissioning",
+        "qty": "",
+        "unit": "As per site requirement",
+        "make": "Team Mahi Solar Solution"
+      }
+    ],
+    "installationWork": [
+      "Feeder / LT panel for connection to grid will be made available at site and shall be in the Client's scope.",
+      "Net metering and approval of DISCOM.",
+      "Warranty as per terms and conditions mentioned herein."
+    ],
+    "assumptions": [
+      "Peak sunshine availability of 5 hours average as per the geographical site conditions.",
+      "It is assumed that sufficient shadow-free area is available for installation of modules. In case of restriction due to already installed equipment, other roof (as available at site) may have to be used keeping minimum impact on generation.",
+      "Load bearing capacity of the roof should be adequate to carry the load of the MMS system considering the wind load of the zone.",
+      "Cable tray / trench shall not be in our scope of work."
+    ],
+    "customerScope": [
+      "Customer to provide space for storing of material.",
+      "Making the site ready and cleaning the terrace / roof of any unwanted items is not included in scope of work. Necessary support will be extended to our installation team for taking material inside the premises and to the rooftop; the same has to be kept at a proper and secure place till completion of installation.",
+      "Safety of material supplied would be in customer scope after delivery at site.",
+      "Customer shall provide access to feed-in solar power to the LT panel located on the ground floor of the building; the feeder / LT panel for connection to grid will be made available at site and shall be in customer scope.",
+      "Customer to provide LAN (internet facility) for cloud monitoring.",
+      "Cleaning of modules is not in our scope; customer is requested to clean the panels once a week.",
+      "Net metering file charges would be in the scope of customer.",
+      "Civil foundation material will be provided by customer."
+    ],
+    "commercialOffer": [
+      {
+        "id": "comm-001",
+        "parameter": "Solar PV Plant Capacity",
+        "offering": "3 KWp, On-grid SPV System"
+      },
+      {
+        "id": "comm-002",
+        "parameter": "Panel Configuration",
+        "offering": "6 x 550W Adani Topcon Bifacial Panels (3.3 KW Total)"
+      },
+      {
+        "id": "comm-003",
+        "parameter": "Price Basis",
+        "offering": "Turnkey EPC"
+      },
+      {
+        "id": "comm-004",
+        "parameter": "Project Price",
+        "offering": "Rs. 54.54 / Watt — Net Payable Amount INR 1,80,000/-"
+      },
+      {
+        "id": "comm-005",
+        "parameter": "Customer Net Payable Amount",
+        "offering": "INR 1,80,000/- (Including Tax)"
+      },
+      {
+        "id": "comm-006",
+        "parameter": "1 Year Maintenance & Cleaning Service",
+        "offering": "INR 8,000/- — FREE"
+      }
+    ],
+    "warrantyText": "12 year product manufacturing warranty. Power performance guarantee: power degradation < 2% in the first year and < 0.50% per year in years 2–27. BOS — 1 Year Warranty.",
+    "showGeneration": true,
+    "generation": {
+      "perDay": "12 Units / Day",
+      "perMonth": "360 Units / Month",
+      "perYear": "4320 Units / Year",
+      "savingPerYear": "₹ 34,560"
+    },
+    "showWarrantyBadges": true,
+    "warrantySolarPanelYears": "30",
+    "warrantyInverterYears": "10",
+    "warrantySetupBosYears": "5",
+    "showInstallationProcess": true,
+    "installationSteps": [
+      "Site Survey",
+      "System Design",
+      "Documentation",
+      "Material Dispatch",
+      "Installation",
+      "Testing & Commissioning",
+      "Net Metering & Activation",
+      "Handover"
+    ],
+    "showWattageInfo": true,
+    "projectAmount": "180000",
+    "centralSubsidy": "78000",
+    "stateSubsidy": "",
+    "effectivePayableAmount": "102000",
+    "subsidyNote": "*Subject to subsidy eligibility — state subsidy applies only where 100 units free benefit is currently available.",
+    "showEmiSection": true,
+    "emiInfo": {
+      "uptoLoanAmount": "₹2,00,000",
+      "interestRate": "~6% per annum",
+      "tenure5YearEmi": "₹3,865/month",
+      "tenure7YearEmi": "₹2,790/month",
+      "tenure10YearEmi": "₹1,983/month"
+    },
+    "showComponentWarranty": true,
+    "maintenanceFrequency": "Quarterly",
+    "maintenanceAfterYears": "Available at competitive rates",
+    "netMeteringNote": "Net metering period will be covered in 25–30 days.",
+    "loadExtensionNote": "Load extension cost would be extra as per JVVNL terms, and the net metering period will start when the load is increased.",
+    "terms": [
+      {
+        "id": "term-001",
+        "label": "Transit Insurance",
+        "text": "Up to delivery of material at site."
+      },
+      {
+        "id": "term-002",
+        "label": "System Installation",
+        "text": "System will be installed by our certified team."
+      },
+      {
+        "id": "term-003",
+        "label": "Delivery",
+        "text": "Material dispatched in 3–4 days from the date of receipt of your technically and commercially valid purchase order, and installation will be completed within 2 weeks from the date of receipt of materials at site, provided the site is ready for installation in all respects."
+      },
+      {
+        "id": "term-004",
+        "label": "Warranty",
+        "text": "Plant designed for 25 years with linear efficiency. The plant will produce minimum power up to 90% of the rated capacity for 10 years and thereafter 80% of the rated capacity up to 25 years, with sun availability of 4.5 hours a day during sun radiation availability. We also provide 5 years warranty support; however, the warranty will be owned by the original equipment manufacturer of the solar panel and inverter."
+      },
+      {
+        "id": "term-005",
+        "label": "Payment Terms",
+        "text": "30% advance payment along with the purchase order, 60% at the time of receiving solar panels and inverter, and 10% at the time of complete installation."
+      }
+    ],
+    "subsidyDocuments": [
+      "Aadhar Card",
+      "Electricity Bill",
+      "Photo",
+      "Cancelled Cheque / Bank Passbook",
+      "PAN Card",
+      "Mobile Number",
+      "Gmail ID",
+      "Location",
+      "Site photo with GPS map camera",
+      "Rooftop measurement in sq. feet",
+      "Property document"
+    ],
+    "bankAccountName": "MAHI SOLAR SOLUTION PRIVATE LIMITED",
+    "bankName": "AU Small Finance Bank",
+    "bankAccountNo": "7740889928413501",
+    "bankIfsc": "AUBL0002206",
+    "bankGst": "08AAUCM4104G1ZD",
+    "repName": "MAHENDRA KUMAWAT",
+    "repTitle": "Director",
+    "repCompany": "MAHI SOLAR SOLUTION PRIVATE LIMITED",
+    "repMobiles": "9928413501",
+    "showLetterhead": true,
+    "showPageNumbers": true
+  }
+}

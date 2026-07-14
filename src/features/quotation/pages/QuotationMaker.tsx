@@ -22,15 +22,15 @@ export function QuotationMaker() {
   const params = useParams();
   const navigate = useNavigate();
   const previewRef = useRef<HTMLDivElement | null>(null);
-  const record = params.id ? getQuotation(params.id) : null;
 
   const initialData = useMemo(() => {
-    if (record) {
-      return normalizeQuotationData(cloneData(record.content));
+    const currentRecord = params.id ? getQuotation(params.id) : null;
+    if (currentRecord) {
+      return normalizeQuotationData(cloneData(currentRecord.content));
     }
     const draft = getQuotationDraft();
     return draft ? normalizeQuotationData(draft) : createDefaultQuotationData();
-  }, [record]);
+  }, [params.id]);
 
   const [data, setData] = useState<QuotationData>(initialData);
   const [viewMode, setViewMode] = useState<"split" | "editor" | "preview">("split");
@@ -45,12 +45,12 @@ export function QuotationMaker() {
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
-      if (!record) {
+      if (!params.id) {
         saveQuotationDraft(data);
       }
     }, 400);
     return () => window.clearTimeout(timer);
-  }, [data, record]);
+  }, [data, params.id]);
 
   useBeforeUnload(
     (event) => {
@@ -69,11 +69,11 @@ export function QuotationMaker() {
   }
 
   function handleSave(name: string) {
-    const saved = saveQuotationRecord({ id: record?.id, name, content: data });
+    const saved = saveQuotationRecord({ id: params.id, name, content: data });
     clearQuotationDraft();
     setSavedSnapshot(JSON.stringify(data));
     setSaveDialogOpen(false);
-    if (!record) {
+    if (!params.id) {
       navigate(`/quotation/${saved.id}`, { replace: true });
     }
   }
@@ -92,7 +92,8 @@ export function QuotationMaker() {
     setData(createDefaultQuotationData());
   }
 
-  const defaultSaveName = data.customerName || record?.name || data.capacity || "Untitled Quotation";
+  const currentRecord = params.id ? getQuotation(params.id) : null;
+  const defaultSaveName = data.customerName || currentRecord?.name || data.capacity || "Untitled Quotation";
 
   return (
     <div className="page-shell page-shell--maker page-shell--maker-agreement">

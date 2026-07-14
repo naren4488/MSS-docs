@@ -34,7 +34,7 @@ export function AllQuotations() {
         <div className="empty-card">
           <p className="eyebrow">Nothing Saved Yet</p>
           <h2 style={{ marginTop: 0 }}>No saved quotations yet</h2>
-          <p className="muted-text">Click “New Quotation” above to create your first one. Saved quotations will appear here.</p>
+          <p className="muted-text">Click "New Quotation" above to create your first one. Saved quotations will appear here.</p>
         </div>
       ) : (
         <div className="saved-grid">

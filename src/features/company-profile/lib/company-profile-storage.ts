@@ -1,23 +1,11 @@
 import type { CompanyProfileData, CompanyProfileRecord } from "../types/company-profile";
 
-const RECORDS_KEY = "company-profile-records";
-const DRAFT_KEY = "company-profile-draft";
-
 function readRecords() {
-  const raw = localStorage.getItem(RECORDS_KEY);
-  if (!raw) {
-    return [] as CompanyProfileRecord[];
-  }
-
-  try {
-    return JSON.parse(raw) as CompanyProfileRecord[];
-  } catch {
-    return [];
-  }
+  return [] as CompanyProfileRecord[];
 }
 
-function writeRecords(records: CompanyProfileRecord[]) {
-  localStorage.setItem(RECORDS_KEY, JSON.stringify(records));
+function writeRecords(_records: CompanyProfileRecord[]) {
+  // Real-time only, no persistence to localStorage
 }
 
 export function listCompanyProfiles() {
@@ -55,23 +43,14 @@ export function deleteCompanyProfileRecord(id: string) {
   writeRecords(readRecords().filter((record) => record.id !== id));
 }
 
-export function saveCompanyProfileDraft(content: CompanyProfileData) {
-  localStorage.setItem(DRAFT_KEY, JSON.stringify(content));
+export function saveCompanyProfileDraft(_content: CompanyProfileData) {
+  // Real-time only, no persistence to localStorage
 }
 
 export function getCompanyProfileDraft() {
-  const raw = localStorage.getItem(DRAFT_KEY);
-  if (!raw) {
-    return null;
-  }
-
-  try {
-    return JSON.parse(raw) as CompanyProfileData;
-  } catch {
-    return null;
-  }
+  return null;
 }
 
 export function clearCompanyProfileDraft() {
-  localStorage.removeItem(DRAFT_KEY);
+  // Real-time only, no persistence to localStorage
 }

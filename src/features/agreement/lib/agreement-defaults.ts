@@ -28,12 +28,19 @@ export const AGREEMENT_TEMPLATES: { id: AgreementTemplate; label: string; descri
     description:
       "Goodwill commitment to execute a beneficiary's INC project with agreed scope, materials where needed, and beneficiary cooperation.",
   },
+  {
+    id: "client-agreement",
+    label: "Client Installation & Service Agreement",
+    description:
+      "Solar system installation agreement with client. Covers locked specifications, payment terms, site conditions, warranty and change management (₹3,000/day re-work charges).",
+  },
 ];
 
 const AGREEMENT_TEMPLATE_IDS: AgreementTemplate[] = [
   "partnership",
   "inc-installation-assign",
   "inc-goodwill-execution",
+  "client-agreement",
 ];
 
 export function isAgreementTemplate(value: string | null): value is AgreementTemplate {
@@ -914,6 +921,170 @@ export function createJitendraManethiyaVendorAgreementData(): AgreementData {
   };
 }
 
+// ---------- Client Agreement template ----------
+
+const clientAgreementVariableFields: AgreementVariableField[] = [
+  { key: "systemKW", label: "System Capacity (KW)", helper: "e.g. 10 KW" },
+  { key: "systemPhase", label: "System Phase", helper: "1 Phase or 3 Phase" },
+  { key: "installationLocation", label: "Installation Location", helper: "e.g. Roof / Ground" },
+  { key: "reworkCostPerDay", label: "Re-work Cost Per Day (₹)", helper: "e.g. 3000" },
+  { key: "suspensionChargePerDay", label: "Suspension Charge Per Day (₹)", helper: "e.g. 3000" },
+  { key: "latePaymentPenalty", label: "Late Payment Penalty (₹/week)", helper: "e.g. 500" },
+  { key: "interestRate", label: "Interest Rate on Unpaid Amount (%)", helper: "e.g. 18" },
+];
+
+const clientAgreementVariableDefaults: Record<string, string> = {
+  systemKW: "10",
+  systemPhase: "3 Phase",
+  installationLocation: "Roof",
+  reworkCostPerDay: "3000",
+  suspensionChargePerDay: "3000",
+  latePaymentPenalty: "500",
+  interestRate: "18",
+};
+
+function createClientAgreementSections(): AgreementSection[] {
+  return [
+    section("System Specifications & Locked Materials", [
+      clause({
+        number: "1",
+        title: "Material Specifications (NON-NEGOTIABLE)",
+        content: "The system shall be installed with the EXACT materials and specifications listed in the attached Quotation.",
+        subPoints: [
+          { label: "a", text: "NO material substitution is permitted under any circumstances." },
+          { label: "b", text: "Any unauthorized material changes will VOID the warranty." },
+          { label: "c", text: "Unauthorized changes will incur a re-work charge of ₹{{var.reworkCostPerDay}} per day." },
+        ],
+      }),
+      clause({
+        number: "2",
+        title: "Fixed Installation Position (LOCKED)",
+        content: "The installation location and positioning have been finalized during the site survey.",
+        subPoints: [
+          { label: "a", text: "NO changes to structure placement, location, or orientation are permitted." },
+          { label: "b", text: "Any request to change position will PAUSE installation work." },
+          { label: "c", text: "Position changes will incur a re-work charge of ₹{{var.reworkCostPerDay}} per day." },
+          { label: "d", text: "The warranty and performance guarantee will be VOID if position is changed without written approval." },
+        ],
+      }),
+    ]),
+    section("Payment Terms & Conditions", [
+      clause({
+        number: "3",
+        title: "Payment Default & Late Payment",
+        content: "If payment is not made as agreed:",
+        subPoints: [
+          { label: "a", text: "A late fee of ₹{{var.latePaymentPenalty}} per week applies after 30 days." },
+          { label: "b", text: "After 90 days of non-payment, Installer may recover dues through legal action." },
+          { label: "c", text: "Interest at {{var.interestRate}}% per annum will be charged on unpaid amount." },
+          { label: "d", text: "All legal and court costs will be recovered from Client." },
+        ],
+      }),
+    ]),
+    section("Site Conditions & Client Responsibilities", [
+      clause({
+        number: "4",
+        title: "Safe Working Environment & Amenities",
+        content: "Client must provide the following:",
+        subPoints: [
+          { label: "a", text: "Safe and clean working area." },
+          { label: "b", text: "24/7 site security." },
+          { label: "c", text: "Drinking water for installation team daily." },
+          { label: "d", text: "Unobstructed roof access as per site survey." },
+          { label: "e", text: "Electricity supply for installation equipment." },
+          { label: "f", text: "If amenities are NOT provided, installation work may be PAUSED with suspension charges of ₹{{var.suspensionChargePerDay}} per day." },
+        ],
+      }),
+    ]),
+    section("No Changes During Installation", [
+      clause({
+        number: "5",
+        title: "Change Management Process",
+        content: "NO changes are permitted once installation begins unless:",
+        subPoints: [
+          { label: "a", text: "Client submits a written change request." },
+          { label: "b", text: "Installer provides a cost estimate (minimum ₹{{var.reworkCostPerDay}} per day)." },
+          { label: "c", text: "Client pays the additional cost in advance." },
+          { label: "d", text: "Client signs a written change order." },
+          { label: "e", text: "Installation will PAUSE until approval is received." },
+        ],
+      }),
+    ]),
+    section("Warranty & Performance Guarantee", [
+      clause({
+        number: "6",
+        title: "Warranty Coverage & Voidance",
+        content: "Warranty will be COMPLETELY VOID if:",
+        subPoints: [
+          { label: "a", text: "Materials are changed without approval." },
+          { label: "b", text: "Installation position is changed." },
+          { label: "c", text: "Proper maintenance is NOT done." },
+          { label: "d", text: "Payment is not completed." },
+        ],
+      }),
+    ]),
+    section("Liability & Limitation", [
+      clause({
+        number: "7",
+        title: "Installer Not Responsible For",
+        content: "Installer is NOT responsible for:",
+        subPoints: [
+          { label: "a", text: "Roof collapse or structural damage." },
+          { label: "b", text: "Theft or vandalism (Client's security responsibility)." },
+          { label: "c", text: "Delays due to weather, DISCOM, or site conditions." },
+          { label: "d", text: "System damage due to Client negligence." },
+          { label: "e", text: "Installer's maximum liability is LIMITED TO 50% of the project cost." },
+        ],
+      }),
+    ]),
+    section("Term & Termination", [
+      clause({
+        number: "8",
+        title: "Termination By Installer",
+        content: "Installer can terminate if:",
+        subPoints: [
+          { label: "a", text: "Client doesn't pay within agreed timeline." },
+          { label: "b", text: "Client fails to provide safe working environment or amenities." },
+          { label: "c", text: "Client makes unauthorized changes and refuses to pay." },
+          { label: "d", text: "Client fails to cooperate in installation." },
+          { label: "e", text: "Upon Installer termination, 30% advance is forfeited." },
+        ],
+      }),
+    ]),
+    section("Dispute Resolution", [
+      clause({
+        number: "9",
+        title: "Governing Law & Dispute Resolution",
+        content: "Dispute resolution process:",
+        subPoints: [
+          { label: "a", text: "All disputes shall be governed by laws of Rajasthan, India." },
+          { label: "b", text: "Parties shall attempt negotiation first." },
+          { label: "c", text: "If unresolved, disputes shall be referred to arbitration at Jaipur Civil Court." },
+          { label: "d", text: "Non-payment disputes may proceed directly to legal action after 90 days." },
+        ],
+      }),
+    ]),
+  ];
+}
+
+const clientAgreementGoverningLaw =
+  "This Agreement is governed by the laws of Rajasthan, India. All disputes shall be subject to the jurisdiction of Jaipur Civil Court. Client waives any objection to venue or jurisdiction.";
+
+const clientAgreementClosing =
+  "By signing below, Client acknowledges reading and understanding this entire agreement and agrees to comply with all payment, material, and site condition terms. No changes are permitted without written approval and advance payment.";
+
+const clientAgreementIntroTemplate =
+  "THIS SOLAR SYSTEM INSTALLATION & SERVICE AGREEMENT (the \"Agreement\") is made as of {{effectiveDateFormatted}} (the \"Effective Date\") between {{company.name}} with a principal place of business at {{company.address}}, and {{party.entityName}} with a residential address at {{party.address}}.";
+
+const clientAgreementRecitals = [
+  "{{company.name}} is engaged in the business of designing, installing, and commissioning solar energy systems.",
+  "{{party.entityName}} desires to install a {{var.systemKW}}kw {{var.systemPhase}} solar system at the location mentioned above.",
+  "The Parties wish to record the terms and conditions for system installation, payment, material specifications, site conditions, and warranty coverage.",
+];
+
+const clientAgreementPreamble =
+  "NOW, THEREFORE, in consideration of the mutual promises hereinafter set forth, {{company.name}} and {{party.entityName}} do hereby agree as follows:";
+
 export function createDefaultAgreementData(
   template: AgreementTemplate = "partnership",
   language: AgreementLanguage = "en",
@@ -985,6 +1156,42 @@ export function createDefaultAgreementData(
       sections: createIncGoodwillSections(),
       closingParagraph: incGoodwillClosing,
       governingLawParagraph: incGoodwillGoverningLaw,
+      partyIsIndividual: false,
+      showVendorChargePerWatt: false,
+      vendorChargePerWatt: "",
+      showWitnesses: true,
+      witnesses: baseWitnesses,
+      showPageNumbers: true,
+      showLetterhead: true,
+    };
+  }
+
+  if (template === "client-agreement") {
+    return {
+      template: "client-agreement",
+      language: "en",
+      title: "SOLAR SYSTEM INSTALLATION & SERVICE AGREEMENT",
+      effectiveDate: today,
+      company: defaultCompany(),
+      party: {
+        entityName: "",
+        partyLabel: "Client",
+        address: "",
+        representativeName: "",
+        representativeTitle: "",
+        consumerNumber: "",
+        discom: "JVVNL",
+        aadhaar: "",
+        gst: "",
+      },
+      variableFields: clientAgreementVariableFields,
+      variables: { ...clientAgreementVariableDefaults },
+      introTemplate: clientAgreementIntroTemplate,
+      recitals: clientAgreementRecitals,
+      preambleAfterRecitals: clientAgreementPreamble,
+      sections: createClientAgreementSections(),
+      closingParagraph: clientAgreementClosing,
+      governingLawParagraph: clientAgreementGoverningLaw,
       partyIsIndividual: false,
       showVendorChargePerWatt: false,
       vendorChargePerWatt: "",

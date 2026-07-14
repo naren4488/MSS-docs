@@ -1,7 +1,8 @@
 export type AgreementTemplate =
   | "partnership"
   | "inc-installation-assign"
-  | "inc-goodwill-execution";
+  | "inc-goodwill-execution"
+  | "client-agreement";
 
 export type AgreementLanguage = "en" | "hi";
 

@@ -38,6 +38,8 @@ export interface QuotationData {
   // Top summary
   customerName: string;
   capacity: string;
+  systemPhase: "1 Phase" | "3 Phase";
+  phase: "1PH" | "3PH";
   address: string;
   proposalDate: string;
 
@@ -55,15 +57,36 @@ export interface QuotationData {
   generation: QuotationGeneration;
 
   showWarrantyBadges: boolean;
-  warrantyProductYears: string;
-  warrantyPerformanceYears: string;
+  warrantySolarPanelYears: string;
+  warrantyInverterYears: string;
+  warrantySetupBosYears: string;
 
   showInstallationProcess: boolean;
   installationSteps: string[];
 
-  subsidyAmount: string;
+  showWattageInfo: boolean;
+
+  projectAmount: string;
+  centralSubsidy: string;
+  stateSubsidy: string;
+  effectivePayableAmount: string;
+  subsidyNote: string;
+
   netMeteringNote: string;
   loadExtensionNote: string;
+
+  showEmiSection: boolean;
+  emiInfo: {
+    uptoLoanAmount: string;
+    interestRate: string;
+    tenure5YearEmi: string;
+    tenure7YearEmi: string;
+    tenure10YearEmi: string;
+  };
+
+  showComponentWarranty: boolean;
+  maintenanceFrequency: string;
+  maintenanceAfterYears: string;
 
   terms: QuotationTermItem[];
   subsidyDocuments: string[];

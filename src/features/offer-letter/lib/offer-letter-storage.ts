@@ -1,23 +1,11 @@
 import type { OfferLetterData, OfferLetterRecord } from "../types/offer-letter";
 
-const RECORDS_KEY = "offer-letter-records";
-const DRAFT_KEY = "offer-letter-draft";
-
 function readRecords() {
-  const raw = localStorage.getItem(RECORDS_KEY);
-  if (!raw) {
-    return [] as OfferLetterRecord[];
-  }
-
-  try {
-    return JSON.parse(raw) as OfferLetterRecord[];
-  } catch {
-    return [];
-  }
+  return [] as OfferLetterRecord[];
 }
 
-function writeRecords(records: OfferLetterRecord[]) {
-  localStorage.setItem(RECORDS_KEY, JSON.stringify(records));
+function writeRecords(_records: OfferLetterRecord[]) {
+  // Real-time only, no persistence to localStorage
 }
 
 export function listOfferLetters() {
@@ -55,23 +43,14 @@ export function deleteOfferLetterRecord(id: string) {
   writeRecords(readRecords().filter((record) => record.id !== id));
 }
 
-export function saveDraft(content: OfferLetterData) {
-  localStorage.setItem(DRAFT_KEY, JSON.stringify(content));
+export function saveDraft(_content: OfferLetterData) {
+  // Real-time only, no persistence to localStorage
 }
 
 export function getDraft() {
-  const raw = localStorage.getItem(DRAFT_KEY);
-  if (!raw) {
-    return null;
-  }
-
-  try {
-    return JSON.parse(raw) as OfferLetterData;
-  } catch {
-    return null;
-  }
+  return null;
 }
 
 export function clearDraft() {
-  localStorage.removeItem(DRAFT_KEY);
+  // Real-time only, no persistence to localStorage
 }

@@ -11,24 +11,12 @@ import {
 } from "./agreement-defaults";
 import type { AgreementData, AgreementRecord } from "../types/agreement";
 
-const RECORDS_KEY = "agreement-records";
-const DRAFT_KEY = "agreement-draft";
-
 function readRecords() {
-  const raw = localStorage.getItem(RECORDS_KEY);
-  if (!raw) {
-    return [] as AgreementRecord[];
-  }
-
-  try {
-    return JSON.parse(raw) as AgreementRecord[];
-  } catch {
-    return [];
-  }
+  return [] as AgreementRecord[];
 }
 
-function writeRecords(records: AgreementRecord[]) {
-  localStorage.setItem(RECORDS_KEY, JSON.stringify(records));
+function writeRecords(_records: AgreementRecord[]) {
+  // Real-time only, no persistence to localStorage
 }
 
 export function listAgreements() {
@@ -66,25 +54,16 @@ export function deleteAgreementRecord(id: string) {
   writeRecords(readRecords().filter((record) => record.id !== id));
 }
 
-export function saveAgreementDraft(content: AgreementData) {
-  localStorage.setItem(DRAFT_KEY, JSON.stringify(content));
+export function saveAgreementDraft(_content: AgreementData) {
+  // Real-time only, no persistence to localStorage
 }
 
 export function getAgreementDraft() {
-  const raw = localStorage.getItem(DRAFT_KEY);
-  if (!raw) {
-    return null;
-  }
-
-  try {
-    return JSON.parse(raw) as AgreementData;
-  } catch {
-    return null;
-  }
+  return null;
 }
 
 export function clearAgreementDraft() {
-  localStorage.removeItem(DRAFT_KEY);
+  // Real-time only, no persistence to localStorage
 }
 
 const SEEDED_VENDOR_AGREEMENTS = [
