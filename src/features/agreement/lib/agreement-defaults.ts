@@ -1051,9 +1051,23 @@ function createClientAgreementSections(): AgreementSection[] {
         ],
       }),
     ]),
-    section("Dispute Resolution", [
+    section("Content Creation & Media Rights", [
       clause({
         number: "9",
+        title: "Video Shoot, Photography & Content Creation Rights",
+        content: "{{company.name}} is permitted to conduct video shoots, photography, and any form of content creation at the project site during installation and thereafter for advertising, marketing, and promotional purposes.",
+        subPoints: [
+          { label: "a", text: "{{company.name}} may record, photograph, and document the installation process and completed system." },
+          { label: "b", text: "{{company.name}} may use all captured content (videos, photos, testimonials) in marketing materials, social media, website, brochures, and advertisements without additional permission or compensation." },
+          { label: "c", text: "Client may request that their personal identity be anonymized in public content, but shall not restrict {{company.name}}'s use of the system photography and installation footage." },
+          { label: "d", text: "Client consents to being photographed or filmed during the installation process. Any testimonial or statement by Client may be used in {{company.name}}'s marketing materials." },
+          { label: "e", text: "{{company.name}} owns all intellectual property rights to the captured content and may use it indefinitely for any promotional purpose." },
+        ],
+      }),
+    ]),
+    section("Dispute Resolution", [
+      clause({
+        number: "10",
         title: "Governing Law & Dispute Resolution",
         content: "Dispute resolution process:",
         subPoints: [
