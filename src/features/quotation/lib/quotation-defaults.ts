@@ -106,6 +106,10 @@ function defaultTerms(): QuotationTermItem[] {
       "Payment Terms",
       "30% advance payment along with the purchase order, 60% at the time of receiving solar panels and inverter, and 10% at the time of complete installation.",
     ),
+    term(
+      "Photography & Content Creation",
+      "Mahi Solar Solution reserves the right to conduct photography, video shoots, and content creation during installation and thereafter for marketing, advertising, and promotional purposes. All captured content and intellectual property rights belong to the Company.",
+    ),
   ];
 }
 
