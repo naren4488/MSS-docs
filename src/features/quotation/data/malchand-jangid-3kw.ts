@@ -200,28 +200,33 @@ export const malchandJangidQuotation: QuotationRecord = {
     terms: [
       {
         id: "term-001",
+        label: "Quotation Validity",
+        text: "This quotation is valid for 15 days from the date of issue. Prices and specifications are subject to change after the validity period expires. A fresh quotation will be required for orders placed after this period.",
+      },
+      {
+        id: "term-002",
         label: "Transit Insurance",
         text: "Up to delivery of material at site.",
       },
       {
-        id: "term-002",
-        label: "System Installation",
-        text: "System will be installed by our certified team.",
-      },
-      {
         id: "term-003",
-        label: "Delivery",
-        text: "Material dispatched in 3–4 days from the date of receipt of your technically and commercially valid purchase order, and installation will be completed within 2 weeks from the date of receipt of materials at site, provided the site is ready for installation in all respects.",
+        label: "Payment Terms & Project Phases",
+        text: "Payment schedule depends on the financing method:\n\n• 100% CASH PAYMENT: 20% advance with order, 70% before material dispatch & installation, 10% after installation & commissioning.\n\n• 100% LOAN FINANCING: Installation work begins upon receipt of the first loan installment from the bank. Payment schedule follows bank loan disbursement process.\n\n• HYBRID (LOAN + CASH): The combined amount (first loan installment + customer's cash contribution) must be received before installation work begins. Only the second payment remains pending. Maximum cash contribution: 10% of total project cost.\n\nNote: In all cases, maximum upfront cash payment should not exceed 10% of the total project value.",
       },
       {
         id: "term-004",
+        label: "Project Timeline & Installation Process",
+        text: "PHASE 1 - Site Inspection & Agreement (Before Material Dispatch):\n• Mahi Solar Solution's engineer will conduct site inspection and measurements.\n• Client reviews and signs the Installation Agreement with final specifications.\n• Duration: 3–5 working days from quotation acceptance.\n\nPHASE 2 - Material Supply:\n• Material dispatch: 3–5 working days after receipt of required initial payment (as per your payment method).\n\nPHASE 3 - Installation Work (MSS Responsibility):\n• Team installation and system commissioning: 7–10 working days.\n• Includes: Mounting structure, solar panel installation, inverter setup, BOS components, electrical connections, testing & system commissioning.\n• Timeline subject to site readiness and weather conditions.\n\nIMPORTANT - External Dependencies (NOT included in above timeline):\n• Net Metering approval: Handled by DISCOM (JVVNL) — typically 20–30 days. Timeline beyond Mahi Solar's control.\n• Government Subsidy processing: Handled by PM Surya Ghar authority — timeline depends on government approval. Not part of installation completion.",
+      },
+      {
+        id: "term-005",
         label: "Warranty",
         text: "Plant designed for 25 years with linear efficiency. The plant will produce minimum power up to 90% of the rated capacity for 10 years and thereafter 80% of the rated capacity up to 25 years, with sun availability of 4.5 hours a day during sun radiation availability. We also provide 5 years warranty support; however, the warranty will be owned by the original equipment manufacturer of the solar panel and inverter.",
       },
       {
-        id: "term-005",
-        label: "Payment Terms",
-        text: "30% advance payment along with the purchase order, 60% at the time of receiving solar panels and inverter, and 10% at the time of complete installation.",
+        id: "term-006",
+        label: "Photography & Content Creation",
+        text: "Mahi Solar Solution reserves the right to conduct photography, video shoots, and content creation during installation and thereafter for marketing, advertising, and promotional purposes. All captured content and intellectual property rights belong to the Company.",
       },
     ],
     subsidyDocuments: [
