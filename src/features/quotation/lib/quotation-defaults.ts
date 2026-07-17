@@ -82,7 +82,7 @@ function defaultCommercialOffer(): QuotationCommercialRow[] {
     commercial("Project Price", "Rs. 63.33 / Watt — Net Payable Amount INR 1,90,000/- + GST & Net Metering Charges"),
     commercial("GST Head", "5% GST on 70% of the project & 18% GST on the rest"),
     commercial("Customer Net Payable Amount", "INR 1,90,000/- (Including Tax)"),
-    commercial("1 Year Maintenance & Cleaning Service", "INR 8,000/- — FREE"),
+    commercial("5 Year Maintenance", "FREE"),
   ];
 }
 
