@@ -833,7 +833,19 @@ function createBlocks(data: QuotationData): PreviewBlock[] {
     blocks.push({ key: "maintenance-section", estimate: 150, keepWithNext: true, node: <MaintenanceServiceSection data={data} /> });
   }
 
-  // Terms & Conditions
+  // Required Documents for Subsidy
+  if (data.subsidyDocuments.some((item) => item.trim())) {
+    pushHeading(blocks, "docs-heading", "Required Documents for Subsidy");
+    pushBulletList(blocks, "docs", data.subsidyDocuments, true);
+  }
+
+  // Bank Details
+  if ([data.bankAccountName, data.bankName, data.bankAccountNo, data.bankIfsc, data.bankGst].some((value) => value.trim())) {
+    pushHeading(blocks, "bank-heading", "Bank Details");
+    blocks.push({ key: "bank-block", estimate: 120, node: <BankBlock data={data} /> });
+  }
+
+  // Terms & Conditions (MOVED TO END)
   if (data.terms.some((term) => term.label.trim() || term.text.trim())) {
     pushHeading(blocks, "terms-heading", "Terms & Conditions");
     data.terms.forEach((term, index) => {
@@ -854,22 +866,47 @@ function createBlocks(data: QuotationData): PreviewBlock[] {
     });
   }
 
-  // Required Documents for Subsidy
-  if (data.subsidyDocuments.some((item) => item.trim())) {
-    pushHeading(blocks, "docs-heading", "Required Documents for Subsidy");
-    pushBulletList(blocks, "docs", data.subsidyDocuments, true);
-  }
+  // Client & Company Signatures (AT THE END)
+  blocks.push({
+    key: "signatures-block",
+    estimate: 180,
+    node: (
+      <div style={{ marginTop: 40 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 60, fontSize: 11 }}>
+          {/* Client Signature */}
+          <div>
+            <div style={{ marginBottom: 40 }}>
+              <div style={{ height: 40, borderBottom: "1px solid #111827", marginBottom: 8 }} />
+              <div style={{ fontWeight: 700 }}>Client Signature</div>
+              <div style={{ fontSize: 10, color: "#666666" }}>Date: _________________</div>
+            </div>
+            <div>
+              <div style={{ fontWeight: 600, marginBottom: 4 }}>{filledValue(data.customerName || "")}</div>
+              <div style={{ fontSize: 10, color: "#666666" }}>Customer Name & Contact</div>
+            </div>
+          </div>
 
-  // Bank Details
-  if ([data.bankAccountName, data.bankName, data.bankAccountNo, data.bankIfsc, data.bankGst].some((value) => value.trim())) {
-    pushHeading(blocks, "bank-heading", "Bank Details");
-    blocks.push({ key: "bank-block", estimate: 120, node: <BankBlock data={data} /> });
-  }
+          {/* Company Representative Signature */}
+          <div>
+            <div style={{ marginBottom: 40 }}>
+              <div style={{ height: 40, borderBottom: "1px solid #111827", marginBottom: 8 }} />
+              <div style={{ fontWeight: 700 }}>Authorized Signatory</div>
+              <div style={{ fontSize: 10, color: "#666666" }}>Date: _________________</div>
+            </div>
+            <div>
+              <div style={{ fontWeight: 600, marginBottom: 4 }}>{filledValue(data.repName || "")}</div>
+              <div style={{ fontSize: 10, color: "#666666" }}>{filledValue(data.repCompany || "")}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    ),
+  });
 
-  // Represented by
-  if ([data.repName, data.repCompany, data.repMobiles].some((value) => value.trim())) {
-    blocks.push({ key: "rep-block", estimate: 120, node: <RepBlock data={data} /> });
-  }
+  // Represented by (REMOVED - moved to signature block)
+  // if ([data.repName, data.repCompany, data.repMobiles].some((value) => value.trim())) {
+  //   blocks.push({ key: "rep-block", estimate: 120, node: <RepBlock data={data} /> });
+  // }
 
   return blocks;
 }
