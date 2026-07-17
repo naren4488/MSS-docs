@@ -127,6 +127,22 @@ function createTermsForTemplate(template: OfferLetterTemplate): OfferLetterTerm[
 
   const commonTerms = [
     createTerm(
+      "Code of Conduct",
+      "You are required to comply with the Company's Code of Conduct and all applicable company policies at all times.\n\n- You must maintain strict professional conduct and ethical standards in all your interactions.\n- The Company has a zero-tolerance policy for any form of workplace harassment, sexual harassment, bullying, discrimination, or any form of child abuse.\n- Any violation of this code may result in disciplinary action, suspension, termination of employment, or legal proceedings as per applicable law.",
+    ),
+    createTerm(
+      "Policy Compliance - POSH Act and POCSO Act",
+      "You acknowledge that you have read, understood, and agree to comply with the Company's policies under the Prevention of Sexual Harassment (POSH) Act, 2013, and the Protection of Children from Sexual Offences (POCSO) Act, 2012.\n\n- The Company is committed to providing a safe, respectful, and harassment-free workplace for all employees and children.\n- You are obligated to adhere to all preventive measures, reporting mechanisms, and disciplinary procedures as outlined in the Company's POSH and POCSO policies.\n- Any suspected violation of these acts must be reported immediately to the HR Department or the Internal Complaints Committee (ICC).",
+    ),
+    createTerm(
+      "Zero Tolerance Policy",
+      "The Company maintains a strict zero-tolerance policy toward sexual harassment, child abuse, and any violations of children's rights.\n\n- Any employee found guilty of sexual harassment, child abuse, or exploitation will face immediate disciplinary action, including but not limited to suspension, termination of employment, and legal action under applicable laws.\n- The Company will cooperate fully with law enforcement and child protection authorities in investigating such matters.\n- Employees are encouraged to report any suspected misconduct without fear of retaliation.",
+    ),
+    createTerm(
+      "Grievance Redressal Mechanism",
+      "The Company provides a robust grievance redressal mechanism for all employees to report any policy violations, misconduct, or concerns.\n\n- Complaints can be reported to:\n  • HR Department: hr@mahisolarsolution.com\n  • Internal Complaints Committee (ICC): icc@mahisolarsolution.com\n  • Grievance Portal: [Internal grievance portal link]\n\n- All complaints will be treated with confidentiality and investigated impartially.\n- You will be updated on the status and outcome of your complaint.\n- The Company assures zero retaliation for good-faith complaints.",
+    ),
+    createTerm(
       "Notice Period",
       "Either party may terminate employment by giving 1 month prior written notice.\n\n- If you leave without serving the required notice period, the Company may withhold salary or other dues to the extent permitted by law and company policy.\n- Final release and settlement will be subject to proper handover of work, documents, assets, and completion of all exit formalities.",
     ),
@@ -157,6 +173,10 @@ function createTermsForTemplate(template: OfferLetterTemplate): OfferLetterTerm[
     createTerm(
       "Employee Insurance Policy",
       "The Company will provide insurance coverage to the employee up to Rs. 10,000 per year.\n\n- The insurance may be provided either as per the employee's choice or as per Company policy.\n- If the employee leaves the Company before completing six (6) months of employment, the insurance premium amount must be reimbursed to the Company by the employee.",
+    ),
+    createTerm(
+      "Employee Undertaking",
+      "By accepting this offer and signing this Offer Letter, you hereby undertake and confirm that:\n\n- You have read, understood, and agree to comply with all the terms, conditions, and policies mentioned in this Offer Letter.\n- You are aware of and commit to adhering to the Company's Code of Conduct, workplace safety policies, and anti-harassment policies.\n- You acknowledge the Company's zero-tolerance policy toward sexual harassment, child abuse, and any form of misconduct.\n- You will comply with applicable laws including the POSH Act, 2013, and POCSO Act, 2012.\n- You understand the grievance redressal mechanism and will utilize it appropriately if needed.\n- You will maintain confidentiality of all proprietary and confidential information of the Company.\n- You agree to abide by all policies, procedures, and standards set by the Company from time to time.\n- You certify that all information provided in your application and during the hiring process is true and accurate.\n\nThis undertaking is binding and enforceable against you during and after your employment with the Company.",
     ),
   ];
 
