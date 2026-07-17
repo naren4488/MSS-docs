@@ -21,7 +21,7 @@ export const malchandJangidQuotation: QuotationRecord = {
       address: "Plot No. 44, Jai Bhawani Vihar Vistar, Radha Vihar, Govindpura, Jaipur, Rajasthan – 302044",
       phone: "+91 9928413501",
       email: "mahisolarsolution@gmail.com",
-      website: "",
+      website: "mahisolarsolution.com",
       cin: "",
       gst: "08AAUCM4104G1ZD",
       representativeName: "Mahendra Kumawat",
@@ -211,7 +211,7 @@ export const malchandJangidQuotation: QuotationRecord = {
       {
         id: "term-003",
         label: "Payment Terms & Project Phases",
-        text: "Payment schedule depends on the financing method:
+        text: `Payment schedule depends on the financing method:
 
 100% CASH PAYMENT
 • Advance: 20% with order confirmation
@@ -235,7 +235,7 @@ IMPORTANT NOTE
 • In CASH method: Client defers max 10% of total project cost until after net metering approval
 • In HYBRID method: Client's cash is paid upfront with 1st bank installment; max 10% can be deferred until after net metering
 • Net metering approval timeline does not impact installation work completion
-• Once 1st installment (bank payment + client cash) is received, installation work commences immediately",
+• Once 1st installment (bank payment + client cash) is received, installation work commences immediately`,
       },
       {
         id: "term-004",

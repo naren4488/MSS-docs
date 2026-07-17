@@ -50,7 +50,7 @@ export function createDefaultCompanyProfileData(firm: CompanyFirm = "mahi-solar-
     phone: SHARED_PHONE,
     altPhone: SHARED_ALT_PHONE,
     email: "",
-    website: "",
+    website: "mahisolarsolution.com",
     gst: "",
     pan: "",
     cin: "",

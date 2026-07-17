@@ -75,7 +75,7 @@ function defaultCompany(): PartnerCompany {
     address: "Plot No. 44, Jai Bhawani Vihar Vistar, Radha Vihar, Govindpura, Jaipur, Rajasthan – 302044",
     phone: "+91 9928413501",
     email: "mahisolarenergy77@gmail.com",
-    website: "",
+    website: "mahisolarsolution.com",
     cin: "",
     gst: "08GPEPK1479A1ZZ",
     representativeName: "Mahendra Kumawat",

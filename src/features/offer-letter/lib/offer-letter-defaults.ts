@@ -195,7 +195,7 @@ export function createDefaultOfferLetterData(template: OfferLetterTemplate = "fr
       address: "Plot No. 44, Jai Bhawani Vihar Vistar, Radha Vihar, Govindpura, Jaipur, Rajasthan – 302044",
       phone: "+91 9928413501",
       email: "mahisolarsolution@gmail.com",
-      website: "",
+      website: "mahisolarsolution.com",
       cin: "",
       gst: "08AAUCM4104G1ZD",
       founderName: "Mahendra Kumawat",

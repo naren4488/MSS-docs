@@ -9,10 +9,11 @@ import {
   RAVI_SHARMA_VENDOR_AGREEMENT_ID,
   SUNNY_MEENA_VENDOR_AGREEMENT_ID,
 } from "./agreement-defaults";
+import { bhavyaSolarSolutionsAgreement } from "../data/bhavya-solar-solutions-agreement";
 import type { AgreementData, AgreementRecord } from "../types/agreement";
 
 function readRecords() {
-  return [] as AgreementRecord[];
+  return [bhavyaSolarSolutionsAgreement];
 }
 
 function writeRecords(_records: AgreementRecord[]) {
