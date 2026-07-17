@@ -844,10 +844,10 @@ function createBlocks(data: QuotationData): PreviewBlock[] {
         node: (
           <div style={{ display: "grid", gridTemplateColumns: "22px 1fr", gap: 6, marginBottom: 6, fontSize: 11, lineHeight: 1.55 }}>
             <span style={{ fontWeight: 600 }}>{index + 1}.</span>
-            <span style={{ textAlign: "justify" }}>
+            <div style={{ textAlign: "justify", whiteSpace: "pre-wrap" }}>
               {term.label.trim() ? <strong>{term.label}: </strong> : null}
               {term.text}
-            </span>
+            </div>
           </div>
         ),
       });
