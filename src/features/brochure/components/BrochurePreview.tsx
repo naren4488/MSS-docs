@@ -1,4 +1,5 @@
 import { useRef } from "react";
+import { Download } from "lucide-react";
 import type { BrochureData } from "../types/brochure";
 import { BrochureContent } from "./BrochureContent";
 
@@ -15,17 +16,50 @@ export function BrochurePreview({ data }: BrochurePreviewProps) {
   };
 
   return (
-    <div className="w-full h-full bg-gray-100 flex flex-col">
-      <div className="bg-white border-b border-gray-200 p-4 flex items-center justify-between no-print">
-        <h1 className="text-2xl font-bold text-gray-800">Mahi Solar Brochure</h1>
+    <div className="brochure-preview" style={{ background: "#e8edf5" }}>
+      <div
+        className="no-print brochure-preview-toolbar"
+        style={{
+          background: "#ffffff",
+          borderBottom: "1px solid rgba(20, 48, 107, 0.12)",
+          padding: "14px 20px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          flexShrink: 0,
+        }}
+      >
+        <div>
+          <h1 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: "#0B2048", fontFamily: "Lexend, sans-serif" }}>
+            Company Brochure
+          </h1>
+          <p style={{ margin: "4px 0 0", fontSize: 12, color: "#5b667a" }}>
+            Client-ready preview · Print or save as PDF
+          </p>
+        </div>
         <button
+          type="button"
           onClick={handleDownloadPDF}
-          className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 transition"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 8,
+            background: "#0B2048",
+            color: "#ffffff",
+            border: "none",
+            borderRadius: 8,
+            padding: "10px 16px",
+            fontWeight: 600,
+            fontSize: 13,
+            cursor: "pointer",
+            fontFamily: "Lexend, sans-serif",
+          }}
         >
-          📥 Download PDF
+          <Download size={16} />
+          Download PDF
         </button>
       </div>
-      <div className="flex-1 overflow-auto" ref={contentRef}>
+      <div className="brochure-preview-scroll" ref={contentRef}>
         <BrochureContent data={data} />
       </div>
     </div>

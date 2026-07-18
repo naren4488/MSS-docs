@@ -57,7 +57,6 @@ const defaultAssumptions = [
   "Peak sunshine availability of 5 hours average as per the geographical site conditions.",
   "It is assumed that sufficient shadow-free area is available for installation of modules. In case of restriction due to already installed equipment, other roof (as available at site) may have to be used keeping minimum impact on generation.",
   "Load bearing capacity of the roof should be adequate to carry the load of the MMS system considering the wind load of the zone.",
-  "Cable tray / trench shall not be in our scope of work.",
 ];
 
 const defaultCustomerScope = [

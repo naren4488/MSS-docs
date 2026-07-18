@@ -1,370 +1,599 @@
+import type { CSSProperties, ComponentType } from "react";
+import {
+  BadgeCheck,
+  Building2,
+  ClipboardList,
+  IndianRupee,
+  MapPin,
+  Phone,
+  PlugZap,
+  ShieldCheck,
+  SolarPanel,
+  Sparkles,
+  Wrench,
+} from "lucide-react";
 import type { BrochureData } from "../types/brochure";
 
 interface BrochureContentProps {
   data: BrochureData;
 }
 
-const serviceIcons = [
-  "🔍", "⭐", "🛡️", "⚡", "✅", "🎯", "💬", "🚨", "📈", "🔒"
+const NAVY = "#0B2048";
+const NAVY_MID = "#14306b";
+const NAVY_SOFT = "#1a3a7a";
+const GOLD = "#E8A317";
+const GOLD_SOFT = "#F5C842";
+const CREAM = "#F4F7FC";
+const INK = "#152036";
+const MUTED = "#5b667a";
+
+const pageStyle: CSSProperties = {
+  width: 794,
+  minHeight: 1123,
+  margin: "0 auto 28px",
+  background: "#ffffff",
+  color: INK,
+  fontFamily: "Lexend, sans-serif",
+  boxShadow: "0 24px 60px rgba(11, 32, 72, 0.14)",
+  overflow: "hidden",
+  position: "relative",
+};
+
+const gridBackdrop: CSSProperties = {
+  position: "absolute",
+  inset: 0,
+  backgroundImage:
+    "linear-gradient(rgba(20, 48, 107, 0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(20, 48, 107, 0.04) 1px, transparent 1px)",
+  backgroundSize: "28px 28px",
+  pointerEvents: "none",
+};
+
+const SERVICE_ICONS: ComponentType<{ size?: number; color?: string; strokeWidth?: number }>[] = [
+  SolarPanel,
+  Sparkles,
+  Building2,
 ];
 
-export function BrochureContent({ data }: BrochureContentProps) {
+const WHY_ICONS: ComponentType<{ size?: number; color?: string; strokeWidth?: number }>[] = [
+  BadgeCheck,
+  ClipboardList,
+  IndianRupee,
+  Wrench,
+  ShieldCheck,
+  PlugZap,
+];
+
+function SectionLabel({ children }: { children: string }) {
   return (
-    <div className="brochure-content w-full bg-white print:p-0" style={{ fontFamily: "'Raleway', sans-serif" }}>
-      {/* Premium Header Section */}
-      <div
-        className="px-8 py-16 relative overflow-hidden"
-        style={{
-          background: "linear-gradient(135deg, #FFFFFF 0%, #F5F5F5 100%)",
-          borderBottom: "6px solid #F2DA00"
-        }}
-      >
-        <div className="absolute top-0 right-0 w-96 h-96 opacity-5" style={{ backgroundColor: "#864797", borderRadius: "50%" }}></div>
-        <div className="max-w-5xl mx-auto relative z-10">
-          <div className="flex items-start gap-4 mb-6">
-            <div style={{ width: "6px", height: "50px", backgroundColor: "#F2DA00", borderRadius: "3px" }}></div>
+    <div
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 8,
+        fontSize: 11,
+        fontWeight: 700,
+        letterSpacing: 1.4,
+        textTransform: "uppercase",
+        color: GOLD,
+        marginBottom: 8,
+      }}
+    >
+      <span style={{ width: 22, height: 2, background: GOLD, display: "inline-block" }} />
+      {children}
+    </div>
+  );
+}
+
+export function BrochureContent({ data }: BrochureContentProps) {
+  const { company, hero, services, brands, whyChoose, process, warranty, scheme, contactCta } = data;
+
+  return (
+    <div className="brochure-content" style={{ padding: "28px 0 40px", background: "#e8edf5" }}>
+      {/* ── Page 1: Cover ── */}
+      <div data-export-page="true" style={pageStyle}>
+        <div style={gridBackdrop} />
+
+        {/* Top brand bar */}
+        <div
+          style={{
+            position: "relative",
+            padding: "28px 40px 22px",
+            background: `linear-gradient(135deg, ${NAVY} 0%, ${NAVY_MID} 55%, ${NAVY_SOFT} 100%)`,
+            color: "#ffffff",
+            overflow: "hidden",
+          }}
+        >
+          <div
+            style={{
+              position: "absolute",
+              right: -40,
+              top: -50,
+              width: 220,
+              height: 220,
+              borderRadius: "50%",
+              background: "radial-gradient(circle, rgba(232,163,23,0.28) 0%, transparent 70%)",
+            }}
+          />
+          <div
+            style={{
+              position: "absolute",
+              left: "40%",
+              bottom: -80,
+              width: 280,
+              height: 160,
+              borderRadius: "50%",
+              background: "radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 70%)",
+            }}
+          />
+
+          <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 18 }}>
+            <img
+              src={company.logo}
+              alt={`${company.name} logo`}
+              style={{
+                height: 72,
+                width: "auto",
+                objectFit: "contain",
+                background: "#ffffff",
+                borderRadius: 8,
+                padding: "6px 10px",
+              }}
+            />
             <div>
-              <h1
-                className="text-5xl font-bold mb-2 leading-tight"
-                style={{ color: "#864797", fontFamily: "'Poppins', sans-serif" }}
+              <div
+                style={{
+                  fontSize: 22,
+                  fontWeight: 700,
+                  letterSpacing: 0.6,
+                  lineHeight: 1.2,
+                  textTransform: "uppercase",
+                }}
               >
-                {data.company.name}
-              </h1>
-              <p
-                className="text-base font-semibold tracking-widest"
-                style={{ color: "#F2DA00" }}
-              >
-                {data.company.tagline}
-              </p>
+                {company.name}
+              </div>
+              <div style={{ marginTop: 6, fontSize: 12, color: GOLD_SOFT, letterSpacing: 1.2, fontWeight: 600 }}>
+                {company.tagline}
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Premium Hero Section */}
-      <div
-        className="px-8 py-20 relative overflow-hidden"
-        style={{
-          background: "linear-gradient(135deg, #2f3342 0%, #1a1d25 100%)"
-        }}
-      >
-        <div className="absolute top-0 right-0 w-96 h-96 opacity-10" style={{ backgroundColor: "#F2DA00", borderRadius: "50%" }}></div>
-        <div className="max-w-5xl mx-auto relative z-10 text-center">
-          <div className="mb-6 text-6xl">☀️</div>
-          <h2
-            className="text-5xl font-bold mb-6 leading-tight"
-            style={{ color: "#F2DA00", fontFamily: "'Poppins', sans-serif" }}
+        {/* Slogan ribbon */}
+        <div
+          style={{
+            position: "relative",
+            margin: "0 40px",
+            marginTop: -14,
+            background: `linear-gradient(90deg, ${GOLD} 0%, ${GOLD_SOFT} 100%)`,
+            color: NAVY,
+            borderRadius: 8,
+            padding: "12px 20px",
+            fontWeight: 700,
+            fontSize: 15,
+            letterSpacing: 0.4,
+            textAlign: "center",
+            boxShadow: "0 10px 24px rgba(232, 163, 23, 0.28)",
+            zIndex: 2,
+          }}
+        >
+          {company.slogan}
+        </div>
+
+        {/* Hero copy */}
+        <div style={{ position: "relative", padding: "36px 40px 28px" }}>
+          <SectionLabel>Rooftop solar · Jaipur & Rajasthan</SectionLabel>
+          <h1
+            style={{
+              margin: "0 0 14px",
+              fontSize: 34,
+              lineHeight: 1.18,
+              fontWeight: 700,
+              color: NAVY,
+              maxWidth: 560,
+            }}
           >
-            {data.hero.title}
-          </h2>
-          <p className="text-xl text-gray-200 leading-relaxed max-w-2xl mx-auto">
-            {data.hero.subtitle}
+            {hero.title}
+          </h1>
+          <p style={{ margin: 0, fontSize: 14, lineHeight: 1.65, color: MUTED, maxWidth: 580 }}>
+            {hero.subtitle}
           </p>
-          <div className="mt-10 flex justify-center gap-4">
-            <button
-              style={{
-                backgroundColor: "#F2DA00",
-                color: "#2f3342",
-                padding: "12px 32px",
-                borderRadius: "50px",
-                fontWeight: "bold",
-                fontSize: "14px",
-                border: "none",
-                cursor: "pointer"
-              }}
-            >
-              GET A FREE QUOTE
-            </button>
-            <button
-              style={{
-                backgroundColor: "transparent",
-                color: "#F2DA00",
-                padding: "12px 32px",
-                borderRadius: "50px",
-                fontWeight: "bold",
-                fontSize: "14px",
-                border: "2px solid #F2DA00",
-                cursor: "pointer"
-              }}
-            >
-              LEARN MORE
-            </button>
-          </div>
-        </div>
-      </div>
 
-      {/* Stats Section */}
-      <div className="px-8 py-12" style={{ backgroundColor: "#864797" }}>
-        <div className="max-w-5xl mx-auto">
-          <div className="grid grid-cols-3 gap-8 text-center">
-            <div>
-              <p className="text-4xl font-bold text-white mb-2" style={{ fontFamily: "'Poppins', sans-serif" }}>500+</p>
-              <p className="text-gray-200 text-sm">Happy Customers</p>
-            </div>
-            <div>
-              <p className="text-4xl font-bold text-white mb-2" style={{ fontFamily: "'Poppins', sans-serif" }}>12+</p>
-              <p className="text-gray-200 text-sm">Years Experience</p>
-            </div>
-            <div>
-              <p className="text-4xl font-bold text-white mb-2" style={{ fontFamily: "'Poppins', sans-serif" }}>2.5MW+</p>
-              <p className="text-gray-200 text-sm">Total Capacity</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Premium Services Section */}
-      <div className="px-8 py-20" style={{ backgroundColor: "#FFFFFF" }}>
-        <div className="max-w-5xl mx-auto">
-          <div className="mb-16">
-            <div className="flex items-center gap-4 mb-2">
-              <div style={{ width: "6px", height: "40px", backgroundColor: "#F2DA00", borderRadius: "3px" }}></div>
-              <h2
-                className="text-4xl font-bold"
-                style={{ color: "#864797", fontFamily: "'Poppins', sans-serif" }}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: `repeat(${hero.promises.length}, 1fr)`,
+              gap: 0,
+              marginTop: 26,
+              borderTop: `1px solid rgba(20, 48, 107, 0.12)`,
+              borderBottom: `1px solid rgba(20, 48, 107, 0.12)`,
+            }}
+          >
+            {hero.promises.map((promise, index) => (
+              <div
+                key={promise}
+                style={{
+                  padding: "14px 12px",
+                  fontSize: 13,
+                  fontWeight: 700,
+                  color: NAVY,
+                  textAlign: "center",
+                  borderRight:
+                    index < hero.promises.length - 1 ? "1px solid rgba(20, 48, 107, 0.12)" : "none",
+                }}
               >
-                {data.services.title}
-              </h2>
-            </div>
-            <p className="text-gray-600 mt-3">Comprehensive solutions backed by industry-leading standards</p>
+                <span
+                  style={{
+                    display: "inline-block",
+                    width: 8,
+                    height: 8,
+                    background: GOLD,
+                    marginRight: 8,
+                    transform: "rotate(45deg)",
+                    verticalAlign: "middle",
+                  }}
+                />
+                {promise}
+              </div>
+            ))}
           </div>
+        </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {data.services.items.map((item, idx) => {
-              const [title, ...content] = item.split('\n');
+        {/* Services */}
+        <div style={{ position: "relative", padding: "8px 40px 32px" }}>
+          <SectionLabel>{services.title}</SectionLabel>
+          <p style={{ margin: "0 0 18px", fontSize: 13, color: MUTED }}>{services.subtitle}</p>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}>
+            {services.items.map((item, index) => {
+              const Icon = SERVICE_ICONS[index % SERVICE_ICONS.length];
               return (
                 <div
-                  key={idx}
-                  className="p-8 rounded-xl shadow-lg hover:shadow-2xl transition duration-300 border-l-4"
+                  key={item.title}
                   style={{
-                    borderColor: "#864797",
-                    backgroundColor: "#FFFFFF",
-                    borderLeft: "6px solid #864797"
+                    padding: "18px 16px",
+                    background: index === 1 ? `linear-gradient(160deg, ${NAVY} 0%, ${NAVY_MID} 100%)` : CREAM,
+                    color: index === 1 ? "#ffffff" : INK,
+                    borderRadius: 10,
+                    border: index === 1 ? "none" : "1px solid rgba(20, 48, 107, 0.08)",
                   }}
                 >
-                  <div className="flex items-start gap-4 mb-3">
-                    <div className="text-3xl">{serviceIcons[idx % serviceIcons.length]}</div>
-                    <h3
-                      className="font-bold text-lg leading-tight"
-                      style={{ color: "#864797", fontFamily: "'Poppins', sans-serif" }}
-                    >
-                      {title.trim()}
-                    </h3>
-                  </div>
-                  <p
-                    className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap ml-11"
+                  <div
+                    style={{
+                      width: 36,
+                      height: 36,
+                      borderRadius: 8,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      background: index === 1 ? "rgba(232,163,23,0.2)" : "rgba(20, 48, 107, 0.08)",
+                      marginBottom: 12,
+                    }}
                   >
-                    {content.join('\n').trim()}
-                  </p>
+                    <Icon size={18} color={index === 1 ? GOLD_SOFT : NAVY_MID} strokeWidth={2} />
+                  </div>
+                  <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 8, lineHeight: 1.3 }}>{item.title}</div>
+                  <div
+                    style={{
+                      fontSize: 11.5,
+                      lineHeight: 1.55,
+                      color: index === 1 ? "rgba(255,255,255,0.82)" : MUTED,
+                    }}
+                  >
+                    {item.description}
+                  </div>
                 </div>
               );
             })}
           </div>
         </div>
-      </div>
 
-      {/* Why Choose Section - Enhanced */}
-      <div className="px-8 py-20" style={{ backgroundColor: "#F5F5F5" }}>
-        <div className="max-w-5xl mx-auto">
-          <div className="mb-16">
-            <div className="flex items-center gap-4 mb-2">
-              <div style={{ width: "6px", height: "40px", backgroundColor: "#F2DA00", borderRadius: "3px" }}></div>
-              <h2
-                className="text-4xl font-bold"
-                style={{ color: "#864797", fontFamily: "'Poppins', sans-serif" }}
-              >
-                {data.whyChoose.title}
-              </h2>
-            </div>
-            <p className="text-gray-600 mt-3">Trust the solar experts in Rajasthan</p>
-          </div>
+        {/* Brands */}
+        <div style={{ position: "relative", padding: "4px 40px 28px" }}>
+          <SectionLabel>{brands.title}</SectionLabel>
+          <p style={{ margin: "0 0 16px", fontSize: 13, color: MUTED }}>{brands.subtitle}</p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {data.whyChoose.items.map((item, idx) => (
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+            {brands.groups.map((group) => (
               <div
-                key={idx}
-                className="p-6 rounded-xl transition duration-300"
+                key={group.label}
                 style={{
-                  backgroundColor: "#FFFFFF",
-                  border: "2px solid #F2DA00",
-                  boxShadow: "0 4px 6px rgba(0,0,0,0.05)"
+                  background: "#ffffff",
+                  border: "1px solid rgba(20, 48, 107, 0.1)",
+                  borderTop: `3px solid ${GOLD}`,
+                  borderRadius: 8,
+                  padding: "14px 16px",
                 }}
               >
-                <div className="flex items-start gap-4">
-                  <div
-                    className="shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white font-bold"
-                    style={{
-                      backgroundColor: "#864797",
-                      fontSize: "18px"
-                    }}
-                  >
-                    ✓
-                  </div>
-                  <span className="text-gray-800 font-medium pt-1">{item}</span>
+                <div
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 700,
+                    letterSpacing: 0.8,
+                    textTransform: "uppercase",
+                    color: NAVY_MID,
+                    marginBottom: 10,
+                  }}
+                >
+                  {group.label}
+                </div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                  {group.brands.map((brand) => (
+                    <span
+                      key={brand}
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 600,
+                        color: INK,
+                        background: CREAM,
+                        padding: "6px 10px",
+                        borderRadius: 6,
+                      }}
+                    >
+                      {brand}
+                    </span>
+                  ))}
                 </div>
               </div>
             ))}
           </div>
         </div>
+
+        {/* Contact strip page 1 */}
+        <div
+          style={{
+            position: "relative",
+            marginTop: "auto",
+            background: `linear-gradient(90deg, ${NAVY} 0%, ${NAVY_MID} 100%)`,
+            color: "#ffffff",
+            padding: "22px 40px",
+            display: "grid",
+            gridTemplateColumns: "1.2fr 1fr",
+            gap: 20,
+            alignItems: "center",
+          }}
+        >
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1.2, color: GOLD_SOFT, marginBottom: 6 }}>
+              CALL US NOW
+            </div>
+            <div style={{ fontSize: 28, fontWeight: 700, letterSpacing: 0.5 }}>{company.phone}</div>
+            <div style={{ marginTop: 8, fontSize: 12, color: "rgba(255,255,255,0.75)" }}>{company.email}</div>
+          </div>
+          <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+            <MapPin size={18} color={GOLD_SOFT} style={{ marginTop: 2, flexShrink: 0 }} />
+            <div style={{ fontSize: 12, lineHeight: 1.55, color: "rgba(255,255,255,0.88)" }}>{company.address}</div>
+          </div>
+        </div>
       </div>
 
-      {/* Premium Warranty Section */}
-      <div className="px-8 py-20" style={{ backgroundColor: "#FFFFFF" }}>
-        <div className="max-w-5xl mx-auto">
-          <div className="mb-16">
-            <div className="flex items-center gap-4 mb-2">
-              <div style={{ width: "6px", height: "40px", backgroundColor: "#F2DA00", borderRadius: "3px" }}></div>
-              <h2
-                className="text-4xl font-bold"
-                style={{ color: "#864797", fontFamily: "'Poppins', sans-serif" }}
-              >
-                {data.warranty.title}
-              </h2>
-            </div>
-            <p className="text-gray-600 mt-3">Industry-leading warranty coverage for your peace of mind</p>
-          </div>
+      {/* ── Page 2: Credibility ── */}
+      <div data-export-page="true" style={pageStyle}>
+        <div style={gridBackdrop} />
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {data.warranty.items.map((item, idx) => (
-              <div
-                key={idx}
-                className="p-8 rounded-xl text-center relative overflow-hidden group"
-                style={{
-                  backgroundColor: "#FFFFFF",
-                  border: "2px solid #F2DA00",
-                  transition: "all 0.3s ease"
-                }}
-              >
+        {/* Why choose */}
+        <div style={{ position: "relative", padding: "36px 40px 28px" }}>
+          <SectionLabel>Why Mahi Solar</SectionLabel>
+          <h2 style={{ margin: "0 0 8px", fontSize: 26, fontWeight: 700, color: NAVY }}>{whyChoose.title}</h2>
+          <p style={{ margin: "0 0 22px", fontSize: 13, color: MUTED, maxWidth: 520 }}>{whyChoose.subtitle}</p>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            {whyChoose.items.map((item, index) => {
+              const Icon = WHY_ICONS[index % WHY_ICONS.length];
+              return (
                 <div
-                  className="absolute top-0 left-0 w-full h-1 group-hover:h-2 transition"
-                  style={{ backgroundColor: "#F2DA00" }}
-                ></div>
-                <div className="text-3xl mb-3">🏆</div>
-                <p
-                  className="font-semibold text-base"
-                  style={{ color: "#864797", fontFamily: "'Poppins', sans-serif" }}
+                  key={item.title}
+                  style={{
+                    display: "flex",
+                    gap: 12,
+                    padding: "14px 14px",
+                    borderRadius: 8,
+                    background: index % 2 === 0 ? CREAM : "#ffffff",
+                    border: "1px solid rgba(20, 48, 107, 0.08)",
+                  }}
                 >
-                  {item}
-                </p>
+                  <div
+                    style={{
+                      width: 34,
+                      height: 34,
+                      borderRadius: 8,
+                      background: NAVY,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
+                    }}
+                  >
+                    <Icon size={16} color={GOLD_SOFT} strokeWidth={2} />
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: NAVY, marginBottom: 4 }}>{item.title}</div>
+                    <div style={{ fontSize: 11.5, lineHeight: 1.5, color: MUTED }}>{item.description}</div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Process */}
+        <div
+          style={{
+            position: "relative",
+            margin: "0 40px",
+            padding: "22px 22px 20px",
+            borderRadius: 12,
+            background: `linear-gradient(135deg, ${NAVY} 0%, ${NAVY_MID} 100%)`,
+            color: "#ffffff",
+          }}
+        >
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1.2, color: GOLD_SOFT, marginBottom: 6 }}>
+            OUR PROCESS
+          </div>
+          <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 4 }}>{process.title}</div>
+          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.72)", marginBottom: 18 }}>{process.subtitle}</div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 12 }}>
+            {process.steps.map((step, index) => (
+              <div key={step.title}>
+                <div
+                  style={{
+                    width: 28,
+                    height: 28,
+                    borderRadius: "50%",
+                    background: GOLD,
+                    color: NAVY,
+                    fontSize: 12,
+                    fontWeight: 700,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    marginBottom: 10,
+                  }}
+                >
+                  {index + 1}
+                </div>
+                <div style={{ fontSize: 12.5, fontWeight: 700, marginBottom: 6 }}>{step.title}</div>
+                <div style={{ fontSize: 11, lineHeight: 1.5, color: "rgba(255,255,255,0.75)" }}>{step.description}</div>
               </div>
             ))}
           </div>
         </div>
-      </div>
 
-      {/* Trust Badges Section */}
-      <div className="px-8 py-16 border-t-2 border-b-2" style={{ borderColor: "#F2DA00", backgroundColor: "#F5F5F5" }}>
-        <div className="max-w-5xl mx-auto text-center">
-          <p className="text-sm font-bold tracking-wider mb-6" style={{ color: "#864797" }}>TRUSTED BY THOUSANDS OF CUSTOMERS</p>
-          <div className="flex flex-wrap justify-center gap-8 items-center">
-            <div className="text-center">
-              <p className="text-2xl font-bold" style={{ color: "#864797" }}>✓</p>
-              <p className="text-xs text-gray-600 mt-1">JVVNL Authorized</p>
-            </div>
-            <div className="text-center">
-              <p className="text-2xl font-bold" style={{ color: "#864797" }}>✓</p>
-              <p className="text-xs text-gray-600 mt-1">BIS Certified</p>
-            </div>
-            <div className="text-center">
-              <p className="text-2xl font-bold" style={{ color: "#864797" }}>✓</p>
-              <p className="text-xs text-gray-600 mt-1">ISO Compliant</p>
-            </div>
-            <div className="text-center">
-              <p className="text-2xl font-bold" style={{ color: "#864797" }}>✓</p>
-              <p className="text-xs text-gray-600 mt-1">5-Star Rated</p>
-            </div>
-          </div>
-        </div>
-      </div>
+        {/* Warranty + Scheme */}
+        <div
+          style={{
+            position: "relative",
+            padding: "28px 40px 24px",
+            display: "grid",
+            gridTemplateColumns: "1.05fr 1fr",
+            gap: 18,
+          }}
+        >
+          <div>
+            <SectionLabel>{warranty.title}</SectionLabel>
+            <h3 style={{ margin: "0 0 8px", fontSize: 18, fontWeight: 700, color: NAVY }}>{warranty.title}</h3>
+            <p style={{ margin: "0 0 14px", fontSize: 12, color: MUTED }}>{warranty.subtitle}</p>
 
-      {/* Premium Contact Section */}
-      <div
-        className="px-8 py-20 relative overflow-hidden"
-        style={{
-          background: "linear-gradient(135deg, #2f3342 0%, #1a1d25 100%)"
-        }}
-      >
-        <div className="absolute top-0 left-0 w-96 h-96 opacity-10" style={{ backgroundColor: "#F2DA00", borderRadius: "50%" }}></div>
-        <div className="max-w-5xl mx-auto relative z-10">
-          <h2
-            className="text-4xl font-bold mb-12"
-            style={{ color: "#F2DA00", fontFamily: "'Poppins', sans-serif" }}
-          >
-            READY TO SAVE ON ELECTRICITY?
-          </h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
-            <div
-              className="p-8 rounded-xl"
-              style={{
-                backgroundColor: "rgba(242, 218, 0, 0.1)",
-                border: "2px solid #F2DA00"
-              }}
-            >
-              <p className="text-sm font-bold mb-3" style={{ color: "#F2DA00" }}>📞 CALL NOW</p>
-              <p className="text-2xl font-bold text-white mb-2">{data.contact.phone}</p>
-              <p className="text-sm text-gray-300">Available Monday to Saturday, 9 AM to 6 PM</p>
-            </div>
-
-            <div
-              className="p-8 rounded-xl"
-              style={{
-                backgroundColor: "rgba(242, 218, 0, 0.1)",
-                border: "2px solid #F2DA00"
-              }}
-            >
-              <p className="text-sm font-bold mb-3" style={{ color: "#F2DA00" }}>📧 EMAIL US</p>
-              <p className="text-2xl font-bold text-white mb-2">{data.contact.email}</p>
-              <p className="text-sm text-gray-300">We'll respond within 24 hours</p>
+            <div style={{ display: "grid", gap: 8 }}>
+              {warranty.items.map((item) => (
+                <div
+                  key={item.label}
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1.2fr",
+                    gap: 8,
+                    padding: "9px 12px",
+                    background: CREAM,
+                    borderRadius: 6,
+                    borderLeft: `3px solid ${GOLD}`,
+                  }}
+                >
+                  <span style={{ fontSize: 11.5, fontWeight: 600, color: MUTED }}>{item.label}</span>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: NAVY }}>{item.value}</span>
+                </div>
+              ))}
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-6 mb-10">
-            <div>
-              <p className="text-sm font-bold mb-2" style={{ color: "#F2DA00" }}>🌐 WEBSITE</p>
-              <p className="text-white">{data.contact.website}</p>
-            </div>
-            <div>
-              <p className="text-sm font-bold mb-2" style={{ color: "#F2DA00" }}>📍 LOCATION</p>
-              <p className="text-white text-sm">{data.contact.address}</p>
-            </div>
-          </div>
-
-          <button
+          <div
             style={{
-              backgroundColor: "#F2DA00",
-              color: "#2f3342",
-              padding: "14px 40px",
-              borderRadius: "50px",
-              fontWeight: "bold",
-              fontSize: "15px",
-              border: "none",
-              cursor: "pointer",
-              fontFamily: "'Poppins', sans-serif"
+              borderRadius: 12,
+              border: `1px solid rgba(20, 48, 107, 0.12)`,
+              padding: "20px 18px",
+              background: `linear-gradient(180deg, #fff9eb 0%, #ffffff 55%)`,
             }}
           >
-            REQUEST FREE CONSULTATION
-          </button>
+            <div
+              style={{
+                display: "inline-block",
+                fontSize: 10,
+                fontWeight: 700,
+                letterSpacing: 1,
+                textTransform: "uppercase",
+                color: NAVY,
+                background: GOLD_SOFT,
+                padding: "4px 10px",
+                borderRadius: 4,
+                marginBottom: 12,
+              }}
+            >
+              Government scheme support
+            </div>
+            <h3 style={{ margin: "0 0 10px", fontSize: 16, fontWeight: 700, color: NAVY, lineHeight: 1.35 }}>
+              {scheme.title}
+            </h3>
+            <p style={{ margin: "0 0 14px", fontSize: 12, lineHeight: 1.55, color: MUTED }}>{scheme.subtitle}</p>
+            <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "grid", gap: 8 }}>
+              {scheme.points.map((point) => (
+                <li key={point} style={{ display: "flex", gap: 8, fontSize: 12, color: INK, lineHeight: 1.45 }}>
+                  <ShieldCheck size={15} color={NAVY_MID} style={{ flexShrink: 0, marginTop: 1 }} />
+                  {point}
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
-      </div>
 
-      {/* Premium Footer */}
-      <div
-        className="px-8 py-12 text-center border-t-4"
-        style={{ backgroundColor: "#1a1d25", borderColor: "#F2DA00" }}
-      >
-        <p
-          className="text-sm font-bold tracking-wider mb-4"
-          style={{ color: "#F2DA00" }}
+        {/* Final CTA */}
+        <div
+          style={{
+            position: "relative",
+            margin: "8px 40px 0",
+            padding: "24px 26px",
+            borderRadius: 12,
+            background: CREAM,
+            border: `1px solid rgba(20, 48, 107, 0.1)`,
+            display: "grid",
+            gridTemplateColumns: "1.4fr auto",
+            gap: 20,
+            alignItems: "center",
+          }}
         >
-          ✓ JVVNL AUTHORISED | ✓ BIS CERTIFIED | ✓ ISO COMPLIANT | ✓ LIFETIME SUPPORT
-        </p>
-        <p className="text-xs text-gray-500">
-          © 2026 Mahi Solar Solution Private Limited. All rights reserved. | GST: 08AAUCM4104G1ZD
-        </p>
-        <p className="text-xs text-gray-600 mt-3">
-          Powering Sustainable Futures • One Solar Installation at a Time
-        </p>
+          <div>
+            <div style={{ fontSize: 18, fontWeight: 700, color: NAVY, marginBottom: 6 }}>{contactCta.title}</div>
+            <div style={{ fontSize: 12.5, color: MUTED, lineHeight: 1.5 }}>{contactCta.subtitle}</div>
+            <div style={{ marginTop: 12, fontSize: 11.5, color: MUTED }}>
+              GST: {company.gst} · {company.website}
+            </div>
+          </div>
+          <a
+            href={`tel:${company.phone.replace(/\s/g, "")}`}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 10,
+              background: GOLD,
+              color: NAVY,
+              textDecoration: "none",
+              fontWeight: 700,
+              fontSize: 14,
+              padding: "14px 20px",
+              borderRadius: 8,
+              whiteSpace: "nowrap",
+            }}
+          >
+            <Phone size={18} />
+            {company.phone}
+          </a>
+        </div>
+
+        {/* Footer */}
+        <div
+          style={{
+            position: "relative",
+            marginTop: 28,
+            padding: "16px 40px",
+            background: NAVY,
+            color: "#ffffff",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            fontSize: 11,
+          }}
+        >
+          <span style={{ color: GOLD_SOFT, fontWeight: 700, letterSpacing: 1.2 }}>{data.footerLine}</span>
+          <span style={{ color: "rgba(255,255,255,0.65)" }}>© {new Date().getFullYear()} {company.shortName}</span>
+        </div>
       </div>
     </div>
   );
