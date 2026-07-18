@@ -68,7 +68,6 @@ const defaultCustomerScope = [
   "Customer to provide LAN (internet facility) for cloud monitoring.",
   "Cleaning of modules is not in our scope; customer is requested to clean the panels once a week.",
   "Net metering file charges would be in the scope of customer.",
-  "Civil foundation material will be provided by customer.",
 ];
 
 function commercial(parameter: string, offering: string): QuotationCommercialRow {
@@ -148,6 +147,26 @@ function defaultTerms(): QuotationTermItem[] {
     term(
       "Photography & Content Creation",
       "Mahi Solar Solution reserves the right to conduct photography, video shoots, and content creation during installation and thereafter for marketing, advertising, and promotional purposes. All captured content and intellectual property rights belong to the Company.",
+    ),
+    term(
+      "Cancellation Policy",
+      "If the customer cancels the order after confirmation or after material dispatch, the actual cost of procured materials, transportation, and other expenses incurred by Mahi Solar Solution Private Limited shall be deducted. Any refundable amount will be processed after adjusting such charges.",
+    ),
+    term(
+      "Force Majeure",
+      "Mahi Solar Solution Private Limited shall not be held responsible for delays or failure in project execution due to events beyond its reasonable control, including but not limited to natural disasters, heavy rainfall, floods, earthquakes, fire, strikes, government restrictions, war, pandemic, or any other force majeure event.",
+    ),
+    term(
+      "Ownership of Materials",
+      "All supplied materials and equipment shall remain the property of Mahi Solar Solution Private Limited until the full project payment has been received. The Company reserves the right to recover the supplied materials in case of non-payment or breach of the agreed payment terms.",
+    ),
+    term(
+      "Roof Condition & Water Leakage",
+      "The customer is responsible for ensuring that the rooftop is structurally sound and free from any existing water leakage or damage before installation. Mahi Solar Solution Private Limited shall not be liable for pre-existing roof defects. However, any damage directly caused by our installation work will be repaired by the Company.",
+    ),
+    term(
+      "Payment Delay",
+      "If the customer fails to make payments as per the agreed schedule, Mahi Solar Solution Private Limited reserves the right to suspend material dispatch, installation work, net metering documentation, or project completion until all outstanding payments are cleared.",
     ),
   ];
 }

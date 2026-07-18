@@ -462,7 +462,7 @@ function IncludedExcludedMatrix({ data }: { data: QuotationData }) {
       "Material & manufacturing defects",
       "Inverter malfunction",
       "Structure integrity issues",
-      "Free maintenance checks (2 years)",
+      "Free maintenance checks (5 years)",
       "Generation performance monitoring",
     ],
     excluded: [
@@ -508,7 +508,7 @@ function IncludedExcludedMatrix({ data }: { data: QuotationData }) {
 function WarrantyAfterPeriodBox() {
   return (
     <div style={{ marginTop: 12, marginBottom: 12, padding: "10px 12px", background: "#fff3cd", borderRadius: 4 }}>
-      <div style={{ fontWeight: 700, fontSize: 11, color: "#333", marginBottom: 6 }}>💰 After 2-Year Free Period:</div>
+      <div style={{ fontWeight: 700, fontSize: 11, color: "#333", marginBottom: 6 }}>💰 After 5-Year Free Period:</div>
       <div style={{ fontSize: 10.5, color: "#555", lineHeight: 1.5 }}>
         Optional maintenance packages available at competitive rates | Annual service check-ups recommended | Emergency repairs on paid call-out basis
       </div>
@@ -520,7 +520,7 @@ function MaintenanceServiceSection({ data }: { data: QuotationData }) {
   return (
     <div style={{ marginTop: 12, marginBottom: 12 }}>
       <div style={{ fontSize: 11, fontWeight: 700, color: "#152036", marginBottom: 10 }}>
-        2 YEARS FREE MAINTENANCE CHECKS ({data.maintenanceFrequency} inspections)
+        5 YEARS FREE MAINTENANCE CHECKS ({data.maintenanceFrequency} inspections)
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
@@ -548,7 +548,7 @@ function MaintenanceServiceSection({ data }: { data: QuotationData }) {
       </div>
 
       <div style={{ marginTop: 12, padding: "10px 12px", background: "#e3f2fd", borderRadius: 4 }}>
-        <div style={{ fontWeight: 700, fontSize: 10.5, color: "#1565c0" }}>After Year 2:</div>
+        <div style={{ fontWeight: 700, fontSize: 10.5, color: "#1565c0" }}>After Year 5:</div>
         <div style={{ fontSize: 10.5, color: "#555", marginTop: 4 }}>{data.maintenanceAfterYears}</div>
       </div>
     </div>

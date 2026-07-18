@@ -7,6 +7,7 @@ import { AllQuotations, QuotationMaker } from "@/features/quotation";
 import { AllCompanyProfiles, CompanyProfileMaker } from "@/features/company-profile";
 import { AllEmployeeDirectories, EmployeeDirectoryMaker } from "@/features/employee-directory";
 import { MssSitesPage } from "@/features/mss-sites";
+import BrochurePage from "@/features/brochure/pages/BrochurePage";
 
 export default function App() {
   const location = useLocation();
@@ -43,6 +44,7 @@ export default function App() {
         <Route path="/employees" element={<AllEmployeeDirectories />} />
         <Route path="/mss-sites" element={<Navigate replace to="/projects" />} />
         <Route path="/projects" element={<MssSitesPage />} />
+        <Route path="/brochure" element={<BrochurePage />} />
       </Routes>
     </div>
   );

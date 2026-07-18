@@ -6,6 +6,7 @@ import {
   HeartHandshake,
   ReceiptIndianRupee,
   Users,
+  Lightbulb,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -59,6 +60,12 @@ const NAV_ITEMS: NavItem[] = [
     label: "Employees",
     icon: Users,
     match: (pathname) => pathname === "/employees",
+  },
+  {
+    path: "/brochure",
+    label: "Brochure",
+    icon: Lightbulb,
+    match: (pathname) => pathname === "/brochure",
   },
 ];
 
