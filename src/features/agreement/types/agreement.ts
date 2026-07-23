@@ -29,6 +29,7 @@ export interface AgreementParty {
   discom: string;
   aadhaar?: string;
   gst?: string;
+  pan?: string;
 }
 
 export interface AgreementVariableField {
@@ -86,6 +87,7 @@ export interface AgreementData {
   governingLawParagraph: string;
 
   partyIsIndividual: boolean;
+  showPartyPan: boolean;
   showVendorChargePerWatt: boolean;
   vendorChargePerWatt: string;
   showWitnesses: boolean;

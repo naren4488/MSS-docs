@@ -83,9 +83,28 @@ export function AgreementMaker() {
   );
 
   async function handleSaveAsPdf() {
-    await document.fonts.ready;
-    await new Promise((resolve) => window.setTimeout(resolve, 150));
-    window.print();
+    const previousTitle = document.title;
+    const pdfName =
+      record?.name?.trim() ||
+      (data.party.entityName.trim()
+        ? `${data.party.entityName.trim()} — Vendor Code Agreement`
+        : data.title.trim()) ||
+      "Agreement";
+    document.title = pdfName;
+
+    const restoreTitle = () => {
+      document.title = previousTitle;
+      window.removeEventListener("afterprint", restoreTitle);
+    };
+    window.addEventListener("afterprint", restoreTitle);
+
+    try {
+      await document.fonts.ready;
+      await new Promise((resolve) => window.setTimeout(resolve, 150));
+      window.print();
+    } catch {
+      restoreTitle();
+    }
   }
 
   function handleSave(name: string) {

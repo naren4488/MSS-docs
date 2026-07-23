@@ -3,12 +3,20 @@ import type { AgreementParty } from "../types/agreement";
 interface PartyEditorProps {
   party: AgreementParty;
   showApplicantFields: boolean;
-  /** When true, the counterparty is an individual (no firm): name + Aadhaar, no representative. */
+  /** When true, the counterparty is an individual (no firm): name, no representative. */
   individual?: boolean;
+  /** When true, show the optional PAN card field. */
+  showPan?: boolean;
   onChange: (next: AgreementParty) => void;
 }
 
-export function PartyEditor({ party, showApplicantFields, individual = false, onChange }: PartyEditorProps) {
+export function PartyEditor({
+  party,
+  showApplicantFields,
+  individual = false,
+  showPan = false,
+  onChange,
+}: PartyEditorProps) {
   function update<K extends keyof AgreementParty>(key: K, value: AgreementParty[K]) {
     onChange({ ...party, [key]: value });
   }
@@ -40,16 +48,7 @@ export function PartyEditor({ party, showApplicantFields, individual = false, on
         />
       </div>
 
-      {individual ? (
-        <div className="field">
-          <label>Aadhaar Number</label>
-          <input
-            value={party.aadhaar ?? ""}
-            placeholder="XXXX XXXX XXXX"
-            onChange={(event) => update("aadhaar", event.target.value)}
-          />
-        </div>
-      ) : (
+      {individual ? null : (
         <>
           <div className="field">
             <label>Representative Name *</label>
@@ -77,6 +76,27 @@ export function PartyEditor({ party, showApplicantFields, individual = false, on
           </div>
         </>
       )}
+
+      <div className="field">
+        <label>{individual ? "Aadhaar Number *" : "Aadhaar Number"}</label>
+        <input
+          value={party.aadhaar ?? ""}
+          placeholder="XXXX XXXX XXXX"
+          required={individual}
+          onChange={(event) => update("aadhaar", event.target.value)}
+        />
+      </div>
+
+      {showPan ? (
+        <div className="field">
+          <label>PAN Number</label>
+          <input
+            value={party.pan ?? ""}
+            placeholder="e.g. ABCDE1234F"
+            onChange={(event) => update("pan", event.target.value.toUpperCase())}
+          />
+        </div>
+      ) : null}
 
       {showApplicantFields ? (
         <>

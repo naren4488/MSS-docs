@@ -753,26 +753,25 @@ function createBlocks(data: QuotationData): PreviewBlock[] {
   // EMI & Financing Section
   if (data.showEmiSection) {
     pushHeading(blocks, "emi-heading", "EMI & Financing Options");
-    blocks.push({ key: "emi-section", estimate: 140, keepWithNext: true, node: <EmiFinancingSection data={data} /> });
+    blocks.push({ key: "emi-section", estimate: 140, node: <EmiFinancingSection data={data} /> });
   }
 
   // Effective Investment After Subsidy
   if (data.projectAmount.trim() || data.centralSubsidy.trim() || data.stateSubsidy.trim() || data.effectivePayableAmount.trim()) {
-    blocks.push({ key: "effective-investment", estimate: 120, keepWithNext: true, node: <EffectiveInvestmentBox data={data} /> });
+    blocks.push({ key: "effective-investment", estimate: 120, node: <EffectiveInvestmentBox data={data} /> });
   }
 
   // Component Warranty Table
   if (data.showComponentWarranty) {
     pushHeading(blocks, "component-warranty-heading", "Component Warranty Breakdown");
-    blocks.push({ key: "component-warranty-table", estimate: 160, keepWithNext: true, node: <ComponentWarrantyTable data={data} /> });
+    blocks.push({ key: "component-warranty-table", estimate: 160, node: <ComponentWarrantyTable data={data} /> });
   }
 
-  // What's Included vs Excluded
+  // What's Included vs Excluded — heading stays with matrix; yellow box moves alone if it won't fit
   if (data.showComponentWarranty) {
     pushHeading(blocks, "included-excluded-heading", "What's Covered in Your Warranty");
-    blocks.push({ key: "included-excluded-matrix", estimate: 160, keepWithNext: true, node: <IncludedExcludedMatrix data={data} /> });
-    // Very high estimate to FORCE yellow box to next page - simple and effective
-    blocks.push({ key: "warranty-after-period", estimate: 600, node: <WarrantyAfterPeriodBox /> });
+    blocks.push({ key: "included-excluded-matrix", estimate: 180, node: <IncludedExcludedMatrix data={data} /> });
+    blocks.push({ key: "warranty-after-period", estimate: 72, node: <WarrantyAfterPeriodBox /> });
   }
 
   // Manufacturing Defect Warranty
@@ -921,16 +920,22 @@ function paginateBlocks(blocks: PreviewBlock[], heights: Record<string, number>,
   for (const block of blocks) {
     const blockHeight = heightOf(block);
 
+    // Doesn't fit — flush current page, keep keepWithNext tail with this block on the next page.
     if (currentPage.length > 0 && blockHeight > remaining) {
       const carryOver: PreviewBlock[] = [];
       while (currentPage.length > 0 && currentPage[currentPage.length - 1].keepWithNext) {
         carryOver.unshift(currentPage.pop() as PreviewBlock);
       }
+
       if (currentPage.length > 0) {
         pages.push(currentPage);
       }
+
       currentPage = carryOver;
       remaining = nextCapacity - carryOver.reduce((sum, item) => sum + heightOf(item), 0);
+
+      // If the keepWithNext group alone already exceeds the page, still move forward with
+      // this block on the same page rather than orphaning the heading from its content.
     }
 
     currentPage.push(block);
@@ -950,8 +955,12 @@ export function QuotationPreview({ data }: QuotationPreviewProps) {
   const [blockHeights, setBlockHeights] = useState<Record<string, number>>({});
 
   useLayoutEffect(() => {
+    // +2px absorbs sub-pixel / font rendering drift between measure layer and page.
     const nextHeights = Object.fromEntries(
-      allBlocks.map((block) => [block.key, Math.ceil(measureRefs.current[block.key]?.offsetHeight ?? block.estimate)]),
+      allBlocks.map((block) => [
+        block.key,
+        Math.ceil(measureRefs.current[block.key]?.offsetHeight ?? block.estimate) + 2,
+      ]),
     );
     const changed = allBlocks.some((block) => nextHeights[block.key] !== blockHeights[block.key]);
     if (changed) {
@@ -959,9 +968,12 @@ export function QuotationPreview({ data }: QuotationPreviewProps) {
     }
   }, [allBlocks, blockHeights]);
 
+  // Extra buffer so content near the page edge is pushed to the next page instead of clipped.
+  const PACKING_BUFFER = 28;
   const footerReserve = data.showPageNumbers ? PAGE_NUMBER_FOOTER_HEIGHT : 0;
-  const firstCapacity = (data.showLetterhead ? FIRST_PAGE_CAPACITY : FOLLOWING_PAGE_CAPACITY) - footerReserve;
-  const followingCapacity = FOLLOWING_PAGE_CAPACITY - footerReserve;
+  const firstCapacity =
+    (data.showLetterhead ? FIRST_PAGE_CAPACITY : FOLLOWING_PAGE_CAPACITY) - footerReserve - PACKING_BUFFER;
+  const followingCapacity = FOLLOWING_PAGE_CAPACITY - footerReserve - PACKING_BUFFER;
   const pages = paginateBlocks(allBlocks, blockHeights, firstCapacity, followingCapacity);
 
   return (
@@ -977,6 +989,8 @@ export function QuotationPreview({ data }: QuotationPreviewProps) {
           visibility: "hidden",
           pointerEvents: "none",
           fontSize: 11,
+          fontFamily: "Lexend, sans-serif",
+          color: "#111827",
         }}
       >
         {allBlocks.map((block) => (

@@ -10,10 +10,18 @@ import {
   SUNNY_MEENA_VENDOR_AGREEMENT_ID,
 } from "./agreement-defaults";
 import { bhavyaSolarSolutionsAgreement } from "../data/bhavya-solar-solutions-agreement";
+import { rjGreenSolarEnergyAgreement } from "../data/rj-green-solar-energy-agreement";
+import { solarWorldEnergyAgreement } from "../data/solar-world-energy-agreement";
+import { sunsmartGreenEnergyServicesAgreement } from "../data/sunsmart-green-energy-services-agreement";
 import type { AgreementData, AgreementRecord } from "../types/agreement";
 
 function readRecords() {
-  return [bhavyaSolarSolutionsAgreement];
+  return [
+    bhavyaSolarSolutionsAgreement,
+    solarWorldEnergyAgreement,
+    rjGreenSolarEnergyAgreement,
+    sunsmartGreenEnergyServicesAgreement,
+  ];
 }
 
 function writeRecords(_records: AgreementRecord[]) {
@@ -75,7 +83,7 @@ const SEEDED_VENDOR_AGREEMENTS = [
   },
   {
     id: RAVI_SHARMA_VENDOR_AGREEMENT_ID,
-    name: "Ravi Sharma — Vendor Code Agreement",
+    name: "Sunsmart Green Energy Services — Vendor Code Agreement",
     create: createRaviSharmaVendorAgreementData,
   },
   {

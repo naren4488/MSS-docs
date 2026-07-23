@@ -176,10 +176,21 @@ export function AgreementEditor({ data, onChange }: AgreementEditorProps) {
             <span className="toggle-thumb" />
           </button>
         </div>
+        <div className="toggle-row" style={{ marginBottom: 12 }}>
+          <span>Include PAN card details</span>
+          <button
+            className={`toggle ${data.showPartyPan ? "on" : ""}`}
+            type="button"
+            onClick={() => update("showPartyPan", !data.showPartyPan)}
+          >
+            <span className="toggle-thumb" />
+          </button>
+        </div>
         <PartyEditor
           party={data.party}
           showApplicantFields={showApplicantFields}
           individual={data.partyIsIndividual}
+          showPan={data.showPartyPan}
           onChange={(party) => update("party", party)}
         />
       </AccordionSection>
