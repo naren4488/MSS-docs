@@ -440,6 +440,48 @@
   color: #c2410c;
 }
 
+.mss-sites-scope-tabs {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 16px;
+  padding: 4px;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  background: #f8fafc;
+}
+
+.mss-sites-scope-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #4b5563;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.mss-sites-scope-tab:hover {
+  color: #14306b;
+  background: #ffffff;
+}
+
+.mss-sites-scope-tab--active {
+  background: #14306b;
+  color: #ffffff;
+  box-shadow: 0 1px 2px rgba(15, 35, 77, 0.2);
+}
+
+.mss-sites-scope-tab--active:hover {
+  background: #14306b;
+  color: #ffffff;
+}
+
 .mss-sites-clear-filters {
   display: inline-flex;
   align-items: center;
@@ -467,6 +509,80 @@
   grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 12px 14px;
   align-items: end;
+}
+
+.projects-sheet-tab-filter {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.projects-sheet-tab-filter-title {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #6b7280;
+}
+
+.projects-sheet-tab-filter-groups {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  align-items: center;
+}
+
+.projects-sheet-tab-filter-group {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.projects-sheet-tab-filter-group-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #c2410c;
+}
+
+.projects-sheet-tab-filter-group:has(.projects-sheet-tab-filter-group-label) .projects-sheet-tab-filter-group-label {
+  color: #c2410c;
+}
+
+.projects-sheet-tab-filter-chips {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.projects-sheet-tab-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  background: #f8fafc;
+  color: #14306b;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.projects-sheet-tab-chip:hover {
+  border-color: #14306b;
+  background: #eef2ff;
+}
+
+.projects-sheet-tab-chip--active {
+  border-color: #14306b;
+  background: #14306b;
+  color: #ffffff;
+  box-shadow: 0 0 0 3px rgba(20, 48, 107, 0.16);
 }
 
 .projects-filter--search {

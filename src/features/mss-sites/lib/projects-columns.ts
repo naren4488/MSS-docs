@@ -1,3 +1,8 @@
+import {
+  getProjectsScopeForProjectType,
+  type ProjectsScope,
+} from "./projects-config";
+
 /** Canonical Projects table columns (summary tab excluded). */
 export const PROJECT_TABLE_HEADERS = [
   "S NO",
@@ -38,8 +43,12 @@ export const PROJECT_TABLE_HEADERS = [
   "REMARK",
 ] as const;
 
-/** Partner-only sheet columns — shown for all rows; empty when absent on MSS tab. */
-export const PARTNER_ONLY_PROJECT_COLUMNS = new Set<string>(["Deal with MSS", "Payment with partner"]);
+/** Partner-only sheet columns — hidden on Our projects; shown on Partner projects. */
+export const PARTNER_ONLY_PROJECT_COLUMNS = new Set<string>([
+  "Deal with MSS",
+  "Partner commission",
+  "Payment with partner",
+]);
 
 /** Shown in the last-column tooltip instead of the main table. */
 export const HIDDEN_PROJECT_COLUMNS = new Set<string>([
@@ -112,19 +121,39 @@ export const PAYMENT_NOT_RECEIVED_LABEL = "Not received";
 
 export const PAYMENT_RECEIVED_FILTER_OPTIONS = [PAYMENT_RECEIVED_LABEL, PAYMENT_NOT_RECEIVED_LABEL] as const;
 
-export type DueToMssFilter = "all" | "has-due" | "no-due";
-
-export const DUE_TO_MSS_FILTER_OPTIONS: ReadonlyArray<{ value: DueToMssFilter; label: string }> = [
-  { value: "all", label: "All projects" },
-  { value: "has-due", label: "Has due to MSS" },
-  { value: "no-due", label: "No due to MSS" },
-];
-
 export const EMPTY_WORK_STATUS_LABEL = "Not set";
+
+/** Sheet value kept unselected in the Work status filter by default. */
+const PROJECT_ON_HOLD_WORK_STATUS = "project on hold";
 
 export function normalizeWorkStatus(value: string): string {
   const trimmed = value.trim();
   return trimmed.length > 0 ? trimmed : EMPTY_WORK_STATUS_LABEL;
+}
+
+export function isProjectOnHoldWorkStatus(value: string): boolean {
+  return normalizeWorkStatus(value).toLowerCase() === PROJECT_ON_HOLD_WORK_STATUS;
+}
+
+/** Default Work status selection: every status except project on HOLD. */
+export function getDefaultSelectedWorkStatuses(workStatuses: readonly string[]): Set<string> {
+  return new Set(workStatuses.filter((status) => !isProjectOnHoldWorkStatus(status)));
+}
+
+export function workStatusSelectionMatchesDefault(
+  selectedWorkStatuses: ReadonlySet<string>,
+  workStatuses: readonly string[],
+): boolean {
+  const defaults = getDefaultSelectedWorkStatuses(workStatuses);
+  if (selectedWorkStatuses.size !== defaults.size) {
+    return false;
+  }
+  for (const status of defaults) {
+    if (!selectedWorkStatuses.has(status)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function getWorkStatusesFromRows(rows: readonly (readonly string[])[]): string[] {
@@ -277,25 +306,8 @@ export function filterRowsByClientName(
     .map((row) => [...row]);
 }
 
-export function hasDueToMss(row: readonly string[]): boolean {
-  return parseProjectAmount(row[TOTAL_DUE_TO_MSS_COLUMN_INDEX] ?? "") !== 0;
-}
-
 export function isPaymentReceived(row: readonly string[]): boolean {
   return parseProjectAmount(row[TOTAL_PAYMENT_RECEIVED_COLUMN_INDEX] ?? "") > 0;
-}
-
-export function filterRowsByDueToMss(
-  rows: readonly (readonly string[])[],
-  filter: DueToMssFilter,
-): string[][] {
-  if (filter === "all") {
-    return rows.map((row) => [...row]);
-  }
-
-  return rows
-    .filter((row) => (filter === "has-due" ? hasDueToMss(row) : !hasDueToMss(row)))
-    .map((row) => [...row]);
 }
 
 export function filterRowsByPaymentReceived(
@@ -322,8 +334,28 @@ export function withSequentialSerialNumbers(rows: readonly (readonly string[])[]
   });
 }
 
-export function getVisibleColumnIndices(headers: readonly string[]): number[] {
-  return headers.flatMap((header, index) => (HIDDEN_PROJECT_COLUMNS.has(header) ? [] : [index]));
+export function filterRowsByProjectsScope(
+  rows: readonly (readonly string[])[],
+  scope: ProjectsScope,
+): string[][] {
+  return rows
+    .filter((row) => getProjectsScopeForProjectType(row[PROJECT_TYPE_COLUMN_INDEX] ?? "") === scope)
+    .map((row) => [...row]);
+}
+
+export function getVisibleColumnIndices(
+  headers: readonly string[],
+  scope: ProjectsScope = "partner",
+): number[] {
+  return headers.flatMap((header, index) => {
+    if (HIDDEN_PROJECT_COLUMNS.has(header)) {
+      return [];
+    }
+    if (scope === "our" && PARTNER_ONLY_PROJECT_COLUMNS.has(header)) {
+      return [];
+    }
+    return [index];
+  });
 }
 
 export function getHiddenProjectFields(

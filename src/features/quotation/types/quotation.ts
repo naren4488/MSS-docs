@@ -37,6 +37,7 @@ export interface QuotationData {
 
   // Top summary
   customerName: string;
+  customerPhone: string;
   capacity: string;
   systemPhase: "1 Phase" | "3 Phase";
   phase: "1PH" | "3PH";

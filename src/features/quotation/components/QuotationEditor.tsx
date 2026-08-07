@@ -67,6 +67,10 @@ export function QuotationEditor({ data, onChange }: QuotationEditorProps) {
             <input value={data.customerName} onChange={(event) => update("customerName", event.target.value)} />
           </div>
           <div className="field">
+            <label>Customer Phone</label>
+            <input value={data.customerPhone} placeholder="e.g. 9876543210" onChange={(event) => update("customerPhone", event.target.value)} />
+          </div>
+          <div className="field">
             <label>Capacity of Power Plant</label>
             <input value={data.capacity} placeholder="e.g. 3 KW 1PH" onChange={(event) => update("capacity", event.target.value)} />
           </div>

@@ -14,6 +14,40 @@ export const PROJECT_VENDORS = {
   ARKSHAKTI: "Arkshakti",
 } as const;
 
+/** Top-level Projects page scopes. */
+export type ProjectsScope = "our" | "partner" | "shripal";
+
+/**
+ * Sheet tab / PROJECT TYPE values that belong on **Our projects**.
+ */
+export const OUR_PROJECT_TYPES = ["MSS res", "MSS COMMERCIAL"] as const;
+
+export const OUR_PROJECT_TYPE_SET = new Set<string>(OUR_PROJECT_TYPES);
+
+/** Shripal has its own top-level tab (MSS + Arkshakti `SHRIPAL JI` registers). */
+export const SHRIPAL_PROJECT_TYPES = ["SHRIPAL JI"] as const;
+
+export const SHRIPAL_PROJECT_TYPE_SET = new Set<string>(SHRIPAL_PROJECT_TYPES);
+
+export function isOurProjectType(projectType: string): boolean {
+  return OUR_PROJECT_TYPE_SET.has(projectType.trim());
+}
+
+export function isShripalProjectType(projectType: string): boolean {
+  return SHRIPAL_PROJECT_TYPE_SET.has(projectType.trim());
+}
+
+export function getProjectsScopeForProjectType(projectType: string): ProjectsScope {
+  const trimmed = projectType.trim();
+  if (isOurProjectType(trimmed)) {
+    return "our";
+  }
+  if (isShripalProjectType(trimmed)) {
+    return "shripal";
+  }
+  return "partner";
+}
+
 /** Human-readable rules for which tabs are included (for docs / debugging). */
 export const PROJECT_SHEET_SOURCE_RULES = {
   mss: {
@@ -87,6 +121,117 @@ export const ARKSHAKTI_SHEET_TABS: readonly ProjectSheetTab[] = [
   projectTab("Rohit (RJ GREEN)"),
   projectTab("Pradeep (veer)"),
 ];
+
+/**
+ * Quick sheet-tab chips on the Projects page (below main filters).
+ * - With `vendor`: sets Vendor + Project type together (Our / Arkshakti MSS res).
+ * - Without `vendor`: sets Partner name only; keeps all vendors selected.
+ */
+export interface ProjectSheetTabShortcut {
+  id: string;
+  /** Chip label shown in the UI. */
+  label: string;
+  /** Optional vendor — when set, chip locks Vendor + Project type. */
+  vendor?: string;
+  /** Partner / PROJECT TYPE — must match sheet tab `projectType`. */
+  projectType: string;
+  /** Group heading above the chips (e.g. Arkshakti, Partners). */
+  group: string;
+  /** Which Projects scope tab shows this chip. */
+  scope: ProjectsScope;
+}
+
+function partnerSlug(projectType: string) {
+  return projectType
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+/** Unique partner register names in workbook order (MSS first, then Arkshakti-only). Excludes Our + Shripal. */
+function buildPartnerSheetTabShortcuts(): ProjectSheetTabShortcut[] {
+  const seen = new Set<string>();
+  const shortcuts: ProjectSheetTabShortcut[] = [];
+
+  for (const tab of [...PROJECT_SHEET_TABS, ...ARKSHAKTI_SHEET_TABS]) {
+    if (isOurProjectType(tab.projectType) || isShripalProjectType(tab.projectType) || seen.has(tab.projectType)) {
+      continue;
+    }
+    seen.add(tab.projectType);
+    shortcuts.push({
+      id: `partner-${partnerSlug(tab.projectType)}`,
+      label: tab.projectType,
+      projectType: tab.projectType,
+      group: "Partners",
+      scope: "partner",
+    });
+  }
+
+  return shortcuts;
+}
+
+const OUR_SHEET_TAB_SHORTCUTS: readonly ProjectSheetTabShortcut[] = [
+  {
+    id: "arkshakti-mss-res",
+    label: "MSS res",
+    vendor: PROJECT_VENDORS.ARKSHAKTI,
+    projectType: "MSS res",
+    group: "Arkshakti",
+    scope: "our",
+  },
+];
+
+/** Shripal sites — vendor chips (same PROJECT TYPE on MSS + Arkshakti workbooks). */
+const SHRIPAL_SHEET_TAB_SHORTCUTS: readonly ProjectSheetTabShortcut[] = [
+  {
+    id: "mss-shripal",
+    label: "MSS",
+    vendor: PROJECT_VENDORS.MSS,
+    projectType: "SHRIPAL JI",
+    group: "Vendor",
+    scope: "shripal",
+  },
+  {
+    id: "arkshakti-shripal",
+    label: "Arkshakti",
+    vendor: PROJECT_VENDORS.ARKSHAKTI,
+    projectType: "SHRIPAL JI",
+    group: "Vendor",
+    scope: "shripal",
+  },
+];
+
+export const PROJECT_SHEET_TAB_SHORTCUTS: readonly ProjectSheetTabShortcut[] = [
+  ...OUR_SHEET_TAB_SHORTCUTS,
+  ...SHRIPAL_SHEET_TAB_SHORTCUTS,
+  ...buildPartnerSheetTabShortcuts(),
+];
+
+export function getSheetTabShortcutsForScope(scope: ProjectsScope): readonly ProjectSheetTabShortcut[] {
+  return PROJECT_SHEET_TAB_SHORTCUTS.filter((shortcut) => shortcut.scope === scope);
+}
+
+export function isSheetTabShortcutActive(
+  shortcut: ProjectSheetTabShortcut,
+  selectedVendors: ReadonlySet<string>,
+  selectedProjectTypes: ReadonlySet<string>,
+  allVendors: readonly string[],
+): boolean {
+  if (selectedProjectTypes.size !== 1 || !selectedProjectTypes.has(shortcut.projectType)) {
+    return false;
+  }
+
+  if (shortcut.vendor) {
+    return selectedVendors.size === 1 && selectedVendors.has(shortcut.vendor);
+  }
+
+  return (
+    allVendors.length > 0 &&
+    selectedVendors.size === allVendors.length &&
+    allVendors.every((vendor) => selectedVendors.has(vendor))
+  );
+}
 
 function spreadsheetGvizUrl(spreadsheetId: string, sheetName: string, headerRows = 1) {
   const params = new URLSearchParams({

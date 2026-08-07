@@ -33,15 +33,15 @@ function material(description: string, qty: string, unit: string, make: string):
 
 function defaultMaterialItems(): QuotationMaterialItem[] {
   return [
-    material("Solar PV Modules", "6 Panel", "555 Wp", "Adani Bifacial / Silicon Technology with 30 Year Warranty"),
+    material("Solar PV Modules", "6 Panel", "550 Wp", "Adani Topcon Bifacial with 30 Year Warranty"),
     material("Solar Inverter", "1", "1 Phase", "3.6 KW POLYCAB Inverter with 10 Year Warranty"),
     material("Mounting Structure (GI Apollo)", "As per Requirement", "", "Leg 75×75, Rafter 60×40, Purline 40×40"),
-    material("AC Cable", "As per Requirement", "M", "2 Core 10 mm Aluminium Armoured Cable (1PH) / 4 Core 10 mm (3PH)"),
+    material("AC Cable", "As per Requirement", "M", "2 Core 10 mm Aluminium Armoured Cable (1PH)"),
     material("DC Cable", "As per Requirement", "M", "4 sq mm Copper Wire, Polycab cable"),
     material("Lightning Arrestor Kit", "1 No", "1 No", "1 M, Copper bound"),
     material("Earthing Kit", "3 Set", "Set", "Earthing single core copper, cement earthing with GI and chemical solution, 1 Mtr"),
-    material("ACDB / DCDB / MCB Distribution Box", "1, 1 No", "32 Amp / 1000 V DC", "L&T, Schneider"),
-    material("Solar & Net Meter LT-CT", "1, 1 No", "", "Genus or HPL as per availability, tested by JVVNL"),
+    material("ACDB / DCDB / MCB Distribution Box", "1, 1 No", "32 Amp / 1000 V DC", "Havells or Sibass"),
+    material("Solar & Net Meter LT-CT", "1, 1 No", "", "Avon Meter as per availability, tested by JVVNL"),
     material("DC Wire Duct & Casing, Connecting Cable, MC-4 Connector", "15 M, 4 Set", "6/4 mm 1500 V DC", "Polycab Copper 4 mm"),
     material("Designed Installation & Commissioning", "", "As per site requirement", "Team Mahi Solar Solution"),
   ];
@@ -76,11 +76,10 @@ function commercial(parameter: string, offering: string): QuotationCommercialRow
 function defaultCommercialOffer(): QuotationCommercialRow[] {
   return [
     commercial("Solar PV Plant Capacity", "3 KWp, On-grid SPV System"),
+    commercial("Panel Configuration", "6 x 550W Adani Topcon Bifacial Panels (3.3 KW Total)"),
     commercial("Price Basis", "Turnkey EPC"),
-    commercial("Project Price", "Rs. 63.33 / Watt — Net Payable Amount INR 1,90,000/- + GST & Net Metering Charges"),
-    commercial("GST Head", "5% GST on 70% of the project & 18% GST on the rest"),
-    commercial("Customer Net Payable Amount", "INR 1,90,000/- (Including Tax)"),
-    commercial("5 Year Maintenance", "FREE"),
+    commercial("Project Price", "Rs. 54.54 / Watt — Net Payable Amount INR 1,80,000/-"),
+    commercial("Customer Net Payable Amount", "INR 1,80,000/- (Including Tax)"),
   ];
 }
 
@@ -190,6 +189,7 @@ export function createDefaultQuotationData(): QuotationData {
     tagline: "SMART  |  SUSTAINABLE  |  COST EFFECTIVE",
     coverImageUrl: "",
     customerName: "",
+    customerPhone: "",
     capacity: "3 KW 1PH",
     systemPhase: "1 Phase",
     phase: "1PH",
@@ -226,11 +226,11 @@ export function createDefaultQuotationData(): QuotationData {
       "Handover",
     ],
     showWattageInfo: true,
-    projectAmount: "",
+    projectAmount: "180000",
     centralSubsidy: "78000",
-    stateSubsidy: "",
-    effectivePayableAmount: "",
-    subsidyNote: "*Subject to subsidy eligibility — state subsidy applies only where 100 units free benefit is currently available.",
+    stateSubsidy: "17000",
+    effectivePayableAmount: "85000",
+    subsidyNote: "*State Government Subsidy (₹17,000) will be provided only where 100 units free benefit is currently available.",
     showEmiSection: true,
     emiInfo: {
       uptoLoanAmount: "₹2,00,000",

@@ -10,6 +10,7 @@ export const surendraSekhawat5kwQuotation: QuotationRecord = {
     tagline: "SMART  |  SUSTAINABLE  |  COST EFFECTIVE",
     coverImageUrl: "",
     customerName: "Surendra Sekhawat",
+    customerPhone: "",
     capacity: "5 KW 3PH",
     systemPhase: "3 Phase",
     phase: "3PH",
@@ -33,7 +34,7 @@ export const surendraSekhawat5kwQuotation: QuotationRecord = {
         description: "Solar PV Modules",
         qty: "9 Panel",
         unit: "550 Wp",
-        make: "Adani Topcon Bifacial / Silicon Technology with 30 Year Warranty",
+        make: "Adani Topcon Bifacial with 30 Year Warranty",
       },
       {
         id: "mat-002",
@@ -82,14 +83,14 @@ export const surendraSekhawat5kwQuotation: QuotationRecord = {
         description: "ACDB / DCDB / MCB Distribution Box",
         qty: "1, 1 No",
         unit: "63 Amp / 1000 V DC",
-        make: "L&T, Schneider",
+        make: "Havells or Sibass",
       },
       {
         id: "mat-009",
         description: "Solar & Net Meter LT-CT",
         qty: "1, 1 No",
         unit: "",
-        make: "Genus or HPL as per availability, tested by JVVNL",
+        make: "Avon Meter as per availability, tested by JVVNL",
       },
       {
         id: "mat-010",
@@ -294,6 +295,31 @@ IMPORTANT NOTE
         id: "term-015",
         label: "Photography & Content Creation",
         text: "Mahi Solar Solution reserves the right to conduct photography, video shoots, and content creation during installation and thereafter for marketing, advertising, and promotional purposes. All captured content and intellectual property rights belong to the Company.",
+      },
+      {
+        id: "term-016",
+        label: "Cancellation Policy",
+        text: "If the customer cancels the order after confirmation or after material dispatch, the actual cost of procured materials, transportation, and other expenses incurred by Mahi Solar Solution Private Limited shall be deducted. Any refundable amount will be processed after adjusting such charges.",
+      },
+      {
+        id: "term-017",
+        label: "Force Majeure",
+        text: "Mahi Solar Solution Private Limited shall not be held responsible for delays or failure in project execution due to events beyond its reasonable control, including but not limited to natural disasters, heavy rainfall, floods, earthquakes, fire, strikes, government restrictions, war, pandemic, or any other force majeure event.",
+      },
+      {
+        id: "term-018",
+        label: "Ownership of Materials",
+        text: "All supplied materials and equipment shall remain the property of Mahi Solar Solution Private Limited until the full project payment has been received. The Company reserves the right to recover the supplied materials in case of non-payment or breach of the agreed payment terms.",
+      },
+      {
+        id: "term-019",
+        label: "Roof Condition & Water Leakage",
+        text: "The customer is responsible for ensuring that the rooftop is structurally sound and free from any existing water leakage or damage before installation. Mahi Solar Solution Private Limited shall not be liable for pre-existing roof defects. However, any damage directly caused by our installation work will be repaired by the Company.",
+      },
+      {
+        id: "term-020",
+        label: "Payment Delay",
+        text: "If the customer fails to make payments as per the agreed schedule, Mahi Solar Solution Private Limited reserves the right to suspend material dispatch, installation work, net metering documentation, or project completion until all outstanding payments are cleared.",
       },
     ],
     subsidyDocuments: [

@@ -1,8 +1,9 @@
-import { FolderKanban, LayoutGrid, Printer, RefreshCw, Table2 } from "lucide-react";
+import { Building2, FolderKanban, Handshake, LayoutGrid, Printer, RefreshCw, Table2, UserRound } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { MssSitesTablePreview, type MssSitesViewMode } from "../components/MssSitesTablePreview";
 import { fetchMssSitesTable } from "../lib/fetch-mss-sites";
 import { prepareMssSitesPrint } from "../lib/prepare-mss-sites-print";
+import type { ProjectsScope } from "../lib/projects-config";
 import type { MssSitesTable } from "../types/mss-sites";
 
 export function MssSitesPage() {
@@ -10,6 +11,7 @@ export function MssSitesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [includeMoreColumnInPdf, setIncludeMoreColumnInPdf] = useState(true);
+  const [scope, setScope] = useState<ProjectsScope>("our");
   const [viewMode, setViewMode] = useState<MssSitesViewMode>("table");
 
   const load = useCallback(async () => {
@@ -42,6 +44,13 @@ export function MssSitesPage() {
     window.print();
   }
 
+  const scopeSubtitle =
+    scope === "our"
+      ? "MSS residential & commercial sites (MSS + Arkshakti registers)."
+      : scope === "shripal"
+        ? "Shripal Ji sites from MSS and Arkshakti — separate register for special cases."
+        : "Partner-led site registers from MSS and Arkshakti workbooks (excluding Shripal).";
+
   return (
     <div className="page-shell page-shell--mss-sites">
       <div className="mss-sites-toolbar no-print">
@@ -52,7 +61,7 @@ export function MssSitesPage() {
           </p>
           <h1>Projects</h1>
           <p className="muted-text" style={{ marginBottom: 0 }}>
-            All site tabs merged from Google Sheets — read-only tabular view.
+            {scopeSubtitle}
           </p>
         </div>
         <div className="topbar-actions">
@@ -103,6 +112,39 @@ export function MssSitesPage() {
         </div>
       </div>
 
+      <div className="mss-sites-scope-tabs no-print" role="tablist" aria-label="Project scope">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={scope === "our"}
+          className={`mss-sites-scope-tab${scope === "our" ? " mss-sites-scope-tab--active" : ""}`}
+          onClick={() => setScope("our")}
+        >
+          <Building2 size={16} aria-hidden />
+          Our projects
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={scope === "shripal"}
+          className={`mss-sites-scope-tab${scope === "shripal" ? " mss-sites-scope-tab--active" : ""}`}
+          onClick={() => setScope("shripal")}
+        >
+          <UserRound size={16} aria-hidden />
+          Shripal sites
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={scope === "partner"}
+          className={`mss-sites-scope-tab${scope === "partner" ? " mss-sites-scope-tab--active" : ""}`}
+          onClick={() => setScope("partner")}
+        >
+          <Handshake size={16} aria-hidden />
+          Partner projects
+        </button>
+      </div>
+
       {loading ? (
         <div className="empty-card">
           <p className="muted-text">Loading projects from Google Sheet…</p>
@@ -123,7 +165,7 @@ export function MssSitesPage() {
 
       {table && !loading ? (
         <section className="content-card mss-sites-preview-shell">
-          <MssSitesTablePreview table={table} viewMode={viewMode} />
+          <MssSitesTablePreview table={table} viewMode={viewMode} scope={scope} />
         </section>
       ) : null}
     </div>

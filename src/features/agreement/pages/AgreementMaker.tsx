@@ -52,25 +52,30 @@ export function AgreementMaker() {
     return existingDraft ? normalizeAgreementData(existingDraft) : createDefaultAgreementData();
   }, [agreementId, recordUpdatedAt, explicitTemplate]);
 
+  const pdfOnly = initialData.template === "management-authority";
+
   const [data, setData] = useState<AgreementData>(initialData);
-  const [viewMode, setViewMode] = useState<"split" | "editor" | "preview">("split");
+  const [viewMode, setViewMode] = useState<"split" | "editor" | "preview">(pdfOnly ? "preview" : "split");
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [savedSnapshot, setSavedSnapshot] = useState(JSON.stringify(initialData));
-  const isDirty = JSON.stringify(data) !== savedSnapshot;
+  const isDirty = !pdfOnly && JSON.stringify(data) !== savedSnapshot;
 
   useEffect(() => {
     setData(initialData);
     setSavedSnapshot(JSON.stringify(initialData));
+    if (initialData.template === "management-authority") {
+      setViewMode("preview");
+    }
   }, [initialData]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
-      if (!record) {
+      if (!record && !pdfOnly) {
         saveAgreementDraft(data);
       }
     }, 400);
     return () => window.clearTimeout(timer);
-  }, [data, record]);
+  }, [data, record, pdfOnly]);
 
   useBeforeUnload(
     (event) => {
@@ -87,7 +92,9 @@ export function AgreementMaker() {
     const pdfName =
       record?.name?.trim() ||
       (data.party.entityName.trim()
-        ? `${data.party.entityName.trim()} — Vendor Code Agreement`
+        ? `${data.party.entityName.trim()} — ${
+            data.template === "management-authority" ? "Management Authority Agreement" : "Vendor Code Agreement"
+          }`
         : data.title.trim()) ||
       "Agreement";
     document.title = pdfName;
@@ -108,6 +115,9 @@ export function AgreementMaker() {
   }
 
   function handleSave(name: string) {
+    if (pdfOnly) {
+      return;
+    }
     const saved = saveAgreementRecord({
       id: record?.id,
       name,
@@ -131,6 +141,9 @@ export function AgreementMaker() {
   }
 
   function handleReset() {
+    if (pdfOnly) {
+      return;
+    }
     if (!window.confirm("Reset the form to default values? Any unsaved edits will be lost.")) {
       return;
     }
@@ -138,6 +151,9 @@ export function AgreementMaker() {
   }
 
   function handleLanguageChange(next: AgreementLanguage) {
+    if (pdfOnly) {
+      return;
+    }
     if (next === data.language) return;
     if (!isHindiSupported(data.template) && next === "hi") return;
     if (
@@ -154,6 +170,11 @@ export function AgreementMaker() {
 
   const defaultSaveName = data.party.entityName || record?.name || data.title || "Untitled Agreement";
 
+  // One-off management authority docs are not creatable from the template picker.
+  if (explicitTemplate === "management-authority" && !record) {
+    return <Navigate replace to="/agreements" />;
+  }
+
   if (shouldRedirectToList) {
     return <Navigate replace to="/agreements" />;
   }
@@ -162,12 +183,13 @@ export function AgreementMaker() {
     <div className="page-shell page-shell--maker page-shell--maker-agreement">
       <MakerStickyTopbar
         isDirty={isDirty}
-        viewMode={viewMode}
+        viewMode={pdfOnly ? "preview" : viewMode}
         onViewModeChange={setViewMode}
         onBack={handleBack}
         onReset={handleReset}
         onSaveAsPdf={() => void handleSaveAsPdf()}
         onSave={() => setSaveDialogOpen(true)}
+        pdfOnly={pdfOnly}
         extraControls={
           <div
             className="segmented-control"
@@ -197,8 +219,16 @@ export function AgreementMaker() {
         }
       />
 
-      <div className={`layout-grid ${viewMode === "editor" ? "editor-only-grid" : viewMode === "preview" ? "preview-only-grid" : ""}`}>
-        {viewMode !== "preview" ? (
+      <div
+        className={`layout-grid ${
+          pdfOnly || viewMode === "preview"
+            ? "preview-only-grid"
+            : viewMode === "editor"
+              ? "editor-only-grid"
+              : ""
+        }`}
+      >
+        {!pdfOnly && viewMode !== "preview" ? (
           <section className="content-card editor-shell no-print">
             <div className="panel-header">
               <div>
@@ -213,8 +243,8 @@ export function AgreementMaker() {
 
         <section
           ref={previewRef}
-          className={`content-card preview-shell ${viewMode === "editor" ? "preview-shell--offscreen-screen" : ""}`}
-          aria-hidden={viewMode === "editor"}
+          className={`content-card preview-shell ${!pdfOnly && viewMode === "editor" ? "preview-shell--offscreen-screen" : ""}`}
+          aria-hidden={!pdfOnly && viewMode === "editor"}
         >
           <div className="panel-header no-print">
             <div>
@@ -232,12 +262,14 @@ export function AgreementMaker() {
         </section>
       </div>
 
-      <SaveAgreementDialog
-        defaultName={defaultSaveName}
-        open={saveDialogOpen}
-        onClose={() => setSaveDialogOpen(false)}
-        onSave={handleSave}
-      />
+      {!pdfOnly ? (
+        <SaveAgreementDialog
+          defaultName={defaultSaveName}
+          open={saveDialogOpen}
+          onClose={() => setSaveDialogOpen(false)}
+          onSave={handleSave}
+        />
+      ) : null}
     </div>
   );
 }

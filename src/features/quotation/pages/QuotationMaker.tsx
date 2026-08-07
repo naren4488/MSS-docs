@@ -63,9 +63,24 @@ export function QuotationMaker() {
   );
 
   async function handleSaveAsPdf() {
-    await document.fonts.ready;
-    await new Promise((resolve) => window.setTimeout(resolve, 150));
-    window.print();
+    const previousTitle = document.title;
+    const clientName = data.customerName.trim();
+    const pdfName = clientName ? `${clientName} - MSS Quotation` : "MSS Quotation";
+    document.title = pdfName;
+
+    const restoreTitle = () => {
+      document.title = previousTitle;
+      window.removeEventListener("afterprint", restoreTitle);
+    };
+    window.addEventListener("afterprint", restoreTitle);
+
+    try {
+      await document.fonts.ready;
+      await new Promise((resolve) => window.setTimeout(resolve, 150));
+      window.print();
+    } catch {
+      restoreTitle();
+    }
   }
 
   function handleSave(name: string) {

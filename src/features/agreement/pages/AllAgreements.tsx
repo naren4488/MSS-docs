@@ -69,26 +69,31 @@ export function AllAgreements() {
         </div>
       ) : (
         <div className="saved-grid">
-          {records.map((record) => (
-            <article className="saved-card" key={record.id}>
-              <div>
-                <p className="eyebrow">{getAgreementTemplateLabel(record.content.template)}</p>
-                <h3>{record.name || "Untitled Agreement"}</h3>
-                <p className="muted-text" style={{ marginBottom: 0 }}>
-                  Last updated {formatRecordDate(record.updatedAt)}
-                </p>
-              </div>
-              <div className="saved-card-actions">
-                <Link className="primary-button" to={`/agreement/${record.id}`}>
-                  Open
-                </Link>
-                <button className="danger-button" type="button" onClick={() => handleDelete(record.id)}>
-                  <Trash2 size={16} />
-                  Delete
-                </button>
-              </div>
-            </article>
-          ))}
+          {records.map((record) => {
+            const pdfOnly = record.content.template === "management-authority";
+            return (
+              <article className="saved-card" key={record.id}>
+                <div>
+                  <p className="eyebrow">{getAgreementTemplateLabel(record.content.template)}</p>
+                  <h3>{record.name || "Untitled Agreement"}</h3>
+                  <p className="muted-text" style={{ marginBottom: 0 }}>
+                    Last updated {formatRecordDate(record.updatedAt)}
+                  </p>
+                </div>
+                <div className="saved-card-actions">
+                  <Link className="primary-button" to={`/agreement/${record.id}`}>
+                    {pdfOnly ? "View PDF" : "Open"}
+                  </Link>
+                  {!pdfOnly ? (
+                    <button className="danger-button" type="button" onClick={() => handleDelete(record.id)}>
+                      <Trash2 size={16} />
+                      Delete
+                    </button>
+                  ) : null}
+                </div>
+              </article>
+            );
+          })}
         </div>
       )}
     </div>

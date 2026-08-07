@@ -1,21 +1,21 @@
 import type { QuotationRecord } from "../types/quotation";
 
-export const malchandJangidQuotation: QuotationRecord = {
-  id: "q-malchand-jangid-3kw-001",
-  name: "Malchand Jangid - 3KW 1PH",
-  createdAt: "2026-07-14T00:00:00Z",
-  updatedAt: "2026-07-14T00:00:00Z",
+export const sonuKumawatQuotation: QuotationRecord = {
+  id: "q-sonu-kumawat-3kw-001",
+  name: "Sonu Kumawat - 3KW 1PH",
+  createdAt: "2026-07-25T00:00:00Z",
+  updatedAt: "2026-07-25T00:00:00Z",
   content: {
     title: "SOLAR PROPOSAL",
     tagline: "SMART  |  SUSTAINABLE  |  COST EFFECTIVE",
     coverImageUrl: "",
-    customerName: "Malchand Jangid",
-    customerPhone: "",
+    customerName: "Sonu Kumawat",
+    customerPhone: "1234567890",
     capacity: "3 KW 1PH",
     systemPhase: "1 Phase",
     phase: "1PH",
-    address: "Kheri Milk",
-    proposalDate: "2026-07-14",
+    address: "Plot no 44, Govindpura, Jaipur, 302012",
+    proposalDate: "2026-07-25",
     company: {
       name: "Mahi Solar Solution Private Limited",
       logoUrl: "/assets/mss-logo.png",

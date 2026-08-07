@@ -151,6 +151,10 @@ function SummaryBox({ data }: { data: QuotationData }) {
         <span>: {filledValue(data.customerName)}</span>
       </div>
       <div style={rowStyle}>
+        <span style={labelStyle}>Customer Phone</span>
+        <span>: {filledValue(data.customerPhone)}</span>
+      </div>
+      <div style={rowStyle}>
         <span style={labelStyle}>Capacity of Power Plant</span>
         <span>: {filledValue(data.capacity)}</span>
       </div>
@@ -691,7 +695,7 @@ function createBlocks(data: QuotationData): PreviewBlock[] {
     });
   }
 
-  blocks.push({ key: "summary", estimate: 120, keepWithNext: true, node: <SummaryBox data={data} /> });
+  blocks.push({ key: "summary", estimate: 140, keepWithNext: true, node: <SummaryBox data={data} /> });
 
   // Material Description
   if (data.materialItems.length > 0) {
@@ -881,7 +885,9 @@ function createBlocks(data: QuotationData): PreviewBlock[] {
             </div>
             <div>
               <div style={{ fontWeight: 600, marginBottom: 4 }}>{filledValue(data.customerName || "")}</div>
-              <div style={{ fontSize: 10, color: "#666666" }}>Customer Name & Contact</div>
+              {data.customerPhone ? (
+                <div style={{ fontSize: 10, color: "#666666" }}>Mob. {data.customerPhone}</div>
+              ) : null}
             </div>
           </div>
 

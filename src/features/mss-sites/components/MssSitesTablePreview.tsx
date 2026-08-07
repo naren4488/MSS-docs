@@ -2,13 +2,13 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { RotateCcw } from "lucide-react";
 import {
   computeVisibleColumnTotals,
-  DUE_TO_MSS_FILTER_OPTIONS,
   filterRowsByClientName,
-  filterRowsByDueToMss,
   filterRowsByPaymentReceived,
+  filterRowsByProjectsScope,
   filterRowsByProjectTypes,
   filterRowsByVendors,
   filterRowsByWorkStatuses,
+  getDefaultSelectedWorkStatuses,
   getHiddenProjectFields,
   getProjectTypesFromRows,
   getVendorsFromRows,
@@ -17,9 +17,9 @@ import {
   isProjectPrintHighlightColumn,
   isProjectPdfOmitColumn,
   PAYMENT_RECEIVED_FILTER_OPTIONS,
+  workStatusSelectionMatchesDefault,
   PROJECT_MORE_COLUMN_HEADER,
   PROJECT_S_NO_COLUMN_INDEX,
-  type DueToMssFilter,
   withSequentialSerialNumbers,
 } from "../lib/projects-columns";
 import type { MssSitesTable } from "../types/mss-sites";
@@ -27,13 +27,15 @@ import { ClientNameSearch } from "./ClientNameSearch";
 import { MssSitesAnalytics } from "./MssSitesAnalytics";
 import { ProjectRowMoreCell } from "./ProjectRowMoreCell";
 import { ProjectsMultiselectFilter } from "./ProjectsMultiselectFilter";
-import { ProjectsSelectFilter } from "./ProjectsSelectFilter";
+import { ProjectsSheetTabFilter } from "./ProjectsSheetTabFilter";
+import type { ProjectSheetTabShortcut, ProjectsScope } from "../lib/projects-config";
 
 export type MssSitesViewMode = "table" | "analytics";
 
 interface MssSitesTablePreviewProps {
   table: MssSitesTable;
   viewMode: MssSitesViewMode;
+  scope: ProjectsScope;
 }
 
 const thStyle = {
@@ -110,19 +112,28 @@ function tableColumnClassName(header: string): string {
   return classes.join(" ");
 }
 
-export function MssSitesTablePreview({ table, viewMode }: MssSitesTablePreviewProps) {
-  const visibleColumnIndices = useMemo(() => getVisibleColumnIndices(table.headers), [table.headers]);
-  const projectTypes = useMemo(() => getProjectTypesFromRows(table.rows), [table.rows]);
-  const vendors = useMemo(() => getVendorsFromRows(table.rows), [table.rows]);
-  const workStatuses = useMemo(() => getWorkStatusesFromRows(table.rows), [table.rows]);
+export function MssSitesTablePreview({ table, viewMode, scope }: MssSitesTablePreviewProps) {
+  const scopedRows = useMemo(() => filterRowsByProjectsScope(table.rows, scope), [scope, table.rows]);
+  const visibleColumnIndices = useMemo(
+    () => getVisibleColumnIndices(table.headers, scope),
+    [scope, table.headers],
+  );
+  const projectTypes = useMemo(() => getProjectTypesFromRows(scopedRows), [scopedRows]);
+  const vendors = useMemo(() => getVendorsFromRows(scopedRows), [scopedRows]);
+  const workStatuses = useMemo(() => getWorkStatusesFromRows(scopedRows), [scopedRows]);
   const [selectedProjectTypes, setSelectedProjectTypes] = useState<Set<string>>(() => new Set(projectTypes));
   const [selectedVendors, setSelectedVendors] = useState<Set<string>>(() => new Set(vendors));
-  const [selectedWorkStatuses, setSelectedWorkStatuses] = useState<Set<string>>(() => new Set(workStatuses));
-  const [dueToMssFilter, setDueToMssFilter] = useState<DueToMssFilter>("all");
+  const [selectedWorkStatuses, setSelectedWorkStatuses] = useState<Set<string>>(() =>
+    getDefaultSelectedWorkStatuses(workStatuses),
+  );
   const [selectedPaymentReceived, setSelectedPaymentReceived] = useState<Set<string>>(
     () => new Set(PAYMENT_RECEIVED_FILTER_OPTIONS),
   );
   const [clientNameQuery, setClientNameQuery] = useState("");
+
+  const registerFilterLabel = scope === "our" ? "Register" : scope === "shripal" ? "Register" : "Partner";
+  const registerAllLabel = scope === "our" ? "All registers" : scope === "shripal" ? "All registers" : "All partners";
+  const registerEmptyLabel = scope === "our" ? "No registers" : scope === "shripal" ? "No registers" : "No partners";
 
   useEffect(() => {
     setSelectedProjectTypes(new Set(projectTypes));
@@ -133,32 +144,36 @@ export function MssSitesTablePreview({ table, viewMode }: MssSitesTablePreviewPr
   }, [vendors]);
 
   useEffect(() => {
-    setSelectedWorkStatuses(new Set(workStatuses));
+    setSelectedWorkStatuses(getDefaultSelectedWorkStatuses(workStatuses));
   }, [workStatuses]);
 
+  useEffect(() => {
+    setSelectedPaymentReceived(new Set(PAYMENT_RECEIVED_FILTER_OPTIONS));
+    setClientNameQuery("");
+  }, [scope]);
+
   const filteredRows = useMemo(() => {
-    const byVendor = filterRowsByVendors(table.rows, selectedVendors);
+    const byVendor = filterRowsByVendors(scopedRows, selectedVendors);
     const byType = filterRowsByProjectTypes(byVendor, selectedProjectTypes);
     const byStatus = filterRowsByWorkStatuses(byType, selectedWorkStatuses);
-    const byDue = filterRowsByDueToMss(byStatus, dueToMssFilter);
-    const byPayment = filterRowsByPaymentReceived(byDue, selectedPaymentReceived);
+    const byPayment = filterRowsByPaymentReceived(byStatus, selectedPaymentReceived);
     const byName = filterRowsByClientName(byPayment, clientNameQuery);
     return withSequentialSerialNumbers(byName);
   }, [
     clientNameQuery,
-    dueToMssFilter,
+    scopedRows,
     selectedPaymentReceived,
     selectedProjectTypes,
     selectedVendors,
     selectedWorkStatuses,
-    table.rows,
   ]);
+
+  const workStatusAtDefault = workStatusSelectionMatchesDefault(selectedWorkStatuses, workStatuses);
 
   const isFiltered =
     (selectedProjectTypes.size > 0 && selectedProjectTypes.size < projectTypes.length) ||
     (selectedVendors.size > 0 && selectedVendors.size < vendors.length) ||
-    (selectedWorkStatuses.size > 0 && selectedWorkStatuses.size < workStatuses.length) ||
-    dueToMssFilter !== "all" ||
+    !workStatusAtDefault ||
     (selectedPaymentReceived.size > 0 &&
       selectedPaymentReceived.size < PAYMENT_RECEIVED_FILTER_OPTIONS.length) ||
     clientNameQuery.trim().length > 0;
@@ -171,16 +186,31 @@ export function MssSitesTablePreview({ table, viewMode }: MssSitesTablePreviewPr
   const clearAllFilters = useCallback(() => {
     setSelectedProjectTypes(new Set(projectTypes));
     setSelectedVendors(new Set(vendors));
-    setSelectedWorkStatuses(new Set(workStatuses));
-    setDueToMssFilter("all");
+    setSelectedWorkStatuses(getDefaultSelectedWorkStatuses(workStatuses));
     setSelectedPaymentReceived(new Set(PAYMENT_RECEIVED_FILTER_OPTIONS));
     setClientNameQuery("");
   }, [projectTypes, vendors, workStatuses]);
 
+  const applySheetTabShortcut = useCallback(
+    (shortcut: ProjectSheetTabShortcut) => {
+      setSelectedProjectTypes(new Set([shortcut.projectType]));
+      if (shortcut.vendor) {
+        setSelectedVendors(new Set([shortcut.vendor]));
+      } else {
+        setSelectedVendors(new Set(vendors));
+      }
+    },
+    [vendors],
+  );
+
+  const clearSheetTabShortcut = useCallback(() => {
+    setSelectedVendors(new Set(vendors));
+    setSelectedProjectTypes(new Set(projectTypes));
+  }, [projectTypes, vendors]);
+
   const vendorFilterActive = selectedVendors.size > 0 && selectedVendors.size < vendors.length;
   const partnerFilterActive = selectedProjectTypes.size > 0 && selectedProjectTypes.size < projectTypes.length;
-  const statusFilterActive = selectedWorkStatuses.size > 0 && selectedWorkStatuses.size < workStatuses.length;
-  const dueFilterActive = dueToMssFilter !== "all";
+  const statusFilterActive = !workStatusAtDefault;
   const paymentFilterActive =
     selectedPaymentReceived.size > 0 &&
     selectedPaymentReceived.size < PAYMENT_RECEIVED_FILTER_OPTIONS.length;
@@ -194,7 +224,7 @@ export function MssSitesTablePreview({ table, viewMode }: MssSitesTablePreviewPr
             <p className="mss-sites-preview-count">
               <span className="mss-sites-preview-count-value">{filteredRows.length}</span>
               {isFiltered ? (
-                <span className="mss-sites-preview-count-total"> of {table.rows.length}</span>
+                <span className="mss-sites-preview-count-total"> of {scopedRows.length}</span>
               ) : null}
               <span className="mss-sites-preview-count-label">
                 project{filteredRows.length === 1 ? "" : "s"}
@@ -202,9 +232,24 @@ export function MssSitesTablePreview({ table, viewMode }: MssSitesTablePreviewPr
             </p>
 
             <div className="mss-sites-preview-sources no-print" aria-label="Data sources">
-              <span className="mss-sites-source-badge mss-sites-source-badge--mss">MSS</span>
-              <span className="mss-sites-source-badge mss-sites-source-badge--partner">Partners</span>
-              <span className="mss-sites-source-badge mss-sites-source-badge--arkshakti">Arkshakti</span>
+              {scope === "our" ? (
+                <>
+                  <span className="mss-sites-source-badge mss-sites-source-badge--mss">MSS res / comm</span>
+                  <span className="mss-sites-source-badge mss-sites-source-badge--arkshakti">Arkshakti</span>
+                </>
+              ) : scope === "shripal" ? (
+                <>
+                  <span className="mss-sites-source-badge mss-sites-source-badge--partner">Shripal Ji</span>
+                  <span className="mss-sites-source-badge mss-sites-source-badge--mss">MSS</span>
+                  <span className="mss-sites-source-badge mss-sites-source-badge--arkshakti">Arkshakti</span>
+                </>
+              ) : (
+                <>
+                  <span className="mss-sites-source-badge mss-sites-source-badge--partner">Partners</span>
+                  <span className="mss-sites-source-badge mss-sites-source-badge--mss">MSS</span>
+                  <span className="mss-sites-source-badge mss-sites-source-badge--arkshakti">Arkshakti</span>
+                </>
+              )}
             </div>
           </div>
 
@@ -233,12 +278,12 @@ export function MssSitesTablePreview({ table, viewMode }: MssSitesTablePreviewPr
             isActive={vendorFilterActive}
           />
           <ProjectsMultiselectFilter
-            label="Partner"
+            label={registerFilterLabel}
             options={projectTypes}
             selected={selectedProjectTypes}
             onChange={setSelectedProjectTypes}
-            allSummaryLabel="All partners"
-            emptyOptionsLabel="No partners"
+            allSummaryLabel={registerAllLabel}
+            emptyOptionsLabel={registerEmptyLabel}
             isActive={partnerFilterActive}
           />
           <ProjectsMultiselectFilter
@@ -250,13 +295,6 @@ export function MssSitesTablePreview({ table, viewMode }: MssSitesTablePreviewPr
             emptyOptionsLabel="No statuses"
             isActive={statusFilterActive}
           />
-          <ProjectsSelectFilter
-            label="Due to MSS"
-            value={dueToMssFilter}
-            options={DUE_TO_MSS_FILTER_OPTIONS}
-            onChange={setDueToMssFilter}
-            isActive={dueFilterActive}
-          />
           <ProjectsMultiselectFilter
             label="Payment"
             options={[...PAYMENT_RECEIVED_FILTER_OPTIONS]}
@@ -267,6 +305,15 @@ export function MssSitesTablePreview({ table, viewMode }: MssSitesTablePreviewPr
             isActive={paymentFilterActive}
           />
         </div>
+
+        <ProjectsSheetTabFilter
+          scope={scope}
+          selectedVendors={selectedVendors}
+          selectedProjectTypes={selectedProjectTypes}
+          allVendors={vendors}
+          onSelectShortcut={applySheetTabShortcut}
+          onClearShortcut={clearSheetTabShortcut}
+        />
       </div>
 
       <div className="mss-sites-table-wrap">
@@ -285,7 +332,8 @@ export function MssSitesTablePreview({ table, viewMode }: MssSitesTablePreviewPr
           <MssSitesAnalytics
             headers={table.headers}
             rows={filteredRows}
-            totalRowCount={table.rows.length}
+            totalRowCount={scopedRows.length}
+            scope={scope}
           />
         ) : (
           <table className="mss-sites-table">
@@ -294,16 +342,18 @@ export function MssSitesTablePreview({ table, viewMode }: MssSitesTablePreviewPr
                 {visibleColumnIndices.map((columnIndex) => {
                   const header = table.headers[columnIndex];
                   return (
-                  <th
-                    key={`header-${columnIndex}`}
-                    className={tableColumnClassName(header)}
-                    style={columnIndex === 0 ? sNoThStyle : thStyle}
-                  >
-                    {header}
-                  </th>
+                    <th
+                      key={`header-${columnIndex}`}
+                      className={tableColumnClassName(header)}
+                      style={columnIndex === 0 ? sNoThStyle : thStyle}
+                    >
+                      {header}
+                    </th>
                   );
                 })}
-                <th className="mss-sites-table-more-col" style={moreThStyle}>{PROJECT_MORE_COLUMN_HEADER}</th>
+                <th className="mss-sites-table-more-col" style={moreThStyle}>
+                  {PROJECT_MORE_COLUMN_HEADER}
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -321,20 +371,22 @@ export function MssSitesTablePreview({ table, viewMode }: MssSitesTablePreviewPr
                     </td>
                   );
                 })}
-                <td className="mss-sites-table-more-col" style={moreTdStyle}>—</td>
+                <td className="mss-sites-table-more-col" style={moreTdStyle}>
+                  —
+                </td>
               </tr>
               {filteredRows.map((row, rowIndex) => (
                 <tr key={`row-${rowIndex}`} style={{ background: rowIndex % 2 === 0 ? "#ffffff" : "#f8fafc" }}>
                   {visibleColumnIndices.map((columnIndex) => {
                     const header = table.headers[columnIndex];
                     return (
-                    <td
-                      key={`${rowIndex}-${columnIndex}`}
-                      className={tableColumnClassName(header)}
-                      style={columnIndex === 0 ? sNoTdStyle : tdStyle}
-                    >
-                      {row[columnIndex] || (columnIndex === 0 ? String(rowIndex + 1) : "—")}
-                    </td>
+                      <td
+                        key={`${rowIndex}-${columnIndex}`}
+                        className={tableColumnClassName(header)}
+                        style={columnIndex === 0 ? sNoTdStyle : tdStyle}
+                      >
+                        {row[columnIndex] || (columnIndex === 0 ? String(rowIndex + 1) : "—")}
+                      </td>
                     );
                   })}
                   <td className="mss-sites-table-more-col" style={moreTdStyle}>

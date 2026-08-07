@@ -1,26 +1,26 @@
 {
-  "id": "q-surendra-sekhawat-5kw-001",
-  "name": "Surendra Sekhawat - 5KW 3PH",
-  "createdAt": "2026-07-17T00:00:00Z",
-  "updatedAt": "2026-07-17T00:00:00Z",
+  "id": "q-sonu-kumawat-3kw-001",
+  "name": "Sonu Kumawat - 3KW 1PH",
+  "createdAt": "2026-07-25T00:00:00Z",
+  "updatedAt": "2026-07-25T00:00:00Z",
   "content": {
     "title": "SOLAR PROPOSAL",
     "tagline": "SMART  |  SUSTAINABLE  |  COST EFFECTIVE",
     "coverImageUrl": "",
-    "customerName": "Surendra Sekhawat",
-    "customerPhone": "",
-    "capacity": "5 KW 3PH",
-    "systemPhase": "3 Phase",
-    "phase": "3PH",
-    "address": "Sekhawat Marg, Ravan Gate, Jaipur, 302012",
-    "proposalDate": "2026-07-17",
+    "customerName": "Sonu Kumawat",
+    "customerPhone": "1234567890",
+    "capacity": "3 KW 1PH",
+    "systemPhase": "1 Phase",
+    "phase": "1PH",
+    "address": "Plot no 44, Govindpura, Jaipur, 302012",
+    "proposalDate": "2026-07-25",
     "company": {
       "name": "Mahi Solar Solution Private Limited",
       "logoUrl": "/assets/mss-logo.png",
       "address": "Plot No. 44, Jai Bhawani Vihar Vistar, Radha Vihar, Govindpura, Jaipur, Rajasthan – 302044",
       "phone": "+91 9928413501",
       "email": "mahisolarsolution@gmail.com",
-      "website": "",
+      "website": "mahisolarsolution.com",
       "cin": "",
       "gst": "08AAUCM4104G1ZD",
       "representativeName": "Mahendra Kumawat",
@@ -30,7 +30,7 @@
       {
         "id": "mat-001",
         "description": "Solar PV Modules",
-        "qty": "9 Panel",
+        "qty": "6 Panel",
         "unit": "550 Wp",
         "make": "Adani Topcon Bifacial with 30 Year Warranty"
       },
@@ -38,8 +38,8 @@
         "id": "mat-002",
         "description": "Solar Inverter",
         "qty": "1",
-        "unit": "3 Phase",
-        "make": "5 KW POLYCAB Inverter with 10 Year Warranty"
+        "unit": "1 Phase",
+        "make": "3.6 KW POLYCAB Inverter with 10 Year Warranty"
       },
       {
         "id": "mat-003",
@@ -53,14 +53,14 @@
         "description": "AC Cable",
         "qty": "As per Requirement",
         "unit": "M",
-        "make": "4 Core 16 mm Aluminium Armoured Cable (3PH)"
+        "make": "2 Core 10 mm Aluminium Armoured Cable (1PH)"
       },
       {
         "id": "mat-005",
         "description": "DC Cable",
         "qty": "As per Requirement",
         "unit": "M",
-        "make": "6 sq mm Copper Wire, Polycab cable"
+        "make": "4 sq mm Copper Wire, Polycab cable"
       },
       {
         "id": "mat-006",
@@ -80,7 +80,7 @@
         "id": "mat-008",
         "description": "ACDB / DCDB / MCB Distribution Box",
         "qty": "1, 1 No",
-        "unit": "63 Amp / 1000 V DC",
+        "unit": "32 Amp / 1000 V DC",
         "make": "Havells or Sibass"
       },
       {
@@ -93,9 +93,9 @@
       {
         "id": "mat-010",
         "description": "DC Wire Duct & Casing, Connecting Cable, MC-4 Connector",
-        "qty": "20 M, 5 Set",
+        "qty": "15 M, 4 Set",
         "unit": "6/4 mm 1500 V DC",
-        "make": "Polycab Copper 6 mm"
+        "make": "Polycab Copper 4 mm"
       },
       {
         "id": "mat-011",
@@ -128,12 +128,12 @@
       {
         "id": "comm-001",
         "parameter": "Solar PV Plant Capacity",
-        "offering": "5 KWp, On-grid SPV System"
+        "offering": "3 KWp, On-grid SPV System"
       },
       {
         "id": "comm-002",
         "parameter": "Panel Configuration",
-        "offering": "9 x 550W Adani Topcon Bifacial Panels (4.95 KW Total)"
+        "offering": "6 x 550W Adani Topcon Bifacial Panels (3.3 KW Total)"
       },
       {
         "id": "comm-003",
@@ -143,21 +143,26 @@
       {
         "id": "comm-004",
         "parameter": "Project Price",
-        "offering": "Rs. 57.48 / Watt — Net Payable Amount INR 2,85,000/-"
+        "offering": "Rs. 54.54 / Watt — Net Payable Amount INR 1,80,000/-"
       },
       {
         "id": "comm-005",
         "parameter": "Customer Net Payable Amount",
-        "offering": "INR 2,85,000/- (Including Tax)"
+        "offering": "INR 1,80,000/- (Including Tax)"
+      },
+      {
+        "id": "comm-006",
+        "parameter": "5 Year Maintenance",
+        "offering": "FREE"
       }
     ],
     "warrantyText": "12 year product manufacturing warranty. Power performance guarantee: power degradation < 2% in the first year and < 0.50% per year in years 2–27. BOS — 1 Year Warranty.",
     "showGeneration": true,
     "generation": {
-      "perDay": "18 Units / Day",
-      "perMonth": "540 Units / Month",
-      "perYear": "6480 Units / Year",
-      "savingPerYear": "₹ 51,840"
+      "perDay": "12 Units / Day",
+      "perMonth": "360 Units / Month",
+      "perYear": "4320 Units / Year",
+      "savingPerYear": "₹ 34,560"
     },
     "showWarrantyBadges": true,
     "warrantySolarPanelYears": "30",
@@ -175,18 +180,18 @@
       "Handover"
     ],
     "showWattageInfo": true,
-    "projectAmount": "285000",
+    "projectAmount": "180000",
     "centralSubsidy": "78000",
-    "stateSubsidy": "17000",
-    "effectivePayableAmount": "190000",
-    "subsidyNote": "*State Government Subsidy (₹17,000) will be provided only where 100 units free benefit is currently available.",
+    "stateSubsidy": "",
+    "effectivePayableAmount": "102000",
+    "subsidyNote": "*Subject to subsidy eligibility — state subsidy applies only where 100 units free benefit is currently available.",
     "showEmiSection": true,
     "emiInfo": {
-      "uptoLoanAmount": "₹2,90,000",
+      "uptoLoanAmount": "₹2,00,000",
       "interestRate": "~6% per annum",
-      "tenure5YearEmi": "₹6,282/month",
-      "tenure7YearEmi": "₹4,533/month",
-      "tenure10YearEmi": "₹3,228/month"
+      "tenure5YearEmi": "₹3,865/month",
+      "tenure7YearEmi": "₹2,790/month",
+      "tenure10YearEmi": "₹1,983/month"
     },
     "showComponentWarranty": true,
     "maintenanceFrequency": "Quarterly",

@@ -13,6 +13,7 @@ export const bhanuDCRINA: QuotationData = normalizeQuotationData({
   title: "SOLAR PROPOSAL",
   tagline: "SMART  |  SUSTAINABLE  |  COST EFFECTIVE",
   customerName: "Bhanu",
+  customerPhone: "",
   capacity: "10 KW 3PH",
   systemPhase: "3 Phase",
   address: "Jaipur",
@@ -20,14 +21,14 @@ export const bhanuDCRINA: QuotationData = normalizeQuotationData({
   materialItems: [
     { id: "1", description: "Solar PV Modules", qty: "18 Panel", unit: "555 Wp", make: "INA Solar Bifacial / Silicon Technology with 30 Year Warranty" },
     { id: "2", description: "Solar Inverter", qty: "1", unit: "3 Phase", make: "10 KW INA Three Phase Inverter with 10 Year Warranty" },
-    { id: "3", description: "Mounting Structure (GI Apollo)", qty: "As per Requirement", unit: "", make: "Leg 75×75, Rafter 60×40, Purlin 40×40" },
+    { id: "3", description: "Mounting Structure (GI Apollo)", qty: "As per Requirement", unit: "", make: "Leg 75×75, Rafter 60×40, Purline 40×40" },
     { id: "4", description: "AC Cable", qty: "As per Requirement", unit: "M", make: "4 Core Aluminium Armoured Cable (3 Phase)" },
     { id: "5", description: "DC Cable", qty: "As per Requirement", unit: "M", make: "6 sq mm Copper Wire, Polycab cable" },
     { id: "6", description: "Lightning Arrestor Kit", qty: "2 No", unit: "1 No", make: "1.5 M, Copper bound" },
-    { id: "7", description: "Earthing Kit", qty: "4 Set", unit: "Set", make: "Earthing single core copper, 1.5 Mtr" },
-    { id: "8", description: "ACDB / DCDB / MCB Distribution Box", qty: "1, 2 No", unit: "63 Amp", make: "L&T, Schneider" },
-    { id: "9", description: "Solar & Net Meter LT-CT", qty: "1, 2 No", unit: "", make: "Genus or HPL as per availability" },
-    { id: "10", description: "DC Wire Duct & Connecting Cable", qty: "40 M, 10 Set", unit: "6/4 mm 1500 V DC", make: "Polycab Copper 6 mm" },
+    { id: "7", description: "Earthing Kit", qty: "4 Set", unit: "Set", make: "Earthing single core copper, cement earthing with GI and chemical solution, 1.5 Mtr" },
+    { id: "8", description: "ACDB / DCDB / MCB Distribution Box", qty: "1, 2 No", unit: "63 Amp", make: "Havells or Sibass" },
+    { id: "9", description: "Solar & Net Meter LT-CT", qty: "1, 2 No", unit: "", make: "Avon Meter as per availability, tested by JVVNL" },
+    { id: "10", description: "DC Wire Duct & Casing, Connecting Cable, MC-4 Connector", qty: "40 M, 10 Set", unit: "6/4 mm 1500 V DC", make: "Polycab Copper 6 mm" },
     { id: "11", description: "Designed Installation & Commissioning", qty: "", unit: "As per site requirement", make: "Team Mahi Solar Solution" },
   ],
   commercialOffer: [
@@ -45,7 +46,7 @@ export const bhanuDCRINA: QuotationData = normalizeQuotationData({
   centralSubsidy: "78,000",
   stateSubsidy: "17,000",
   effectivePayableAmount: "4,05,000",
-  subsidyNote: "*Subject to subsidy eligibility — state subsidy applies only where 100 units free benefit is currently available.",
+  subsidyNote: "*State Government Subsidy (₹17,000) will be provided only where 100 units free benefit is currently available.",
   showEmiSection: true,
   emiInfo: {
     uptoLoanAmount: "₹2,00,000",
@@ -88,7 +89,7 @@ export const bhanuNonDCRINA: QuotationData = normalizeQuotationData({
 export const bhanuDCRAdani: QuotationData = normalizeQuotationData({
   ...bhanuDCRINA,
   materialItems: [
-    { id: "1", description: "Solar PV Modules", qty: "18 Panel", unit: "555 Wp", make: "Adani Solar Bifacial / Silicon Technology" },
+    { id: "1", description: "Solar PV Modules", qty: "18 Panel", unit: "555 Wp", make: "Adani Topcon Bifacial with 30 Year Warranty" },
     { id: "2", description: "Solar Inverter", qty: "1", unit: "3 Phase", make: "10 KW Adani Three Phase Inverter" },
     ...bhanuDCRINA.materialItems.slice(2),
   ],
@@ -106,7 +107,7 @@ export const bhanuDCRAdani: QuotationData = normalizeQuotationData({
   centralSubsidy: "78,000",
   stateSubsidy: "17,000",
   effectivePayableAmount: "4,48,000",
-  subsidyNote: "*Subject to subsidy eligibility — state subsidy applies only where 100 units free benefit is currently available.",
+  subsidyNote: "*State Government Subsidy (₹17,000) will be provided only where 100 units free benefit is currently available.",
 });
 
 // Template 4: Non-DCR Adani 380k
