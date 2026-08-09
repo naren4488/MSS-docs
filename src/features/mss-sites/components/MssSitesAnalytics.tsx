@@ -1,5 +1,10 @@
-import { useMemo } from "react";
-import { ArrowDown, ArrowUp, Building2, Handshake, IndianRupee, Landmark, Wallet } from "lucide-react";
+import { useMemo, type ReactNode } from "react";
+import { ArrowDown, ArrowUp, Building2, Handshake, Info, Sigma, Wallet } from "lucide-react";
+import { AjaySubVendorLedgers } from "./AjaySubVendorLedgers";
+import {
+  AJAY_EVEREST_BILLS_SUMMARY,
+  AJAY_MONEY_LEDGER_SUMMARY,
+} from "../lib/ajay-sub-vendor-ledger";
 import {
   computeProjectAnalytics,
   formatSignedLedgerAmount,
@@ -8,8 +13,10 @@ import {
   ledgerSignLabel,
   netBalanceLabel,
   type LedgerSign,
+  type ProjectAnalyticsSummary,
   type VendorBreakdown,
 } from "../lib/compute-project-analytics";
+import { VENDOR_COLUMN_INDEX, WORK_STATUS_COLUMN_INDEX, normalizeWorkStatus, parseProjectAmount, PROJECT_TYPE_COLUMN_INDEX } from "../lib/projects-columns";
 import { PROJECT_VENDORS, type ProjectsScope } from "../lib/projects-config";
 
 interface MssSitesAnalyticsProps {
@@ -19,22 +26,521 @@ interface MssSitesAnalyticsProps {
   scope?: ProjectsScope;
 }
 
-const OUR_ANALYTICS_SECTIONS = [
-  { id: "analytics-overview", label: "Overview" },
-  { id: "analytics-deals", label: "Deal totals" },
-  { id: "analytics-dues", label: "Payment dues" },
-] as const;
+const OUR_ANALYTICS_SECTIONS = [{ id: "analytics-overview", label: "Overview" }] as const;
 
 const PARTNER_ANALYTICS_SECTIONS = [
   { id: "analytics-overview", label: "Overview" },
-  { id: "analytics-deals", label: "Deal totals" },
-  { id: "analytics-dues", label: "Payment dues" },
   { id: "analytics-ledger", label: "Partner ledger" },
   { id: "analytics-partners", label: "By partner" },
 ] as const;
 
-function formatAmountOrDash(amount: number) {
-  return amount === 0 ? "—" : formatSignedLedgerAmount(amount);
+const AJAY_ANALYTICS_SECTIONS = [
+  { id: "analytics-overview", label: "Overview" },
+  { id: "analytics-subvendor", label: "Sub Vendor ledgers" },
+] as const;
+
+function AnalyticsInfoBanner({
+  title,
+  children,
+}: {
+  title: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="mss-analytics-info-banner" role="note">
+      <Info size={16} className="mss-analytics-info-banner-icon" aria-hidden />
+      <div>
+        <p className="mss-analytics-info-banner-title">{title}</p>
+        <div className="mss-analytics-info-banner-text">{children}</div>
+      </div>
+    </div>
+  );
+}
+
+function WorkStatusByVendor({ rows }: { rows: readonly (readonly string[])[] }) {
+  const groups = useMemo(() => {
+    const map = new Map<string, Map<string, number>>();
+
+    for (const row of rows) {
+      const vendor = row[VENDOR_COLUMN_INDEX]?.trim() || "Unknown";
+      const status = normalizeWorkStatus(row[WORK_STATUS_COLUMN_INDEX] ?? "");
+      const vendorMap = map.get(vendor) ?? new Map<string, number>();
+      vendorMap.set(status, (vendorMap.get(status) ?? 0) + 1);
+      map.set(vendor, vendorMap);
+    }
+
+    return [...map.entries()].sort(([left], [right]) => left.localeCompare(right));
+  }, [rows]);
+
+  if (groups.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="mss-analytics-status-by-vendor">
+      {groups.map(([vendor, counts]) => (
+        <article key={vendor} className="mss-analytics-status-vendor-card">
+          <p className="mss-analytics-status-vendor-title">{vendor}</p>
+          <ul className="mss-analytics-status-breakdown-list">
+            {[...counts.entries()]
+              .sort((left, right) => right[1] - left[1])
+              .map(([status, count]) => (
+                <li key={status}>
+                  <span className="mss-analytics-status-breakdown-label">{status}</span>
+                  <span className="mss-analytics-status-breakdown-count">{count}</span>
+                </li>
+              ))}
+          </ul>
+        </article>
+      ))}
+    </div>
+  );
+}
+
+function AjayOverviewDetails({
+  headers,
+  rows,
+  summary,
+}: {
+  headers: readonly string[];
+  rows: readonly (readonly string[])[];
+  summary: ProjectAnalyticsSummary;
+}) {
+  const details = useMemo(() => {
+    const netDueIndex = headers.indexOf("Total Due to MSS");
+    const paymentReceivedIndex = headers.indexOf("TOTAL Payment recieved");
+    const registerMss = summary.totalDueToMssByVendor.mss;
+    const registerArk = summary.totalDueToMssByVendor.arkshakti;
+    const moneyLedger = AJAY_MONEY_LEDGER_SUMMARY.closingBalance;
+    const everestBills = AJAY_EVEREST_BILLS_SUMMARY.closingBalance;
+    const finalSum = registerMss + registerArk + moneyLedger + everestBills;
+
+    const netDueCounts = {
+      mss: { credit: 0, debit: 0, settled: 0 },
+      arkshakti: { credit: 0, debit: 0, settled: 0 },
+    } satisfies Record<keyof Omit<VendorBreakdown, "total">, { credit: number; debit: number; settled: number }>;
+
+    const paymentReceived: VendorBreakdown = { mss: 0, arkshakti: 0, total: 0 };
+
+    for (const row of rows) {
+      const vendor = row[VENDOR_COLUMN_INDEX]?.trim();
+      const vendorKey =
+        vendor === PROJECT_VENDORS.MSS ? "mss" : vendor === PROJECT_VENDORS.ARKSHAKTI ? "arkshakti" : null;
+
+      if (netDueIndex >= 0 && vendorKey) {
+        const netDue = parseProjectAmount(row[netDueIndex] ?? "");
+        if (netDue > 0) {
+          netDueCounts[vendorKey].credit += 1;
+        } else if (netDue < 0) {
+          netDueCounts[vendorKey].debit += 1;
+        } else {
+          netDueCounts[vendorKey].settled += 1;
+        }
+      }
+
+      if (paymentReceivedIndex >= 0 && vendorKey) {
+        const amount = parseProjectAmount(row[paymentReceivedIndex] ?? "");
+        paymentReceived[vendorKey] += amount;
+        paymentReceived.total += amount;
+      }
+    }
+
+    return {
+      registerMss,
+      registerArk,
+      moneyLedger,
+      everestBills,
+      finalSum,
+      netDueCounts,
+      paymentReceived,
+    };
+  }, [headers, rows, summary.totalDueToMssByVendor.arkshakti, summary.totalDueToMssByVendor.mss]);
+
+  const finalSign = getLedgerSign(details.finalSum);
+
+  return (
+    <div className="mss-analytics-ajay-overview">
+      <div className="mss-analytics-ajay-overview-grid">
+        <article className="mss-analytics-ajay-detail-card">
+          <p className="mss-analytics-ajay-detail-title">Register snapshot</p>
+          <dl className="mss-analytics-ajay-detail-list">
+            <div>
+              <dt>{PROJECT_VENDORS.MSS} pipeline</dt>
+              <dd>{summary.sitesByVendor.mss} sites</dd>
+            </div>
+            <div>
+              <dt>{PROJECT_VENDORS.ARKSHAKTI} backlog</dt>
+              <dd>{summary.sitesByVendor.arkshakti} sites</dd>
+            </div>
+            <div>
+              <dt>Payments logged</dt>
+              <dd>{formatSignedLedgerAmount(details.paymentReceived.total)}</dd>
+            </div>
+            <div>
+              <dt>{PROJECT_VENDORS.MSS} payments</dt>
+              <dd>{formatSignedLedgerAmount(details.paymentReceived.mss)}</dd>
+            </div>
+            <div>
+              <dt>{PROJECT_VENDORS.ARKSHAKTI} payments</dt>
+              <dd>{formatSignedLedgerAmount(details.paymentReceived.arkshakti)}</dd>
+            </div>
+          </dl>
+        </article>
+
+        <article className="mss-analytics-ajay-detail-card">
+          <p className="mss-analytics-ajay-detail-title">Net due mix by register</p>
+          <p className="mss-analytics-ajay-detail-note">
+            Counts sites by sign of <strong>Net due to MSS</strong> on each row.
+          </p>
+          <div className="mss-analytics-ajay-netdue-grid">
+            {[PROJECT_VENDORS.MSS, PROJECT_VENDORS.ARKSHAKTI].map((vendor) => {
+              const key = vendor === PROJECT_VENDORS.MSS ? "mss" : "arkshakti";
+              const counts = details.netDueCounts[key];
+              return (
+                <div key={vendor} className="mss-analytics-ajay-netdue-group">
+                  <p className="mss-analytics-ajay-netdue-vendor">{vendor}</p>
+                  <ul>
+                    <li>
+                      <span>MSS will receive</span>
+                      <strong>{counts.credit}</strong>
+                    </li>
+                    <li>
+                      <span>Surplus / return</span>
+                      <strong>{counts.debit}</strong>
+                    </li>
+                    <li>
+                      <span>Settled / zero</span>
+                      <strong>{counts.settled}</strong>
+                    </li>
+                  </ul>
+                </div>
+              );
+            })}
+          </div>
+        </article>
+      </div>
+
+      <div className="mss-analytics-ajay-sum-breakdown">
+        <p className="mss-analytics-ajay-detail-title">How the final sum is built</p>
+        <div className="mss-sites-analytics-table-wrap">
+          <table className="mss-sites-analytics-table mss-sites-analytics-table--dues">
+            <thead>
+              <tr>
+                <th>Component</th>
+                <th className="mss-sites-analytics-table-num">Amount</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">Net due · {PROJECT_VENDORS.ARKSHAKTI}</th>
+                <td className={`mss-sites-analytics-table-num ${ledgerAmountClassName(getLedgerSign(details.registerArk))}`}>
+                  {formatSignedLedgerAmount(details.registerArk)}
+                </td>
+                <td>Completed / hold backlog register</td>
+              </tr>
+              <tr>
+                <th scope="row">Net due · {PROJECT_VENDORS.MSS}</th>
+                <td className={`mss-sites-analytics-table-num ${ledgerAmountClassName(getLedgerSign(details.registerMss))}`}>
+                  {formatSignedLedgerAmount(details.registerMss)}
+                </td>
+                <td>Forward pipeline register</td>
+              </tr>
+              <tr>
+                <th scope="row">Sub Vendor · Money ledger</th>
+                <td className={`mss-sites-analytics-table-num ${ledgerAmountClassName(getLedgerSign(details.moneyLedger))}`}>
+                  {formatSignedLedgerAmount(details.moneyLedger)}
+                </td>
+                <td>Partner cash movements (PP / cash / NEFT)</td>
+              </tr>
+              <tr>
+                <th scope="row">Sub Vendor · Everest bills</th>
+                <td className={`mss-sites-analytics-table-num ${ledgerAmountClassName(getLedgerSign(details.everestBills))}`}>
+                  {formatSignedLedgerAmount(details.everestBills)}
+                </td>
+                <td>MSE vendor invoices outstanding</td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr className="mss-analytics-ajay-sum-row">
+                <th scope="row">Final combined position</th>
+                <td className={`mss-sites-analytics-table-num mss-sites-analytics-table-num--emphasis ${ledgerAmountClassName(finalSign)}`}>
+                  {formatSignedLedgerAmount(details.finalSum)}
+                </td>
+                <td>{netBalanceLabel(details.finalSum)} across registers and ledgers</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+      <WorkStatusByVendor rows={rows} />
+    </div>
+  );
+}
+
+interface RegisterSlice {
+  label: string;
+  sites: number;
+  netDue: number;
+  cashDue: number;
+  bankDue: number;
+  paymentReceived: number;
+}
+
+function WorkStatusByProjectType({ rows }: { rows: readonly (readonly string[])[] }) {
+  const groups = useMemo(() => {
+    const map = new Map<string, Map<string, number>>();
+
+    for (const row of rows) {
+      const projectType = row[PROJECT_TYPE_COLUMN_INDEX]?.trim() || "Unknown";
+      const status = normalizeWorkStatus(row[WORK_STATUS_COLUMN_INDEX] ?? "");
+      const typeMap = map.get(projectType) ?? new Map<string, number>();
+      typeMap.set(status, (typeMap.get(status) ?? 0) + 1);
+      map.set(projectType, typeMap);
+    }
+
+    return [...map.entries()].sort(([left], [right]) => left.localeCompare(right));
+  }, [rows]);
+
+  if (groups.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="mss-analytics-status-by-vendor">
+      {groups.map(([projectType, counts]) => (
+        <article key={projectType} className="mss-analytics-status-vendor-card">
+          <p className="mss-analytics-status-vendor-title">{projectType}</p>
+          <ul className="mss-analytics-status-breakdown-list">
+            {[...counts.entries()]
+              .sort((left, right) => right[1] - left[1])
+              .map(([status, count]) => (
+                <li key={status}>
+                  <span className="mss-analytics-status-breakdown-label">{status}</span>
+                  <span className="mss-analytics-status-breakdown-count">{count}</span>
+                </li>
+              ))}
+          </ul>
+        </article>
+      ))}
+    </div>
+  );
+}
+
+function OurOverviewDetails({
+  headers,
+  rows,
+  summary,
+}: {
+  headers: readonly string[];
+  rows: readonly (readonly string[])[];
+  summary: ProjectAnalyticsSummary;
+}) {
+  const details = useMemo(() => {
+    const netDueIndex = headers.indexOf("Total Due to MSS");
+    const cashDueIndex = headers.indexOf("CASH DUE FROM CLIENT");
+    const bankDueIndex = headers.indexOf("Bank due");
+    const paymentReceivedIndex = headers.indexOf("TOTAL Payment recieved");
+
+    const registers: Record<string, RegisterSlice> = {
+      "MSS res · MSS": {
+        label: `MSS res · ${PROJECT_VENDORS.MSS} workbook`,
+        sites: 0,
+        netDue: 0,
+        cashDue: 0,
+        bankDue: 0,
+        paymentReceived: 0,
+      },
+      "MSS res · Ark": {
+        label: `MSS res · ${PROJECT_VENDORS.ARKSHAKTI}`,
+        sites: 0,
+        netDue: 0,
+        cashDue: 0,
+        bankDue: 0,
+        paymentReceived: 0,
+      },
+      "MSS COMMERCIAL": {
+        label: "MSS COMMERCIAL · Arkshakti",
+        sites: 0,
+        netDue: 0,
+        cashDue: 0,
+        bankDue: 0,
+        paymentReceived: 0,
+      },
+    };
+
+    const netDueCounts = {
+      mss: { credit: 0, debit: 0, settled: 0 },
+      arkshakti: { credit: 0, debit: 0, settled: 0 },
+    } satisfies Record<keyof Omit<VendorBreakdown, "total">, { credit: number; debit: number; settled: number }>;
+
+    for (const row of rows) {
+      const projectType = row[PROJECT_TYPE_COLUMN_INDEX]?.trim() ?? "";
+      const vendor = row[VENDOR_COLUMN_INDEX]?.trim() ?? "";
+      const registerKey =
+        projectType === "MSS COMMERCIAL"
+          ? "MSS COMMERCIAL"
+          : projectType === "MSS res" && vendor === PROJECT_VENDORS.MSS
+            ? "MSS res · MSS"
+            : projectType === "MSS res"
+              ? "MSS res · Ark"
+              : null;
+
+      if (registerKey) {
+        const slice = registers[registerKey];
+        slice.sites += 1;
+        if (netDueIndex >= 0) {
+          slice.netDue += parseProjectAmount(row[netDueIndex] ?? "");
+        }
+        if (cashDueIndex >= 0) {
+          slice.cashDue += parseProjectAmount(row[cashDueIndex] ?? "");
+        }
+        if (bankDueIndex >= 0) {
+          slice.bankDue += parseProjectAmount(row[bankDueIndex] ?? "");
+        }
+        if (paymentReceivedIndex >= 0) {
+          slice.paymentReceived += parseProjectAmount(row[paymentReceivedIndex] ?? "");
+        }
+      }
+
+      const vendorKey =
+        vendor === PROJECT_VENDORS.MSS ? "mss" : vendor === PROJECT_VENDORS.ARKSHAKTI ? "arkshakti" : null;
+
+      if (netDueIndex >= 0 && vendorKey) {
+        const netDue = parseProjectAmount(row[netDueIndex] ?? "");
+        if (netDue > 0) {
+          netDueCounts[vendorKey].credit += 1;
+        } else if (netDue < 0) {
+          netDueCounts[vendorKey].debit += 1;
+        } else {
+          netDueCounts[vendorKey].settled += 1;
+        }
+      }
+    }
+
+    return {
+      registers: Object.values(registers),
+      netDueCounts,
+    };
+  }, [headers, rows]);
+
+  const paymentTotal = details.registers.reduce((total, slice) => total + slice.paymentReceived, 0);
+  const netDueSign = getLedgerSign(summary.totalDueToMss);
+
+  return (
+    <div className="mss-analytics-ajay-overview">
+      <div className="mss-analytics-ajay-overview-grid">
+        <article className="mss-analytics-ajay-detail-card">
+          <p className="mss-analytics-ajay-detail-title">Register snapshot</p>
+          <dl className="mss-analytics-ajay-detail-list">
+            {details.registers.map((slice) => (
+              <div key={slice.label}>
+                <dt>{slice.label}</dt>
+                <dd>
+                  {slice.sites} site{slice.sites === 1 ? "" : "s"}
+                </dd>
+              </div>
+            ))}
+            <div>
+              <dt>Payments logged (all registers)</dt>
+              <dd>{formatSignedLedgerAmount(paymentTotal)}</dd>
+            </div>
+          </dl>
+        </article>
+
+        <article className="mss-analytics-ajay-detail-card">
+          <p className="mss-analytics-ajay-detail-title">Net due mix by vendor</p>
+          <p className="mss-analytics-ajay-detail-note">
+            Sites grouped by sign of <strong>Net due to MSS</strong> on each row.
+          </p>
+          <div className="mss-analytics-ajay-netdue-grid">
+            {[PROJECT_VENDORS.MSS, PROJECT_VENDORS.ARKSHAKTI].map((vendor) => {
+              const key = vendor === PROJECT_VENDORS.MSS ? "mss" : "arkshakti";
+              const counts = details.netDueCounts[key];
+              return (
+                <div key={vendor} className="mss-analytics-ajay-netdue-group">
+                  <p className="mss-analytics-ajay-netdue-vendor">{vendor}</p>
+                  <ul>
+                    <li>
+                      <span>MSS will receive</span>
+                      <strong>{counts.credit}</strong>
+                    </li>
+                    <li>
+                      <span>Surplus / return</span>
+                      <strong>{counts.debit}</strong>
+                    </li>
+                    <li>
+                      <span>Settled / zero</span>
+                      <strong>{counts.settled}</strong>
+                    </li>
+                  </ul>
+                </div>
+              );
+            })}
+          </div>
+        </article>
+      </div>
+
+      <div className="mss-analytics-ajay-sum-breakdown">
+        <p className="mss-analytics-ajay-detail-title">Dues by register</p>
+        <div className="mss-sites-analytics-table-wrap">
+          <table className="mss-sites-analytics-table mss-sites-analytics-table--dues">
+            <thead>
+              <tr>
+                <th>Register</th>
+                <th className="mss-sites-analytics-table-num">Sites</th>
+                <th className="mss-sites-analytics-table-num">Cash due from client</th>
+                <th className="mss-sites-analytics-table-num">Bank due</th>
+                <th className="mss-sites-analytics-table-num">Net due to MSS</th>
+                <th className="mss-sites-analytics-table-num">Payments received</th>
+              </tr>
+            </thead>
+            <tbody>
+              {details.registers.map((slice) => (
+                <tr key={slice.label}>
+                  <th scope="row">{slice.label}</th>
+                  <td className="mss-sites-analytics-table-num">{slice.sites}</td>
+                  <td className={`mss-sites-analytics-table-num ${ledgerAmountClassName(getLedgerSign(slice.cashDue))}`}>
+                    {formatSignedLedgerAmount(slice.cashDue)}
+                  </td>
+                  <td className={`mss-sites-analytics-table-num ${ledgerAmountClassName(getLedgerSign(slice.bankDue))}`}>
+                    {formatSignedLedgerAmount(slice.bankDue)}
+                  </td>
+                  <td className={`mss-sites-analytics-table-num ${ledgerAmountClassName(getLedgerSign(slice.netDue))}`}>
+                    {formatSignedLedgerAmount(slice.netDue)}
+                  </td>
+                  <td className="mss-sites-analytics-table-num">{formatSignedLedgerAmount(slice.paymentReceived)}</td>
+                </tr>
+              ))}
+            </tbody>
+            <tfoot>
+              <tr className="mss-analytics-ajay-sum-row">
+                <th scope="row">Combined</th>
+                <td className="mss-sites-analytics-table-num">{summary.sitesByVendor.total}</td>
+                <td
+                  className={`mss-sites-analytics-table-num ${ledgerAmountClassName(getLedgerSign(summary.totalCashDueFromClient))}`}
+                >
+                  {formatSignedLedgerAmount(summary.totalCashDueFromClient)}
+                </td>
+                <td className={`mss-sites-analytics-table-num ${ledgerAmountClassName(getLedgerSign(summary.totalBankDue))}`}>
+                  {formatSignedLedgerAmount(summary.totalBankDue)}
+                </td>
+                <td className={`mss-sites-analytics-table-num mss-sites-analytics-table-num--emphasis ${ledgerAmountClassName(netDueSign)}`}>
+                  {formatSignedLedgerAmount(summary.totalDueToMss)}
+                </td>
+                <td className="mss-sites-analytics-table-num mss-sites-analytics-table-num--emphasis">
+                  {formatSignedLedgerAmount(paymentTotal)}
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+      <WorkStatusByProjectType rows={rows} />
+    </div>
+  );
 }
 
 function signedSign(amount: number): LedgerSign {
@@ -103,77 +609,6 @@ function VendorSplitBar({ breakdown }: { breakdown: VendorBreakdown }) {
   );
 }
 
-function VendorDueTable({
-  rows,
-  neutralAmounts = false,
-  summaryRow,
-}: {
-  rows: { label: string; breakdown: VendorBreakdown }[];
-  neutralAmounts?: boolean;
-  summaryRow?: { label: string; breakdown: VendorBreakdown };
-}) {
-  const amountClass = (amount: number, emphasis = false) =>
-    [
-      "mss-sites-analytics-table-num",
-      emphasis ? "mss-sites-analytics-table-num--emphasis" : "",
-      neutralAmounts ? "" : ledgerAmountClassName(signedSign(amount)),
-    ]
-      .filter(Boolean)
-      .join(" ");
-
-  const signedAmountClass = (amount: number, emphasis = false) =>
-    [
-      "mss-sites-analytics-table-num",
-      emphasis ? "mss-sites-analytics-table-num--emphasis" : "",
-      ledgerAmountClassName(signedSign(amount)),
-    ]
-      .filter(Boolean)
-      .join(" ");
-
-  return (
-    <div className="mss-sites-analytics-table-wrap mss-sites-analytics-table-wrap--dues">
-      <table className="mss-sites-analytics-table mss-sites-analytics-table--dues">
-        <thead>
-          <tr>
-            <th>Metric</th>
-            <th className="mss-sites-analytics-table-num">{PROJECT_VENDORS.MSS}</th>
-            <th className="mss-sites-analytics-table-num">{PROJECT_VENDORS.ARKSHAKTI}</th>
-            <th className="mss-sites-analytics-table-num">Total</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row) => (
-            <tr key={row.label}>
-              <th scope="row">{row.label}</th>
-              <td className={amountClass(row.breakdown.mss)}>{formatAmountOrDash(row.breakdown.mss)}</td>
-              <td className={amountClass(row.breakdown.arkshakti)}>
-                {formatAmountOrDash(row.breakdown.arkshakti)}
-              </td>
-              <td className={amountClass(row.breakdown.total, true)}>{formatAmountOrDash(row.breakdown.total)}</td>
-            </tr>
-          ))}
-        </tbody>
-        {summaryRow ? (
-          <tfoot>
-            <tr className="mss-analytics-deals-profit-row">
-              <th scope="row">{summaryRow.label}</th>
-              <td className={signedAmountClass(summaryRow.breakdown.mss, true)}>
-                {formatAmountOrDash(summaryRow.breakdown.mss)}
-              </td>
-              <td className={signedAmountClass(summaryRow.breakdown.arkshakti, true)}>
-                {formatAmountOrDash(summaryRow.breakdown.arkshakti)}
-              </td>
-              <td className={signedAmountClass(summaryRow.breakdown.total, true)}>
-                {formatAmountOrDash(summaryRow.breakdown.total)}
-              </td>
-            </tr>
-          </tfoot>
-        ) : null}
-      </table>
-    </div>
-  );
-}
-
 function LedgerLegend() {
   return (
     <div className="mss-ledger-legend" role="note">
@@ -201,13 +636,88 @@ export function MssSitesAnalytics({
   totalRowCount,
   scope = "partner",
 }: MssSitesAnalyticsProps) {
-  const showPartnerMetrics = scope === "partner" || scope === "shripal";
-  const analyticsSections = showPartnerMetrics ? PARTNER_ANALYTICS_SECTIONS : OUR_ANALYTICS_SECTIONS;
+  const showPartnerMetrics = scope === "partner" || scope === "shripal" || scope === "ajay";
+  const isAjayScope = scope === "ajay";
+  const isOurScope = scope === "our";
+  const analyticsSections = isAjayScope
+    ? AJAY_ANALYTICS_SECTIONS
+    : showPartnerMetrics
+      ? PARTNER_ANALYTICS_SECTIONS
+      : OUR_ANALYTICS_SECTIONS;
   const analytics = useMemo(() => computeProjectAnalytics(headers, rows), [headers, rows]);
   const { summary } = analytics;
   const netSign = getLedgerSign(summary.netMssReceivable);
-  const profitSign = summary.totalPartnerProfit >= 0 ? "credit" : "debit";
+  const moneyLedgerSign = getLedgerSign(AJAY_MONEY_LEDGER_SUMMARY.closingBalance);
   const isFiltered = totalRowCount !== undefined && totalRowCount !== rows.length;
+
+  const ajayHeroMetrics = useMemo(() => {
+    if (!isAjayScope) {
+      return null;
+    }
+
+    const registerMss = summary.totalDueToMssByVendor.mss;
+    const registerArk = summary.totalDueToMssByVendor.arkshakti;
+    const moneyLedger = AJAY_MONEY_LEDGER_SUMMARY.closingBalance;
+    const everestBills = AJAY_EVEREST_BILLS_SUMMARY.closingBalance;
+    const finalSum = registerMss + registerArk + moneyLedger + everestBills;
+
+    return {
+      registerMss,
+      registerArk,
+      moneyLedger,
+      everestBills,
+      finalSum,
+      registerMssSign: getLedgerSign(registerMss),
+      registerArkSign: getLedgerSign(registerArk),
+      finalSumSign: getLedgerSign(finalSum),
+    };
+  }, [isAjayScope, summary.totalDueToMssByVendor.arkshakti, summary.totalDueToMssByVendor.mss]);
+
+  const ourHeroMetrics = useMemo(() => {
+    if (!isOurScope) {
+      return null;
+    }
+
+    const paymentReceivedIndex = headers.indexOf("TOTAL Payment recieved");
+    let paymentReceivedTotal = 0;
+    let mssResSites = 0;
+    let commercialSites = 0;
+
+    for (const row of rows) {
+      const projectType = row[PROJECT_TYPE_COLUMN_INDEX]?.trim() ?? "";
+      if (projectType === "MSS res") {
+        mssResSites += 1;
+      } else if (projectType === "MSS COMMERCIAL") {
+        commercialSites += 1;
+      }
+      if (paymentReceivedIndex >= 0) {
+        paymentReceivedTotal += parseProjectAmount(row[paymentReceivedIndex] ?? "");
+      }
+    }
+
+    return {
+      netDueMss: summary.totalDueToMssByVendor.mss,
+      netDueArk: summary.totalDueToMssByVendor.arkshakti,
+      netDueTotal: summary.totalDueToMss,
+      cashDue: summary.totalCashDueFromClient,
+      bankDue: summary.totalBankDue,
+      paymentReceivedTotal,
+      mssResSites,
+      commercialSites,
+      netDueMssSign: getLedgerSign(summary.totalDueToMssByVendor.mss),
+      netDueArkSign: getLedgerSign(summary.totalDueToMssByVendor.arkshakti),
+      netDueTotalSign: getLedgerSign(summary.totalDueToMss),
+    };
+  }, [
+    headers,
+    isOurScope,
+    rows,
+    summary.totalBankDue,
+    summary.totalCashDueFromClient,
+    summary.totalDueToMss,
+    summary.totalDueToMssByVendor.arkshakti,
+    summary.totalDueToMssByVendor.mss,
+  ]);
 
   const partnerTotals = useMemo(
     () =>
@@ -222,12 +732,19 @@ export function MssSitesAnalytics({
     [analytics.byProjectType],
   );
 
-  const registerLabel = scope === "our" ? "register" : scope === "shripal" ? "Shripal register" : "partner tab";
+  const registerLabel =
+    scope === "our" ? "register" : scope === "shripal" ? "Shripal register" : scope === "ajay" ? "Ajay register" : "partner tab";
   const summaryTitle =
-    scope === "our" ? "Our projects summary" : scope === "shripal" ? "Shripal sites summary" : "Partner projects summary";
+    scope === "our"
+      ? "Our projects summary"
+      : scope === "shripal"
+        ? "Shripal sites summary"
+        : scope === "ajay"
+          ? "Ajay sites summary"
+          : "Partner projects summary";
 
   return (
-    <div className="mss-sites-analytics">
+    <div id="mss-sites-analytics" className="mss-sites-analytics">
       <header className="mss-analytics-top">
         <div className="mss-analytics-top-copy">
           <p className="mss-analytics-eyebrow">Projects analytics</p>
@@ -239,9 +756,16 @@ export function MssSitesAnalytics({
               ? ` · ${analytics.byProjectType.length} ${registerLabel}${analytics.byProjectType.length === 1 ? "" : "s"}`
               : ""}
           </p>
+          {isOurScope ? (
+            <p className="mss-analytics-print-meta">
+              Our projects analytics · {rows.length} site{rows.length === 1 ? "" : "s"}
+              {isFiltered ? ` (filtered from ${totalRowCount})` : ""} · Generated{" "}
+              {new Date().toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}
+            </p>
+          ) : null}
         </div>
 
-        <nav className="mss-analytics-nav" aria-label="Analytics sections">
+        <nav className="mss-analytics-nav no-print" aria-label="Analytics sections">
           {analyticsSections.map((section) => (
             <a key={section.id} className="mss-analytics-nav-link" href={`#${section.id}`}>
               {section.label}
@@ -250,61 +774,189 @@ export function MssSitesAnalytics({
         </nav>
       </header>
 
-      <section className="mss-analytics-hero" aria-label="Key metrics">
-        <article className={`mss-analytics-hero-card mss-analytics-hero-card--balance-${netSign}`}>
-          <p className="mss-analytics-hero-label">Net MSS receivable</p>
-          <p className={`mss-analytics-hero-value ${ledgerAmountClassName(netSign)}`}>
-            {formatSignedLedgerAmount(summary.netMssReceivable)}
-          </p>
-          <p className="mss-analytics-hero-hint">{netBalanceLabel(summary.netMssReceivable)}</p>
-        </article>
-        <article className="mss-analytics-hero-card">
-          <p className="mss-analytics-hero-label">Total sites</p>
-          <p className="mss-analytics-hero-value">{summary.sitesByVendor.total}</p>
-          <p className="mss-analytics-hero-hint">
-            {PROJECT_VENDORS.MSS} {summary.sitesByVendor.mss} · {PROJECT_VENDORS.ARKSHAKTI}{" "}
-            {summary.sitesByVendor.arkshakti}
-          </p>
-        </article>
-        <article className="mss-analytics-hero-card">
-          <p className="mss-analytics-hero-label">Total due to MSS</p>
-          <p className="mss-analytics-hero-value mss-ledger-amount--credit">
-            {formatSignedLedgerAmount(summary.totalDueToMss)}
-          </p>
-          <p className="mss-analytics-hero-hint">Pending from clients — will come to MSS</p>
-        </article>
-        <article className="mss-analytics-hero-card">
-          <p className="mss-analytics-hero-label">Final deal with client</p>
-          <p className="mss-analytics-hero-value">{formatSignedLedgerAmount(summary.totalFinalDealWithClient)}</p>
-          <p className="mss-analytics-hero-hint">
-            {showPartnerMetrics ? "What partner charged clients" : "Client billing on our sites"}
-          </p>
-        </article>
-        {showPartnerMetrics ? (
+      {isFiltered ? (
+        <AnalyticsInfoBanner title="Filtered view">
+          Analytics below reflect your current table filters ({rows.length} of {totalRowCount} sites).
+        </AnalyticsInfoBanner>
+      ) : null}
+
+      {isAjayScope ? (
+        <AnalyticsInfoBanner title="Two registers, one partner">
+          <strong>MSS</strong> rows are the forward pipeline (new sites).{" "}
+          <strong>Arkshakti</strong> rows are the completed / hold backlog. Sub Vendor Payment ledgers
+          (money + Everest bills) track cash separately from the site register.
+        </AnalyticsInfoBanner>
+      ) : null}
+
+      {isOurScope ? (
+        <AnalyticsInfoBanner title="Three registers, our sites">
+          <strong>MSS res</strong> appears on both workbooks ({PROJECT_VENDORS.MSS} pipeline +{" "}
+          {PROJECT_VENDORS.ARKSHAKTI} backlog). <strong>MSS COMMERCIAL</strong> is Arkshakti-only. Cash
+          due, bank due, and net due to MSS come from each site row on the register.
+        </AnalyticsInfoBanner>
+      ) : null}
+
+      <section
+        className={`mss-analytics-hero${isAjayScope || isOurScope ? " mss-analytics-hero--ajay" : ""}`}
+        aria-label="Key metrics"
+      >
+        {isAjayScope && ajayHeroMetrics ? (
           <>
             <article className="mss-analytics-hero-card">
-              <p className="mss-analytics-hero-label">Deal with MSS</p>
-              <p className="mss-analytics-hero-value">{formatSignedLedgerAmount(summary.totalDealWithMss)}</p>
-              <p className="mss-analytics-hero-hint">What partner paid MSS</p>
-            </article>
-            <article className={`mss-analytics-hero-card mss-analytics-hero-card--balance-${profitSign}`}>
-              <p className="mss-analytics-hero-label">Partner profit</p>
-              <p className={`mss-analytics-hero-value ${ledgerAmountClassName(profitSign)}`}>
-                {formatSignedLedgerAmount(summary.totalPartnerProfit)}
+              <p className="mss-analytics-hero-label">Total sites</p>
+              <p className="mss-analytics-hero-value">{summary.sitesByVendor.total}</p>
+              <p className="mss-analytics-hero-hint">
+                {PROJECT_VENDORS.MSS} {summary.sitesByVendor.mss} · {PROJECT_VENDORS.ARKSHAKTI}{" "}
+                {summary.sitesByVendor.arkshakti}
               </p>
-              <p className="mss-analytics-hero-hint">Final deal with client − Deal with MSS</p>
+            </article>
+            <article
+              className={`mss-analytics-hero-card mss-analytics-hero-card--balance-${ajayHeroMetrics.registerArkSign}`}
+            >
+              <p className="mss-analytics-hero-label">Net due · {PROJECT_VENDORS.ARKSHAKTI}</p>
+              <p className={`mss-analytics-hero-value ${ledgerAmountClassName(ajayHeroMetrics.registerArkSign)}`}>
+                {formatSignedLedgerAmount(ajayHeroMetrics.registerArk)}
+              </p>
+              <p className="mss-analytics-hero-hint">Completed / hold backlog register</p>
+            </article>
+            <article
+              className={`mss-analytics-hero-card mss-analytics-hero-card--balance-${ajayHeroMetrics.registerMssSign}`}
+            >
+              <p className="mss-analytics-hero-label">Net due · {PROJECT_VENDORS.MSS}</p>
+              <p className={`mss-analytics-hero-value ${ledgerAmountClassName(ajayHeroMetrics.registerMssSign)}`}>
+                {formatSignedLedgerAmount(ajayHeroMetrics.registerMss)}
+              </p>
+              <p className="mss-analytics-hero-hint">Forward pipeline register</p>
+            </article>
+            <article className={`mss-analytics-hero-card mss-analytics-hero-card--balance-${moneyLedgerSign}`}>
+              <p className="mss-analytics-hero-label">Sub Vendor · Money ledger</p>
+              <p className={`mss-analytics-hero-value ${ledgerAmountClassName(moneyLedgerSign)}`}>
+                {formatSignedLedgerAmount(AJAY_MONEY_LEDGER_SUMMARY.closingBalance)}
+              </p>
+              <p className="mss-analytics-hero-hint">
+                DR {formatSignedLedgerAmount(AJAY_MONEY_LEDGER_SUMMARY.totalDr)} out · CR{" "}
+                {formatSignedLedgerAmount(AJAY_MONEY_LEDGER_SUMMARY.totalCr)} in
+              </p>
+            </article>
+            <article className="mss-analytics-hero-card mss-analytics-hero-card--balance-debit">
+              <p className="mss-analytics-hero-label">Sub Vendor · Everest bills</p>
+              <p className="mss-analytics-hero-value mss-ledger-amount--debit">
+                {formatSignedLedgerAmount(AJAY_EVEREST_BILLS_SUMMARY.closingBalance)}
+              </p>
+              <p className="mss-analytics-hero-hint">MSE vendor invoices outstanding</p>
+            </article>
+            <article
+              className={`mss-analytics-hero-card mss-analytics-hero-card--final mss-analytics-hero-card--balance-${ajayHeroMetrics.finalSumSign}`}
+            >
+              <p className="mss-analytics-hero-label">
+                <Sigma size={14} aria-hidden /> Final sum
+              </p>
+              <p className={`mss-analytics-hero-value ${ledgerAmountClassName(ajayHeroMetrics.finalSumSign)}`}>
+                {formatSignedLedgerAmount(ajayHeroMetrics.finalSum)}
+              </p>
+              <p className="mss-analytics-hero-hint">
+                Both registers + money ledger + Everest bills · {netBalanceLabel(ajayHeroMetrics.finalSum)}
+              </p>
             </article>
           </>
-        ) : null}
+        ) : isOurScope && ourHeroMetrics ? (
+          <>
+            <article className="mss-analytics-hero-card">
+              <p className="mss-analytics-hero-label">Total sites</p>
+              <p className="mss-analytics-hero-value">{summary.sitesByVendor.total}</p>
+              <p className="mss-analytics-hero-hint">
+                MSS res {ourHeroMetrics.mssResSites} · Commercial {ourHeroMetrics.commercialSites}
+              </p>
+              <p className="mss-analytics-hero-hint">
+                {PROJECT_VENDORS.MSS} {summary.sitesByVendor.mss} · {PROJECT_VENDORS.ARKSHAKTI}{" "}
+                {summary.sitesByVendor.arkshakti}
+              </p>
+            </article>
+            <article
+              className={`mss-analytics-hero-card mss-analytics-hero-card--balance-${ourHeroMetrics.netDueMssSign}`}
+            >
+              <p className="mss-analytics-hero-label">Net due · {PROJECT_VENDORS.MSS}</p>
+              <p className={`mss-analytics-hero-value ${ledgerAmountClassName(ourHeroMetrics.netDueMssSign)}`}>
+                {formatSignedLedgerAmount(ourHeroMetrics.netDueMss)}
+              </p>
+              <p className="mss-analytics-hero-hint">MSS res pipeline register</p>
+            </article>
+            <article
+              className={`mss-analytics-hero-card mss-analytics-hero-card--balance-${ourHeroMetrics.netDueArkSign}`}
+            >
+              <p className="mss-analytics-hero-label">Net due · {PROJECT_VENDORS.ARKSHAKTI}</p>
+              <p className={`mss-analytics-hero-value ${ledgerAmountClassName(ourHeroMetrics.netDueArkSign)}`}>
+                {formatSignedLedgerAmount(ourHeroMetrics.netDueArk)}
+              </p>
+              <p className="mss-analytics-hero-hint">MSS res backlog + MSS COMMERCIAL</p>
+            </article>
+            <article className="mss-analytics-hero-card">
+              <p className="mss-analytics-hero-label">Payments received</p>
+              <p className="mss-analytics-hero-value">{formatSignedLedgerAmount(ourHeroMetrics.paymentReceivedTotal)}</p>
+              <p className="mss-analytics-hero-hint">Loan / cash installments logged on register</p>
+            </article>
+            <article
+              className={`mss-analytics-hero-card mss-analytics-hero-card--client-dues mss-analytics-hero-card--balance-${ourHeroMetrics.netDueTotalSign}`}
+            >
+              <p className="mss-analytics-hero-label">Due from clients</p>
+              <p className={`mss-analytics-hero-value ${ledgerAmountClassName(ourHeroMetrics.netDueTotalSign)}`}>
+                {formatSignedLedgerAmount(ourHeroMetrics.netDueTotal)}
+              </p>
+              <p className="mss-analytics-hero-hint mss-analytics-hero-hint--strong">Net due to MSS</p>
+              <dl className="mss-analytics-hero-dues-list">
+                <div>
+                  <dt>Cash due from client</dt>
+                  <dd className={ledgerAmountClassName(getLedgerSign(ourHeroMetrics.cashDue))}>
+                    {formatSignedLedgerAmount(ourHeroMetrics.cashDue)}
+                  </dd>
+                </div>
+                <div>
+                  <dt>Bank due</dt>
+                  <dd className={ledgerAmountClassName(getLedgerSign(ourHeroMetrics.bankDue))}>
+                    {formatSignedLedgerAmount(ourHeroMetrics.bankDue)}
+                  </dd>
+                </div>
+              </dl>
+            </article>
+          </>
+        ) : (
+          <>
+            <article className="mss-analytics-hero-card">
+              <p className="mss-analytics-hero-label">Total sites</p>
+              <p className="mss-analytics-hero-value">{summary.sitesByVendor.total}</p>
+              <p className="mss-analytics-hero-hint">
+                {summary.sitesByVendor.mss > 0 || summary.sitesByVendor.arkshakti > 0
+                  ? `${PROJECT_VENDORS.MSS} ${summary.sitesByVendor.mss} · ${PROJECT_VENDORS.ARKSHAKTI} ${summary.sitesByVendor.arkshakti}`
+                  : "Filtered project rows"}
+              </p>
+            </article>
+            <article className={`mss-analytics-hero-card mss-analytics-hero-card--balance-${netSign}`}>
+              <p className="mss-analytics-hero-label">Net MSS receivable</p>
+              <p className={`mss-analytics-hero-value ${ledgerAmountClassName(netSign)}`}>
+                {formatSignedLedgerAmount(summary.netMssReceivable)}
+              </p>
+              <p className="mss-analytics-hero-hint">{netBalanceLabel(summary.netMssReceivable)}</p>
+            </article>
+          </>
+        )}
       </section>
 
-      <div className="mss-analytics-grid">
-        <section className="mss-sites-analytics-panel" id="analytics-overview">
+      <div className={`mss-analytics-grid${isAjayScope || isOurScope ? " mss-analytics-grid--single" : ""}`}>
+        <section
+          className={`mss-sites-analytics-panel${isAjayScope || isOurScope ? " mss-sites-analytics-panel--full" : ""}`}
+          id="analytics-overview"
+        >
           <header className="mss-sites-analytics-panel-header">
             <Building2 size={18} aria-hidden />
             <div>
               <h2 className="mss-sites-analytics-panel-title">Overview</h2>
-              <p className="mss-sites-analytics-panel-subtitle">Site count split by data source</p>
+              <p className="mss-sites-analytics-panel-subtitle">
+                {isAjayScope
+                  ? "Register split, payment activity, net-due mix, and how the final sum is built"
+                  : isOurScope
+                    ? "Residential + commercial registers, client dues, payments, and work status"
+                    : "Site count split by data source"}
+              </p>
             </div>
           </header>
 
@@ -327,64 +979,31 @@ export function MssSitesAnalytics({
           </div>
 
           <VendorSplitBar breakdown={summary.sitesByVendor} />
-        </section>
-
-        <section className="mss-sites-analytics-panel" id="analytics-deals">
-          <header className="mss-sites-analytics-panel-header">
-            <IndianRupee size={18} aria-hidden />
-            <div>
-              <h2 className="mss-sites-analytics-panel-title">Deal totals</h2>
-              <p className="mss-sites-analytics-panel-subtitle">
-                {showPartnerMetrics
-                  ? "Client billing vs MSS cost; per-row commission is in the projects table"
-                  : "Client billing on our residential & commercial sites"}
-              </p>
-            </div>
-          </header>
-
-          <VendorDueTable
-            neutralAmounts
-            rows={[
-              { label: "Final deal with client", breakdown: summary.finalDealWithClientByVendor },
-              ...(showPartnerMetrics
-                ? [{ label: "Deal with MSS", breakdown: summary.dealWithMssByVendor }]
-                : []),
-            ]}
-            summaryRow={
-              showPartnerMetrics
-                ? {
-                    label: "Partner profit (client − MSS)",
-                    breakdown: summary.partnerProfitByVendor,
-                  }
-                : undefined
-            }
-          />
-        </section>
-
-        <section className="mss-sites-analytics-panel" id="analytics-dues">
-          <header className="mss-sites-analytics-panel-header">
-            <Landmark size={18} aria-hidden />
-            <div>
-              <h2 className="mss-sites-analytics-panel-title">MSS payment dues</h2>
-              <p className="mss-sites-analytics-panel-subtitle">
-                Pending client payments — positive amounts MSS will receive
-              </p>
-            </div>
-          </header>
-
-          <VendorDueTable
-            neutralAmounts
-            rows={[
-              { label: "Cash due from client", breakdown: summary.cashDueFromClientByVendor },
-              { label: "Bank due", breakdown: summary.bankDueByVendor },
-              { label: "Cash due to MSS", breakdown: summary.cashDueToMssByVendor },
-              { label: "Total due to MSS", breakdown: summary.totalDueToMssByVendor },
-            ]}
-          />
+          {isAjayScope ? <AjayOverviewDetails headers={headers} rows={rows} summary={summary} /> : null}
+          {isOurScope ? <OurOverviewDetails headers={headers} rows={rows} summary={summary} /> : null}
         </section>
       </div>
 
-      {showPartnerMetrics ? (
+      {isAjayScope ? (
+        <section
+          className="mss-sites-analytics-panel mss-sites-analytics-panel--full"
+          id="analytics-subvendor"
+        >
+          <header className="mss-sites-analytics-panel-header">
+            <Wallet size={18} aria-hidden />
+            <div>
+              <h2 className="mss-sites-analytics-panel-title">Sub Vendor Payment ledgers</h2>
+              <p className="mss-sites-analytics-panel-subtitle">
+                Live balances from the <strong>Ajay</strong> tab — money movements and Everest Solar
+                vendor invoices
+              </p>
+            </div>
+          </header>
+          <AjaySubVendorLedgers />
+        </section>
+      ) : null}
+
+      {showPartnerMetrics && !isAjayScope ? (
         <section
           className="mss-sites-analytics-panel mss-sites-analytics-panel--partner"
           id="analytics-ledger"
@@ -500,7 +1119,7 @@ export function MssSitesAnalytics({
         </section>
       ) : null}
 
-      {showPartnerMetrics ? (
+      {showPartnerMetrics && !isAjayScope ? (
         <section className="mss-sites-analytics-panel" id="analytics-partners">
           <header className="mss-sites-analytics-panel-header">
             <Wallet size={18} aria-hidden />

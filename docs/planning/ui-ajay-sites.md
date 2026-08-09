@@ -1,0 +1,97 @@
+# App UI: Ajay sites
+
+> **Purpose:** Requirements and behaviour for the **Ajay sites** tab on `/projects`.  
+> **Kind:** Application UI / logic (not raw sheet data).  
+> **Last updated:** 2026-08-09
+
+Sister docs:
+
+- Planning index → [`README.md`](./README.md)
+- Our projects UI → [`ui-our-projects.md`](./ui-our-projects.md)
+- Partner projects UI → [`ui-partner-projects.md`](./ui-partner-projects.md)
+- Sub Vendor Payment (Ajay dual ledgers) → [`sub-vendor-partner-ledger.md`](./sub-vendor-partner-ledger.md)
+- Dec–Feb sheet data → [`dec-to-feb-sheet.md`](./dec-to-feb-sheet.md)
+- **Done / pending tracker** → [`partner-implementation-status.md`](./partner-implementation-status.md)
+
+---
+
+## Goal
+
+Give **Ajay Ji** (`Ajay (everest)`) its own top-level Projects tab because this partner has a separate site register **and** a dual-ledger layout on the Sub Vendor Payment sheet that should stay linked in the UI.
+
+---
+
+## Scope definition
+
+A row belongs to **Ajay sites** when `PROJECT TYPE` is:
+
+| PROJECT TYPE | Vendors |
+|--------------|---------|
+| `Ajay (everest)` | `MSS`, `Arkshakti` |
+
+Configured as `AJAY_PROJECT_TYPES` / `isAjayProjectType()` in `projects-config.ts`.
+
+Ajay rows are **excluded** from Partner projects chips and partner row scope.
+
+---
+
+## Sub Vendor Payment — two tables on `Ajay` tab
+
+The **SUB VENDOR PAYMENT** workbook tab `Ajay` has **two side-by-side ledgers** (live sheet, 2026-08-09):
+
+| Block | Columns | Title | Header balance |
+|-------|---------|-------|----------------|
+| Left | A–E | **Money ledger** | **−₹4,28,500** |
+| Right | K–P | **Everest Solar Bill** | **₹69,179** |
+
+**Money ledger (left):** PP / CASH in from Ajay; MSS / NEFT out (latest: **₹3L EVEREST BUILD SOLAR NEFT** on 30 Jul 2026).
+
+**Everest Solar Bill (right):** MSE vendor invoices (MSE/26-27/0065 through 0137); nine invoice lines totalling **₹69,179**.
+
+**Removed (older snapshot):** middle **site commission** table (I–O, ~₹1,000/KW, +₹31,000) is no longer on the live tab.
+
+Spreadsheet ID: `1UrgNeqxEpifcFroxnLU7U4Xah23Li5Hw` · configured as `AJAY_SUB_VENDOR_LEDGER` in `projects-config.ts`.
+
+Money-ledger rows are seeded in `partner-mss-payments.ts` for analytics. Everest bill rows live in `ajay-sub-vendor-ledger.ts` and render in `AjaySubVendorLedgers.tsx`.
+
+---
+
+## UI behaviour
+
+| Element | Behaviour |
+|---------|-----------|
+| Page tabs | `Our projects` \| `Shripal sites` \| `Ajay sites` \| `Partner projects` |
+| Row set | Only `Ajay (everest)` rows (both vendors). |
+| Visible columns | Same as Partner — Deal with MSS / commission / Payment with partner. |
+| Vendor chips | **MSS** and **Arkshakti** shortcuts (lock Vendor + `Ajay (everest)`). |
+| Analytics | Ajay-specific hero (sites, net due per register, both Sub Vendor cards, final sum) + detailed overview; no deal totals / payment dues sections (removed globally). |
+| Scope note | Info banner in analytics: MSS = pipeline, Arkshakti = backlog, Sub Vendor ledgers = separate cash. |
+
+**Implementation status:** see [`partner-implementation-status.md`](./partner-implementation-status.md) — Ajay marked **done** for current requirement; **GST billing TBD**.
+
+---
+
+## Decision log
+
+### 2026-08-09 — Sheet layout updated (live re-read)
+
+- Site commission table (I–O) **removed** from Sub Vendor Payment `Ajay` tab.
+- Two tables now: **money ledger** (−₹4,28,500) + **Everest Solar Bill** (₹69,179).
+- New money row: 30 Jul 2026 · DR ₹3,00,000 · EVEREST BUILD SOLAR NEFT.
+- Three new invoices: MSE/26-27/0125, 0137 (+0117 renumbered).
+
+### 2026-08-09 — Ajay top-level tab + dual ledger note
+
+- User: add Ajay sites tab like Shripal / Partner; note Sub Vendor Payment `Ajay` tab has **two tables**.
+- Implemented scope `ajay`; removed `Ajay (everest)` from Partner name chips; added scope callout + planning doc.
+
+### 2026-08-09 — Ajay analytics rework
+
+- Hero: total sites, net due (Ark / MSS), money ledger, Everest bills, final sum.
+- Overview: register snapshot, net-due mix, sum breakdown, work status by vendor.
+- Deal totals + payment dues removed from all analytics tabs.
+
+### Upcoming
+
+- [ ] **GST billing still to receive from Ajay** — calculation TBD (tracked in [`partner-implementation-status.md`](./partner-implementation-status.md))
+- [ ] Optional: map Everest MSE invoices to site register rows

@@ -3,7 +3,7 @@ import { RotateCcw } from "lucide-react";
 import {
   computeVisibleColumnTotals,
   filterRowsByClientName,
-  filterRowsByPaymentReceived,
+  filterRowsByNonzeroDues,
   filterRowsByProjectsScope,
   filterRowsByProjectTypes,
   filterRowsByVendors,
@@ -16,7 +16,7 @@ import {
   getWorkStatusesFromRows,
   isProjectPrintHighlightColumn,
   isProjectPdfOmitColumn,
-  PAYMENT_RECEIVED_FILTER_OPTIONS,
+  NONZERO_DUES_FILTER_OPTIONS,
   workStatusSelectionMatchesDefault,
   PROJECT_MORE_COLUMN_HEADER,
   PROJECT_S_NO_COLUMN_INDEX,
@@ -126,14 +126,12 @@ export function MssSitesTablePreview({ table, viewMode, scope }: MssSitesTablePr
   const [selectedWorkStatuses, setSelectedWorkStatuses] = useState<Set<string>>(() =>
     getDefaultSelectedWorkStatuses(workStatuses),
   );
-  const [selectedPaymentReceived, setSelectedPaymentReceived] = useState<Set<string>>(
-    () => new Set(PAYMENT_RECEIVED_FILTER_OPTIONS),
-  );
+  const [selectedNonzeroDues, setSelectedNonzeroDues] = useState<Set<string>>(() => new Set());
   const [clientNameQuery, setClientNameQuery] = useState("");
 
-  const registerFilterLabel = scope === "our" ? "Register" : scope === "shripal" ? "Register" : "Partner";
-  const registerAllLabel = scope === "our" ? "All registers" : scope === "shripal" ? "All registers" : "All partners";
-  const registerEmptyLabel = scope === "our" ? "No registers" : scope === "shripal" ? "No registers" : "No partners";
+  const registerFilterLabel = scope === "partner" ? "Partner" : "Register";
+  const registerAllLabel = scope === "partner" ? "All partners" : "All registers";
+  const registerEmptyLabel = scope === "partner" ? "No partners" : "No registers";
 
   useEffect(() => {
     setSelectedProjectTypes(new Set(projectTypes));
@@ -148,7 +146,7 @@ export function MssSitesTablePreview({ table, viewMode, scope }: MssSitesTablePr
   }, [workStatuses]);
 
   useEffect(() => {
-    setSelectedPaymentReceived(new Set(PAYMENT_RECEIVED_FILTER_OPTIONS));
+    setSelectedNonzeroDues(new Set());
     setClientNameQuery("");
   }, [scope]);
 
@@ -156,13 +154,13 @@ export function MssSitesTablePreview({ table, viewMode, scope }: MssSitesTablePr
     const byVendor = filterRowsByVendors(scopedRows, selectedVendors);
     const byType = filterRowsByProjectTypes(byVendor, selectedProjectTypes);
     const byStatus = filterRowsByWorkStatuses(byType, selectedWorkStatuses);
-    const byPayment = filterRowsByPaymentReceived(byStatus, selectedPaymentReceived);
-    const byName = filterRowsByClientName(byPayment, clientNameQuery);
+    const byDues = filterRowsByNonzeroDues(byStatus, selectedNonzeroDues);
+    const byName = filterRowsByClientName(byDues, clientNameQuery);
     return withSequentialSerialNumbers(byName);
   }, [
     clientNameQuery,
     scopedRows,
-    selectedPaymentReceived,
+    selectedNonzeroDues,
     selectedProjectTypes,
     selectedVendors,
     selectedWorkStatuses,
@@ -174,8 +172,7 @@ export function MssSitesTablePreview({ table, viewMode, scope }: MssSitesTablePr
     (selectedProjectTypes.size > 0 && selectedProjectTypes.size < projectTypes.length) ||
     (selectedVendors.size > 0 && selectedVendors.size < vendors.length) ||
     !workStatusAtDefault ||
-    (selectedPaymentReceived.size > 0 &&
-      selectedPaymentReceived.size < PAYMENT_RECEIVED_FILTER_OPTIONS.length) ||
+    selectedNonzeroDues.size > 0 ||
     clientNameQuery.trim().length > 0;
 
   const columnTotals = useMemo(
@@ -187,7 +184,7 @@ export function MssSitesTablePreview({ table, viewMode, scope }: MssSitesTablePr
     setSelectedProjectTypes(new Set(projectTypes));
     setSelectedVendors(new Set(vendors));
     setSelectedWorkStatuses(getDefaultSelectedWorkStatuses(workStatuses));
-    setSelectedPaymentReceived(new Set(PAYMENT_RECEIVED_FILTER_OPTIONS));
+    setSelectedNonzeroDues(new Set());
     setClientNameQuery("");
   }, [projectTypes, vendors, workStatuses]);
 
@@ -211,9 +208,7 @@ export function MssSitesTablePreview({ table, viewMode, scope }: MssSitesTablePr
   const vendorFilterActive = selectedVendors.size > 0 && selectedVendors.size < vendors.length;
   const partnerFilterActive = selectedProjectTypes.size > 0 && selectedProjectTypes.size < projectTypes.length;
   const statusFilterActive = !workStatusAtDefault;
-  const paymentFilterActive =
-    selectedPaymentReceived.size > 0 &&
-    selectedPaymentReceived.size < PAYMENT_RECEIVED_FILTER_OPTIONS.length;
+  const duesFilterActive = selectedNonzeroDues.size > 0;
   const searchActive = clientNameQuery.trim().length > 0;
 
   return (
@@ -240,6 +235,12 @@ export function MssSitesTablePreview({ table, viewMode, scope }: MssSitesTablePr
               ) : scope === "shripal" ? (
                 <>
                   <span className="mss-sites-source-badge mss-sites-source-badge--partner">Shripal Ji</span>
+                  <span className="mss-sites-source-badge mss-sites-source-badge--mss">MSS</span>
+                  <span className="mss-sites-source-badge mss-sites-source-badge--arkshakti">Arkshakti</span>
+                </>
+              ) : scope === "ajay" ? (
+                <>
+                  <span className="mss-sites-source-badge mss-sites-source-badge--partner">Ajay Ji</span>
                   <span className="mss-sites-source-badge mss-sites-source-badge--mss">MSS</span>
                   <span className="mss-sites-source-badge mss-sites-source-badge--arkshakti">Arkshakti</span>
                 </>
@@ -296,13 +297,14 @@ export function MssSitesTablePreview({ table, viewMode, scope }: MssSitesTablePr
             isActive={statusFilterActive}
           />
           <ProjectsMultiselectFilter
-            label="Payment"
-            options={[...PAYMENT_RECEIVED_FILTER_OPTIONS]}
-            selected={selectedPaymentReceived}
-            onChange={setSelectedPaymentReceived}
-            allSummaryLabel="All"
-            emptyOptionsLabel="None"
-            isActive={paymentFilterActive}
+            label="Dues"
+            options={[...NONZERO_DUES_FILTER_OPTIONS]}
+            selected={selectedNonzeroDues}
+            onChange={setSelectedNonzeroDues}
+            allSummaryLabel="Any non-zero due"
+            noneSummaryLabel="All sites"
+            emptyOptionsLabel="No options"
+            isActive={duesFilterActive}
           />
         </div>
 

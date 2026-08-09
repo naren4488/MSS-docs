@@ -263,11 +263,113 @@
     box-shadow: inset 0 0 0 1px #fde68a !important;
   }
 
-  html.print-mss-sites .mss-sites-table-totals-row td.mss-sites-table-highlight-col {
+  html.print-mss-sites   .mss-sites-table-totals-row td.mss-sites-table-highlight-col {
     background: #fef3c7 !important;
     color: #92400e !important;
     border-bottom: 2px solid #f59e0b !important;
     box-shadow: inset 0 0 0 1px #fbbf24 !important;
+  }
+
+  /* MSS Sites — analytics dashboard (single tall page, not A4) */
+  @page mss-sites-analytics-page {
+    margin: 6mm;
+  }
+
+  html.print-mss-sites-analytics,
+  html.print-mss-sites-analytics body,
+  html.print-mss-sites-analytics .app-root {
+    width: auto !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    page: mss-sites-analytics-page;
+  }
+
+  html.print-mss-sites-analytics .page-shell--mss-sites {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: none !important;
+    width: auto !important;
+  }
+
+  html.print-mss-sites-analytics .page-shell--mss-sites .content-card {
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+    width: auto !important;
+    max-width: none !important;
+    overflow: visible !important;
+  }
+
+  html.print-mss-sites-analytics #mss-sites-preview {
+    display: block !important;
+    width: auto !important;
+    max-width: none !important;
+    margin: 0 !important;
+    overflow: visible !important;
+  }
+
+  html.print-mss-sites-analytics .mss-sites-preview-header,
+  html.print-mss-sites-analytics .mss-analytics-nav {
+    display: none !important;
+  }
+
+  html.print-mss-sites-analytics .mss-sites-table-wrap {
+    overflow: visible !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  html.print-mss-sites-analytics #mss-sites-analytics,
+  html.print-mss-sites-analytics .mss-sites-analytics {
+    display: block !important;
+    width: auto !important;
+    max-width: none !important;
+    overflow: visible !important;
+    padding: 8px 16px 20px !important;
+    break-inside: avoid;
+  }
+
+  html.print-mss-sites-analytics .mss-analytics-top {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  html.print-mss-sites-analytics .mss-analytics-hero,
+  html.print-mss-sites-analytics .mss-analytics-ajay-overview-grid,
+  html.print-mss-sites-analytics .mss-analytics-overview-stats {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  html.print-mss-sites-analytics .mss-analytics-hero-card,
+  html.print-mss-sites-analytics .mss-analytics-ajay-detail-card,
+  html.print-mss-sites-analytics .mss-analytics-status-vendor-card {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    box-shadow: none !important;
+  }
+
+  html.print-mss-sites-analytics .mss-sites-analytics-panel {
+    break-inside: auto;
+    page-break-inside: auto;
+    box-shadow: none !important;
+    border: 1px solid #e5e7eb !important;
+  }
+
+  html.print-mss-sites-analytics .mss-sites-analytics-table-wrap {
+    overflow: visible !important;
+  }
+
+  html.print-mss-sites-analytics .mss-analytics-print-meta {
+    display: block !important;
+    margin: 0 0 12px;
+    font-size: 11px;
+    color: #6b7280;
   }
 
   .brochure-content {

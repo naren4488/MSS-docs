@@ -7,6 +7,7 @@
 Keep **this workbook’s** notes here only. Sister planning docs:
 
 - Planning index (sheet vs UI docs) → [`README.md`](./README.md)
+- MSS site register (same tabs, vendor MSS) → [`mss-sheet.md`](./mss-sheet.md)
 - App UI: Our projects → [`ui-our-projects.md`](./ui-our-projects.md)
 - App UI: Partner projects → [`ui-partner-projects.md`](./ui-partner-projects.md)
 - Sub Vendor Payment / partner ledgers → [`sub-vendor-partner-ledger.md`](./sub-vendor-partner-ledger.md)

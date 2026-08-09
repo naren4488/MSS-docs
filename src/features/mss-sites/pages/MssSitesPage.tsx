@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { MssSitesTablePreview, type MssSitesViewMode } from "../components/MssSitesTablePreview";
 import { fetchMssSitesTable } from "../lib/fetch-mss-sites";
 import { prepareMssSitesPrint } from "../lib/prepare-mss-sites-print";
+import { prepareMssSitesAnalyticsPrint } from "../lib/prepare-mss-sites-analytics-print";
 import type { ProjectsScope } from "../lib/projects-config";
 import type { MssSitesTable } from "../types/mss-sites";
 
@@ -44,12 +45,29 @@ export function MssSitesPage() {
     window.print();
   }
 
+  async function handleAnalyticsPrint() {
+    await document.fonts.ready;
+    await new Promise((resolve) => window.setTimeout(resolve, 200));
+    const previousTitle = document.title;
+    document.title = "Our projects — Analytics";
+    const cleanupPrint = prepareMssSitesAnalyticsPrint();
+    const cleanup = () => {
+      cleanupPrint();
+      document.title = previousTitle;
+      window.removeEventListener("afterprint", cleanup);
+    };
+    window.addEventListener("afterprint", cleanup);
+    window.print();
+  }
+
   const scopeSubtitle =
     scope === "our"
       ? "MSS residential & commercial sites (MSS + Arkshakti registers)."
       : scope === "shripal"
         ? "Shripal Ji sites from MSS and Arkshakti — separate register for special cases."
-        : "Partner-led site registers from MSS and Arkshakti workbooks (excluding Shripal).";
+        : scope === "ajay"
+          ? "Ajay Ji sites from MSS and Arkshakti — separate register for Ajay (everest)."
+          : "Partner-led site registers from MSS and Arkshakti workbooks (excluding Shripal and Ajay).";
 
   return (
     <div className="page-shell page-shell--mss-sites">
@@ -109,6 +127,17 @@ export function MssSitesPage() {
               Save as PDF
             </button>
           ) : null}
+          {viewMode === "analytics" && scope === "our" ? (
+            <button
+              className="primary-button"
+              type="button"
+              disabled={!table || loading}
+              onClick={() => void handleAnalyticsPrint()}
+            >
+              <Printer size={16} />
+              Download analytics
+            </button>
+          ) : null}
         </div>
       </div>
 
@@ -132,6 +161,16 @@ export function MssSitesPage() {
         >
           <UserRound size={16} aria-hidden />
           Shripal sites
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={scope === "ajay"}
+          className={`mss-sites-scope-tab${scope === "ajay" ? " mss-sites-scope-tab--active" : ""}`}
+          onClick={() => setScope("ajay")}
+        >
+          <UserRound size={16} aria-hidden />
+          Ajay sites
         </button>
         <button
           type="button"

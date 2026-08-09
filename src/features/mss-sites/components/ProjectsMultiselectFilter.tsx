@@ -9,6 +9,8 @@ interface ProjectsMultiselectFilterProps {
   onChange: (next: Set<string>) => void;
   allSummaryLabel?: string;
   emptyOptionsLabel?: string;
+  /** Shown when nothing is selected (default: "None selected"). */
+  noneSummaryLabel?: string;
   isActive?: boolean;
 }
 
@@ -20,12 +22,13 @@ function getSummaryLabel(
   options: string[],
   allSummaryLabel: string,
   emptyOptionsLabel: string,
+  noneSummaryLabel: string,
 ) {
   if (options.length === 0) {
     return emptyOptionsLabel;
   }
   if (selected.size === 0) {
-    return "None selected";
+    return noneSummaryLabel;
   }
   if (selected.size === options.length) {
     return allSummaryLabel;
@@ -59,6 +62,7 @@ export function ProjectsMultiselectFilter({
   onChange,
   allSummaryLabel = "All selected",
   emptyOptionsLabel = "No options",
+  noneSummaryLabel = "None selected",
   isActive = false,
 }: ProjectsMultiselectFilterProps) {
   const [open, setOpen] = useState(false);
@@ -193,7 +197,7 @@ export function ProjectsMultiselectFilter({
           onClick={() => setOpen((value) => !value)}
         >
           <span className="projects-multiselect-summary">
-            {getSummaryLabel(selected, options, allSummaryLabel, emptyOptionsLabel)}
+            {getSummaryLabel(selected, options, allSummaryLabel, emptyOptionsLabel, noneSummaryLabel)}
           </span>
           <ChevronDown size={16} className="projects-multiselect-chevron" />
         </button>

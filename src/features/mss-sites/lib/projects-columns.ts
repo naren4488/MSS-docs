@@ -37,8 +37,8 @@ export const PROJECT_TABLE_HEADERS = [
   "Payment with partner",
   "Bank due",
   "CASH DUE FROM CLIENT",
-  "Total Due to MSS",
   "Cash due to MSS",
+  "Total Due to MSS",
   "TOTAL Payment recieved",
   "REMARK",
 ] as const;
@@ -70,8 +70,8 @@ export const PROJECT_MORE_COLUMN_HEADER = "MORE";
 /** Payment columns — extra emphasis in print / PDF export. */
 export const PROJECT_PRINT_HIGHLIGHT_COLUMNS = new Set<string>([
   "Bank due",
-  "Total Due to MSS",
   "Cash due to MSS",
+  "Total Due to MSS",
 ]);
 
 export function isProjectPrintHighlightColumn(header: string): boolean {
@@ -115,11 +115,26 @@ export const TOTAL_PAYMENT_RECEIVED_COLUMN = "TOTAL Payment recieved";
 
 export const TOTAL_PAYMENT_RECEIVED_COLUMN_INDEX = PROJECT_TABLE_HEADERS.indexOf(TOTAL_PAYMENT_RECEIVED_COLUMN);
 
-export const PAYMENT_RECEIVED_LABEL = "Received";
+export const CASH_DUE_TO_MSS_COLUMN = "Cash due to MSS";
 
-export const PAYMENT_NOT_RECEIVED_LABEL = "Not received";
+export const CASH_DUE_TO_MSS_COLUMN_INDEX = PROJECT_TABLE_HEADERS.indexOf(CASH_DUE_TO_MSS_COLUMN);
 
-export const PAYMENT_RECEIVED_FILTER_OPTIONS = [PAYMENT_RECEIVED_LABEL, PAYMENT_NOT_RECEIVED_LABEL] as const;
+export const BANK_DUE_COLUMN = "Bank due";
+
+export const BANK_DUE_COLUMN_INDEX = PROJECT_TABLE_HEADERS.indexOf(BANK_DUE_COLUMN);
+
+/** Optional non-zero dues filters (empty selection = no dues filter). */
+export const DUES_NET_NONZERO_LABEL = "Net due ≠ 0";
+export const DUES_CASH_NONZERO_LABEL = "Cash due ≠ 0";
+export const DUES_BANK_NONZERO_LABEL = "Bank due ≠ 0";
+
+export const NONZERO_DUES_FILTER_OPTIONS = [
+  DUES_NET_NONZERO_LABEL,
+  DUES_CASH_NONZERO_LABEL,
+  DUES_BANK_NONZERO_LABEL,
+] as const;
+
+export type NonzeroDuesFilterOption = (typeof NONZERO_DUES_FILTER_OPTIONS)[number];
 
 export const EMPTY_WORK_STATUS_LABEL = "Not set";
 
@@ -190,8 +205,8 @@ export const PROJECT_TOTAL_COLUMNS = new Set<string>([
   "Payment with partner",
   "Bank due",
   "CASH DUE FROM CLIENT",
-  "Total Due to MSS",
   "Cash due to MSS",
+  "Total Due to MSS",
   "TOTAL Payment recieved",
 ]);
 
@@ -306,22 +321,26 @@ export function filterRowsByClientName(
     .map((row) => [...row]);
 }
 
-export function isPaymentReceived(row: readonly string[]): boolean {
-  return parseProjectAmount(row[TOTAL_PAYMENT_RECEIVED_COLUMN_INDEX] ?? "") > 0;
-}
-
-export function filterRowsByPaymentReceived(
+export function filterRowsByNonzeroDues(
   rows: readonly (readonly string[])[],
   selected: ReadonlySet<string>,
 ): string[][] {
   if (selected.size === 0) {
-    return [];
+    return rows.map((row) => [...row]);
   }
 
   return rows
     .filter((row) => {
-      const label = isPaymentReceived(row) ? PAYMENT_RECEIVED_LABEL : PAYMENT_NOT_RECEIVED_LABEL;
-      return selected.has(label);
+      if (selected.has(DUES_NET_NONZERO_LABEL) && parseProjectAmount(row[TOTAL_DUE_TO_MSS_COLUMN_INDEX] ?? "") !== 0) {
+        return true;
+      }
+      if (selected.has(DUES_CASH_NONZERO_LABEL) && parseProjectAmount(row[CASH_DUE_TO_MSS_COLUMN_INDEX] ?? "") !== 0) {
+        return true;
+      }
+      if (selected.has(DUES_BANK_NONZERO_LABEL) && parseProjectAmount(row[BANK_DUE_COLUMN_INDEX] ?? "") !== 0) {
+        return true;
+      }
+      return false;
     })
     .map((row) => [...row]);
 }
@@ -461,9 +480,13 @@ export function mapSheetRowToProjectRow(
     sheetCell(headers, row, "Payment with partner"),
     bankDue,
     sheetCell(headers, row, ["CASH DUE FROM CLIENT", "CASH DUE", "Cash due"]),
-    totalDueToMss,
     cashDueToMss,
-    sheetCell(headers, row, ["TOTAL Payment recieved", "TOTAL"]),
+    totalDueToMss,
+    sheetCell(headers, row, [
+      "TOTAL Payment recieved",
+      "TOTAL PAYMENT RECIVED",
+      "TOTAL PAYMENT RECEIVED",
+    ]),
     sheetCell(headers, row, "REMARK"),
   ];
 }

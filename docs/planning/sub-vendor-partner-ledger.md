@@ -38,7 +38,7 @@ Related in-app code today:
 |------------------|------|-----------------------------|-------|
 | `VINOD JI` | Vendor ledger | −3,232 | TBD |
 | `SATYANARAYAN ` (trailing space) | Partner ledger | +1,47,672 | TBD |
-| `Ajay` | Dual: money ledger + per-site commission table | −7,28,500 / side +31,000 | TBD |
+| `Ajay` | Dual: money ledger + Everest Solar Bill | −4,28,500 / +69,179 bills | TBD |
 | `KAVITA` | Partner ledger (shorter) | +47,000 | TBD |
 | `Copy of KAVITA` | Expanded Kavita + site payments | +1,20,000 | TBD |
 | `DILKHS TEJAS POWER` | Vendor ledger (settled) | 0 | TBD |
@@ -70,7 +70,7 @@ Row 2 (headers — typical):
 **Variants:**
 
 - **`SUNNY`**, **`BHARAT BHADWA`**, **`ROHIT JI PHULERA`**: headers are `Date | Particular | CR | DR | Closing Balance | Remark` (CR before DR).
-- **`Ajay`**: left block is money ledger without Particular; right block is site-wise commission (`SR. NO. | SITE NAME | KW | DR | CR | Closing Balance | Remark`).
+- **`Ajay`**: left block is money ledger (Date · DR · CR · Closing · Remark); right block is **EVEREST SOLAR BILL** (DATE · INVOICE NO. · DR · CR · Closing · Remark). Site commission table removed as of 2026-08-09.
 - **`ROHIT G DHAWAS`**: extra far-right column of customer / site names.
 - **`Copy of KAVITA`**: includes site-level 1st/2nd/cash payments mixed into the same DR/CR ledger.
 
@@ -101,8 +101,44 @@ Some cells that look like `DD-MM-YYYY` were Excel-serialized and appear as wrong
 
 ### Ajay
 
-- Left: large CR collections (PP/CASH) → deep negative balance (−7,28,500).
-- Right: 8 named sites × KW commission (~₹1,000/KW) → +31,000.
+Dual layout on tab **`Ajay`** — **two side-by-side tables** (live sheet as of 2026-08-09):
+
+| Block | Columns | Title | Headers | Balance |
+|-------|---------|-------|---------|---------|
+| Left | A–E | Money ledger | Date · DR · CR · Closing Balance · Remark | **−₹4,28,500** |
+| Right | K–P | Everest Solar Bill | DATE · INVOICE NO. · DR · CR · Closing Balance · Remark | **₹69,179** |
+
+**Left — money ledger:** PP / CASH collections from Ajay (CR); MSS payments / NEFT out (DR). Totals in row 1: DR **₹3,60,000** · CR **₹7,88,500** · closing **−₹4,28,500**.
+
+| Date | DR | CR | Closing | Remark |
+|------|-----|-----|---------|--------|
+| 12 Nov 2025 | 10,000 | — | 10,000 | Saroj Devi site — ₹90k return from Arkshakti ₹1L |
+| 14 Mar 2026 | 50,000 | — | 60,000 | Online PhonePe |
+| 27 Apr 2026 | — | 1,05,000 | −45,000 | PP |
+| 19 May 2026 | — | 3,00,000 | −3,45,000 | CASH |
+| 19 May 2026 | — | 1,70,000 | −5,15,000 | PP |
+| 21 May 2026 | — | 1,13,500 | −6,28,500 | PP |
+| 22 May 2026 | — | 50,000 | −6,78,500 | PP |
+| 28 May 2026 | — | 50,000 | −7,28,500 | CASH |
+| **30 Jul 2026** | **3,00,000** | — | **−4,28,500** | **EVEREST BUILD SOLAR NEFT** *(new)* |
+
+**Right — Everest Solar Bill:** MSE invoices (DR only). Eight invoices when read:
+
+| Invoice | Amount | Running |
+|---------|--------|---------|
+| MSE/26-27/0065 | 7,623 | 7,623 |
+| MSE/26-27/0075 | 8,903 | 16,526 |
+| MSE/26-27/0080 | 4,857 | 21,383 |
+| MSE/26-27/0094 | 5,891 | 27,274 |
+| MSE/26-27/0105 | 11,800 | 39,074 |
+| MSE/26-27/0111 | 2,124 | 41,198 |
+| MSE/26-27/0117 | 2,183 | 43,381 |
+| MSE/26-27/0125 | 8,260 | 51,641 |
+| MSE/26-27/0137 | 17,538 | **69,179** |
+
+**Removed:** middle **site commission** block (columns I–O, ~₹1,000/KW per site, was +₹31,000) — no longer on the live tab.
+
+Links to Projects register **`Ajay (everest)`**. Money-ledger rows seeded in `partner-mss-payments.ts` (including Jul 2026 NEFT).
 
 ### KAVITA vs Copy of KAVITA
 

@@ -38,7 +38,8 @@ export function ProjectsSheetTabFilter({
   }
 
   const groups = groupShortcuts(shortcuts);
-  const title = scope === "partner" ? "Partners" : scope === "shripal" ? "Vendor" : "Sheet tabs";
+  const title =
+    scope === "partner" ? "Partners" : scope === "our" ? "Sheet tabs" : "Vendor";
 
   return (
     <div className="projects-sheet-tab-filter no-print" aria-label={title}>
@@ -46,7 +47,7 @@ export function ProjectsSheetTabFilter({
       <div className="projects-sheet-tab-filter-groups">
         {groups.map(([group, groupShortcuts]) => (
           <div key={group} className="projects-sheet-tab-filter-group">
-            {scope === "our" || scope === "shripal" ? (
+            {scope === "our" || scope === "shripal" || scope === "ajay" ? (
               <span className="projects-sheet-tab-filter-group-label">{group}</span>
             ) : null}
             <div className="projects-sheet-tab-filter-chips" role="group" aria-label={`${group} tabs`}>

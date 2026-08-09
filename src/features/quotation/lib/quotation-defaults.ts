@@ -128,11 +128,11 @@ function defaultTerms(): QuotationTermItem[] {
     ),
     term(
       "Warranty Coverage & Limitations",
-      "Warranty Coverage:\n• Panels: 30-year product warranty (manufacturing defects) + 25-year performance warranty\n• Inverter: 10-year manufacturer warranty\n• BOS & Installation: 5-year warranty\n\nWarranty WILL NOT Cover:\n• Damage due to natural disasters (floods, earthquakes, storms, lightning)\n• Theft or vandalism\n• Fire or electrical damage due to external causes\n• Damage due to improper maintenance or cleaning\n• Unauthorized modifications or repairs\n• Damage due to user negligence or misuse\n• Impact damage or structural damage to the roof\n\nWarranty claims are subject to the original equipment manufacturer's terms and conditions.",
+      "Scope of Responsibility & Workmanship Warranty:\n• Mahi Solar Solution's responsibility is limited to the agreed scope of solar system installation.\n• We provide a 5-year workmanship warranty on the mounting structure and installation, along with 5 years of maintenance support for installation-related structural and technical issues from the date of installation.\n\nWarranty Coverage:\n• Panels: 30-year product warranty (manufacturing defects) + 25-year performance warranty\n• Inverter: 10-year manufacturer warranty\n• Batteries (if applicable): Covered under respective manufacturer's warranty terms\n• BOS & Installation: 5-year warranty\n\nManufacturer's Warranty:\n• Solar panels, inverter, batteries (if applicable), and other system components are covered solely under the respective manufacturer's warranty terms and conditions.\n\nNatural Calamities:\n• Any damage caused by storms, floods, lightning, earthquakes, fire, or other natural calamities shall be the sole responsibility of the customer.\n\nWarranty WILL NOT Cover:\n• Burnt, physically damaged, tampered with, stolen (theft), or improperly used products\n• Damage due to natural disasters (floods, earthquakes, storms, lightning)\n• Theft or vandalism\n• Fire or electrical damage due to external causes\n• Damage due to improper maintenance or cleaning\n• Unauthorized modifications or repairs\n• Damage due to user negligence or misuse\n• Impact damage or structural damage to the roof\n\nWarranty claims are subject to the original equipment manufacturer's terms and conditions.",
     ),
     term(
       "Government Subsidy Dependency",
-      "Government subsidy under PM Surya Ghar: Muft Bijli Yojana is subject to:\n• Latest government guidelines and scheme eligibility criteria\n• Approval by concerned government authorities (SECI, state nodal agency)\n• Timely submission of required documents and approvals from DISCOM\n• Beneficiary's eligibility status (residential property, income limits, etc.)\n\nSubsidy amount and approval timeline are beyond Mahi Solar Solution's control. Any delay in subsidy approval will not impact installation work. Subsidy disbursement timeline depends on government processing.",
+      "Government subsidy under PM Surya Ghar: Muft Bijli Yojana is subject to:\n• Latest government guidelines and scheme eligibility criteria\n• Approval by concerned government authorities (SECI, state nodal agency)\n• Timely submission of required documents and approvals from DISCOM\n• Beneficiary's eligibility status (residential property, income limits, etc.)\n\nSubsidy amount and approval timeline are beyond Mahi Solar Solution's control. Any delay in subsidy approval will not impact installation work. Subsidy disbursement timeline depends on government processing.\n\nPayment Terms:\n• Any eligible government subsidy will be credited directly to the customer's registered bank account.\n• The customer must pay the full contract amount (excluding any approved loan amount) to Mahi Solar Solution Private Limited.\n• The subsidy shall not be adjusted against the customer's payment to the seller.",
     ),
     term(
       "Jurisdiction & Dispute Resolution",
@@ -165,6 +165,14 @@ function defaultTerms(): QuotationTermItem[] {
     term(
       "Payment Delay",
       "If the customer fails to make payments as per the agreed schedule, Mahi Solar Solution Private Limited reserves the right to suspend material dispatch, installation work, net metering documentation, or project completion until all outstanding payments are cleared.",
+    ),
+    term(
+      "Final Payment & Price Finality",
+      "No discount or revision of the agreed price will be accepted after completion of the work or at the time of final payment.",
+    ),
+    term(
+      "Delayed Payment & Legal Recovery",
+      "If payment is not received within 21 days of project completion, Mahi Solar Solution Private Limited reserves the right to initiate legal recovery proceedings as permitted under applicable law.",
     ),
   ];
 }

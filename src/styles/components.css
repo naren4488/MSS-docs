@@ -482,6 +482,28 @@
   color: #ffffff;
 }
 
+.mss-sites-scope-note {
+  margin: -8px 0 16px;
+  padding: 12px 16px;
+  border: 1px solid #dbeafe;
+  border-radius: 12px;
+  background: #eff6ff;
+}
+
+.mss-sites-scope-note-title {
+  margin: 0 0 4px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #1e3a8a;
+}
+
+.mss-sites-scope-note-text {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #1e40af;
+}
+
 .mss-sites-clear-filters {
   display: inline-flex;
   align-items: center;
@@ -906,6 +928,10 @@
   flex-shrink: 0;
 }
 
+.mss-analytics-print-meta {
+  display: none;
+}
+
 .mss-sites-analytics {
   padding: 12px 24px 32px;
   display: grid;
@@ -972,6 +998,201 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 12px;
+}
+
+.mss-analytics-hero-card--final {
+  border-color: #818cf8;
+  background: linear-gradient(135deg, #ffffff 0%, #eef2ff 100%);
+  grid-column: 1 / -1;
+}
+
+.mss-analytics-hero--ajay {
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.mss-analytics-hero-card--final .mss-analytics-hero-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mss-analytics-hero-card--final .mss-analytics-hero-value {
+  font-size: 32px;
+}
+
+.mss-analytics-hero-card--client-dues {
+  grid-column: span 2;
+}
+
+.mss-analytics-hero-hint--strong {
+  font-weight: 700;
+  color: #374151;
+}
+
+.mss-analytics-hero-dues-list {
+  margin: 10px 0 0;
+  padding: 10px 0 0;
+  border-top: 1px solid #e5e7eb;
+  display: grid;
+  gap: 8px;
+}
+
+.mss-analytics-hero-dues-list div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.mss-analytics-hero-dues-list dt {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.mss-analytics-hero-dues-list dd {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.mss-analytics-grid--single {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.mss-analytics-ajay-overview {
+  display: grid;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.mss-analytics-ajay-overview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.mss-analytics-ajay-detail-card {
+  padding: 16px 18px;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  background: #f8fafc;
+}
+
+.mss-analytics-ajay-detail-title {
+  margin: 0 0 12px;
+  font-size: 13px;
+  font-weight: 800;
+  color: #14306b;
+}
+
+.mss-analytics-ajay-detail-note {
+  margin: -4px 0 12px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #6b7280;
+}
+
+.mss-analytics-ajay-detail-list {
+  margin: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.mss-analytics-ajay-detail-list div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.mss-analytics-ajay-detail-list dt {
+  margin: 0;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.mss-analytics-ajay-detail-list dd {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: #14306b;
+}
+
+.mss-analytics-ajay-netdue-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.mss-analytics-ajay-netdue-group {
+  padding: 12px;
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+}
+
+.mss-analytics-ajay-netdue-vendor {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 800;
+  color: #14306b;
+}
+
+.mss-analytics-ajay-netdue-group ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+
+.mss-analytics-ajay-netdue-group li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.mss-analytics-ajay-netdue-group strong {
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  color: #14306b;
+}
+
+.mss-analytics-ajay-sum-breakdown {
+  display: grid;
+  gap: 12px;
+}
+
+.mss-analytics-ajay-sum-row th,
+.mss-analytics-ajay-sum-row td {
+  background: #eef2ff;
+}
+
+.mss-analytics-status-by-vendor {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+}
+
+.mss-analytics-status-vendor-card {
+  padding: 14px 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  background: #ffffff;
+}
+
+.mss-analytics-status-vendor-title {
+  margin: 0 0 10px;
+  font-size: 12px;
+  font-weight: 800;
+  color: #14306b;
 }
 
 .mss-analytics-hero-card {
@@ -1465,6 +1686,194 @@
 
 .mss-sites-analytics-table tbody tr:hover td {
   background: #eef2ff;
+}
+
+.mss-analytics-info-banner {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 14px 16px;
+  border: 1px solid #dbeafe;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #eff6ff 0%, #f8fafc 100%);
+}
+
+.mss-analytics-info-banner-icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: #2563eb;
+}
+
+.mss-analytics-info-banner-title {
+  margin: 0 0 4px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #1e3a8a;
+}
+
+.mss-analytics-info-banner-text {
+  font-size: 13px;
+  line-height: 1.55;
+  color: #1e40af;
+}
+
+.mss-analytics-status-breakdown {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.mss-analytics-status-breakdown-title {
+  margin: 0 0 10px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  color: #6b7280;
+}
+
+.mss-analytics-status-breakdown-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mss-analytics-status-breakdown-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+.mss-analytics-status-breakdown-label {
+  font-size: 13px;
+  color: #374151;
+}
+
+.mss-analytics-status-breakdown-count {
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: #14306b;
+}
+
+.mss-sites-analytics-panel--full {
+  grid-column: 1 / -1;
+}
+
+.mss-analytics-dual-ledgers {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 16px;
+}
+
+.mss-subvendor-ledger-panel {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+.mss-subvendor-ledger-header {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.mss-subvendor-ledger-header-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.mss-subvendor-ledger-header-icon--money {
+  color: #1d4ed8;
+  background: #dbeafe;
+}
+
+.mss-subvendor-ledger-header-icon--bills {
+  color: #b45309;
+  background: #fef3c7;
+}
+
+.mss-subvendor-ledger-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+  color: #14306b;
+}
+
+.mss-subvendor-ledger-subtitle {
+  margin: 4px 0 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #6b7280;
+}
+
+.mss-subvendor-ledger-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+}
+
+.mss-subvendor-ledger-summary-item {
+  padding: 10px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #f8fafc;
+}
+
+.mss-subvendor-ledger-summary-label {
+  margin: 0 0 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  color: #6b7280;
+}
+
+.mss-subvendor-ledger-summary-value {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: #14306b;
+}
+
+.mss-subvendor-ledger-summary-value--emphasis {
+  color: #1d4ed8;
+}
+
+.mss-subvendor-ledger-note {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #6b7280;
+}
+
+.mss-subvendor-ledger-remark,
+.mss-subvendor-ledger-invoice {
+  font-size: 13px;
+  color: #374151;
+}
+
+.mss-subvendor-ledger-table tfoot th,
+.mss-subvendor-ledger-table tfoot td {
+  font-weight: 700;
+  background: #f8fafc;
 }
 
 .mss-sites-table-wrap {

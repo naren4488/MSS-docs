@@ -9,13 +9,34 @@ export const PROJECTS_SPREADSHEET_ID = "1fe4vitjQwMhw92QltKECwBylbJ8ORWK3TsaI654
 
 export const DEC_TO_FEB_SPREADSHEET_ID = "1tkNFHBLjpOZkzayqObWO1VMYkGsD5uy-wrXaBcqHglE";
 
+export const SUB_VENDOR_PAYMENT_SPREADSHEET_ID = "1UrgNeqxEpifcFroxnLU7U4Xah23Li5Hw";
+
+/** Sub Vendor Payment workbook — `Ajay` tab dual ledgers (see docs/planning/ui-ajay-sites.md). */
+export const AJAY_SUB_VENDOR_LEDGER = {
+  sheetTab: "Ajay",
+  tables: [
+    {
+      id: "money",
+      title: "Money ledger",
+      columnRange: "A–E",
+      headerBalance: -428_500,
+    },
+    {
+      id: "everest-bills",
+      title: "Everest Solar Bill",
+      columnRange: "K–P",
+      headerBalance: 69_179,
+    },
+  ],
+} as const;
+
 export const PROJECT_VENDORS = {
   MSS: "MSS",
   ARKSHAKTI: "Arkshakti",
 } as const;
 
 /** Top-level Projects page scopes. */
-export type ProjectsScope = "our" | "partner" | "shripal";
+export type ProjectsScope = "our" | "partner" | "shripal" | "ajay";
 
 /**
  * Sheet tab / PROJECT TYPE values that belong on **Our projects**.
@@ -29,12 +50,21 @@ export const SHRIPAL_PROJECT_TYPES = ["SHRIPAL JI"] as const;
 
 export const SHRIPAL_PROJECT_TYPE_SET = new Set<string>(SHRIPAL_PROJECT_TYPES);
 
+/** Ajay Ji has its own top-level tab (MSS + Arkshakti `Ajay (everest)` registers). */
+export const AJAY_PROJECT_TYPES = ["Ajay (everest)"] as const;
+
+export const AJAY_PROJECT_TYPE_SET = new Set<string>(AJAY_PROJECT_TYPES);
+
 export function isOurProjectType(projectType: string): boolean {
   return OUR_PROJECT_TYPE_SET.has(projectType.trim());
 }
 
 export function isShripalProjectType(projectType: string): boolean {
   return SHRIPAL_PROJECT_TYPE_SET.has(projectType.trim());
+}
+
+export function isAjayProjectType(projectType: string): boolean {
+  return AJAY_PROJECT_TYPE_SET.has(projectType.trim());
 }
 
 export function getProjectsScopeForProjectType(projectType: string): ProjectsScope {
@@ -44,6 +74,9 @@ export function getProjectsScopeForProjectType(projectType: string): ProjectsSco
   }
   if (isShripalProjectType(trimmed)) {
     return "shripal";
+  }
+  if (isAjayProjectType(trimmed)) {
+    return "ajay";
   }
   return "partner";
 }
@@ -149,13 +182,18 @@ function partnerSlug(projectType: string) {
     .replace(/^-|-$/g, "");
 }
 
-/** Unique partner register names in workbook order (MSS first, then Arkshakti-only). Excludes Our + Shripal. */
+/** Unique partner register names in workbook order (MSS first, then Arkshakti-only). Excludes Our + Shripal + Ajay. */
 function buildPartnerSheetTabShortcuts(): ProjectSheetTabShortcut[] {
   const seen = new Set<string>();
   const shortcuts: ProjectSheetTabShortcut[] = [];
 
   for (const tab of [...PROJECT_SHEET_TABS, ...ARKSHAKTI_SHEET_TABS]) {
-    if (isOurProjectType(tab.projectType) || isShripalProjectType(tab.projectType) || seen.has(tab.projectType)) {
+    if (
+      isOurProjectType(tab.projectType) ||
+      isShripalProjectType(tab.projectType) ||
+      isAjayProjectType(tab.projectType) ||
+      seen.has(tab.projectType)
+    ) {
       continue;
     }
     seen.add(tab.projectType);
@@ -202,9 +240,30 @@ const SHRIPAL_SHEET_TAB_SHORTCUTS: readonly ProjectSheetTabShortcut[] = [
   },
 ];
 
+/** Ajay sites — vendor chips (same PROJECT TYPE on MSS + Arkshakti workbooks). */
+const AJAY_SHEET_TAB_SHORTCUTS: readonly ProjectSheetTabShortcut[] = [
+  {
+    id: "mss-ajay",
+    label: "MSS",
+    vendor: PROJECT_VENDORS.MSS,
+    projectType: "Ajay (everest)",
+    group: "Vendor",
+    scope: "ajay",
+  },
+  {
+    id: "arkshakti-ajay",
+    label: "Arkshakti",
+    vendor: PROJECT_VENDORS.ARKSHAKTI,
+    projectType: "Ajay (everest)",
+    group: "Vendor",
+    scope: "ajay",
+  },
+];
+
 export const PROJECT_SHEET_TAB_SHORTCUTS: readonly ProjectSheetTabShortcut[] = [
   ...OUR_SHEET_TAB_SHORTCUTS,
   ...SHRIPAL_SHEET_TAB_SHORTCUTS,
+  ...AJAY_SHEET_TAB_SHORTCUTS,
   ...buildPartnerSheetTabShortcuts(),
 ];
 

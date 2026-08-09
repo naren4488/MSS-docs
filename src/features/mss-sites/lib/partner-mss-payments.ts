@@ -265,6 +265,13 @@ export const PARTNER_LEDGER_TRANSACTIONS: readonly PartnerLedgerTransaction[] = 
     amount: 10_000,
     date: "12-11-2025",
   },
+  {
+    projectType: "Ajay (everest)",
+    direction: "mss_to_partner",
+    amount: 300_000,
+    date: "30-07-2026",
+    note: "EVEREST BUILD SOLAR NEFT",
+  },
 ];
 
 function sumByDirection(projectTypes: readonly string[], direction: PartnerLedgerDirection): number {
