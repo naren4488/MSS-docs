@@ -1020,8 +1020,103 @@
   font-size: 32px;
 }
 
-.mss-analytics-hero-card--client-dues {
-  grid-column: span 2;
+.mss-analytics-hero-card--partner-deal {
+  grid-column: 1 / -1;
+  border-color: #93c5fd;
+  background: linear-gradient(135deg, #ffffff 0%, #eff6ff 100%);
+}
+
+.mss-analytics-deal-equation {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto 1fr;
+  gap: 10px;
+  align-items: stretch;
+  margin-top: 14px;
+}
+
+.mss-analytics-deal-equation--compact {
+  margin-top: 12px;
+}
+
+.mss-analytics-deal-equation-term {
+  display: grid;
+  gap: 6px;
+  padding: 12px 14px;
+  border: 1px solid #dbeafe;
+  border-radius: 12px;
+  background: #ffffff;
+  min-width: 0;
+}
+
+.mss-analytics-deal-equation-term--result {
+  border-width: 1.5px;
+}
+
+.mss-analytics-deal-equation-term--credit {
+  border-color: #86efac;
+  background: #f0fdf4;
+}
+
+.mss-analytics-deal-equation-term--debit {
+  border-color: #fca5a5;
+  background: #fef2f2;
+}
+
+.mss-analytics-deal-equation-term--settled {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+}
+
+.mss-analytics-deal-equation-label {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.mss-analytics-deal-equation-value {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: #0f172a;
+  line-height: 1.2;
+  word-break: break-word;
+}
+
+.mss-analytics-deal-equation-op {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 700;
+  color: #64748b;
+  padding-top: 8px;
+}
+
+.mss-analytics-deal-overview-card {
+  background: linear-gradient(180deg, #f8fafc 0%, #eff6ff 100%);
+  border-color: #bfdbfe;
+}
+
+.mss-analytics-deal-overview-meta {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid #dbeafe;
+}
+
+@media (max-width: 900px) {
+  .mss-analytics-deal-equation {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .mss-analytics-deal-equation-op {
+    padding: 0;
+    font-size: 18px;
+  }
 }
 
 .mss-analytics-hero-hint--strong {
@@ -1772,6 +1867,11 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
   gap: 16px;
+}
+
+.mss-analytics-dual-ledgers--single {
+  grid-template-columns: minmax(0, 1fr);
+  max-width: 920px;
 }
 
 .mss-subvendor-ledger-panel {

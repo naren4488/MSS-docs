@@ -49,7 +49,8 @@ export function MssSitesPage() {
     await document.fonts.ready;
     await new Promise((resolve) => window.setTimeout(resolve, 200));
     const previousTitle = document.title;
-    document.title = "Our projects — Analytics";
+    document.title =
+      scope === "shripal" ? "Shripal sites — Analytics" : "Our projects — Analytics";
     const cleanupPrint = prepareMssSitesAnalyticsPrint();
     const cleanup = () => {
       cleanupPrint();
@@ -127,7 +128,7 @@ export function MssSitesPage() {
               Save as PDF
             </button>
           ) : null}
-          {viewMode === "analytics" && scope === "our" ? (
+          {viewMode === "analytics" && (scope === "our" || scope === "shripal" || scope === "partner") ? (
             <button
               className="primary-button"
               type="button"

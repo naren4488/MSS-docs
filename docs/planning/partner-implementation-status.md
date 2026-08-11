@@ -58,13 +58,24 @@ Related docs:
 
 **Scope:** `Shripal sites` tab · see [`ui-shripal-sites.md`](./ui-shripal-sites.md)
 
-### Done
+### Done (codebase — current requirement)
 
-- (No dedicated analytics rework like Ajay / Our yet — standard partner-style analytics after global deal/dues removal.)
+| Area | Status | Notes |
+|------|--------|-------|
+| Top-level **Shripal sites** tab | ✅ | Scope `shripal`; excluded from Partner chips |
+| Vendor chips | ✅ | MSS + Arkshakti shortcuts |
+| **Analytics (Our-style)** | ✅ | Sites, net due by vendor, payments, due-from-clients card |
+| **Extra: client deal vs Deal with MSS** | ✅ | Final deal, Deal with MSS, partner profit on hero + overview |
+| **Extra: Payment with partner** | ✅ | Hero card + dues/overview tables |
+| **Download analytics** | ✅ | Full-page PDF (same path as Our) |
 
 ### Pending
 
-- _(Add items here when Shripal-specific requirements come up.)_
+| Item | Status | Notes |
+|------|--------|-------|
+| Loan ledger linkage | ⏳ Optional | See [`loans-ledgers.md`](./loans-ledgers.md) — not wired into analytics yet |
+
+**Verdict:** Current Shripal analytics requirement is **done**.
 
 ---
 
@@ -72,13 +83,32 @@ Related docs:
 
 **Scope:** All partner tabs except Our / Shripal / Ajay · see [`ui-partner-projects.md`](./ui-partner-projects.md)
 
-### Done
+### Done (codebase — current requirement)
 
-- Partner ledger + by-partner analytics (unchanged scope; deal/dues sections removed globally).
+| Area | Status | Notes |
+|------|--------|-------|
+| Partner ledger + by-partner tables | ✅ / ❌ | By-partner receivable table kept; unified Partner ledger **removed** (Sub Vendor ledger instead) |
+| **Analytics (Our/Shripal-style)** | ✅ | Sites, net due by vendor, payments, due-from-clients, deal vs MSS, payment with partner, **final sum** |
+| **Satyanarayan Sub Vendor ledger** | ✅ | Tab `SATYANARAYAN ` · closing **₹1,63,372** · UI in Partner analytics |
+| Partner money seed (Satyanarayan) | ✅ | Full DR PAYMENT / cable / margin / petrol rows in `partner-mss-payments.ts` |
+| **Download analytics** | ✅ | Full-page PDF (same path as Our / Shripal) |
+| Rich Partner overview | ✅ | Portfolio snapshot, deal vs MSS, by-partner register table, work status |
+
+**Key code paths**
+
+- `projects-config.ts` — `SATYANARAYAN_SUB_VENDOR_LEDGER`
+- `satyanarayan-sub-vendor-ledger.ts` / `SatyanarayanSubVendorLedger.tsx`
+- `MssSitesAnalytics.tsx` — Partner hero + overview + Satya panel
+- `partner-mss-payments.ts` — Satyanarayan external lines
 
 ### Pending
 
-- _(Add per-partner pending items here, or split into subsections when a partner gets its own scope tab.)_
+| Item | Status | Notes |
+|------|--------|-------|
+| Other Sub Vendor tabs (Kavita, Vinod, …) | ⏳ Optional | Wire when prioritized — see [`sub-vendor-partner-ledger.md`](./sub-vendor-partner-ledger.md) |
+| Own top-level tab for Satyanarayan | ⏳ Optional | Currently stays under Partner aggregate |
+
+**Verdict:** Current Partner analytics + Satyanarayan ledger requirement is **done**.
 
 ---
 
@@ -119,6 +149,8 @@ Related docs:
 
 | Date | Partner | Change |
 |------|---------|--------|
+| 2026-08-09 | Partner | Analytics = Our/Shripal-style + Satyanarayan Sub Vendor ledger; download PDF enabled |
+| 2026-08-09 | Shripal | Analytics = Our layout + Deal with MSS / Payment with partner extras; download PDF enabled |
 | 2026-08-09 | Our | Marked current requirement **done** (analytics, PDF download, dues ≠ 0 filter, column order); chips left optional |
 | 2026-08-09 | Our | Analytics hero + overview for residential/commercial registers |
 | 2026-08-09 | Ajay | Initial status doc: Ajay scope marked **done** per current requirement; **GST billing TBD** logged as only pending item |

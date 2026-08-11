@@ -1,8 +1,8 @@
 # Planning: Sub Vendor Payment & Partner Ledgers
 
 > **Purpose:** Capture sheet structure, product decisions, and pick-lists for the Sub Vendor Payment workbook / partner ledgers.  
-> **Status:** Analysis only — not wired into the app yet.  
-> **Last updated:** 2026-07-29
+> **Status:** Partially wired — **Ajay** + **Satyanarayan** ledgers live in Projects analytics; other tabs still analysis-only.  
+> **Last updated:** 2026-08-09
 
 Keep **this workbook’s** notes here only. Sister planning docs:
 
@@ -28,6 +28,8 @@ Related in-app code today:
 
 - Partner ledger seed: `src/features/mss-sites/lib/partner-mss-payments.ts`
 - Projects sheet config: `src/features/mss-sites/lib/projects-config.ts`
+- Ajay Sub Vendor UI: `ajay-sub-vendor-ledger.ts`, `AjaySubVendorLedgers.tsx` (Ajay sites analytics)
+- Satyanarayan Sub Vendor UI: `satyanarayan-sub-vendor-ledger.ts`, `SatyanarayanSubVendorLedger.tsx` (Partner projects analytics)
 - Projects route: `/projects`
 
 ---
@@ -37,7 +39,7 @@ Related in-app code today:
 | Tab name (exact) | Role | Header balance (as of read) | Keep? |
 |------------------|------|-----------------------------|-------|
 | `VINOD JI` | Vendor ledger | −3,232 | TBD |
-| `SATYANARAYAN ` (trailing space) | Partner ledger | +1,47,672 | TBD |
+| `SATYANARAYAN ` (trailing space) | Partner ledger | **+1,63,372** | ✅ Wired in Partner analytics |
 | `Ajay` | Dual: money ledger + Everest Solar Bill | −4,28,500 / +69,179 bills | TBD |
 | `KAVITA` | Partner ledger (shorter) | +47,000 | TBD |
 | `Copy of KAVITA` | Expanded Kavita + site payments | +1,20,000 | TBD |
@@ -95,9 +97,12 @@ Some cells that look like `DD-MM-YYYY` were Excel-serialized and appear as wrong
 
 ### SATYANARAYAN
 
-- Almost all **PAYMENT** / advance rows; one material line (`10X2 ac cable 20m`).
-- Balance ≈ +1,47,672 (MSS advances outstanding style).
-- Overlaps existing in-app `SATAYNARAYAN JI` ledger naming (spelling differs).
+Tab name **`SATYANARAYAN `** (trailing space). Maps to Projects **`SATAYNARAYAN JI`**.
+
+- Almost all **PAYMENT** / advance rows (DR); one material line (`10X2 ac cable 20m`); margin money + car petrol notes through Jul 2026.
+- Closing balance **₹1,63,372** (live sheet 2026-08-09).
+- **Wired in app:** Partner projects analytics · `SATYANARAYAN_SUB_VENDOR_LEDGER` · `satyanarayan-sub-vendor-ledger.ts`.
+- Spelling differs from Projects register (`SATAYNARAYAN JI`).
 
 ### Ajay
 

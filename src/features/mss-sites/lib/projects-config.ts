@@ -30,6 +30,18 @@ export const AJAY_SUB_VENDOR_LEDGER = {
   ],
 } as const;
 
+/**
+ * Sub Vendor Payment workbook — `SATYANARAYAN ` tab (trailing space in sheet name).
+ * Projects register spelling: `SATAYNARAYAN JI`.
+ */
+export const SATYANARAYAN_SUB_VENDOR_LEDGER = {
+  sheetTab: "SATYANARAYAN ",
+  projectType: "SATAYNARAYAN JI",
+  title: "Satyanarayan money ledger",
+  columnRange: "A–F",
+  headerBalance: 163_372,
+} as const;
+
 export const PROJECT_VENDORS = {
   MSS: "MSS",
   ARKSHAKTI: "Arkshakti",
