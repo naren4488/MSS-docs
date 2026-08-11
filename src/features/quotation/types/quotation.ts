@@ -3,6 +3,8 @@ import type { AgreementCompany } from "@/features/agreement/types/agreement";
 // Reuse the company (letterhead) shape used by the agreement features.
 export type { AgreementCompany as QuotationCompany };
 
+export type QuotationLanguage = "en" | "hi";
+
 export interface QuotationMaterialItem {
   id: string;
   description: string;
@@ -31,6 +33,7 @@ export interface QuotationGeneration {
 }
 
 export interface QuotationData {
+  language: QuotationLanguage;
   title: string;
   tagline: string;
   coverImageUrl: string;

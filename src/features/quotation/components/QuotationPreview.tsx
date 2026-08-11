@@ -21,6 +21,11 @@ import {
 } from "../constants/sheet-layout";
 import type { QuotationData } from "../types/quotation";
 import { filledValue, formatDate } from "../lib/quotation-formatters";
+import {
+  isSolarNetMeterDescription,
+  isSolarPvModulesDescription,
+  quotationLabels,
+} from "../lib/quotation-labels";
 
 interface QuotationPreviewProps {
   data: QuotationData;
@@ -82,6 +87,7 @@ function estimateParagraphHeight(text: string, charsPerLine = 80, lineHeight = 1
 }
 
 function Header({ data }: { data: QuotationData }) {
+  const L = quotationLabels(data.language);
   return (
     <div style={{ background: "#ffffff", textAlign: "center", borderBottom: "2px solid #e5e7eb", padding: "24px 0 18px" }}>
       {data.company.logoUrl ? (
@@ -94,7 +100,7 @@ function Header({ data }: { data: QuotationData }) {
       <div style={{ fontSize: 10, marginTop: 4 }}>
         {[data.company.phone, data.company.email, data.company.website].filter(Boolean).join(" | ") || filledValue("")}
       </div>
-      {data.company.gst ? <div style={{ fontSize: 9.5, marginTop: 4 }}>GST: {data.company.gst}</div> : null}
+      {data.company.gst ? <div style={{ fontSize: 9.5, marginTop: 4 }}>{L.gst}: {data.company.gst}</div> : null}
     </div>
   );
 }
@@ -111,6 +117,7 @@ function Page({
   pageCount: number;
 }) {
   const showHeader = pageIndex === 0 && data.showLetterhead;
+  const L = quotationLabels(data.language);
   return (
     <div
       data-export-page="true"
@@ -134,7 +141,7 @@ function Page({
       <div style={{ ...pageBodyStyle, flex: 1, minHeight: 0, overflow: "hidden", fontSize: 11 }}>{children}</div>
       {data.showPageNumbers ? (
         <div style={{ position: "absolute", right: PAGE_SIDE_PADDING, bottom: 16, fontSize: 10, color: "#6b7280" }}>
-          Page {pageIndex + 1} of {pageCount}
+          {L.pageOf(pageIndex + 1, pageCount)}
         </div>
       ) : null}
     </div>
@@ -142,28 +149,29 @@ function Page({
 }
 
 function SummaryBox({ data }: { data: QuotationData }) {
+  const L = quotationLabels(data.language);
   const rowStyle: CSSProperties = { display: "grid", gridTemplateColumns: "150px 1fr", fontSize: 11.5, padding: "4px 0" };
   const labelStyle: CSSProperties = { fontWeight: 700, color: "#374151" };
   return (
     <div style={{ border: TABLE_BORDER, borderRadius: 8, padding: "10px 14px", margin: "4px 0 14px", background: "#fafbfc" }}>
       <div style={rowStyle}>
-        <span style={labelStyle}>Name of the Customer</span>
+        <span style={labelStyle}>{L.customerName}</span>
         <span>: {filledValue(data.customerName)}</span>
       </div>
       <div style={rowStyle}>
-        <span style={labelStyle}>Customer Phone</span>
+        <span style={labelStyle}>{L.customerPhone}</span>
         <span>: {filledValue(data.customerPhone)}</span>
       </div>
       <div style={rowStyle}>
-        <span style={labelStyle}>Capacity of Power Plant</span>
+        <span style={labelStyle}>{L.capacity}</span>
         <span>: {filledValue(data.capacity)}</span>
       </div>
       <div style={rowStyle}>
-        <span style={labelStyle}>Address</span>
+        <span style={labelStyle}>{L.address}</span>
         <span>: {filledValue(data.address)}</span>
       </div>
       <div style={rowStyle}>
-        <span style={labelStyle}>Date of Proposal</span>
+        <span style={labelStyle}>{L.proposalDate}</span>
         <span>: {data.proposalDate ? formatDate(data.proposalDate) : "___________"}</span>
       </div>
     </div>
@@ -188,22 +196,23 @@ function headerCell(extra?: CSSProperties): CSSProperties {
   return tableCell({ borderTop: TABLE_BORDER, background: NAVY, color: "#ffffff", fontWeight: 700, ...extra });
 }
 
-function MaterialHeader() {
+function MaterialHeader({ data }: { data: QuotationData }) {
+  const L = quotationLabels(data.language);
   return (
     <div style={{ display: "grid", gridTemplateColumns: MATERIAL_GRID }}>
-      <div style={headerCell({ borderLeft: TABLE_BORDER, textAlign: "center" })}>S.No</div>
-      <div style={headerCell()}>Description</div>
-      <div style={headerCell({ textAlign: "center" })}>Qty</div>
-      <div style={headerCell({ textAlign: "center" })}>Unit</div>
-      <div style={headerCell()}>Specification</div>
+      <div style={headerCell({ borderLeft: TABLE_BORDER, textAlign: "center" })}>{L.sno}</div>
+      <div style={headerCell()}>{L.description}</div>
+      <div style={headerCell({ textAlign: "center" })}>{L.qty}</div>
+      <div style={headerCell({ textAlign: "center" })}>{L.unit}</div>
+      <div style={headerCell()}>{L.specification}</div>
     </div>
   );
 }
 
 
 
-function parseWattageFromMaterials(materialItems: any[]): { panels: number; wattage: number } | null {
-  const solarPanelItem = materialItems.find(item => item.description.includes("Solar PV Modules"));
+function parseWattageFromMaterials(materialItems: QuotationData["materialItems"]): { panels: number; wattage: number } | null {
+  const solarPanelItem = materialItems.find((item) => isSolarPvModulesDescription(item.description));
   if (!solarPanelItem) return null;
   
   const qtyMatch = solarPanelItem.qty.match(/\d+/);
@@ -221,14 +230,20 @@ function parseWattageFromMaterials(materialItems: any[]): { panels: number; watt
 }
 
 function WattageInfoBox({ data }: { data: QuotationData }) {
+  const L = quotationLabels(data.language);
   const wattageInfo = parseWattageFromMaterials(data.materialItems);
   if (!wattageInfo) return null;
   
   return (
     <div style={{ padding: "12px 16px", background: "#f0f4f8", border: `1px solid #d0d8e0`, borderRadius: 4, margin: "12px 0" }}>
-      <div style={{ fontSize: 11, fontWeight: 600, color: NAVY, letterSpacing: 0.4 }}>TOTAL SYSTEM WATTAGE</div>
+      <div style={{ fontSize: 11, fontWeight: 600, color: NAVY, letterSpacing: 0.4 }}>{L.totalSystemWattage}</div>
       <div style={{ fontSize: 13, fontWeight: 600, color: NAVY, marginTop: 4 }}>
-        {wattageInfo.panels} Panels × {Math.round(wattageInfo.wattage / wattageInfo.panels)} Wp = {wattageInfo.wattage.toLocaleString()} Watt ({(wattageInfo.wattage / 1000).toFixed(2)} KW)
+        {L.panelsTimes(
+          wattageInfo.panels,
+          Math.round(wattageInfo.wattage / wattageInfo.panels),
+          wattageInfo.wattage.toLocaleString(),
+          (wattageInfo.wattage / 1000).toFixed(2),
+        )}
       </div>
     </div>
   );
@@ -247,12 +262,13 @@ function MaterialRow({ index, data }: { index: number; data: QuotationData }) {
   );
 }
 
-function CommercialHeader() {
+function CommercialHeader({ data }: { data: QuotationData }) {
+  const L = quotationLabels(data.language);
   return (
     <div style={{ display: "grid", gridTemplateColumns: COMMERCIAL_GRID }}>
-      <div style={headerCell({ borderLeft: TABLE_BORDER, textAlign: "center" })}>Sr.</div>
-      <div style={headerCell()}>Parameter</div>
-      <div style={headerCell()}>Offering</div>
+      <div style={headerCell({ borderLeft: TABLE_BORDER, textAlign: "center" })}>{L.sr}</div>
+      <div style={headerCell()}>{L.parameter}</div>
+      <div style={headerCell()}>{L.offering}</div>
     </div>
   );
 }
@@ -269,12 +285,13 @@ function CommercialRow({ index, data }: { index: number; data: QuotationData }) 
 }
 
 function GenerationTable({ data }: { data: QuotationData }) {
+  const L = quotationLabels(data.language);
   const g = data.generation;
   const cols = [
-    { label: "Per Day Generation", value: g.perDay },
-    { label: "Per Month Generation", value: g.perMonth },
-    { label: "Per Year Generation", value: g.perYear },
-    { label: "Saving Per Year", value: g.savingPerYear },
+    { label: L.genPerDay, value: g.perDay },
+    { label: L.genPerMonth, value: g.perMonth },
+    { label: L.genPerYear, value: g.perYear },
+    { label: L.savingPerYear, value: g.savingPerYear },
   ];
   return (
     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr" }}>
@@ -293,6 +310,7 @@ function GenerationTable({ data }: { data: QuotationData }) {
 }
 
 function BankBlock({ data }: { data: QuotationData }) {
+  const L = quotationLabels(data.language);
   const line = (label: string, value: string) =>
     value ? (
       <div style={{ display: "flex", gap: 6, fontSize: 11, padding: "1.5px 0" }}>
@@ -302,26 +320,27 @@ function BankBlock({ data }: { data: QuotationData }) {
     ) : null;
   return (
     <div style={{ border: TABLE_BORDER, borderRadius: 8, padding: "10px 14px", background: "#fafbfc" }}>
-      {line("Name", data.bankAccountName)}
-      {line("Bank", data.bankName)}
-      {line("A/c No.", data.bankAccountNo)}
-      {line("IFSC Code", data.bankIfsc)}
-      {line("GST No.", data.bankGst)}
+      {line(L.bankName, data.bankAccountName)}
+      {line(L.bank, data.bankName)}
+      {line(L.accountNo, data.bankAccountNo)}
+      {line(L.ifsc, data.bankIfsc)}
+      {line(L.gstNo, data.bankGst)}
     </div>
   );
 }
 
 function RepBlock({ data }: { data: QuotationData }) {
+  const L = quotationLabels(data.language);
   return (
     <div style={{ marginTop: 30 }}>
-      <p style={{ margin: "0 0 6px", fontWeight: 600 }}>Represented by:</p>
+      <p style={{ margin: "0 0 6px", fontWeight: 600 }}>{L.representedBy}</p>
       <div style={{ height: 44, borderBottom: "1px solid #111827", width: 240, marginBottom: 8 }} />
       <p style={{ margin: "0 0 2px", fontWeight: 700 }}>
         {filledValue(data.repName)}
         {data.repTitle ? ` (${data.repTitle})` : ""}
       </p>
       {data.repCompany ? <p style={{ margin: "0 0 2px", fontSize: 11 }}>{data.repCompany}</p> : null}
-      {data.repMobiles ? <p style={{ margin: 0, fontSize: 11 }}>Mob. No. {data.repMobiles}</p> : null}
+      {data.repMobiles ? <p style={{ margin: 0, fontSize: 11 }}>{L.mobNo} {data.repMobiles}</p> : null}
     </div>
   );
 }
@@ -359,6 +378,7 @@ function CoverBand({ data }: { data: QuotationData }) {
 }
 
 function WarrantyBadges({ data }: { data: QuotationData }) {
+  const L = quotationLabels(data.language);
   const badge = (years: string, label: string) => (
     <div style={{ textAlign: "center" }}>
       <div
@@ -375,9 +395,9 @@ function WarrantyBadges({ data }: { data: QuotationData }) {
           margin: "0 auto 8px",
         }}
       >
-        <span style={{ fontSize: 10, opacity: 0.9 }}>Up to</span>
+        <span style={{ fontSize: 10, opacity: 0.9 }}>{L.upTo}</span>
         <span style={{ fontSize: 20, fontWeight: 800, lineHeight: 1 }}>{years || "—"}</span>
-        <span style={{ fontSize: 11, fontWeight: 600 }}>Years</span>
+        <span style={{ fontSize: 11, fontWeight: 600 }}>{L.years}</span>
       </div>
       <div style={{ background: NAVY, color: "#ffffff", fontSize: 9.5, fontWeight: 700, letterSpacing: 0.5, padding: "4px 10px", borderRadius: 4, display: "inline-block" }}>
         {label}
@@ -386,55 +406,59 @@ function WarrantyBadges({ data }: { data: QuotationData }) {
   );
   return (
     <div style={{ display: "flex", justifyContent: "center", gap: 24, margin: "10px 0 4px", flexWrap: "wrap" }}>
-      {badge(data.warrantySolarPanelYears, "SOLAR PANEL WARRANTY")}
-      {badge(data.warrantyInverterYears, "INVERTER WARRANTY")}
-      {badge(data.warrantySetupBosYears, "SETUP & BOS WARRANTY")}
+      {badge(data.warrantySolarPanelYears, L.solarPanelWarranty)}
+      {badge(data.warrantyInverterYears, L.inverterWarranty)}
+      {badge(data.warrantySetupBosYears, L.setupBosWarranty)}
     </div>
   );
 }
 
 function EmiFinancingSection({ data }: { data: QuotationData }) {
+  const L = quotationLabels(data.language);
+  const amount = data.emiInfo.uptoLoanAmount || "₹2,00,000";
+  const rate = data.emiInfo.interestRate || (data.language === "hi" ? "~6% प्रति वर्ष" : "~6% per annum");
   return (
     <div style={{ marginTop: 12, marginBottom: 12 }}>
       <div style={{ fontSize: 11, fontWeight: 600, color: "#152036", marginBottom: 10 }}>
-        <span style={{ fontWeight: 700 }}>Government Bank Support Available Under PM Surya Ghar Scheme:</span>
+        <span style={{ fontWeight: 700 }}>{L.emiGovSupport}</span>
       </div>
       <div style={{ fontSize: 11, lineHeight: 1.6, marginBottom: 8 }}>
-        <div>• Loans available up to ₹2,00,000 with <strong>Zero Down Payment</strong></div>
-        <div>• Interest rate: ~6% per annum (subject to bank approval)</div>
+        <div>• {L.emiZeroDown.replace("{amount}", amount)}</div>
+        <div>• {L.emiInterest.replace("{rate}", rate)}</div>
       </div>
       <div style={{ fontSize: 10.5, fontWeight: 600, color: "#152036", marginBottom: 6, marginTop: 10 }}>
-        EMI Examples (Indicative for ₹2,00,000 loan):
+        {L.emiExamples.replace("{amount}", amount)}
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, fontSize: 11 }}>
         <div style={{ padding: 8, background: "#f5f5f5", borderRadius: 4 }}>
-          <div style={{ fontWeight: 600 }}>5-Year Tenure</div>
-          <div style={{ fontSize: 12, fontWeight: 700, color: "#864797" }}>₹3,865/month</div>
+          <div style={{ fontWeight: 600 }}>{L.tenure5}</div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: "#864797" }}>{data.emiInfo.tenure5YearEmi || "₹3,865/month"}</div>
         </div>
         <div style={{ padding: 8, background: "#f5f5f5", borderRadius: 4 }}>
-          <div style={{ fontWeight: 600 }}>7-Year Tenure</div>
-          <div style={{ fontSize: 12, fontWeight: 700, color: "#864797" }}>₹2,790/month</div>
+          <div style={{ fontWeight: 600 }}>{L.tenure7}</div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: "#864797" }}>{data.emiInfo.tenure7YearEmi || "₹2,790/month"}</div>
         </div>
         <div style={{ padding: 8, background: "#f5f5f5", borderRadius: 4, gridColumn: "1 / -1" }}>
-          <div style={{ fontWeight: 600 }}>10-Year Tenure</div>
-          <div style={{ fontSize: 12, fontWeight: 700, color: "#864797" }}>₹1,983/month</div>
+          <div style={{ fontWeight: 600 }}>{L.tenure10}</div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: "#864797" }}>{data.emiInfo.tenure10YearEmi || "₹1,983/month"}</div>
         </div>
       </div>
       <div style={{ fontSize: 9.5, color: "#666", marginTop: 10, fontStyle: "italic" }}>
-        *Rates are indicative and subject to bank approval. Actual EMI may vary based on credit score and bank policy. Contact us for loan documentation and bank details.
+        {L.emiDisclaimer}
       </div>
     </div>
   );
 }
 
 function ComponentWarrantyTable({ data }: { data: QuotationData }) {
+  const L = quotationLabels(data.language);
   const components = [
-    { name: "Solar Panels (Product)", years: "30 Years" },
-    { name: "Solar Panels (Performance)", years: "25 Years" },
-    { name: "Inverter", years: "10 Years" },
-    { name: "Mounting Structure", years: "5 Years" },
-    { name: "Balance of System (BOS)", years: "5 Years" },
-    { name: "Installation & Service", years: "5 Years" },
+    { name: L.solarPanelsProduct, years: L.yearsN(30) },
+    { name: L.solarPanelsPerformance, years: L.yearsN(25) },
+    { name: L.inverter, years: L.yearsN(10) },
+    { name: L.mountingStructure, years: L.yearsN(5) },
+    { name: L.bos, years: L.yearsN(5) },
+    { name: L.installationService, years: L.yearsN(5) },
   ];
 
   const GRID = "2fr 1fr";
@@ -444,8 +468,8 @@ function ComponentWarrantyTable({ data }: { data: QuotationData }) {
   return (
     <div style={{ marginTop: 12, marginBottom: 12 }}>
       <div style={{ display: "grid", gridTemplateColumns: GRID }}>
-        <div style={headerStyle}>Component</div>
-        <div style={{ ...headerStyle, textAlign: "center", borderRight: "none" }}>Warranty Period</div>
+        <div style={headerStyle}>{L.component}</div>
+        <div style={{ ...headerStyle, textAlign: "center", borderRight: "none" }}>{L.warrantyPeriod}</div>
       </div>
       {components.map((comp, idx) => (
         <div key={idx} style={{ display: "grid", gridTemplateColumns: GRID }}>
@@ -458,34 +482,17 @@ function ComponentWarrantyTable({ data }: { data: QuotationData }) {
 }
 
 function IncludedExcludedMatrix({ data }: { data: QuotationData }) {
+  const L = quotationLabels(data.language);
   const GRID = "1fr 1fr";
   const headerStyle: CSSProperties = { padding: "8px 10px", fontWeight: 700, background: "#14306b", color: "#ffffff", fontSize: 11, borderRight: TABLE_BORDER };
-
-  const items = {
-    included: [
-      "Material & manufacturing defects",
-      "Inverter malfunction",
-      "Structure integrity issues",
-      "Free maintenance checks (5 years)",
-      "Generation performance monitoring",
-    ],
-    excluded: [
-      "Panel cleaning (customer responsibility)",
-      "External damage (accidents, vandalism)",
-      "Natural disasters",
-      "Unauthorized modifications",
-      "Negligence or misuse",
-    ],
-  };
 
   return (
     <div style={{ marginTop: 12, marginBottom: 12 }}>
       <div style={{ display: "grid", gridTemplateColumns: GRID, gap: 12 }}>
-        {/* INCLUDED */}
         <div>
-          <div style={{ ...headerStyle, borderRight: "none", textAlign: "center", borderRadius: "4px 4px 0 0" }}>✓ WHAT'S INCLUDED</div>
+          <div style={{ ...headerStyle, borderRight: "none", textAlign: "center", borderRadius: "4px 4px 0 0" }}>{L.includedHeader}</div>
           <div>
-            {items.included.map((item, idx) => (
+            {L.includedItems.map((item, idx) => (
               <div key={idx} style={{ padding: "6px 10px", fontSize: 10.5, borderBottom: TABLE_BORDER, lineHeight: 1.4 }}>
                 • {item}
               </div>
@@ -493,11 +500,10 @@ function IncludedExcludedMatrix({ data }: { data: QuotationData }) {
           </div>
         </div>
 
-        {/* EXCLUDED */}
         <div>
-          <div style={{ ...headerStyle, borderRight: "none", textAlign: "center", borderRadius: "4px 4px 0 0" }}>✗ WHAT'S NOT INCLUDED</div>
+          <div style={{ ...headerStyle, borderRight: "none", textAlign: "center", borderRadius: "4px 4px 0 0" }}>{L.excludedHeader}</div>
           <div>
-            {items.excluded.map((item, idx) => (
+            {L.excludedItems.map((item, idx) => (
               <div key={idx} style={{ padding: "6px 10px", fontSize: 10.5, borderBottom: TABLE_BORDER, lineHeight: 1.4 }}>
                 • {item}
               </div>
@@ -509,50 +515,48 @@ function IncludedExcludedMatrix({ data }: { data: QuotationData }) {
   );
 }
 
-function WarrantyAfterPeriodBox() {
+function WarrantyAfterPeriodBox({ data }: { data: QuotationData }) {
+  const L = quotationLabels(data.language);
   return (
     <div style={{ marginTop: 12, marginBottom: 12, padding: "10px 12px", background: "#fff3cd", borderRadius: 4 }}>
-      <div style={{ fontWeight: 700, fontSize: 11, color: "#333", marginBottom: 6 }}>💰 After 5-Year Free Period:</div>
+      <div style={{ fontWeight: 700, fontSize: 11, color: "#333", marginBottom: 6 }}>{L.afterFreePeriod}</div>
       <div style={{ fontSize: 10.5, color: "#555", lineHeight: 1.5 }}>
-        Optional maintenance packages available at competitive rates | Annual service check-ups recommended | Emergency repairs on paid call-out basis
+        {L.afterFreePeriodBody}
       </div>
     </div>
   );
 }
 
 function MaintenanceServiceSection({ data }: { data: QuotationData }) {
+  const L = quotationLabels(data.language);
   return (
     <div style={{ marginTop: 12, marginBottom: 12 }}>
       <div style={{ fontSize: 11, fontWeight: 700, color: "#152036", marginBottom: 10 }}>
-        5 YEARS FREE MAINTENANCE CHECKS ({data.maintenanceFrequency} inspections)
+        {L.freeMaintenanceTitle(data.maintenanceFrequency)}
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-        {/* INCLUDED */}
         <div>
-          <div style={{ fontWeight: 700, fontSize: 10.5, color: "#27ae60", marginBottom: 6 }}>✓ Included:</div>
+          <div style={{ fontWeight: 700, fontSize: 10.5, color: "#27ae60", marginBottom: 6 }}>{L.maintenanceIncluded}</div>
           <div style={{ fontSize: 10.5, lineHeight: 1.6 }}>
-            <div>• Structure inspection</div>
-            <div>• Electrical safety verification</div>
-            <div>• Generation performance analysis</div>
-            <div>• System monitoring & diagnostics</div>
-            <div>• Minor adjustments if needed</div>
+            {L.maintenanceIncludedItems.map((item) => (
+              <div key={item}>• {item}</div>
+            ))}
           </div>
         </div>
 
-        {/* NOT INCLUDED */}
         <div>
-          <div style={{ fontWeight: 700, fontSize: 10.5, color: "#e74c3c", marginBottom: 6 }}>✗ Not Included:</div>
+          <div style={{ fontWeight: 700, fontSize: 10.5, color: "#e74c3c", marginBottom: 6 }}>{L.maintenanceNotIncluded}</div>
           <div style={{ fontSize: 10.5, lineHeight: 1.6 }}>
-            <div>• Panel cleaning (customer to clean monthly)</div>
-            <div>• Part replacements</div>
-            <div>• External damage repairs</div>
+            {L.maintenanceExcludedItems.map((item) => (
+              <div key={item}>• {item}</div>
+            ))}
           </div>
         </div>
       </div>
 
       <div style={{ marginTop: 12, padding: "10px 12px", background: "#e3f2fd", borderRadius: 4 }}>
-        <div style={{ fontWeight: 700, fontSize: 10.5, color: "#1565c0" }}>After Year 5:</div>
+        <div style={{ fontWeight: 700, fontSize: 10.5, color: "#1565c0" }}>{L.afterYear5}</div>
         <div style={{ fontSize: 10.5, color: "#555", marginTop: 4 }}>{data.maintenanceAfterYears}</div>
       </div>
     </div>
@@ -560,6 +564,7 @@ function MaintenanceServiceSection({ data }: { data: QuotationData }) {
 }
 
 function EffectiveInvestmentBox({ data }: { data: QuotationData }) {
+  const L = quotationLabels(data.language);
   const hasSubsidy = data.projectAmount.trim() || data.centralSubsidy.trim() || data.stateSubsidy.trim() || data.effectivePayableAmount.trim();
   if (!hasSubsidy) return null;
 
@@ -570,12 +575,12 @@ function EffectiveInvestmentBox({ data }: { data: QuotationData }) {
   return (
     <div style={{ border: `3px solid ${GREEN}`, borderRadius: 12, padding: "20px 24px", background: LIGHT_GREEN, marginTop: 12, marginBottom: 12 }}>
       <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: GREEN, marginBottom: 16, textAlign: "left" }}>
-        YOUR EFFECTIVE INVESTMENT AFTER SUBSIDY
+        {L.effectiveInvestment}
       </div>
 
       {data.projectAmount.trim() && (
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", alignItems: "center", padding: "8px 0", fontSize: 12, color: GREEN }}>
-          <span style={{ fontWeight: 600 }}>Project amount (incl. GST)</span>
+          <span style={{ fontWeight: 600 }}>{L.projectAmount}</span>
           <span style={{ textAlign: "right", fontWeight: 700 }}>₹{data.projectAmount}</span>
         </div>
       )}
@@ -583,7 +588,7 @@ function EffectiveInvestmentBox({ data }: { data: QuotationData }) {
       {(data.centralSubsidy.trim() || data.stateSubsidy.trim()) && (
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", alignItems: "center", padding: "8px 0", fontSize: 12, color: GREEN, marginBottom: 8 }}>
           <span style={{ fontWeight: 600 }}>
-            Less total Govt. subsidy
+            {L.lessSubsidy}
             {(data.centralSubsidy.trim() || data.stateSubsidy.trim()) && (
               <span style={{ fontSize: 11, fontWeight: 500, marginLeft: 4 }}>
                 (₹ {data.centralSubsidy.trim() ? data.centralSubsidy : "0"}
@@ -603,7 +608,7 @@ function EffectiveInvestmentBox({ data }: { data: QuotationData }) {
 
       {data.effectivePayableAmount.trim() && (
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", alignItems: "center", padding: "10px 0", fontSize: 13 }}>
-          <span style={{ fontWeight: 800, color: GREEN }}>Effective payable amount</span>
+          <span style={{ fontWeight: 800, color: GREEN }}>{L.effectivePayable}</span>
           <span style={{ textAlign: "right", fontWeight: 800, fontSize: 14, color: GREEN }}>₹{data.effectivePayableAmount}</span>
         </div>
       )}
@@ -618,6 +623,7 @@ function EffectiveInvestmentBox({ data }: { data: QuotationData }) {
 }
 
 function InstallationProcess({ data }: { data: QuotationData }) {
+  const L = quotationLabels(data.language);
   const steps = data.installationSteps.filter((step) => step.trim());
   return (
     <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "14px 8px", marginTop: 4 }}>
@@ -639,7 +645,7 @@ function InstallationProcess({ data }: { data: QuotationData }) {
             >
               <Icon size={22} color="#ffffff" />
             </div>
-            <div style={{ fontSize: 9, color: "#6b7280", fontWeight: 600 }}>Step {String(index + 1).padStart(2, "0")}</div>
+            <div style={{ fontSize: 9, color: "#6b7280", fontWeight: 600 }}>{L.step(index + 1)}</div>
             <div style={{ fontSize: 10, fontWeight: 700, color: NAVY, lineHeight: 1.3 }}>{step}</div>
           </div>
         );
@@ -672,6 +678,7 @@ function pushBulletList(blocks: PreviewBlock[], keyBase: string, items: string[]
 
 function createBlocks(data: QuotationData): PreviewBlock[] {
   const blocks: PreviewBlock[] = [];
+  const L = quotationLabels(data.language);
 
   blocks.push({
     key: "title",
@@ -699,22 +706,22 @@ function createBlocks(data: QuotationData): PreviewBlock[] {
 
   // Material Description
   if (data.materialItems.length > 0) {
-    pushHeading(blocks, "material-heading", "Material Description");
-    blocks.push({ key: "material-table-header", estimate: 26, keepWithNext: true, node: <MaterialHeader /> });
+    pushHeading(blocks, "material-heading", L.materialDescription);
+    blocks.push({ key: "material-table-header", estimate: 26, keepWithNext: true, node: <MaterialHeader data={data} /> });
     data.materialItems.forEach((item, index) => {
       const tall = Math.max(estimateParagraphHeight(item.make, 34, 14), estimateParagraphHeight(item.description, 26, 14));
       blocks.push({ key: `material-${item.id}`, estimate: 16 + tall, node: <MaterialRow data={data} index={index} /> });
     });
 
     // Add note about net meter provision
-    const hasNetMeterItem = data.materialItems.some(item => item.description.includes("Solar & Net Meter"));
+    const hasNetMeterItem = data.materialItems.some((item) => isSolarNetMeterDescription(item.description));
     if (hasNetMeterItem) {
       blocks.push({
         key: "net-meter-note",
         estimate: 30,
         node: (
           <div style={{ paddingTop: "12px", paddingBottom: "12px", fontSize: "12px", color: "#666", fontStyle: "italic", borderTop: "1px solid #e0e0e0" }}>
-            * Net meter will be provided only if the client doesn't already have a smart meter installed.
+            {L.netMeterNote}
           </div>
         ),
       });
@@ -728,26 +735,26 @@ function createBlocks(data: QuotationData): PreviewBlock[] {
 
   // Installation Work
   if (data.installationWork.some((item) => item.trim())) {
-    pushHeading(blocks, "install-heading", "Installation Work");
+    pushHeading(blocks, "install-heading", L.installationWork);
     pushBulletList(blocks, "install", data.installationWork, false);
   }
 
   // Assumptions
   if (data.assumptions.some((item) => item.trim())) {
-    pushHeading(blocks, "assume-heading", "Assumptions");
+    pushHeading(blocks, "assume-heading", L.assumptions);
     pushBulletList(blocks, "assume", data.assumptions, false);
   }
 
   // Customer Scope
   if (data.customerScope.some((item) => item.trim())) {
-    pushHeading(blocks, "scope-heading", "Customer Scope");
+    pushHeading(blocks, "scope-heading", L.customerScope);
     pushBulletList(blocks, "scope", data.customerScope, false);
   }
 
   // Commercial Offer
   if (data.commercialOffer.length > 0) {
-    pushHeading(blocks, "commercial-heading", "Commercial Offer");
-    blocks.push({ key: "commercial-table-header", estimate: 26, keepWithNext: true, node: <CommercialHeader /> });
+    pushHeading(blocks, "commercial-heading", L.commercialOffer);
+    blocks.push({ key: "commercial-table-header", estimate: 26, keepWithNext: true, node: <CommercialHeader data={data} /> });
     data.commercialOffer.forEach((row, index) => {
       const tall = estimateParagraphHeight(row.offering, 50, 14);
       blocks.push({ key: `commercial-${row.id}`, estimate: 16 + tall, node: <CommercialRow data={data} index={index} /> });
@@ -756,7 +763,7 @@ function createBlocks(data: QuotationData): PreviewBlock[] {
 
   // EMI & Financing Section
   if (data.showEmiSection) {
-    pushHeading(blocks, "emi-heading", "EMI & Financing Options");
+    pushHeading(blocks, "emi-heading", L.emiFinancing);
     blocks.push({ key: "emi-section", estimate: 140, node: <EmiFinancingSection data={data} /> });
   }
 
@@ -767,20 +774,20 @@ function createBlocks(data: QuotationData): PreviewBlock[] {
 
   // Component Warranty Table
   if (data.showComponentWarranty) {
-    pushHeading(blocks, "component-warranty-heading", "Component Warranty Breakdown");
+    pushHeading(blocks, "component-warranty-heading", L.componentWarranty);
     blocks.push({ key: "component-warranty-table", estimate: 160, node: <ComponentWarrantyTable data={data} /> });
   }
 
   // What's Included vs Excluded — heading stays with matrix; yellow box moves alone if it won't fit
   if (data.showComponentWarranty) {
-    pushHeading(blocks, "included-excluded-heading", "What's Covered in Your Warranty");
+    pushHeading(blocks, "included-excluded-heading", L.whatsCovered);
     blocks.push({ key: "included-excluded-matrix", estimate: 180, node: <IncludedExcludedMatrix data={data} /> });
-    blocks.push({ key: "warranty-after-period", estimate: 72, node: <WarrantyAfterPeriodBox /> });
+    blocks.push({ key: "warranty-after-period", estimate: 72, node: <WarrantyAfterPeriodBox data={data} /> });
   }
 
   // Manufacturing Defect Warranty
   if (data.warrantyText.trim()) {
-    pushHeading(blocks, "warranty-heading", "Manufacturing Defect Warranty");
+    pushHeading(blocks, "warranty-heading", L.manufacturingWarranty);
     blocks.push({
       key: "warranty-body",
       estimate: 12 + estimateParagraphHeight(data.warrantyText, 90),
@@ -790,19 +797,19 @@ function createBlocks(data: QuotationData): PreviewBlock[] {
 
   // Warranty Coverage badges
   if (data.showWarrantyBadges) {
-    pushHeading(blocks, "warranty-badges-heading", "Warranty Coverage");
+    pushHeading(blocks, "warranty-badges-heading", L.warrantyCoverage);
     blocks.push({ key: "warranty-badges", estimate: 280, node: <WarrantyBadges data={data} /> });
   }
 
   // Solar Power Generation
   if (data.showGeneration) {
-    pushHeading(blocks, "gen-heading", "Solar Power Generation");
+    pushHeading(blocks, "gen-heading", L.solarGeneration);
     blocks.push({ key: "gen-table", estimate: 52, node: <GenerationTable data={data} /> });
   }
 
   // Installation Process diagram
   if (data.showInstallationProcess && data.installationSteps.some((step) => step.trim())) {
-    pushHeading(blocks, "install-process-heading", "Installation Process");
+    pushHeading(blocks, "install-process-heading", L.installationProcess);
     const stepCount = data.installationSteps.filter((step) => step.trim()).length;
     blocks.push({
       key: "install-process",
@@ -838,19 +845,19 @@ function createBlocks(data: QuotationData): PreviewBlock[] {
 
   // Required Documents for Subsidy
   if (data.subsidyDocuments.some((item) => item.trim())) {
-    pushHeading(blocks, "docs-heading", "Required Documents for Subsidy");
+    pushHeading(blocks, "docs-heading", L.subsidyDocuments);
     pushBulletList(blocks, "docs", data.subsidyDocuments, true);
   }
 
   // Bank Details
   if ([data.bankAccountName, data.bankName, data.bankAccountNo, data.bankIfsc, data.bankGst].some((value) => value.trim())) {
-    pushHeading(blocks, "bank-heading", "Bank Details");
+    pushHeading(blocks, "bank-heading", L.bankDetails);
     blocks.push({ key: "bank-block", estimate: 120, node: <BankBlock data={data} /> });
   }
 
   // Terms & Conditions (MOVED TO END)
   if (data.terms.some((term) => term.label.trim() || term.text.trim())) {
-    pushHeading(blocks, "terms-heading", "Terms & Conditions");
+    pushHeading(blocks, "terms-heading", L.termsConditions);
     data.terms.forEach((term, index) => {
       if (!term.label.trim() && !term.text.trim()) return;
       blocks.push({
@@ -876,27 +883,25 @@ function createBlocks(data: QuotationData): PreviewBlock[] {
     node: (
       <div style={{ marginTop: 40 }}>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 60, fontSize: 11 }}>
-          {/* Client Signature */}
           <div>
             <div style={{ marginBottom: 40 }}>
               <div style={{ height: 40, borderBottom: "1px solid #111827", marginBottom: 8 }} />
-              <div style={{ fontWeight: 700 }}>Client Signature</div>
-              <div style={{ fontSize: 10, color: "#666666" }}>Date: _________________</div>
+              <div style={{ fontWeight: 700 }}>{L.clientSignature}</div>
+              <div style={{ fontSize: 10, color: "#666666" }}>{L.date}: _________________</div>
             </div>
             <div>
               <div style={{ fontWeight: 600, marginBottom: 4 }}>{filledValue(data.customerName || "")}</div>
               {data.customerPhone ? (
-                <div style={{ fontSize: 10, color: "#666666" }}>Mob. {data.customerPhone}</div>
+                <div style={{ fontSize: 10, color: "#666666" }}>{L.mob} {data.customerPhone}</div>
               ) : null}
             </div>
           </div>
 
-          {/* Company Representative Signature */}
           <div>
             <div style={{ marginBottom: 40 }}>
               <div style={{ height: 40, borderBottom: "1px solid #111827", marginBottom: 8 }} />
-              <div style={{ fontWeight: 700 }}>Authorized Signatory</div>
-              <div style={{ fontSize: 10, color: "#666666" }}>Date: _________________</div>
+              <div style={{ fontWeight: 700 }}>{L.authorizedSignatory}</div>
+              <div style={{ fontSize: 10, color: "#666666" }}>{L.date}: _________________</div>
             </div>
             <div>
               <div style={{ fontWeight: 600, marginBottom: 4 }}>{filledValue(data.repName || "")}</div>
@@ -907,11 +912,6 @@ function createBlocks(data: QuotationData): PreviewBlock[] {
       </div>
     ),
   });
-
-  // Represented by (REMOVED - moved to signature block)
-  // if ([data.repName, data.repCompany, data.repMobiles].some((value) => value.trim())) {
-  //   blocks.push({ key: "rep-block", estimate: 120, node: <RepBlock data={data} /> });
-  // }
 
   return blocks;
 }

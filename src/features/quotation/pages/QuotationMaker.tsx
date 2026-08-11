@@ -1,10 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { Languages } from "lucide-react";
 import { useBeforeUnload, useNavigate, useParams } from "react-router-dom";
 import { MakerStickyTopbar } from "@/components/MakerStickyTopbar";
 import { QuotationEditor } from "../components/QuotationEditor";
 import { QuotationPreview } from "../components/QuotationPreview";
 import { SaveQuotationDialog } from "../components/SaveQuotationDialog";
-import { createDefaultQuotationData, normalizeQuotationData } from "../lib/quotation-defaults";
+import {
+  createDefaultQuotationData,
+  normalizeQuotationData,
+  switchQuotationLanguage,
+} from "../lib/quotation-defaults";
 import {
   clearQuotationDraft,
   getQuotation,
@@ -12,7 +17,7 @@ import {
   saveQuotationDraft,
   saveQuotationRecord,
 } from "../lib/quotation-storage";
-import type { QuotationData } from "../types/quotation";
+import type { QuotationData, QuotationLanguage } from "../types/quotation";
 
 function cloneData(data: QuotationData) {
   return JSON.parse(JSON.stringify(data)) as QuotationData;
@@ -104,7 +109,21 @@ export function QuotationMaker() {
     if (!window.confirm("Reset the form to default values? Any unsaved edits will be lost.")) {
       return;
     }
-    setData(createDefaultQuotationData());
+    setData(createDefaultQuotationData(data.language));
+  }
+
+  function handleLanguageChange(next: QuotationLanguage) {
+    if (next === data.language) return;
+    if (
+      !window.confirm(
+        next === "hi"
+          ? "Switch to Hindi? Template text will be replaced with the Hindi version. Your filled-in details (customer, amounts, company, bank) will be preserved, but any custom edits to materials, terms, and notes will be lost."
+          : "Switch to English? Template text will be replaced with the English version. Your filled-in details will be preserved, but any custom edits to materials, terms, and notes will be lost.",
+      )
+    ) {
+      return;
+    }
+    setData(switchQuotationLanguage(data, next));
   }
 
   const currentRecord = params.id ? getQuotation(params.id) : null;
@@ -120,6 +139,25 @@ export function QuotationMaker() {
         onReset={handleReset}
         onSaveAsPdf={() => void handleSaveAsPdf()}
         onSave={() => setSaveDialogOpen(true)}
+        extraControls={
+          <div className="segmented-control" title="Switch document language">
+            <button
+              className={`segment-button ${data.language === "en" ? "active" : ""}`}
+              type="button"
+              onClick={() => handleLanguageChange("en")}
+            >
+              <Languages size={14} aria-hidden />
+              EN
+            </button>
+            <button
+              className={`segment-button ${data.language === "hi" ? "active" : ""}`}
+              type="button"
+              onClick={() => handleLanguageChange("hi")}
+            >
+              हिं
+            </button>
+          </div>
+        }
       />
 
       <div className={`layout-grid ${viewMode === "editor" ? "editor-only-grid" : viewMode === "preview" ? "preview-only-grid" : ""}`}>

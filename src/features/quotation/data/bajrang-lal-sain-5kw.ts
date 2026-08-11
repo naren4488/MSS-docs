@@ -6,6 +6,7 @@ export const bajrangLalSain5kwQuotation: QuotationRecord = {
   createdAt: "2026-07-17T00:00:00Z",
   updatedAt: "2026-07-17T00:00:00Z",
   content: {
+    language: "en",
     title: "SOLAR PROPOSAL",
     tagline: "SMART  |  SUSTAINABLE  |  COST EFFECTIVE",
     coverImageUrl: "",
