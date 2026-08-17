@@ -78,6 +78,10 @@
   margin-bottom: 16px;
 }
 
+.stack > .upload-card {
+  margin-bottom: 0;
+}
+
 .upload-preview {
   display: flex;
   align-items: center;

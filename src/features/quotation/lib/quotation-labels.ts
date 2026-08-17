@@ -357,6 +357,11 @@ export function isAcCableDescription(description: string) {
   return value.includes("ac cable") || description.includes("AC केबल");
 }
 
+export function isSolarInverterDescription(description: string) {
+  const value = description.toLowerCase();
+  return value.includes("inverter") || description.includes("इनवर्टर");
+}
+
 export function isEarthingWireDescription(description: string) {
   const value = description.toLowerCase();
   return value.includes("earthing wire") || description.includes("अर्थिंग वायर");

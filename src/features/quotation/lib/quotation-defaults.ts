@@ -4,9 +4,11 @@ import type {
   QuotationData,
   QuotationLanguage,
   QuotationMaterialItem,
+  QuotationPhase,
   QuotationTermItem,
 } from "../types/quotation";
 import { stripSyncedCommercialRows } from "./quotation-formatters";
+import { isAcCableDescription, isSolarInverterDescription } from "./quotation-labels";
 
 function uuid() {
   return crypto.randomUUID();
@@ -33,13 +35,56 @@ function material(description: string, qty: string, unit: string, make: string):
   return { id: uuid(), description, qty, unit, make };
 }
 
-function defaultMaterialItems(language: QuotationLanguage): QuotationMaterialItem[] {
+export function acCableMake(phase: QuotationPhase, language: QuotationLanguage): string {
+  if (language === "hi") {
+    return phase === "3PH"
+      ? "4 कोर 10 मिमी एल्युमिनियम आर्मर्ड केबल (3PH)"
+      : "2 कोर 10 मिमी एल्युमिनियम आर्मर्ड केबल (1PH)";
+  }
+  return phase === "3PH"
+    ? "4 Core 10 mm Aluminium Armoured Cable (3PH)"
+    : "2 Core 10 mm Aluminium Armoured Cable (1PH)";
+}
+
+export function inverterUnit(phase: QuotationPhase, language: QuotationLanguage): string {
+  if (language === "hi") {
+    return phase === "3PH" ? "3 फेज" : "1 फेज";
+  }
+  return phase === "3PH" ? "3 Phase" : "1 Phase";
+}
+
+function stripPhaseFromCapacity(capacity: string): string {
+  return capacity.replace(/\s*[13]\s*PH\s*$/i, "").replace(/\s*[13]\s*Phase\s*$/i, "").trim();
+}
+
+export function formatCapacityWithPhase(capacity: string, phase: QuotationPhase): string {
+  const stripped = stripPhaseFromCapacity(capacity);
+  return stripped ? `${stripped} ${phase}` : phase;
+}
+
+export function applyPhaseToMaterialItems(
+  items: QuotationMaterialItem[],
+  phase: QuotationPhase,
+  language: QuotationLanguage,
+): QuotationMaterialItem[] {
+  return items.map((item) => {
+    if (isAcCableDescription(item.description)) {
+      return { ...item, make: acCableMake(phase, language) };
+    }
+    if (isSolarInverterDescription(item.description)) {
+      return { ...item, unit: inverterUnit(phase, language) };
+    }
+    return item;
+  });
+}
+
+function defaultMaterialItems(language: QuotationLanguage, phase: QuotationPhase = "1PH"): QuotationMaterialItem[] {
   if (language === "hi") {
     return [
       material("सोलर पीवी मॉड्यूल", "6 पैनल", "550 Wp", "अदानी टॉपकॉन बाइफेशियल · 30 वर्ष वारंटी"),
-      material("सोलर इनवर्टर", "1", "1 फेज", "3.6 किलोवाट POLYCAB इनवर्टर · 10 वर्ष वारंटी"),
+      material("सोलर इनवर्टर", "1", inverterUnit(phase, language), "3.6 किलोवाट POLYCAB इनवर्टर · 10 वर्ष वारंटी"),
       material("माउंटिंग स्ट्रक्चर (GI अपोलो)", "आवश्यकतानुसार", "", "लेग 75×75, रैफ्टर 60×40, पर्लिन 40×40"),
-      material("AC केबल", "50 तक", "मी.", "2 कोर 10 मिमी एल्युमिनियम आर्मर्ड केबल (1PH)"),
+      material("AC केबल", "50 तक", "मी.", acCableMake(phase, language)),
       material("DC केबल", "आवश्यकतानुसार", "मी.", "4 वर्ग मिमी कॉपर वायर, पॉलीकैब केबल"),
       material("लाइटनिंग अरेस्टर किट", "1 नं.", "1 नं.", "1 मी., कॉपर बाउंड"),
       material("अर्थिंग किट", "3 सेट", "सेट", "सिंगल कोर कॉपर अर्थिंग, सीमेंट अर्थिंग GI व केमिकल सॉल्यूशन सहित, 1 मीटर"),
@@ -52,9 +97,9 @@ function defaultMaterialItems(language: QuotationLanguage): QuotationMaterialIte
   }
   return [
     material("Solar PV Modules", "6 Panel", "550 Wp", "Adani Topcon Bifacial with 30 Year Warranty"),
-    material("Solar Inverter", "1", "1 Phase", "3.6 KW POLYCAB Inverter with 10 Year Warranty"),
+    material("Solar Inverter", "1", inverterUnit(phase, language), "3.6 KW POLYCAB Inverter with 10 Year Warranty"),
     material("Mounting Structure (GI Apollo)", "As per Requirement", "", "Leg 75×75, Rafter 60×40, Purline 40×40"),
-    material("AC Cable", "Upto 50", "Mtr", "2 Core 10 mm Aluminium Armoured Cable (1PH)"),
+    material("AC Cable", "Upto 50", "Mtr", acCableMake(phase, language)),
     material("DC Cable", "As per Requirement", "M", "4 sq mm Copper Wire, Polycab cable"),
     material("Lightning Arrestor Kit", "1 No", "1 No", "1 M, Copper bound"),
     material("Earthing Kit", "3 Set", "Set", "Earthing single core copper, cement earthing with GI and chemical solution, 1 Mtr"),
@@ -388,8 +433,7 @@ export function createDefaultQuotationData(language: QuotationLanguage = "en"): 
     coverImageUrl: "",
     customerName: "",
     customerPhone: "",
-    capacity: "3 KW 1PH",
-    systemPhase: "1 Phase",
+    capacity: "3 KW",
     phase: "1PH",
     address: "Jaipur",
     proposalDate: today,
@@ -470,12 +514,12 @@ export function switchQuotationLanguage(data: QuotationData, language: Quotation
     coverImageUrl: data.coverImageUrl,
     customerName: data.customerName,
     customerPhone: data.customerPhone,
-    capacity: data.capacity,
-    systemPhase: data.systemPhase,
+    capacity: stripPhaseFromCapacity(data.capacity) || fresh.capacity,
     phase: data.phase,
     address: data.address,
     proposalDate: data.proposalDate,
     company: { ...fresh.company, ...data.company },
+    materialItems: applyPhaseToMaterialItems(fresh.materialItems, data.phase, language),
     showGeneration: data.showGeneration,
     generation: fresh.generation,
     showWarrantyBadges: data.showWarrantyBadges,
@@ -514,10 +558,13 @@ export function switchQuotationLanguage(data: QuotationData, language: Quotation
 export function normalizeQuotationData(input?: Partial<QuotationData> | null): QuotationData {
   const language: QuotationLanguage = input?.language === "hi" ? "hi" : "en";
   const defaults = createDefaultQuotationData(language);
+  const phase: QuotationPhase = input?.phase === "3PH" ? "3PH" : "1PH";
   return {
     ...defaults,
     ...input,
     language,
+    phase,
+    capacity: stripPhaseFromCapacity(input?.capacity ?? defaults.capacity) || defaults.capacity,
     company: { ...defaults.company, ...input?.company },
     generation: { ...defaults.generation, ...input?.generation },
     emiInfo: { ...defaults.emiInfo, ...input?.emiInfo },

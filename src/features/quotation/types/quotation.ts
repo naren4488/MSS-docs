@@ -4,6 +4,7 @@ import type { AgreementCompany } from "@/features/agreement/types/agreement";
 export type { AgreementCompany as QuotationCompany };
 
 export type QuotationLanguage = "en" | "hi";
+export type QuotationPhase = "1PH" | "3PH";
 
 export interface QuotationMaterialItem {
   id: string;
@@ -42,8 +43,7 @@ export interface QuotationData {
   customerName: string;
   customerPhone: string;
   capacity: string;
-  systemPhase: "1 Phase" | "3 Phase";
-  phase: "1PH" | "3PH";
+  phase: QuotationPhase;
   address: string;
   proposalDate: string;
 

@@ -21,6 +21,7 @@ import {
 } from "../constants/sheet-layout";
 import type { QuotationCommercialRow, QuotationData } from "../types/quotation";
 import { filledValue, formatDate, commercialRowsForPreview, computeEffectivePayable, formatInrGrouped, totalGovtSubsidy } from "../lib/quotation-formatters";
+import { formatCapacityWithPhase } from "../lib/quotation-defaults";
 import {
   isAcCableDescription,
   isEarthingWireDescription,
@@ -166,7 +167,7 @@ function SummaryBox({ data }: { data: QuotationData }) {
       </div>
       <div style={rowStyle}>
         <span style={labelStyle}>{L.capacity}</span>
-        <span>: {filledValue(data.capacity)}</span>
+        <span>: {filledValue(formatCapacityWithPhase(data.capacity, data.phase))}</span>
       </div>
       <div style={rowStyle}>
         <span style={labelStyle}>{L.address}</span>

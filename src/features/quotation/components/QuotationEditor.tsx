@@ -4,9 +4,10 @@ import { ChevronDown } from "lucide-react";
 import { ImageUploader } from "@/features/offer-letter/components/ImageUploader";
 import { BulletListEditor } from "@/features/offer-letter/components/BulletListEditor";
 import type { AgreementCompany } from "@/features/agreement/types/agreement";
-import type { QuotationData, QuotationGeneration } from "../types/quotation";
+import type { QuotationData, QuotationGeneration, QuotationPhase } from "../types/quotation";
 import { CommercialOfferEditor, MaterialItemEditor, TermItemEditor } from "./QuotationRowEditors";
 import { stripSyncedCommercialRows, computeEffectivePayable, formatInrGrouped } from "../lib/quotation-formatters";
+import { applyPhaseToMaterialItems } from "../lib/quotation-defaults";
 
 interface QuotationEditorProps {
   data: QuotationData;
@@ -57,57 +58,6 @@ export function QuotationEditor({ data, onChange }: QuotationEditorProps) {
 
   return (
     <div className="stack">
-      <AccordionSection title="Proposal Header" helper="Customer, plant capacity and date." defaultOpen>
-        <div className="field-grid">
-          <div className="field full-span">
-            <label>Title</label>
-            <input value={data.title} onChange={(event) => update("title", event.target.value)} />
-          </div>
-          <div className="field">
-            <label>Customer Name</label>
-            <input value={data.customerName} onChange={(event) => update("customerName", event.target.value)} />
-          </div>
-          <div className="field">
-            <label>Customer Phone</label>
-            <input value={data.customerPhone} placeholder="e.g. 9876543210" onChange={(event) => update("customerPhone", event.target.value)} />
-          </div>
-          <div className="field">
-            <label>Capacity of Power Plant</label>
-            <input value={data.capacity} placeholder="e.g. 3 KW 1PH" onChange={(event) => update("capacity", event.target.value)} />
-          </div>
-          <div className="field">
-            <label>System Phase</label>
-            <select value={data.systemPhase} onChange={(event) => update("systemPhase", event.target.value as "1 Phase" | "3 Phase")}>
-              <option value="1 Phase">1 Phase</option>
-              <option value="3 Phase">3 Phase</option>
-            </select>
-          </div>
-          <div className="field">
-            <label>Phase Type</label>
-            <select value={data.phase} onChange={(event) => update("phase", event.target.value as "1PH" | "3PH")} style={{ padding: "8px", borderRadius: "4px", border: "1px solid #ddd" }}>
-              <option value="1PH">Single Phase (1PH)</option>
-              <option value="3PH">Three Phase (3PH)</option>
-            </select>
-          </div>
-          <div className="field">
-            <label>Date of Proposal</label>
-            <input type="date" value={data.proposalDate} onChange={(event) => update("proposalDate", event.target.value)} />
-          </div>
-          <div className="field full-span">
-            <label>Address</label>
-            <textarea rows={2} value={data.address} onChange={(event) => update("address", event.target.value)} />
-          </div>
-        </div>
-      </AccordionSection>
-
-      <AccordionSection title="Cover & Branding" helper="Hero image and tagline shown at the top of the proposal.">
-        <ImageUploader label="Cover / Hero Image" value={data.coverImageUrl} onChange={(value) => update("coverImageUrl", value)} />
-        <div className="field full-span">
-          <label>Tagline</label>
-          <input value={data.tagline} onChange={(event) => update("tagline", event.target.value)} />
-        </div>
-      </AccordionSection>
-
       <AccordionSection title="Company (Letterhead)" helper="Appears in the header on page 1.">
         <ImageUploader label="Company Logo" value={data.company.logoUrl} onChange={(value) => updateCompany("logoUrl", value)} />
         <div className="field-grid">
@@ -130,6 +80,64 @@ export function QuotationEditor({ data, onChange }: QuotationEditorProps) {
           <div className="field">
             <label>GST Number</label>
             <input value={data.company.gst} onChange={(event) => updateCompany("gst", event.target.value)} />
+          </div>
+        </div>
+      </AccordionSection>
+
+      <AccordionSection title="Proposal Header" helper="Title, date, cover image and tagline.">
+        <div className="stack">
+          <div className="field-grid">
+            <div className="field">
+              <label>Title</label>
+              <input value={data.title} onChange={(event) => update("title", event.target.value)} />
+            </div>
+            <div className="field">
+              <label>Date of Proposal</label>
+              <input type="date" value={data.proposalDate} onChange={(event) => update("proposalDate", event.target.value)} />
+            </div>
+          </div>
+          <ImageUploader label="Cover / Hero Image" value={data.coverImageUrl} onChange={(value) => update("coverImageUrl", value)} />
+          <div className="field">
+            <label>Tagline</label>
+            <input value={data.tagline} onChange={(event) => update("tagline", event.target.value)} />
+          </div>
+        </div>
+      </AccordionSection>
+
+      <AccordionSection title="Customer Details" helper="Customer, site address, plant capacity and phase." defaultOpen>
+        <div className="field-grid">
+          <div className="field">
+            <label>Customer Name</label>
+            <input value={data.customerName} onChange={(event) => update("customerName", event.target.value)} />
+          </div>
+          <div className="field">
+            <label>Customer Phone</label>
+            <input value={data.customerPhone} placeholder="e.g. 9876543210" onChange={(event) => update("customerPhone", event.target.value)} />
+          </div>
+          <div className="field">
+            <label>Capacity of Power Plant</label>
+            <input value={data.capacity} placeholder="e.g. 3 KW" onChange={(event) => update("capacity", event.target.value)} />
+          </div>
+          <div className="field">
+            <label>System Phase</label>
+            <select
+              value={data.phase}
+              onChange={(event) => {
+                const phase = event.target.value as QuotationPhase;
+                onChange({
+                  ...data,
+                  phase,
+                  materialItems: applyPhaseToMaterialItems(data.materialItems, phase, data.language),
+                });
+              }}
+            >
+              <option value="1PH">Single Phase (1PH)</option>
+              <option value="3PH">Three Phase (3PH)</option>
+            </select>
+          </div>
+          <div className="field full-span">
+            <label>Address</label>
+            <textarea rows={2} value={data.address} onChange={(event) => update("address", event.target.value)} />
           </div>
         </div>
       </AccordionSection>
