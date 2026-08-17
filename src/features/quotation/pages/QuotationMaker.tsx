@@ -4,18 +4,15 @@ import { useBeforeUnload, useNavigate, useParams } from "react-router-dom";
 import { MakerStickyTopbar } from "@/components/MakerStickyTopbar";
 import { QuotationEditor } from "../components/QuotationEditor";
 import { QuotationPreview } from "../components/QuotationPreview";
-import { SaveQuotationDialog } from "../components/SaveQuotationDialog";
 import {
   createDefaultQuotationData,
   normalizeQuotationData,
   switchQuotationLanguage,
 } from "../lib/quotation-defaults";
 import {
-  clearQuotationDraft,
   getQuotation,
   getQuotationDraft,
   saveQuotationDraft,
-  saveQuotationRecord,
 } from "../lib/quotation-storage";
 import type { QuotationData, QuotationLanguage } from "../types/quotation";
 
@@ -39,7 +36,6 @@ export function QuotationMaker() {
 
   const [data, setData] = useState<QuotationData>(initialData);
   const [viewMode, setViewMode] = useState<"split" | "editor" | "preview">("split");
-  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [savedSnapshot, setSavedSnapshot] = useState(JSON.stringify(initialData));
   const isDirty = JSON.stringify(data) !== savedSnapshot;
 
@@ -88,16 +84,6 @@ export function QuotationMaker() {
     }
   }
 
-  function handleSave(name: string) {
-    const saved = saveQuotationRecord({ id: params.id, name, content: data });
-    clearQuotationDraft();
-    setSavedSnapshot(JSON.stringify(data));
-    setSaveDialogOpen(false);
-    if (!params.id) {
-      navigate(`/quotation/${saved.id}`, { replace: true });
-    }
-  }
-
   function handleBack() {
     if (isDirty && !window.confirm("You have unsaved changes. Go back to all quotations anyway?")) {
       return;
@@ -126,9 +112,6 @@ export function QuotationMaker() {
     setData(switchQuotationLanguage(data, next));
   }
 
-  const currentRecord = params.id ? getQuotation(params.id) : null;
-  const defaultSaveName = data.customerName || currentRecord?.name || data.capacity || "Untitled Quotation";
-
   return (
     <div className="page-shell page-shell--maker page-shell--maker-agreement">
       <MakerStickyTopbar
@@ -138,7 +121,6 @@ export function QuotationMaker() {
         onBack={handleBack}
         onReset={handleReset}
         onSaveAsPdf={() => void handleSaveAsPdf()}
-        onSave={() => setSaveDialogOpen(true)}
         extraControls={
           <div className="segmented-control" title="Switch document language">
             <button
@@ -194,13 +176,6 @@ export function QuotationMaker() {
           </div>
         </section>
       </div>
-
-      <SaveQuotationDialog
-        defaultName={defaultSaveName}
-        open={saveDialogOpen}
-        onClose={() => setSaveDialogOpen(false)}
-        onSave={handleSave}
-      />
     </div>
   );
 }

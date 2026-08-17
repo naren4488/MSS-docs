@@ -2,7 +2,6 @@ import { Languages } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Navigate, useBeforeUnload, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { MakerStickyTopbar } from "@/components/MakerStickyTopbar";
-import { SaveAgreementDialog } from "@/features/agreement/components/SaveAgreementDialog";
 import { PartnerAgreementEditor } from "../components/PartnerAgreementEditor";
 import { PartnerAgreementPreview } from "../components/PartnerAgreementPreview";
 import {
@@ -13,11 +12,9 @@ import {
   switchPartnerAgreementLanguage,
 } from "../lib/partner-agreement-defaults";
 import {
-  clearPartnerAgreementDraft,
   getPartnerAgreement,
   getPartnerAgreementDraft,
   savePartnerAgreementDraft,
-  savePartnerAgreementRecord,
 } from "../lib/partner-agreement-storage";
 import type { PartnerAgreementData, PartnerAgreementLanguage, PartnerDealType } from "../types/partner-agreement";
 
@@ -56,7 +53,6 @@ export function PartnerAgreementMaker() {
 
   const [data, setData] = useState<PartnerAgreementData>(initialData);
   const [viewMode, setViewMode] = useState<"split" | "editor" | "preview">("split");
-  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [savedSnapshot, setSavedSnapshot] = useState(JSON.stringify(initialData));
   const isDirty = JSON.stringify(data) !== savedSnapshot;
 
@@ -90,22 +86,6 @@ export function PartnerAgreementMaker() {
     window.print();
   }
 
-  function handleSave(name: string) {
-    const saved = savePartnerAgreementRecord({
-      id: record?.id,
-      name,
-      content: data,
-    });
-
-    clearPartnerAgreementDraft();
-    setSavedSnapshot(JSON.stringify(data));
-    setSaveDialogOpen(false);
-
-    if (!record) {
-      navigate(`/partner-agreement/${saved.id}`, { replace: true });
-    }
-  }
-
   function handleBack() {
     if (isDirty && !window.confirm("You have unsaved changes. Go back to all partner agreements anyway?")) {
       return;
@@ -134,8 +114,6 @@ export function PartnerAgreementMaker() {
     setData(switchPartnerAgreementLanguage(data, next));
   }
 
-  const defaultSaveName = data.party.entityName || record?.name || data.title || "Untitled Partner Agreement";
-
   if (shouldRedirectToList) {
     return <Navigate replace to="/partner-agreements" />;
   }
@@ -149,7 +127,6 @@ export function PartnerAgreementMaker() {
         onBack={handleBack}
         onReset={handleReset}
         onSaveAsPdf={() => void handleSaveAsPdf()}
-        onSave={() => setSaveDialogOpen(true)}
         extraControls={
           <div className="segmented-control" title="Switch document language">
             <button
@@ -206,13 +183,6 @@ export function PartnerAgreementMaker() {
           </div>
         </section>
       </div>
-
-      <SaveAgreementDialog
-        defaultName={defaultSaveName}
-        open={saveDialogOpen}
-        onClose={() => setSaveDialogOpen(false)}
-        onSave={handleSave}
-      />
     </div>
   );
 }

@@ -19,8 +19,8 @@ import {
   PAGE_TOP_BOTTOM_PADDING,
   PAGE_WIDTH,
 } from "../constants/sheet-layout";
-import type { QuotationData } from "../types/quotation";
-import { filledValue, formatDate } from "../lib/quotation-formatters";
+import type { QuotationCommercialRow, QuotationData } from "../types/quotation";
+import { filledValue, formatDate, commercialRowsForPreview, computeEffectivePayable, formatInrGrouped, totalGovtSubsidy } from "../lib/quotation-formatters";
 import {
   isAcCableDescription,
   isEarthingWireDescription,
@@ -275,8 +275,7 @@ function CommercialHeader({ data }: { data: QuotationData }) {
   );
 }
 
-function CommercialRow({ index, data }: { index: number; data: QuotationData }) {
-  const row = data.commercialOffer[index];
+function CommercialRow({ index, row }: { index: number; row: QuotationCommercialRow }) {
   return (
     <div style={{ display: "grid", gridTemplateColumns: COMMERCIAL_GRID }}>
       <div style={tableCell({ borderLeft: TABLE_BORDER, textAlign: "center" })}>{index + 1}</div>
@@ -567,12 +566,15 @@ function MaintenanceServiceSection({ data }: { data: QuotationData }) {
 
 function EffectiveInvestmentBox({ data }: { data: QuotationData }) {
   const L = quotationLabels(data.language);
-  const hasSubsidy = data.projectAmount.trim() || data.centralSubsidy.trim() || data.stateSubsidy.trim() || data.effectivePayableAmount.trim();
+  const hasSubsidy = data.projectAmount.trim() || data.centralSubsidy.trim() || data.stateSubsidy.trim();
   if (!hasSubsidy) return null;
 
   const GREEN = "#2d7a3e";
   const LIGHT_GREEN = "#e8f5f1";
   const LINE_GREEN = "#4ade80";
+  const subsidyTotal = totalGovtSubsidy(data.centralSubsidy, data.stateSubsidy);
+  const effectivePayable = computeEffectivePayable(data.projectAmount, data.centralSubsidy, data.stateSubsidy);
+  const projectDisplay = formatInrGrouped(data.projectAmount) || data.projectAmount;
 
   return (
     <div style={{ border: `3px solid ${GREEN}`, borderRadius: 12, padding: "20px 24px", background: LIGHT_GREEN, marginTop: 12, marginBottom: 12 }}>
@@ -583,7 +585,7 @@ function EffectiveInvestmentBox({ data }: { data: QuotationData }) {
       {data.projectAmount.trim() && (
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", alignItems: "center", padding: "8px 0", fontSize: 12, color: GREEN }}>
           <span style={{ fontWeight: 600 }}>{L.projectAmount}</span>
-          <span style={{ textAlign: "right", fontWeight: 700 }}>₹{data.projectAmount}</span>
+          <span style={{ textAlign: "right", fontWeight: 700 }}>₹{projectDisplay}</span>
         </div>
       )}
 
@@ -591,27 +593,21 @@ function EffectiveInvestmentBox({ data }: { data: QuotationData }) {
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", alignItems: "center", padding: "8px 0", fontSize: 12, color: GREEN, marginBottom: 8 }}>
           <span style={{ fontWeight: 600 }}>
             {L.lessSubsidy}
-            {(data.centralSubsidy.trim() || data.stateSubsidy.trim()) && (
-              <span style={{ fontSize: 11, fontWeight: 500, marginLeft: 4 }}>
-                (₹ {data.centralSubsidy.trim() ? data.centralSubsidy : "0"}
-                {data.stateSubsidy.trim() && ` + ₹ ${data.stateSubsidy}`})
-              </span>
-            )}
+            <span style={{ fontSize: 11, fontWeight: 500, marginLeft: 4 }}>
+              (₹ {formatInrGrouped(data.centralSubsidy) || "0"}
+              {data.stateSubsidy.trim() && ` + ₹ ${formatInrGrouped(data.stateSubsidy)}`})
+            </span>
           </span>
-          <span style={{ textAlign: "right", fontWeight: 700 }}>
-            − ₹{data.stateSubsidy.trim() ?
-              String(parseInt(data.centralSubsidy.replace(/,/g, "") || "0") + parseInt(data.stateSubsidy.replace(/,/g, "") || "0")).replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-              : data.centralSubsidy}
-          </span>
+          <span style={{ textAlign: "right", fontWeight: 700 }}>− ₹{formatInrGrouped(String(subsidyTotal))}</span>
         </div>
       )}
 
       <div style={{ height: "2px", background: LINE_GREEN, margin: "12px 0" }} />
 
-      {data.effectivePayableAmount.trim() && (
+      {data.projectAmount.trim() && (
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", alignItems: "center", padding: "10px 0", fontSize: 13 }}>
           <span style={{ fontWeight: 800, color: GREEN }}>{L.effectivePayable}</span>
-          <span style={{ textAlign: "right", fontWeight: 800, fontSize: 14, color: GREEN }}>₹{data.effectivePayableAmount}</span>
+          <span style={{ textAlign: "right", fontWeight: 800, fontSize: 14, color: GREEN }}>₹{formatInrGrouped(String(effectivePayable))}</span>
         </div>
       )}
 
@@ -759,12 +755,13 @@ function createBlocks(data: QuotationData): PreviewBlock[] {
   }
 
   // Commercial Offer
-  if (data.commercialOffer.length > 0) {
+  const commercialRows = commercialRowsForPreview(data);
+  if (commercialRows.length > 0) {
     pushHeading(blocks, "commercial-heading", L.commercialOffer);
     blocks.push({ key: "commercial-table-header", estimate: 26, keepWithNext: true, node: <CommercialHeader data={data} /> });
-    data.commercialOffer.forEach((row, index) => {
+    commercialRows.forEach((row, index) => {
       const tall = estimateParagraphHeight(row.offering, 50, 14);
-      blocks.push({ key: `commercial-${row.id}`, estimate: 16 + tall, node: <CommercialRow data={data} index={index} /> });
+      blocks.push({ key: `commercial-${row.id}`, estimate: 16 + tall, node: <CommercialRow index={index} row={row} /> });
     });
   }
 
@@ -775,7 +772,7 @@ function createBlocks(data: QuotationData): PreviewBlock[] {
   }
 
   // Effective Investment After Subsidy
-  if (data.projectAmount.trim() || data.centralSubsidy.trim() || data.stateSubsidy.trim() || data.effectivePayableAmount.trim()) {
+  if (data.projectAmount.trim() || data.centralSubsidy.trim() || data.stateSubsidy.trim()) {
     blocks.push({ key: "effective-investment", estimate: 120, node: <EffectiveInvestmentBox data={data} /> });
   }
 

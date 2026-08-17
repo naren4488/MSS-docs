@@ -75,6 +75,7 @@ export const QUOTATION_LABELS: Record<
     assumptions: string;
     customerScope: string;
     commercialOffer: string;
+    customerNetPayable: string;
     emiFinancing: string;
     componentWarranty: string;
     whatsCovered: string;
@@ -192,6 +193,7 @@ export const QUOTATION_LABELS: Record<
     assumptions: "Assumptions",
     customerScope: "Customer Scope",
     commercialOffer: "Commercial Offer",
+    customerNetPayable: "Customer Net Payable Amount",
     emiFinancing: "EMI & Financing Options",
     componentWarranty: "Component Warranty Breakdown",
     whatsCovered: "What's Covered in Your Warranty",
@@ -311,6 +313,7 @@ export const QUOTATION_LABELS: Record<
     assumptions: "मान्यताएँ",
     customerScope: "ग्राहक का दायरा",
     commercialOffer: "वाणिज्यिक प्रस्ताव",
+    customerNetPayable: "ग्राहक नेट देय राशि",
     emiFinancing: "EMI व वित्त विकल्प",
     componentWarranty: "घटक वारंटी विवरण",
     whatsCovered: "आपकी वारंटी में क्या कवर है",

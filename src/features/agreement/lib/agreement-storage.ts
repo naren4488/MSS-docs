@@ -11,7 +11,6 @@ import {
 } from "./agreement-defaults";
 import { bhavyaSolarSolutionsAgreement } from "../data/bhavya-solar-solutions-agreement";
 import { brightSolarAgencyAgreement } from "../data/bright-solar-agency-agreement";
-import { narendraKajlaManagementAuthorityAgreement } from "../data/narendra-kajla-management-authority-agreement";
 import { rjGreenSolarEnergyAgreement } from "../data/rj-green-solar-energy-agreement";
 import { solarWorldEnergyAgreement } from "../data/solar-world-energy-agreement";
 import { sunsmartGreenEnergyServicesAgreement } from "../data/sunsmart-green-energy-services-agreement";
@@ -24,7 +23,6 @@ function readRecords() {
     rjGreenSolarEnergyAgreement,
     sunsmartGreenEnergyServicesAgreement,
     brightSolarAgencyAgreement,
-    narendraKajlaManagementAuthorityAgreement,
   ];
 }
 

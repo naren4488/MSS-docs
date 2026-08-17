@@ -2,7 +2,7 @@
  * Projects table — Google Sheet sources
  *
  * This file is the single source of truth for which workbook tabs are loaded
- * into the Projects page. See also PROJECT.md §7.7.
+ * into the Projects page.
  */
 
 export const PROJECTS_SPREADSHEET_ID = "1fe4vitjQwMhw92QltKECwBylbJ8ORWK3TsaI6548SEg";

@@ -11,10 +11,8 @@ interface MakerStickyTopbarProps {
   onBack: () => void;
   onReset: () => void;
   onSaveAsPdf: () => void;
-  onSave: () => void;
+  onSave?: () => void;
   extraControls?: ReactNode;
-  /** Preview + PDF only — hide editor layout switch, reset, and save. */
-  pdfOnly?: boolean;
 }
 
 export function MakerStickyTopbar({
@@ -26,7 +24,6 @@ export function MakerStickyTopbar({
   onSaveAsPdf,
   onSave,
   extraControls,
-  pdfOnly = false,
 }: MakerStickyTopbarProps) {
   return (
     <header className="sticky-topbar no-print">
@@ -40,7 +37,7 @@ export function MakerStickyTopbar({
             <ArrowLeft size={14} aria-hidden />
             Back
           </button>
-          {!pdfOnly ? (
+          {onSave ? (
             <div className={`status-pill ${isDirty ? "dirty" : ""}`} role="status">
               {isDirty ? "Unsaved" : "Saved"}
             </div>
@@ -48,52 +45,48 @@ export function MakerStickyTopbar({
         </div>
 
         <div className="sticky-topbar-controls-end">
-          {!pdfOnly ? (
-            <div className="segmented-control" role="group" aria-label="Layout">
-              <button
-                className={`segment-button ${viewMode === "split" ? "active" : ""}`}
-                type="button"
-                title="Split view"
-                onClick={() => onViewModeChange("split")}
-              >
-                <Columns2 size={14} aria-hidden />
-                Split
-              </button>
-              <button
-                className={`segment-button ${viewMode === "editor" ? "active" : ""}`}
-                type="button"
-                title="Editor only"
-                onClick={() => onViewModeChange("editor")}
-              >
-                <Maximize2 size={14} aria-hidden />
-                Editor
-              </button>
-              <button
-                className={`segment-button ${viewMode === "preview" ? "active" : ""}`}
-                type="button"
-                title="Preview only"
-                onClick={() => onViewModeChange("preview")}
-              >
-                <Eye size={14} aria-hidden />
-                Preview
-              </button>
-            </div>
-          ) : null}
+          <div className="segmented-control" role="group" aria-label="Layout">
+            <button
+              className={`segment-button ${viewMode === "split" ? "active" : ""}`}
+              type="button"
+              title="Split view"
+              onClick={() => onViewModeChange("split")}
+            >
+              <Columns2 size={14} aria-hidden />
+              Split
+            </button>
+            <button
+              className={`segment-button ${viewMode === "editor" ? "active" : ""}`}
+              type="button"
+              title="Editor only"
+              onClick={() => onViewModeChange("editor")}
+            >
+              <Maximize2 size={14} aria-hidden />
+              Editor
+            </button>
+            <button
+              className={`segment-button ${viewMode === "preview" ? "active" : ""}`}
+              type="button"
+              title="Preview only"
+              onClick={() => onViewModeChange("preview")}
+            >
+              <Eye size={14} aria-hidden />
+              Preview
+            </button>
+          </div>
 
-          {!pdfOnly ? extraControls : null}
+          {extraControls}
 
           <div className="sticky-topbar-action-group">
-            {!pdfOnly ? (
-              <button
-                className="ghost-button toolbar-button"
-                type="button"
-                onClick={onReset}
-                title="Reset form to default values"
-              >
-                <RotateCcw size={14} aria-hidden />
-                Reset
-              </button>
-            ) : null}
+            <button
+              className="ghost-button toolbar-button"
+              type="button"
+              onClick={onReset}
+              title="Reset form to default values"
+            >
+              <RotateCcw size={14} aria-hidden />
+              Reset
+            </button>
             <button
               className="ghost-button toolbar-button"
               type="button"
@@ -103,7 +96,7 @@ export function MakerStickyTopbar({
               <Printer size={14} aria-hidden />
               PDF
             </button>
-            {!pdfOnly ? (
+            {onSave ? (
               <button className="primary-button toolbar-button" type="button" onClick={onSave}>
                 <Save size={14} aria-hidden />
                 Save

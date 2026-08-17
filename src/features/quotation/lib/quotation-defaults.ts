@@ -6,6 +6,7 @@ import type {
   QuotationMaterialItem,
   QuotationTermItem,
 } from "../types/quotation";
+import { stripSyncedCommercialRows } from "./quotation-formatters";
 
 function uuid() {
   return crypto.randomUUID();
@@ -128,16 +129,12 @@ function defaultCommercialOffer(language: QuotationLanguage): QuotationCommercia
       commercial("सोलर पीवी प्लांट क्षमता", "3 किलोवाट, ऑन-ग्रिड SPV सिस्टम"),
       commercial("पैनल कॉन्फ़िगरेशन", "6 × 550W अदानी टॉपकॉन बाइफेशियल पैनल (कुल 3.3 किलोवाट)"),
       commercial("मूल्य आधार", "टर्नकी EPC"),
-      commercial("प्रोजेक्ट मूल्य", "₹ 54.54 / वॉट — नेट देय राशि INR 1,80,000/-"),
-      commercial("ग्राहक नेट देय राशि", "INR 1,80,000/- (कर सहित)"),
     ];
   }
   return [
     commercial("Solar PV Plant Capacity", "3 KWp, On-grid SPV System"),
     commercial("Panel Configuration", "6 x 550W Adani Topcon Bifacial Panels (3.3 KW Total)"),
     commercial("Price Basis", "Turnkey EPC"),
-    commercial("Project Price", "Rs. 54.54 / Watt — Net Payable Amount INR 1,80,000/-"),
-    commercial("Customer Net Payable Amount", "INR 1,80,000/- (Including Tax)"),
   ];
 }
 
@@ -528,7 +525,7 @@ export function normalizeQuotationData(input?: Partial<QuotationData> | null): Q
     installationWork: input?.installationWork ?? defaults.installationWork,
     assumptions: input?.assumptions ?? defaults.assumptions,
     customerScope: input?.customerScope ?? defaults.customerScope,
-    commercialOffer: input?.commercialOffer ?? defaults.commercialOffer,
+    commercialOffer: stripSyncedCommercialRows(input?.commercialOffer ?? defaults.commercialOffer),
     terms: input?.terms ?? defaults.terms,
     subsidyDocuments: input?.subsidyDocuments ?? defaults.subsidyDocuments,
     installationSteps: input?.installationSteps ?? defaults.installationSteps,

@@ -6,6 +6,7 @@ import { BulletListEditor } from "@/features/offer-letter/components/BulletListE
 import type { AgreementCompany } from "@/features/agreement/types/agreement";
 import type { QuotationData, QuotationGeneration } from "../types/quotation";
 import { CommercialOfferEditor, MaterialItemEditor, TermItemEditor } from "./QuotationRowEditors";
+import { stripSyncedCommercialRows, computeEffectivePayable, formatInrGrouped } from "../lib/quotation-formatters";
 
 interface QuotationEditorProps {
   data: QuotationData;
@@ -56,7 +57,7 @@ export function QuotationEditor({ data, onChange }: QuotationEditorProps) {
 
   return (
     <div className="stack">
-      <AccordionSection title="Proposal Header" helper="Customer, plant capacity and date.">
+      <AccordionSection title="Proposal Header" helper="Customer, plant capacity and date." defaultOpen>
         <div className="field-grid">
           <div className="field full-span">
             <label>Title</label>
@@ -133,7 +134,7 @@ export function QuotationEditor({ data, onChange }: QuotationEditorProps) {
         </div>
       </AccordionSection>
 
-      <AccordionSection title="Material Description" helper="Bill of materials. Drag items to reorder.">
+      <AccordionSection title="Material Description" helper="Bill of materials. Drag items to reorder." defaultOpen>
         <MaterialItemEditor items={data.materialItems} onChange={(next) => update("materialItems", next)} />
       </AccordionSection>
 
@@ -149,8 +150,17 @@ export function QuotationEditor({ data, onChange }: QuotationEditorProps) {
         <BulletListEditor label="Customer Scope" items={data.customerScope} onChange={(next) => update("customerScope", next)} />
       </AccordionSection>
 
-      <AccordionSection title="Commercial Offer" helper="Parameter / offering rows.">
-        <CommercialOfferEditor rows={data.commercialOffer} onChange={(next) => update("commercialOffer", next)} />
+      <AccordionSection title="Commercial Offer" helper="Project amount is the charge for this project. It fills Customer Net Payable here and the investment box on the PDF." defaultOpen>
+        <div className="field-grid" style={{ marginBottom: 12 }}>
+          <div className="field full-span">
+            <label>Project Amount (incl. GST) (₹)</label>
+            <input value={data.projectAmount} placeholder="e.g. 1,80,000" onChange={(event) => update("projectAmount", event.target.value)} />
+          </div>
+        </div>
+        <CommercialOfferEditor
+          rows={stripSyncedCommercialRows(data.commercialOffer)}
+          onChange={(next) => update("commercialOffer", stripSyncedCommercialRows(next))}
+        />
       </AccordionSection>
 
       <AccordionSection title="Manufacturing Defect Warranty">
@@ -238,12 +248,8 @@ export function QuotationEditor({ data, onChange }: QuotationEditorProps) {
         ) : null}
       </AccordionSection>
 
-      <AccordionSection title="Effective Investment Section">
+      <AccordionSection title="Effective Investment Section" helper="Subsidies only. Effective payable is calculated as project amount minus total subsidy.">
         <div className="field-grid">
-          <div className="field">
-            <label>Project Amount (incl. GST) (₹)</label>
-            <input value={data.projectAmount} placeholder="e.g. 5,00,000" onChange={(event) => update("projectAmount", event.target.value)} />
-          </div>
           <div className="field">
             <label>Central Subsidy (₹)</label>
             <input value={data.centralSubsidy} placeholder="e.g. 78,000" onChange={(event) => update("centralSubsidy", event.target.value)} />
@@ -253,8 +259,11 @@ export function QuotationEditor({ data, onChange }: QuotationEditorProps) {
             <input value={data.stateSubsidy} placeholder="e.g. 17,000" onChange={(event) => update("stateSubsidy", event.target.value)} />
           </div>
           <div className="field">
-            <label>Effective Payable Amount (₹)</label>
-            <input value={data.effectivePayableAmount} placeholder="e.g. 4,05,000" onChange={(event) => update("effectivePayableAmount", event.target.value)} />
+            <label>Effective Payable Amount (₹) — auto</label>
+            <input
+              readOnly
+              value={formatInrGrouped(String(computeEffectivePayable(data.projectAmount, data.centralSubsidy, data.stateSubsidy)))}
+            />
           </div>
           <div className="field full-span">
             <label>Subsidy Eligibility Note</label>
