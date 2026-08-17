@@ -1,11 +1,7 @@
 import type { QuotationData, QuotationRecord } from "../types/quotation";
-import { malchandJangidQuotation } from "../data/malchand-jangid-3kw";
-import { surendraSekhawat5kwQuotation } from "../data/surendra-sekhawat-5kw";
-import { bajrangLalSain5kwQuotation } from "../data/bajrang-lal-sain-5kw";
-import { sonuKumawatQuotation } from "../data/sonu-kumawat-3kw";
 
-function readRecords() {
-  return [malchandJangidQuotation, surendraSekhawat5kwQuotation, bajrangLalSain5kwQuotation, sonuKumawatQuotation];
+function readRecords(): QuotationRecord[] {
+  return [];
 }
 
 function writeRecords(_records: QuotationRecord[]) {

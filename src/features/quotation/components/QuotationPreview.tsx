@@ -22,6 +22,8 @@ import {
 import type { QuotationData } from "../types/quotation";
 import { filledValue, formatDate } from "../lib/quotation-formatters";
 import {
+  isAcCableDescription,
+  isEarthingWireDescription,
   isSolarNetMeterDescription,
   isSolarPvModulesDescription,
   quotationLabels,
@@ -713,15 +715,20 @@ function createBlocks(data: QuotationData): PreviewBlock[] {
       blocks.push({ key: `material-${item.id}`, estimate: 16 + tall, node: <MaterialRow data={data} index={index} /> });
     });
 
-    // Add note about net meter provision
-    const hasNetMeterItem = data.materialItems.some((item) => isSolarNetMeterDescription(item.description));
-    if (hasNetMeterItem) {
+    const materialNotes = [
+      data.materialItems.some((item) => isSolarNetMeterDescription(item.description)) ? L.netMeterNote : null,
+      data.materialItems.some((item) => isAcCableDescription(item.description)) ? L.acCableNote : null,
+      data.materialItems.some((item) => isEarthingWireDescription(item.description)) ? L.earthingWireNote : null,
+    ].filter((note): note is string => Boolean(note));
+    if (materialNotes.length > 0) {
       blocks.push({
-        key: "net-meter-note",
-        estimate: 30,
+        key: "material-notes",
+        estimate: 14 + materialNotes.length * 22,
         node: (
-          <div style={{ paddingTop: "12px", paddingBottom: "12px", fontSize: "12px", color: "#666", fontStyle: "italic", borderTop: "1px solid #e0e0e0" }}>
-            {L.netMeterNote}
+          <div style={{ paddingTop: "12px", paddingBottom: "12px", fontSize: "12px", color: "#666", fontStyle: "italic", borderTop: "1px solid #e0e0e0", lineHeight: 1.55 }}>
+            {materialNotes.map((note) => (
+              <div key={note}>{note}</div>
+            ))}
           </div>
         ),
       });

@@ -86,6 +86,8 @@ export const QUOTATION_LABELS: Record<
     bankDetails: string;
     termsConditions: string;
     netMeterNote: string;
+    acCableNote: string;
+    earthingWireNote: string;
     clientSignature: string;
     authorizedSignatory: string;
     date: string;
@@ -202,6 +204,10 @@ export const QUOTATION_LABELS: Record<
     termsConditions: "Terms & Conditions",
     netMeterNote:
       "* Net meter will be provided only if the client doesn't already have a smart meter installed.",
+    acCableNote:
+      "* AC cable is included up to 50 mtr as mentioned above. Extra length will be charged extra.",
+    earthingWireNote:
+      "* Earthing wire is included up to 100 mtr as mentioned above. Extra length will be charged extra.",
     clientSignature: "Client Signature",
     authorizedSignatory: "Authorized Signatory",
     date: "Date",
@@ -317,6 +323,10 @@ export const QUOTATION_LABELS: Record<
     termsConditions: "नियम व शर्तें",
     netMeterNote:
       "* नेट मीटर तभी प्रदान किया जाएगा जब ग्राहक के पास पहले से स्मार्ट मीटर न लगा हो।",
+    acCableNote:
+      "* AC केबल उपरोक्त अनुसार 50 मीटर तक शामिल है। अतिरिक्त लंबाई पर अलग से शुल्क लगेगा।",
+    earthingWireNote:
+      "* अर्थिंग वायर उपरोक्त अनुसार 100 मीटर तक शामिल है। अतिरिक्त लंबाई पर अलग से शुल्क लगेगा।",
     clientSignature: "ग्राहक हस्ताक्षर",
     authorizedSignatory: "अधिकृत हस्ताक्षरकर्ता",
     date: "तिथि",
@@ -337,4 +347,14 @@ export function isSolarPvModulesDescription(description: string) {
 export function isSolarNetMeterDescription(description: string) {
   const value = description.toLowerCase();
   return value.includes("solar & net meter") || description.includes("सोलर व नेट मीटर");
+}
+
+export function isAcCableDescription(description: string) {
+  const value = description.toLowerCase();
+  return value.includes("ac cable") || description.includes("AC केबल");
+}
+
+export function isEarthingWireDescription(description: string) {
+  const value = description.toLowerCase();
+  return value.includes("earthing wire") || description.includes("अर्थिंग वायर");
 }
