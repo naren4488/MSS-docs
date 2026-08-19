@@ -63,7 +63,8 @@ Money-ledger rows are seeded in `partner-mss-payments.ts` for analytics. Everest
 | Page tabs | `Our projects` \| `Shripal sites` \| `Ajay sites` \| `Partner projects` |
 | Row set | Only `Ajay (everest)` rows (both vendors). |
 | Visible columns | Same as Partner — Deal with MSS / commission / Payment with partner. |
-| Vendor chips | **MSS** and **Arkshakti** shortcuts (lock Vendor + `Ajay (everest)`). |
+| Register pills | Single `Ajay Ji` chip (updates only Register filter). |
+| Vendor filter | Hidden on Ajay scope. Rows include both MSS + Arkshakti by default. |
 | Analytics | Ajay-specific hero (sites, net due per register, both Sub Vendor cards, final sum) + detailed overview; no deal totals / payment dues sections (removed globally). |
 | Scope note | Info banner in analytics: MSS = pipeline, Arkshakti = backlog, Sub Vendor ledgers = separate cash. |
 

@@ -169,15 +169,13 @@ export const ARKSHAKTI_SHEET_TABS: readonly ProjectSheetTab[] = [
 
 /**
  * Quick sheet-tab chips on the Projects page (below main filters).
- * - With `vendor`: sets Vendor + Project type together (Our / Arkshakti MSS res).
- * - Without `vendor`: sets Partner name only; keeps all vendors selected.
+ * - Chips set only the Register/PROJECT TYPE filter.
+ * - Vendor selection remains unchanged.
  */
 export interface ProjectSheetTabShortcut {
   id: string;
   /** Chip label shown in the UI. */
   label: string;
-  /** Optional vendor — when set, chip locks Vendor + Project type. */
-  vendor?: string;
   /** Partner / PROJECT TYPE — must match sheet tab `projectType`. */
   projectType: string;
   /** Group heading above the chips (e.g. Arkshakti, Partners). */
@@ -223,11 +221,17 @@ function buildPartnerSheetTabShortcuts(): ProjectSheetTabShortcut[] {
 
 const OUR_SHEET_TAB_SHORTCUTS: readonly ProjectSheetTabShortcut[] = [
   {
-    id: "arkshakti-mss-res",
+    id: "our-mss-res",
     label: "MSS res",
-    vendor: PROJECT_VENDORS.ARKSHAKTI,
     projectType: "MSS res",
-    group: "Arkshakti",
+    group: "Register",
+    scope: "our",
+  },
+  {
+    id: "our-mss-commercial",
+    label: "MSS commercial",
+    projectType: "MSS COMMERCIAL",
+    group: "Register",
     scope: "our",
   },
 ];
@@ -235,40 +239,22 @@ const OUR_SHEET_TAB_SHORTCUTS: readonly ProjectSheetTabShortcut[] = [
 /** Shripal sites — vendor chips (same PROJECT TYPE on MSS + Arkshakti workbooks). */
 const SHRIPAL_SHEET_TAB_SHORTCUTS: readonly ProjectSheetTabShortcut[] = [
   {
-    id: "mss-shripal",
-    label: "MSS",
-    vendor: PROJECT_VENDORS.MSS,
+    id: "shripal",
+    label: "Shripal Ji",
     projectType: "SHRIPAL JI",
-    group: "Vendor",
     scope: "shripal",
-  },
-  {
-    id: "arkshakti-shripal",
-    label: "Arkshakti",
-    vendor: PROJECT_VENDORS.ARKSHAKTI,
-    projectType: "SHRIPAL JI",
-    group: "Vendor",
-    scope: "shripal",
+    group: "Register",
   },
 ];
 
 /** Ajay sites — vendor chips (same PROJECT TYPE on MSS + Arkshakti workbooks). */
 const AJAY_SHEET_TAB_SHORTCUTS: readonly ProjectSheetTabShortcut[] = [
   {
-    id: "mss-ajay",
-    label: "MSS",
-    vendor: PROJECT_VENDORS.MSS,
+    id: "ajay",
+    label: "Ajay Ji",
     projectType: "Ajay (everest)",
-    group: "Vendor",
     scope: "ajay",
-  },
-  {
-    id: "arkshakti-ajay",
-    label: "Arkshakti",
-    vendor: PROJECT_VENDORS.ARKSHAKTI,
-    projectType: "Ajay (everest)",
-    group: "Vendor",
-    scope: "ajay",
+    group: "Register",
   },
 ];
 
@@ -285,23 +271,9 @@ export function getSheetTabShortcutsForScope(scope: ProjectsScope): readonly Pro
 
 export function isSheetTabShortcutActive(
   shortcut: ProjectSheetTabShortcut,
-  selectedVendors: ReadonlySet<string>,
   selectedProjectTypes: ReadonlySet<string>,
-  allVendors: readonly string[],
 ): boolean {
-  if (selectedProjectTypes.size !== 1 || !selectedProjectTypes.has(shortcut.projectType)) {
-    return false;
-  }
-
-  if (shortcut.vendor) {
-    return selectedVendors.size === 1 && selectedVendors.has(shortcut.vendor);
-  }
-
-  return (
-    allVendors.length > 0 &&
-    selectedVendors.size === allVendors.length &&
-    allVendors.every((vendor) => selectedVendors.has(vendor))
-  );
+  return selectedProjectTypes.size === 1 && selectedProjectTypes.has(shortcut.projectType);
 }
 
 function spreadsheetGvizUrl(spreadsheetId: string, sheetName: string, headerRows = 1) {

@@ -7,9 +7,7 @@ import {
 
 interface ProjectsSheetTabFilterProps {
   scope: ProjectsScope;
-  selectedVendors: ReadonlySet<string>;
   selectedProjectTypes: ReadonlySet<string>;
-  allVendors: readonly string[];
   onSelectShortcut: (shortcut: ProjectSheetTabShortcut) => void;
   onClearShortcut: () => void;
 }
@@ -26,9 +24,7 @@ function groupShortcuts(shortcuts: readonly ProjectSheetTabShortcut[]) {
 
 export function ProjectsSheetTabFilter({
   scope,
-  selectedVendors,
   selectedProjectTypes,
-  allVendors,
   onSelectShortcut,
   onClearShortcut,
 }: ProjectsSheetTabFilterProps) {
@@ -39,7 +35,7 @@ export function ProjectsSheetTabFilter({
 
   const groups = groupShortcuts(shortcuts);
   const title =
-    scope === "partner" ? "Partners" : scope === "our" ? "Sheet tabs" : "Vendor";
+    scope === "partner" ? "Partners" : "Register";
 
   return (
     <div className="projects-sheet-tab-filter no-print" aria-label={title}>
@@ -47,20 +43,16 @@ export function ProjectsSheetTabFilter({
       <div className="projects-sheet-tab-filter-groups">
         {groups.map(([group, groupShortcuts]) => (
           <div key={group} className="projects-sheet-tab-filter-group">
-            {scope === "our" || scope === "shripal" || scope === "ajay" ? (
-              <span className="projects-sheet-tab-filter-group-label">{group}</span>
-            ) : null}
-            <div className="projects-sheet-tab-filter-chips" role="group" aria-label={`${group} tabs`}>
+            <div
+              className={`projects-sheet-tab-filter-chips${
+                scope === "partner" ? " projects-sheet-tab-filter-chips--scroll" : ""
+              }`}
+              role="group"
+              aria-label={`${group} tabs`}
+            >
               {groupShortcuts.map((shortcut) => {
-                const active = isSheetTabShortcutActive(
-                  shortcut,
-                  selectedVendors,
-                  selectedProjectTypes,
-                  allVendors,
-                );
-                const titleText = shortcut.vendor
-                  ? `${shortcut.group} · ${shortcut.label} (Vendor + register)`
-                  : `${shortcut.label} partner register`;
+                const active = isSheetTabShortcutActive(shortcut, selectedProjectTypes);
+                const titleText = `${shortcut.label} register`;
                 return (
                   <button
                     key={shortcut.id}

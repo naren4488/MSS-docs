@@ -52,7 +52,7 @@ Everything else → **Partner projects** (or Shripal / Ajay dedicated tabs).
 | Vendor filter | `MSS` / `Arkshakti`. |
 | Work status filter | Default excludes project-on-hold style statuses. |
 | **Dues filter** | Optional: Net due ≠ 0 · Cash due ≠ 0 · Bank due ≠ 0 (OR). Empty = all sites. Replaces old Payment received filter. |
-| Sheet tab chips | Only Arkshakti → `MSS res` today (`scope: "our"`). |
+| Register pills | `MSS res`, `MSS commercial` (chips update only the **Register** filter; they do not change Vendor). |
 | Count | Filtered count within Our scope; “of N” when inner filters active. |
 | Analytics | Hero: total sites, net due (MSS / Arkshakti), payments received, **Due from clients** (cash + bank + net). Overview: register snapshot, dues-by-register table, work status by project type. No deal totals / payment dues sections. |
 
@@ -62,7 +62,7 @@ Everything else → **Partner projects** (or Shripal / Ajay dedicated tabs).
 
 - Partner columns were always empty on MSS res/comm → noise.
 - Mixing partner tabs in one mega-table made Vendor + Partner filters harder.
-- Sheet-tab chips (vendor + register together) belong naturally on Our for Arkshakti `MSS res`.
+- Register pills on Our should be independent from Vendor so users can keep a vendor filter while switching registers.
 - Analytics partner metrics only apply on Partner projects.
 - Dues ≠ 0 filter surfaces open balances (including surplus/return negatives), not just payment-received flags.
 
@@ -96,6 +96,6 @@ Everything else → **Partner projects** (or Shripal / Ajay dedicated tabs).
 
 ### Optional / later
 
-- [ ] Sheet-tab chips for **MSS → MSS res** and **Arkshakti → MSS COMMERCIAL**
+- [ ] Optional: add a dedicated MSS-commercial source badge if the source mix changes again
 - [ ] Confirm whether any other `PROJECT TYPE` should count as “Our”
 - ~~Dedicated sheet-data MD for main MSS workbook~~ → done: [`mss-sheet.md`](./mss-sheet.md)

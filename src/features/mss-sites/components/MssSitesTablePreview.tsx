@@ -190,14 +190,10 @@ export function MssSitesTablePreview({ table, viewMode, scope }: MssSitesTablePr
 
   const applySheetTabShortcut = useCallback(
     (shortcut: ProjectSheetTabShortcut) => {
+      // Register pills should only affect the register filter.
       setSelectedProjectTypes(new Set([shortcut.projectType]));
-      if (shortcut.vendor) {
-        setSelectedVendors(new Set([shortcut.vendor]));
-      } else {
-        setSelectedVendors(new Set(vendors));
-      }
     },
-    [vendors],
+    [],
   );
 
   const clearSheetTabShortcut = useCallback(() => {
@@ -269,15 +265,17 @@ export function MssSitesTablePreview({ table, viewMode, scope }: MssSitesTablePr
             isActive={searchActive}
             className="projects-filter--search"
           />
-          <ProjectsMultiselectFilter
-            label="Vendor"
-            options={vendors}
-            selected={selectedVendors}
-            onChange={setSelectedVendors}
-            allSummaryLabel="All vendors"
-            emptyOptionsLabel="No vendors"
-            isActive={vendorFilterActive}
-          />
+          {scope === "our" || scope === "partner" ? (
+            <ProjectsMultiselectFilter
+              label="Vendor"
+              options={vendors}
+              selected={selectedVendors}
+              onChange={setSelectedVendors}
+              allSummaryLabel="All vendors"
+              emptyOptionsLabel="No vendors"
+              isActive={vendorFilterActive}
+            />
+          ) : null}
           <ProjectsMultiselectFilter
             label={registerFilterLabel}
             options={projectTypes}
@@ -310,9 +308,7 @@ export function MssSitesTablePreview({ table, viewMode, scope }: MssSitesTablePr
 
         <ProjectsSheetTabFilter
           scope={scope}
-          selectedVendors={selectedVendors}
           selectedProjectTypes={selectedProjectTypes}
-          allVendors={vendors}
           onSelectShortcut={applySheetTabShortcut}
           onClearShortcut={clearSheetTabShortcut}
         />

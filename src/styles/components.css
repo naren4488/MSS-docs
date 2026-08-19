@@ -584,6 +584,13 @@
   gap: 6px;
 }
 
+.projects-sheet-tab-filter-chips--scroll {
+  max-height: 160px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 6px; /* keep last chip from touching scrollbar */
+}
+
 .projects-sheet-tab-chip {
   display: inline-flex;
   align-items: center;
@@ -602,9 +609,27 @@
 .projects-sheet-tab-chip:hover {
   border-color: #14306b;
   background: #eef2ff;
+  box-shadow: 0 0 0 2px rgba(20, 48, 107, 0.1);
+}
+
+.projects-sheet-tab-chip:focus {
+  outline: none;
+}
+
+.projects-sheet-tab-chip:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(20, 48, 107, 0.18);
 }
 
 .projects-sheet-tab-chip--active {
+  border-color: #14306b;
+  background: #14306b;
+  color: #ffffff;
+  box-shadow: 0 0 0 3px rgba(20, 48, 107, 0.16);
+}
+
+.projects-sheet-tab-chip--active:hover {
+  /* Prevent the generic :hover rule from lightening an active pill. */
   border-color: #14306b;
   background: #14306b;
   color: #ffffff;

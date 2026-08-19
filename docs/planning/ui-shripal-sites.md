@@ -45,7 +45,8 @@ Shripal rows are **excluded** from Partner projects chips and partner row scope.
 | Page tabs | `Our projects` \| `Shripal sites` \| `Ajay sites` \| `Partner projects` |
 | Row set | Only `SHRIPAL JI` rows (both vendors). |
 | Visible columns | Same as Partner — includes **Deal with MSS** / commission / **Payment with partner**. |
-| Vendor chips | **MSS** and **Arkshakti** shortcuts (lock Vendor + `SHRIPAL JI`). |
+| Register pills | Single `Shripal Ji` chip (updates only Register filter). |
+| Vendor filter | Hidden on Shripal scope. Rows include both MSS + Arkshakti by default. |
 | Filters | Same as Projects globally (incl. Dues ≠ 0). |
 | **Analytics** | Same layout as **Our projects**, plus partner-deal extras (see below). |
 | **Download analytics** | Full-page PDF (not A4) — same as Our. |
