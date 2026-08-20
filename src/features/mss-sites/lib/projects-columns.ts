@@ -50,6 +50,9 @@ export const PARTNER_ONLY_PROJECT_COLUMNS = new Set<string>([
   "Payment with partner",
 ]);
 
+/** Partner columns shown on Shripal sites (Our-style table + this one extra). */
+export const SHRIPAL_VISIBLE_PARTNER_COLUMNS = new Set<string>(["Payment with partner"]);
+
 /** Shown in the last-column tooltip instead of the main table. */
 export const HIDDEN_PROJECT_COLUMNS = new Set<string>([
   "NO",
@@ -63,7 +66,13 @@ export const HIDDEN_PROJECT_COLUMNS = new Set<string>([
   "SUBSIDY",
   "BANK FILE/CASH",
   "DISCOM WORK",
+  "PAYMENT STATUS",
 ]);
+
+/**
+ * Hidden from the main table on Our + Shripal only — duplicates Cash due from client on those registers.
+ */
+export const OUR_SHRIPAL_HIDDEN_TABLE_COLUMNS = new Set<string>(["Cash due to MSS"]);
 
 export const PROJECT_MORE_COLUMN_HEADER = "MORE";
 
@@ -119,6 +128,10 @@ export const CASH_DUE_TO_MSS_COLUMN = "Cash due to MSS";
 
 export const CASH_DUE_TO_MSS_COLUMN_INDEX = PROJECT_TABLE_HEADERS.indexOf(CASH_DUE_TO_MSS_COLUMN);
 
+export const CASH_DUE_FROM_CLIENT_COLUMN = "CASH DUE FROM CLIENT";
+
+export const CASH_DUE_FROM_CLIENT_COLUMN_INDEX = PROJECT_TABLE_HEADERS.indexOf(CASH_DUE_FROM_CLIENT_COLUMN);
+
 export const BANK_DUE_COLUMN = "Bank due";
 
 export const BANK_DUE_COLUMN_INDEX = PROJECT_TABLE_HEADERS.indexOf(BANK_DUE_COLUMN);
@@ -135,6 +148,14 @@ export const NONZERO_DUES_FILTER_OPTIONS = [
 ] as const;
 
 export type NonzeroDuesFilterOption = (typeof NONZERO_DUES_FILTER_OPTIONS)[number];
+
+/** Column used for the “Cash due ≠ 0” filter — Our/Shripal use Cash due from client. */
+export function getCashDueFilterColumnIndex(scope: ProjectsScope): number {
+  if (scope === "our" || scope === "shripal") {
+    return CASH_DUE_FROM_CLIENT_COLUMN_INDEX;
+  }
+  return CASH_DUE_TO_MSS_COLUMN_INDEX;
+}
 
 export const EMPTY_WORK_STATUS_LABEL = "Not set";
 
@@ -324,17 +345,20 @@ export function filterRowsByClientName(
 export function filterRowsByNonzeroDues(
   rows: readonly (readonly string[])[],
   selected: ReadonlySet<string>,
+  scope: ProjectsScope = "partner",
 ): string[][] {
   if (selected.size === 0) {
     return rows.map((row) => [...row]);
   }
+
+  const cashDueColumnIndex = getCashDueFilterColumnIndex(scope);
 
   return rows
     .filter((row) => {
       if (selected.has(DUES_NET_NONZERO_LABEL) && parseProjectAmount(row[TOTAL_DUE_TO_MSS_COLUMN_INDEX] ?? "") !== 0) {
         return true;
       }
-      if (selected.has(DUES_CASH_NONZERO_LABEL) && parseProjectAmount(row[CASH_DUE_TO_MSS_COLUMN_INDEX] ?? "") !== 0) {
+      if (selected.has(DUES_CASH_NONZERO_LABEL) && parseProjectAmount(row[cashDueColumnIndex] ?? "") !== 0) {
         return true;
       }
       if (selected.has(DUES_BANK_NONZERO_LABEL) && parseProjectAmount(row[BANK_DUE_COLUMN_INDEX] ?? "") !== 0) {
@@ -362,15 +386,31 @@ export function filterRowsByProjectsScope(
     .map((row) => [...row]);
 }
 
+export function isHiddenFromMainProjectTable(header: string, scope: ProjectsScope): boolean {
+  if (HIDDEN_PROJECT_COLUMNS.has(header)) {
+    return true;
+  }
+  if ((scope === "our" || scope === "shripal") && OUR_SHRIPAL_HIDDEN_TABLE_COLUMNS.has(header)) {
+    return true;
+  }
+  return false;
+}
+
 export function getVisibleColumnIndices(
   headers: readonly string[],
   scope: ProjectsScope = "partner",
 ): number[] {
   return headers.flatMap((header, index) => {
-    if (HIDDEN_PROJECT_COLUMNS.has(header)) {
+    if (isHiddenFromMainProjectTable(header, scope)) {
       return [];
     }
-    if (scope === "our" && PARTNER_ONLY_PROJECT_COLUMNS.has(header)) {
+    if (PARTNER_ONLY_PROJECT_COLUMNS.has(header)) {
+      if (scope === "partner" || scope === "ajay") {
+        return [index];
+      }
+      if (scope === "shripal" && SHRIPAL_VISIBLE_PARTNER_COLUMNS.has(header)) {
+        return [index];
+      }
       return [];
     }
     return [index];

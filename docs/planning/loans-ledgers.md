@@ -2,7 +2,7 @@
 
 > **Purpose:** Capture structure and decisions for the Loans Ledgers Google Sheet (cash/bank + bank-loan EMI books).  
 > **Status:** Analysis only — not wired into the app yet.  
-> **Last updated:** 2026-07-29
+> **Last updated:** 2026-08-19
 
 Keep **this workbook’s** notes here only. Sister planning docs:
 
@@ -30,7 +30,7 @@ Append new instructions under [Decision log](#decision-log).
 
 | Tab name (exact) | Layout type | Header balance(s) (as of read) | Keep? |
 |------------------|-------------|--------------------------------|-------|
-| `Shripal Ji` | **Dual:** Cash/Bank (left) + Loan EMI (right) | Cash/Bank −1,37,455 · Loan −3,83,500 | TBD |
+| `Shripal Ji` | **Dual on sheet** — **analysis:** Cash/Bank only (left) | Cash/Bank −1,37,455 | TBD |
 | `Mahesh Bhaia` | Loan EMI only | −6,59,281 | TBD |
 | `Yogeshwar` | Loan EMI only | −6,48,240 | TBD |
 | `Montu boss` | Empty | — | Skip / TBD |
@@ -102,11 +102,11 @@ Used on: left half of Shripal Ji, NK papa, Sanjay, MK Home.
 
 ### C) Dual layout (Shripal Ji only so far)
 
-| Block | Columns | Title |
-|-------|---------|-------|
-| Left | A–F | Cash / Bank |
-| (gap) | G | empty |
-| Right | H–M | Loan |
+| Block | Columns | Title | In analysis? |
+|-------|---------|-------|--------------|
+| Left | A–F | Cash / Bank | **Yes** (Shripal Ji) |
+| (gap) | G | empty | — |
+| Right | H–M | Loan | No — sheet only |
 
 Same dual idea as Ajay on Sub Vendor sheet (two ledgers side-by-side).
 
@@ -116,11 +116,38 @@ Same dual idea as Ajay on Sub Vendor sheet (two ledgers side-by-side).
 
 ### Shripal Ji
 
-- **Cash/Bank** balance ≈ **−1,37,455** — solvency fees, client pay via firm, TIN shade, RTGS, PhonePe in/out, Ajay Pal cash, Mukesh Mali refund, farma cash, EMI 1–2 mirrored as cash out when self-paid.  
-- **Loan** balance ≈ **−3,83,500** — dispersed ~3,63,774 + charges 15,529 + interest 63,197; EMI 14,750 × 30 tenure, due 3rd of month.  
-  - EMI 1–2: Shirpal self paid  
-  - EMI 3–4: Paid by MSS  
-- Name links to Projects partner tab `SHRIPAL JI` (spelling differs).
+Dual layout on tab **`Shripal Ji`** (left Cash/Bank · right bank-loan EMI). **Analysis table below = Cash/Bank only** — loan EMI book stays on the sheet but is out of scope for planning / app analytics here.
+
+**Cash / Bank — analysis table** (live sheet 2026-08-19):
+
+| | | |
+|---|---|---|
+| **DR total** | **Cr total** | **Balance** |
+| ₹66,600 | ₹2,04,055 | **−₹1,37,455** |
+
+| Date | Particular | DR | Cr | Closing | Remark |
+|------|------------|-----|-----|---------|--------|
+| 09-02-2026 | Solvency Time | — | 10,000 | −10,000 | Phonepe |
+| — | Online Verfication Solvency | — | 2,000 | −12,000 | Phonepe |
+| — | Firm K account Me clint ka pay. | — | 49,785 | −61,785 | Phonepe |
+| — | TIN Shade | — | 54,694 | −1,16,479 | Phonepe |
+| — | RTGS | — | 41,226 | −1,57,705 | RTGS |
+| 09-02-2026 | Phonepe | 15,000 | — | −1,42,705 | Phonepe |
+| — | Phonepe | 28,900 | — | −1,13,805 | Phonepe |
+| — | Phonepe | 2,700 | — | −1,11,105 | Phonepe |
+| — | ajay pal ji ka cash payment | 20,000 | — | −91,105 | ajay pal ji paid |
+| — | mukesh mali advance refund kia | — | 10,000 | −1,01,105 | srhipal ji ne advance refund kia jiska cash MSS me aaya tha |
+| — | farma first time (8 farma) | — | 2,450 | −1,03,555 | cash paid by shripal ji |
+| — | farma second time (16 farma) | — | 4,400 | −1,07,955 | cash paid by shripal ji |
+| 03-03-2026 | 1st EMI | — | 14,750 | −1,22,705 | self paid by shripal ji |
+| 03-04-2026 | 2nd EMI | — | 14,750 | −1,37,455 | self paid by shripal ji |
+| — | pipe gaye the karansar | — | — | −1,37,455 | *(amount TBD)* |
+| — | farma sheet (16 farma) | — | — | −1,37,455 | *(amount TBD)* |
+| — | shri govind workshop se material | — | — | −1,37,455 | *(amount TBD)* |
+
+**Loan EMI book (right half):** not included in analysis — live pending ≈ **−₹3,68,750** (EMI 5 logged Jul 2026; EMIs 3–5 paid by MSS). See sheet tab for full loan schedule.
+
+- **Wired in app:** Shripal sites analytics · `SHRIPAL_CASH_BANK_LEDGER` · `shripal-cash-bank-ledger.ts` · `ShripalCashBankLedger.tsx`.
 
 ### Mahesh Bhaia
 
@@ -183,8 +210,7 @@ Same as other sheets: Excel date serials vs `DD-MM-YYYY` / `DD-MM-YY` text — p
 
 | Person | Kind | Approx pending |
 |--------|------|----------------:|
-| Shripal Ji | Cash/Bank | −1,37,455 |
-| Shripal Ji | Bank loan | −3,83,500 |
+| Shripal Ji | Cash/Bank *(analysis scope)* | −1,37,455 |
 | Mahesh Bhaia | Bank loan | −6,59,281 |
 | Yogeshwar | Bank loan | −6,48,240 |
 | Sonu Uncle | Bank loan | −3,04,257 |
@@ -207,6 +233,16 @@ Same as other sheets: Excel date serials vs `DD-MM-YYYY` / `DD-MM-YY` text — p
 ---
 
 ## Decision log
+
+### 2026-08-20 — Cash / Bank wired into Shripal analytics
+
+- Left block shown on **Shripal sites** analytics (hero + ledger table). Loan EMI block still out of scope.
+
+### 2026-08-19 — Shripal Ji analysis = Cash/Bank only
+
+- User: include only **Cash / Bank** ledger in the analysis table for the Shripal Ji tab.  
+- Per-tab notes + rough snapshot updated; loan EMI book remains on sheet but excluded from analysis tables.  
+- Cash/Bank table refreshed from live sheet (incl. three placeholder expense rows without amounts).
 
 ### 2026-07-29 — Intake
 

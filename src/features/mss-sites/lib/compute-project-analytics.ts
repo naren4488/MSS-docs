@@ -373,10 +373,10 @@ export function ledgerSignLabel(sign: LedgerSign) {
 
 export function netBalanceLabel(netBalance: number) {
   if (netBalance > 0) {
-    return "MSS will receive";
+    return "We will receive";
   }
   if (netBalance < 0) {
-    return "MSS will pay";
+    return "We need to pay";
   }
   return "Settled";
 }

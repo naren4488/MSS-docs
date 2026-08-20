@@ -154,7 +154,7 @@ export function MssSitesTablePreview({ table, viewMode, scope }: MssSitesTablePr
     const byVendor = filterRowsByVendors(scopedRows, selectedVendors);
     const byType = filterRowsByProjectTypes(byVendor, selectedProjectTypes);
     const byStatus = filterRowsByWorkStatuses(byType, selectedWorkStatuses);
-    const byDues = filterRowsByNonzeroDues(byStatus, selectedNonzeroDues);
+    const byDues = filterRowsByNonzeroDues(byStatus, selectedNonzeroDues, scope);
     const byName = filterRowsByClientName(byDues, clientNameQuery);
     return withSequentialSerialNumbers(byName);
   }, [
@@ -164,6 +164,7 @@ export function MssSitesTablePreview({ table, viewMode, scope }: MssSitesTablePr
     selectedProjectTypes,
     selectedVendors,
     selectedWorkStatuses,
+    scope,
   ]);
 
   const workStatusAtDefault = workStatusSelectionMatchesDefault(selectedWorkStatuses, workStatuses);
@@ -265,17 +266,15 @@ export function MssSitesTablePreview({ table, viewMode, scope }: MssSitesTablePr
             isActive={searchActive}
             className="projects-filter--search"
           />
-          {scope === "our" || scope === "partner" ? (
-            <ProjectsMultiselectFilter
-              label="Vendor"
-              options={vendors}
-              selected={selectedVendors}
-              onChange={setSelectedVendors}
-              allSummaryLabel="All vendors"
-              emptyOptionsLabel="No vendors"
-              isActive={vendorFilterActive}
-            />
-          ) : null}
+          <ProjectsMultiselectFilter
+            label="Vendor"
+            options={vendors}
+            selected={selectedVendors}
+            onChange={setSelectedVendors}
+            allSummaryLabel="All vendors"
+            emptyOptionsLabel="No vendors"
+            isActive={vendorFilterActive}
+          />
           <ProjectsMultiselectFilter
             label={registerFilterLabel}
             options={projectTypes}

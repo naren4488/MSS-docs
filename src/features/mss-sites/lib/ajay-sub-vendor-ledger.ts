@@ -1,6 +1,6 @@
 /**
  * Sub Vendor Payment · `Ajay` tab — money ledger + Everest Solar Bill.
- * Source: SUB VENDOR PAYMENT sheet (live snapshot 2026-08-09).
+ * Source: SUB VENDOR PAYMENT sheet (live snapshot 2026-08-20).
  */
 
 import { AJAY_SUB_VENDOR_LEDGER } from "./projects-config";
@@ -22,7 +22,7 @@ export interface AjayEverestBillRow {
 }
 
 export const AJAY_MONEY_LEDGER_SUMMARY = {
-  totalDr: 360_000,
+  totalDr: 610_000,
   totalCr: 788_500,
   closingBalance: AJAY_SUB_VENDOR_LEDGER.tables[0].headerBalance,
 } as const;
@@ -97,6 +97,13 @@ export const AJAY_MONEY_LEDGER_ROWS: readonly AjayMoneyLedgerRow[] = [
     closingBalance: -428_500,
     remark: "EVEREST BUILD SOLAR NEFT",
   },
+  {
+    date: "10 Aug 2026",
+    dr: 250_000,
+    cr: 0,
+    closingBalance: -178_500,
+    remark: "EVEREST BUILD SOLAR NEFT",
+  },
 ];
 
 export const AJAY_EVEREST_BILL_ROWS: readonly AjayEverestBillRow[] = [
@@ -109,6 +116,8 @@ export const AJAY_EVEREST_BILL_ROWS: readonly AjayEverestBillRow[] = [
   { date: "24 Jul 2026", invoiceNo: "MSE/26-27/0117", amount: 2_183, closingBalance: 43_381 },
   { date: "02 Aug 2026", invoiceNo: "MSE/26-27/0125", amount: 8_260, closingBalance: 51_641 },
   { date: "08 Aug 2026", invoiceNo: "MSE/26-27/0137", amount: 17_538, closingBalance: 69_179 },
+  { date: "10 Aug 2026", invoiceNo: "MSE/26-27/0141", amount: 2_655, closingBalance: 71_834 },
+  { date: "20 Aug 2026", invoiceNo: "MSE/26-27/0157", amount: 1_982, closingBalance: 73_816 },
 ];
 
 export function formatLedgerAmount(amount: number): string {

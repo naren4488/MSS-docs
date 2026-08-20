@@ -11,6 +11,20 @@ export const DEC_TO_FEB_SPREADSHEET_ID = "1tkNFHBLjpOZkzayqObWO1VMYkGsD5uy-wrXaB
 
 export const SUB_VENDOR_PAYMENT_SPREADSHEET_ID = "1UrgNeqxEpifcFroxnLU7U4Xah23Li5Hw";
 
+/** Loans Ledgers workbook — Shripal Ji tab left block (see docs/planning/loans-ledgers.md). */
+export const LOANS_LEDGERS_SPREADSHEET_ID = "1_CZnKHpPoISlSxjESlZdiQohpimMkbgHC6pA28hxQME";
+
+export const SHRIPAL_CASH_BANK_LEDGER = {
+  spreadsheetTitle: "Loans Ledgers",
+  sheetTab: "Shripal Ji",
+  projectType: "SHRIPAL JI",
+  title: "Cash / Bank",
+  columnRange: "A–F",
+  headerDr: 66_600,
+  headerCr: 204_055,
+  closingBalance: -137_455,
+} as const;
+
 /** Sub Vendor Payment workbook — `Ajay` tab dual ledgers (see docs/planning/ui-ajay-sites.md). */
 export const AJAY_SUB_VENDOR_LEDGER = {
   sheetTab: "Ajay",
@@ -19,13 +33,13 @@ export const AJAY_SUB_VENDOR_LEDGER = {
       id: "money",
       title: "Money ledger",
       columnRange: "A–E",
-      headerBalance: -428_500,
+      headerBalance: -178_500,
     },
     {
       id: "everest-bills",
       title: "Everest Solar Bill",
       columnRange: "K–P",
-      headerBalance: 69_179,
+      headerBalance: 73_816,
     },
   ],
 } as const;

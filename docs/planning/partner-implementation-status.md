@@ -29,8 +29,8 @@ Related docs:
 |------|--------|-------|
 | Top-level **Ajay sites** tab | ✅ | Scope `ajay` in `projects-config.ts`; excluded from Partner projects chips |
 | Dual registers in one view | ✅ | MSS pipeline (29 sites) + Arkshakti backlog (31 sites); zero name overlap after RAJENDRA SETHI removed from MSS sheet |
-| Sub Vendor · **Money ledger** | ✅ | Static data + UI in `ajay-sub-vendor-ledger.ts`, `AjaySubVendorLedgers.tsx`; closing **−₹4,28,500** |
-| Sub Vendor · **Everest Solar Bill** | ✅ | Nine MSE invoices; closing **₹69,179**; shown in analytics hero + ledger tables |
+| Sub Vendor · **Money ledger** | ✅ | Static data + UI in `ajay-sub-vendor-ledger.ts`, `AjaySubVendorLedgers.tsx`; closing **−₹1,78,500** (we need to pay) |
+| Sub Vendor · **Everest Solar Bill** | ✅ | Eleven MSE invoices; closing **₹73,816**; shown in analytics hero + ledger tables |
 | Column import fixes | ✅ | `TOTAL Payment recieved` header aliases; Arkshakti-only money cols intentionally not imported |
 | Partner money ledger seed | ✅ | `partner-mss-payments.ts` — PP / cash / NEFT rows incl. Jul 2026 ₹3L EVEREST BUILD SOLAR |
 | **Analytics (Ajay-specific)** | ✅ | Hero: total sites · net due Arkshakti · net due MSS · both Sub Vendor cards · **final sum** (registers + ledgers) |
@@ -65,15 +65,17 @@ Related docs:
 | Top-level **Shripal sites** tab | ✅ | Scope `shripal`; excluded from Partner chips |
 | Vendor chips | ✅ | MSS + Arkshakti shortcuts |
 | **Analytics (Our-style)** | ✅ | Sites, net due by vendor, payments, due-from-clients card |
-| **Extra: client deal vs Deal with MSS** | ✅ | Final deal, Deal with MSS, partner profit on hero + overview |
-| **Extra: Payment with partner** | ✅ | Hero card + dues/overview tables |
+| **Extra: Payment with partner** | ✅ | Table column + hero + dues table (only partner extra vs Our) |
+| **Loans Ledgers · Cash / Bank** | ✅ | Hero + full ledger section (`shripal-cash-bank-ledger.ts`) |
 | **Download analytics** | ✅ | Full-page PDF (same path as Our) |
+
+*(2026-08-20: removed Deal with MSS / Partner commission from table; removed deal hero + deal-split overview.)*
 
 ### Pending
 
 | Item | Status | Notes |
 |------|--------|-------|
-| Loan ledger linkage | ⏳ Optional | See [`loans-ledgers.md`](./loans-ledgers.md) — not wired into analytics yet |
+| Live sync for Cash/Bank ledger | ⏳ Optional | Seeded snapshot — refresh from Loans Ledgers sheet when updated |
 
 **Verdict:** Current Shripal analytics requirement is **done**.
 
@@ -150,7 +152,8 @@ Related docs:
 | Date | Partner | Change |
 |------|---------|--------|
 | 2026-08-09 | Partner | Analytics = Our/Shripal-style + Satyanarayan Sub Vendor ledger; download PDF enabled |
-| 2026-08-09 | Shripal | Analytics = Our layout + Deal with MSS / Payment with partner extras; download PDF enabled |
+| 2026-08-20 | Shripal | UI = Our projects + Payment with partner only (deal columns/analytics removed) |
+| 2026-08-09 | Shripal | Analytics = Our layout + Payment with partner extra; download PDF enabled |
 | 2026-08-09 | Our | Marked current requirement **done** (analytics, PDF download, dues ≠ 0 filter, column order); chips left optional |
 | 2026-08-09 | Our | Analytics hero + overview for residential/commercial registers |
 | 2026-08-09 | Ajay | Initial status doc: Ajay scope marked **done** per current requirement; **GST billing TBD** logged as only pending item |

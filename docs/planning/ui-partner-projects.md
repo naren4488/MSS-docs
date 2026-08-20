@@ -53,13 +53,12 @@ Examples (non-exhaustive):
 **Hero:**
 
 1. Total sites (partner count + vendor split)
-2. Net due · MSS
-3. Net due · Arkshakti
-4. Due from clients (net + cash + bank)
+2. **Total due from client** — cash + bank (breakdown listed)
+3. **Payment with partner**
+4. **Total due to MSS** — with MSS / Arkshakti split
 5. **Client deal vs Deal with MSS** — equation layout: Final deal − Deal with MSS = Partner profit
-6. Payment with partner
-7. **Satyanarayan · Sub Vendor** closing balance
-8. **Final sum** — both vendor registers + Satyanarayan Sub Vendor (same pattern as Ajay)
+6. **Satyanarayan · Sub Vendor** closing balance
+7. **Final sum** — both vendor registers + Satyanarayan Sub Vendor (same pattern as Ajay)
 
 **Overview:** portfolio snapshot, partner deal vs MSS, by-partner register table, work status.
 
@@ -79,6 +78,10 @@ Examples (non-exhaustive):
 ---
 
 ## Decision log
+
+### 2026-08-20 — Hero money order
+
+- **Total due from client** → **Payment with partner** → **Total due to MSS** (then deal / Satya / final sum). Same pattern as Shripal / Ajay.
 
 ### 2026-07-29 — Split introduced
 

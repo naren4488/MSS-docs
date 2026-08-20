@@ -46,12 +46,12 @@ Everything else → **Partner projects** (or Shripal / Ajay dedicated tabs).
 | Table / Analytics | Secondary toggle; analytics uses scoped + filtered rows. |
 | **Download analytics** | Our + Analytics only — full-page PDF (custom page size, **not A4**). |
 | Row set | Only Our-scope rows from the merged Google Sheet fetch. |
-| Visible columns | Hide partner-only: `Deal with MSS`, `Partner commission`, `Payment with partner`. |
-| Column order (dues) | … → Cash due from client → **Cash due to MSS** → **Total Due to MSS** → Payment received … |
+| Visible columns | Hide partner-only columns; **PAYMENT STATUS** in MORE; **Cash due to MSS** hidden (same as Cash due from client on these registers). |
+| Column order (dues) | … → **Cash due from client** → **Total Due to MSS** → Payment received … |
 | Register filter | Labeled **Register** — `MSS res`, `MSS COMMERCIAL`. |
 | Vendor filter | `MSS` / `Arkshakti`. |
 | Work status filter | Default excludes project-on-hold style statuses. |
-| **Dues filter** | Optional: Net due ≠ 0 · Cash due ≠ 0 · Bank due ≠ 0 (OR). Empty = all sites. Replaces old Payment received filter. |
+| **Dues filter** | Optional: Net due ≠ 0 · Cash due ≠ 0 (uses **Cash due from client**) · Bank due ≠ 0 (OR). Empty = all sites. |
 | Register pills | `MSS res`, `MSS commercial` (chips update only the **Register** filter; they do not change Vendor). |
 | Count | Filtered count within Our scope; “of N” when inner filters active. |
 | Analytics | Hero: total sites, net due (MSS / Arkshakti), payments received, **Due from clients** (cash + bank + net). Overview: register snapshot, dues-by-register table, work status by project type. No deal totals / payment dues sections. |
@@ -69,6 +69,11 @@ Everything else → **Partner projects** (or Shripal / Ajay dedicated tabs).
 ---
 
 ## Decision log
+
+### 2026-08-20 — Table columns: PAYMENT STATUS in MORE; hide Cash due to MSS (Our)
+
+- Same column rules as Shripal for register-style tabs — see [`ui-shripal-sites.md`](./ui-shripal-sites.md).
+- **Cash due ≠ 0** dues filter uses **Cash due from client** (not Cash due to MSS).
 
 ### 2026-08-09 — Current requirement complete (table + analytics)
 

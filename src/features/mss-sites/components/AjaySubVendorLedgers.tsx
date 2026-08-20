@@ -7,6 +7,7 @@ import {
   formatLedgerAmount,
   formatSignedLedgerBalance,
 } from "../lib/ajay-sub-vendor-ledger";
+import { getLedgerSign, ledgerAmountClassName, netBalanceLabel } from "../lib/compute-project-analytics";
 import { AJAY_SUB_VENDOR_LEDGER } from "../lib/projects-config";
 
 function LedgerAmountCell({ amount }: { amount: number }) {
@@ -17,10 +18,21 @@ function LedgerAmountCell({ amount }: { amount: number }) {
   );
 }
 
+function SignedBalanceCell({ amount, emphasis = false }: { amount: number; emphasis?: boolean }) {
+  const sign = getLedgerSign(amount);
+  return (
+    <td
+      className={`mss-sites-analytics-table-num${emphasis ? " mss-sites-analytics-table-num--emphasis" : ""} ${ledgerAmountClassName(sign)}`}
+    >
+      {formatSignedLedgerBalance(amount)}
+    </td>
+  );
+}
+
 function SubVendorLedgerSummary({
   items,
 }: {
-  items: { label: string; value: string; emphasis?: boolean }[];
+  items: { label: string; value: string; emphasis?: boolean; valueClassName?: string }[];
 }) {
   return (
     <div className="mss-subvendor-ledger-summary">
@@ -28,7 +40,7 @@ function SubVendorLedgerSummary({
         <div key={item.label} className="mss-subvendor-ledger-summary-item">
           <p className="mss-subvendor-ledger-summary-label">{item.label}</p>
           <p
-            className={`mss-subvendor-ledger-summary-value${item.emphasis ? " mss-subvendor-ledger-summary-value--emphasis" : ""}`}
+            className={`mss-subvendor-ledger-summary-value${item.emphasis ? " mss-subvendor-ledger-summary-value--emphasis" : ""}${item.valueClassName ? ` ${item.valueClassName}` : ""}`}
           >
             {item.value}
           </p>
@@ -41,6 +53,8 @@ function SubVendorLedgerSummary({
 export function AjaySubVendorLedgers() {
   const moneyTable = AJAY_SUB_VENDOR_LEDGER.tables[0];
   const billsTable = AJAY_SUB_VENDOR_LEDGER.tables[1];
+  const moneySign = getLedgerSign(AJAY_MONEY_LEDGER_SUMMARY.closingBalance);
+  const billsSign = getLedgerSign(AJAY_EVEREST_BILLS_SUMMARY.closingBalance);
 
   return (
     <div className="mss-analytics-dual-ledgers">
@@ -65,12 +79,14 @@ export function AjaySubVendorLedgers() {
               label: "Closing balance",
               value: formatSignedLedgerBalance(AJAY_MONEY_LEDGER_SUMMARY.closingBalance),
               emphasis: true,
+              valueClassName: ledgerAmountClassName(moneySign),
             },
           ]}
         />
 
         <p className="mss-subvendor-ledger-note" role="note">
-          Negative closing balance = Ajay has paid/received more than MSS has paid out on this book (net CR side).
+          <strong>− red</strong> = we need to pay · <strong>+ green</strong> = we will receive. Money ledger closing{" "}
+          {netBalanceLabel(AJAY_MONEY_LEDGER_SUMMARY.closingBalance).toLowerCase()}.
         </p>
 
         <div className="mss-sites-analytics-table-wrap">
@@ -86,13 +102,11 @@ export function AjaySubVendorLedgers() {
             </thead>
             <tbody>
               {AJAY_MONEY_LEDGER_ROWS.map((row) => (
-                <tr key={`${row.date}-${row.remark}`}>
+                <tr key={`${row.date}-${row.remark}-${row.closingBalance}`}>
                   <td>{row.date}</td>
                   <LedgerAmountCell amount={row.dr} />
                   <LedgerAmountCell amount={row.cr} />
-                  <td className="mss-sites-analytics-table-num mss-sites-analytics-table-num--emphasis">
-                    {formatSignedLedgerBalance(row.closingBalance)}
-                  </td>
+                  <SignedBalanceCell amount={row.closingBalance} emphasis />
                   <td className="mss-subvendor-ledger-remark">{row.remark}</td>
                 </tr>
               ))}
@@ -102,9 +116,7 @@ export function AjaySubVendorLedgers() {
                 <th scope="row">Totals</th>
                 <td className="mss-sites-analytics-table-num">{formatLedgerAmount(AJAY_MONEY_LEDGER_SUMMARY.totalDr)}</td>
                 <td className="mss-sites-analytics-table-num">{formatLedgerAmount(AJAY_MONEY_LEDGER_SUMMARY.totalCr)}</td>
-                <td className="mss-sites-analytics-table-num mss-sites-analytics-table-num--emphasis">
-                  {formatSignedLedgerBalance(AJAY_MONEY_LEDGER_SUMMARY.closingBalance)}
-                </td>
+                <SignedBalanceCell amount={AJAY_MONEY_LEDGER_SUMMARY.closingBalance} emphasis />
                 <td />
               </tr>
             </tfoot>
@@ -132,6 +144,7 @@ export function AjaySubVendorLedgers() {
               label: "Total bills (DR)",
               value: formatLedgerAmount(AJAY_EVEREST_BILLS_SUMMARY.totalDr),
               emphasis: true,
+              valueClassName: ledgerAmountClassName(billsSign),
             },
           ]}
         />
@@ -168,7 +181,9 @@ export function AjaySubVendorLedgers() {
                   Total
                 </th>
                 <td className="mss-sites-analytics-table-num">{formatLedgerAmount(AJAY_EVEREST_BILLS_SUMMARY.totalDr)}</td>
-                <td className="mss-sites-analytics-table-num mss-sites-analytics-table-num--emphasis">
+                <td
+                  className={`mss-sites-analytics-table-num mss-sites-analytics-table-num--emphasis ${ledgerAmountClassName(billsSign)}`}
+                >
                   {formatLedgerAmount(AJAY_EVEREST_BILLS_SUMMARY.closingBalance)}
                 </td>
               </tr>
