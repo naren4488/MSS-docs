@@ -39,7 +39,6 @@ const SHRIPAL_ANALYTICS_SECTIONS = [
 
 const PARTNER_ANALYTICS_SECTIONS = [
   { id: "analytics-overview", label: "Overview" },
-  { id: "analytics-satyanarayan", label: "Satyanarayan ledger" },
   { id: "analytics-partners", label: "By partner" },
 ] as const;
 
@@ -47,6 +46,13 @@ const AJAY_ANALYTICS_SECTIONS = [
   { id: "analytics-overview", label: "Overview" },
   { id: "analytics-subvendor", label: "Sub Vendor ledgers" },
 ] as const;
+
+const SATYANARAYAN_ANALYTICS_SECTIONS = [
+  { id: "analytics-overview", label: "Overview" },
+  { id: "analytics-satyanarayan", label: "Sub Vendor ledger" },
+] as const;
+
+const RJGREEN_ANALYTICS_SECTIONS = [{ id: "analytics-overview", label: "Overview" }] as const;
 
 function AnalyticsInfoBanner({
   title,
@@ -840,12 +846,6 @@ function PartnerOverviewDetails({
     return { paymentReceived, paymentWithPartner, dealRows };
   }, [byProjectType, headers, rows]);
 
-  const finalSum =
-    summary.totalDueToMssByVendor.mss +
-    summary.totalDueToMssByVendor.arkshakti +
-    SATYANARAYAN_LEDGER_SUMMARY.closingBalance;
-  const finalSign = getLedgerSign(finalSum);
-
   return (
     <div className="mss-analytics-ajay-overview">
       <div className="mss-analytics-ajay-overview-grid">
@@ -867,10 +867,6 @@ function PartnerOverviewDetails({
             <div>
               <dt>Payment with partner</dt>
               <dd>{formatSignedLedgerAmount(details.paymentWithPartner)}</dd>
-            </div>
-            <div>
-              <dt>Satyanarayan Sub Vendor</dt>
-              <dd>{formatSignedLedgerAmount(SATYANARAYAN_LEDGER_SUMMARY.closingBalance)}</dd>
             </div>
           </dl>
         </article>
@@ -922,7 +918,7 @@ function PartnerOverviewDetails({
       </div>
 
       <div className="mss-analytics-ajay-sum-breakdown">
-        <p className="mss-analytics-ajay-detail-title">How the final sum is built</p>
+        <p className="mss-analytics-ajay-detail-title">Net due by vendor workbook</p>
         <div className="mss-sites-analytics-table-wrap">
           <table className="mss-sites-analytics-table mss-sites-analytics-table--dues">
             <thead>
@@ -951,25 +947,16 @@ function PartnerOverviewDetails({
                 </td>
                 <td>Partner registers on MSS workbook</td>
               </tr>
-              <tr>
-                <th scope="row">Satyanarayan · Sub Vendor</th>
-                <td
-                  className={`mss-sites-analytics-table-num ${ledgerAmountClassName(getLedgerSign(SATYANARAYAN_LEDGER_SUMMARY.closingBalance))}`}
-                >
-                  {formatSignedLedgerAmount(SATYANARAYAN_LEDGER_SUMMARY.closingBalance)}
-                </td>
-                <td>Money ledger outstanding (MSS advances)</td>
-              </tr>
             </tbody>
             <tfoot>
               <tr className="mss-analytics-ajay-sum-row">
-                <th scope="row">Final combined position</th>
+                <th scope="row">Total due to MSS</th>
                 <td
-                  className={`mss-sites-analytics-table-num mss-sites-analytics-table-num--emphasis ${ledgerAmountClassName(finalSign)}`}
+                  className={`mss-sites-analytics-table-num mss-sites-analytics-table-num--emphasis ${ledgerAmountClassName(getLedgerSign(summary.totalDueToMss))}`}
                 >
-                  {formatSignedLedgerAmount(finalSum)}
+                  {formatSignedLedgerAmount(summary.totalDueToMss)}
                 </td>
-                <td>{netBalanceLabel(finalSum)} across registers and Satyanarayan ledger</td>
+                <td>{netBalanceLabel(summary.totalDueToMss)} across remaining partner registers</td>
               </tr>
             </tfoot>
           </table>
@@ -1126,14 +1113,22 @@ export function MssSitesAnalytics({
   const isAjayScope = scope === "ajay";
   const isOurScope = scope === "our";
   const isShripalScope = scope === "shripal";
+  const isSatyanarayanScope = scope === "satyanarayan";
+  const isRjGreenScope = scope === "rjgreen";
   const isRegisterStyleScope = isOurScope || isShripalScope;
+  const isPartnerStyleLayoutScope =
+    isPartnerScope || isAjayScope || isSatyanarayanScope || isRjGreenScope;
   const analyticsSections = isAjayScope
     ? AJAY_ANALYTICS_SECTIONS
     : isShripalScope
       ? SHRIPAL_ANALYTICS_SECTIONS
-      : isOurScope
-        ? OUR_ANALYTICS_SECTIONS
-        : PARTNER_ANALYTICS_SECTIONS;
+      : isSatyanarayanScope
+        ? SATYANARAYAN_ANALYTICS_SECTIONS
+        : isRjGreenScope
+          ? RJGREEN_ANALYTICS_SECTIONS
+          : isOurScope
+            ? OUR_ANALYTICS_SECTIONS
+            : PARTNER_ANALYTICS_SECTIONS;
   const analytics = useMemo(() => computeProjectAnalytics(headers, rows), [headers, rows]);
   const { summary } = analytics;
   const netSign = getLedgerSign(summary.netMssReceivable);
@@ -1304,14 +1299,68 @@ export function MssSitesAnalytics({
       }
     }
 
-    const satyaLedger = SATYANARAYAN_LEDGER_SUMMARY.closingBalance;
     const registerMss = summary.totalDueToMssByVendor.mss;
     const registerArk = summary.totalDueToMssByVendor.arkshakti;
     const cashDue = summary.totalCashDueFromClient;
     const bankDue = summary.totalBankDue;
     const dueFromClients = cashDue + bankDue;
     const totalDueToMss = summary.totalDueToMss;
-    const finalSum = registerMss + registerArk + satyaLedger;
+
+    return {
+      netDueMss: registerMss,
+      netDueArk: registerArk,
+      cashDue,
+      bankDue,
+      dueFromClients,
+      totalDueToMss,
+      paymentWithPartnerTotal,
+      finalDeal: summary.totalFinalDealWithClient,
+      dealWithMss: summary.totalDealWithMss,
+      partnerProfit: summary.totalPartnerProfit,
+      partnerCount: analytics.byProjectType.length,
+      dueFromClientsSign: getLedgerSign(dueFromClients),
+      totalDueToMssSign: getLedgerSign(totalDueToMss),
+      netDueMssSign: getLedgerSign(registerMss),
+      netDueArkSign: getLedgerSign(registerArk),
+      partnerProfitSign: getLedgerSign(summary.totalPartnerProfit),
+      paymentWithPartnerSign: getLedgerSign(paymentWithPartnerTotal),
+    };
+  }, [
+    analytics.byProjectType.length,
+    headers,
+    rows,
+    isPartnerScope,
+    summary.totalBankDue,
+    summary.totalCashDueFromClient,
+    summary.totalDealWithMss,
+    summary.totalDueToMss,
+    summary.totalDueToMssByVendor.arkshakti,
+    summary.totalDueToMssByVendor.mss,
+    summary.totalFinalDealWithClient,
+    summary.totalPartnerProfit,
+  ]);
+
+  const satyanarayanHeroMetrics = useMemo(() => {
+    if (!isSatyanarayanScope) {
+      return null;
+    }
+
+    const paymentWithPartnerIndex = headers.indexOf("Payment with partner");
+    let paymentWithPartnerTotal = 0;
+    for (const row of rows) {
+      if (paymentWithPartnerIndex >= 0) {
+        paymentWithPartnerTotal += parseProjectAmount(row[paymentWithPartnerIndex] ?? "");
+      }
+    }
+
+    const registerMss = summary.totalDueToMssByVendor.mss;
+    const registerArk = summary.totalDueToMssByVendor.arkshakti;
+    const cashDue = summary.totalCashDueFromClient;
+    const bankDue = summary.totalBankDue;
+    const dueFromClients = cashDue + bankDue;
+    const totalDueToMss = summary.totalDueToMss;
+    const satyaLedger = SATYANARAYAN_LEDGER_SUMMARY.closingBalance;
+    const finalSum = totalDueToMss + satyaLedger;
 
     return {
       netDueMss: registerMss,
@@ -1326,7 +1375,6 @@ export function MssSitesAnalytics({
       partnerProfit: summary.totalPartnerProfit,
       satyaLedger,
       finalSum,
-      partnerCount: analytics.byProjectType.length,
       dueFromClientsSign: getLedgerSign(dueFromClients),
       totalDueToMssSign: getLedgerSign(totalDueToMss),
       netDueMssSign: getLedgerSign(registerMss),
@@ -1337,10 +1385,61 @@ export function MssSitesAnalytics({
       finalSumSign: getLedgerSign(finalSum),
     };
   }, [
-    analytics.byProjectType.length,
     headers,
+    isSatyanarayanScope,
     rows,
-    isPartnerScope,
+    summary.totalBankDue,
+    summary.totalCashDueFromClient,
+    summary.totalDealWithMss,
+    summary.totalDueToMss,
+    summary.totalDueToMssByVendor.arkshakti,
+    summary.totalDueToMssByVendor.mss,
+    summary.totalFinalDealWithClient,
+    summary.totalPartnerProfit,
+  ]);
+
+  const rjgreenHeroMetrics = useMemo(() => {
+    if (!isRjGreenScope) {
+      return null;
+    }
+
+    const paymentWithPartnerIndex = headers.indexOf("Payment with partner");
+    let paymentWithPartnerTotal = 0;
+    for (const row of rows) {
+      if (paymentWithPartnerIndex >= 0) {
+        paymentWithPartnerTotal += parseProjectAmount(row[paymentWithPartnerIndex] ?? "");
+      }
+    }
+
+    const registerMss = summary.totalDueToMssByVendor.mss;
+    const registerArk = summary.totalDueToMssByVendor.arkshakti;
+    const cashDue = summary.totalCashDueFromClient;
+    const bankDue = summary.totalBankDue;
+    const dueFromClients = cashDue + bankDue;
+    const totalDueToMss = summary.totalDueToMss;
+
+    return {
+      netDueMss: registerMss,
+      netDueArk: registerArk,
+      cashDue,
+      bankDue,
+      dueFromClients,
+      totalDueToMss,
+      paymentWithPartnerTotal,
+      finalDeal: summary.totalFinalDealWithClient,
+      dealWithMss: summary.totalDealWithMss,
+      partnerProfit: summary.totalPartnerProfit,
+      dueFromClientsSign: getLedgerSign(dueFromClients),
+      totalDueToMssSign: getLedgerSign(totalDueToMss),
+      netDueMssSign: getLedgerSign(registerMss),
+      netDueArkSign: getLedgerSign(registerArk),
+      partnerProfitSign: getLedgerSign(summary.totalPartnerProfit),
+      paymentWithPartnerSign: getLedgerSign(paymentWithPartnerTotal),
+    };
+  }, [
+    headers,
+    isRjGreenScope,
+    rows,
     summary.totalBankDue,
     summary.totalCashDueFromClient,
     summary.totalDealWithMss,
@@ -1365,7 +1464,17 @@ export function MssSitesAnalytics({
   );
 
   const registerLabel =
-    scope === "our" ? "register" : scope === "shripal" ? "Shripal register" : scope === "ajay" ? "Ajay register" : "partner tab";
+    scope === "our"
+      ? "register"
+      : scope === "shripal"
+        ? "Shripal register"
+        : scope === "ajay"
+          ? "Ajay register"
+          : scope === "satyanarayan"
+            ? "Satyanarayan register"
+            : scope === "rjgreen"
+              ? "RJ Green register"
+              : "partner tab";
   const summaryTitle =
     scope === "our"
       ? "Our projects summary"
@@ -1373,7 +1482,11 @@ export function MssSitesAnalytics({
         ? "Shripal sites summary"
         : scope === "ajay"
           ? "Ajay sites summary"
-          : "Partner projects summary";
+          : scope === "satyanarayan"
+            ? "Satyanarayan sites summary"
+            : scope === "rjgreen"
+              ? "RJ Green sites summary"
+              : "Partner projects summary";
 
   return (
     <div id="mss-sites-analytics" className="mss-sites-analytics">
@@ -1388,13 +1501,19 @@ export function MssSitesAnalytics({
               ? ` · ${analytics.byProjectType.length} ${registerLabel}${analytics.byProjectType.length === 1 ? "" : "s"}`
               : ""}
           </p>
-          {isOurScope || isShripalScope || isPartnerScope ? (
+          {isOurScope || isShripalScope || isSatyanarayanScope || isRjGreenScope || isPartnerScope || isAjayScope ? (
             <p className="mss-analytics-print-meta">
               {isShripalScope
                 ? "Shripal sites"
-                : isOurScope
-                  ? "Our projects"
-                  : "Partner projects"}{" "}
+                : isSatyanarayanScope
+                  ? "Satyanarayan sites"
+                  : isRjGreenScope
+                    ? "RJ Green sites"
+                    : isAjayScope
+                      ? "Ajay sites"
+                      : isOurScope
+                        ? "Our projects"
+                        : "Partner projects"}{" "}
               analytics · {rows.length} site
               {rows.length === 1 ? "" : "s"}
               {isFiltered ? ` (filtered from ${totalRowCount})` : ""} · Generated{" "}
@@ -1443,15 +1562,28 @@ export function MssSitesAnalytics({
       ) : null}
 
       {isPartnerScope ? (
-        <AnalyticsInfoBanner title="Partner portfolio + Satyanarayan ledger">
-          Aggregate partner registers (excluding Our / Shripal / Ajay). Site dues and deal margins
-          roll up here; <strong>Satyanarayan</strong> also has a Sub Vendor Payment money ledger
-          (closing {formatSignedLedgerAmount(SATYANARAYAN_LEDGER_SUMMARY.closingBalance)}).
+        <AnalyticsInfoBanner title="Remaining partner portfolio">
+          Aggregate partner registers excluding Our / Shripal / Ajay / Satyanarayan / RJ Green. Site dues and
+          deal margins roll up here.
+        </AnalyticsInfoBanner>
+      ) : null}
+
+      {isSatyanarayanScope ? (
+        <AnalyticsInfoBanner title="Satyanarayan register">
+          Partner-style site columns plus the <strong>Sub Vendor Payment</strong> money ledger for
+          Satyanarayan (closing {formatSignedLedgerAmount(SATYANARAYAN_LEDGER_SUMMARY.closingBalance)}).
+        </AnalyticsInfoBanner>
+      ) : null}
+
+      {isRjGreenScope ? (
+        <AnalyticsInfoBanner title="RJ Green register">
+          Rohit (RJ GREEN) sites from MSS and Arkshakti with the same partner money columns as Partner
+          projects.
         </AnalyticsInfoBanner>
       ) : null}
 
       <section
-        className={`mss-analytics-hero${isAjayScope || isRegisterStyleScope || isPartnerScope ? " mss-analytics-hero--ajay" : ""}`}
+        className={`mss-analytics-hero${isRegisterStyleScope || isPartnerStyleLayoutScope ? " mss-analytics-hero--ajay" : ""}`}
         aria-label="Key metrics"
       >
         {isAjayScope && ajayHeroMetrics ? (
@@ -1804,29 +1936,238 @@ export function MssSitesAnalytics({
                 </div>
               </div>
             </article>
-            <article
-              className={`mss-analytics-hero-card mss-analytics-hero-card--balance-${partnerHeroMetrics.satyaLedgerSign}`}
-            >
-              <p className="mss-analytics-hero-label">Satyanarayan · Sub Vendor</p>
-              <p className={`mss-analytics-hero-value ${ledgerAmountClassName(partnerHeroMetrics.satyaLedgerSign)}`}>
-                {formatSignedLedgerAmount(partnerHeroMetrics.satyaLedger)}
-              </p>
+          </>
+        ) : isSatyanarayanScope && satyanarayanHeroMetrics ? (
+          <>
+            <article className="mss-analytics-hero-card">
+              <p className="mss-analytics-hero-label">Total sites</p>
+              <p className="mss-analytics-hero-value">{summary.sitesByVendor.total}</p>
               <p className="mss-analytics-hero-hint">
-                DR {formatSignedLedgerAmount(SATYANARAYAN_LEDGER_SUMMARY.totalDr)} · money ledger closing
+                {PROJECT_VENDORS.MSS} {summary.sitesByVendor.mss} · {PROJECT_VENDORS.ARKSHAKTI}{" "}
+                {summary.sitesByVendor.arkshakti}
               </p>
             </article>
             <article
-              className={`mss-analytics-hero-card mss-analytics-hero-card--final mss-analytics-hero-card--balance-${partnerHeroMetrics.finalSumSign}`}
+              className={`mss-analytics-hero-card mss-analytics-hero-card--client-dues mss-analytics-hero-card--balance-${satyanarayanHeroMetrics.dueFromClientsSign}`}
+            >
+              <p className="mss-analytics-hero-label">Total due from client</p>
+              <p className={`mss-analytics-hero-value ${ledgerAmountClassName(satyanarayanHeroMetrics.dueFromClientsSign)}`}>
+                {formatSignedLedgerAmount(satyanarayanHeroMetrics.dueFromClients)}
+              </p>
+              <p className="mss-analytics-hero-hint mss-analytics-hero-hint--strong">Cash + bank on register</p>
+              <dl className="mss-analytics-hero-dues-list">
+                <div>
+                  <dt>Cash due</dt>
+                  <dd className={ledgerAmountClassName(getLedgerSign(satyanarayanHeroMetrics.cashDue))}>
+                    {formatSignedLedgerAmount(satyanarayanHeroMetrics.cashDue)}
+                  </dd>
+                </div>
+                <div>
+                  <dt>Bank due</dt>
+                  <dd className={ledgerAmountClassName(getLedgerSign(satyanarayanHeroMetrics.bankDue))}>
+                    {formatSignedLedgerAmount(satyanarayanHeroMetrics.bankDue)}
+                  </dd>
+                </div>
+              </dl>
+            </article>
+            <article
+              className={`mss-analytics-hero-card mss-analytics-hero-card--balance-${satyanarayanHeroMetrics.paymentWithPartnerSign}`}
+            >
+              <p className="mss-analytics-hero-label">Payment with partner</p>
+              <p
+                className={`mss-analytics-hero-value ${ledgerAmountClassName(satyanarayanHeroMetrics.paymentWithPartnerSign)}`}
+              >
+                {formatSignedLedgerAmount(satyanarayanHeroMetrics.paymentWithPartnerTotal)}
+              </p>
+              <p className="mss-analytics-hero-hint">Cash / installments held on Satyanarayan register</p>
+            </article>
+            <article
+              className={`mss-analytics-hero-card mss-analytics-hero-card--balance-${satyanarayanHeroMetrics.totalDueToMssSign}`}
+            >
+              <p className="mss-analytics-hero-label">Total due to MSS</p>
+              <p className={`mss-analytics-hero-value ${ledgerAmountClassName(satyanarayanHeroMetrics.totalDueToMssSign)}`}>
+                {formatSignedLedgerAmount(satyanarayanHeroMetrics.totalDueToMss)}
+              </p>
+              <p className="mss-analytics-hero-hint mss-analytics-hero-hint--strong">Net due on site register</p>
+              <dl className="mss-analytics-hero-dues-list">
+                <div>
+                  <dt>{PROJECT_VENDORS.MSS}</dt>
+                  <dd className={ledgerAmountClassName(satyanarayanHeroMetrics.netDueMssSign)}>
+                    {formatSignedLedgerAmount(satyanarayanHeroMetrics.netDueMss)}
+                  </dd>
+                </div>
+                <div>
+                  <dt>{PROJECT_VENDORS.ARKSHAKTI}</dt>
+                  <dd className={ledgerAmountClassName(satyanarayanHeroMetrics.netDueArkSign)}>
+                    {formatSignedLedgerAmount(satyanarayanHeroMetrics.netDueArk)}
+                  </dd>
+                </div>
+              </dl>
+            </article>
+            <article className="mss-analytics-hero-card mss-analytics-hero-card--partner-deal">
+              <p className="mss-analytics-hero-label">Client deal vs Deal with MSS</p>
+              <p className="mss-analytics-hero-hint">
+                Client billing minus MSS deal = partner margin on this register
+              </p>
+              <div className="mss-analytics-deal-equation" aria-label="Deal equation">
+                <div className="mss-analytics-deal-equation-term">
+                  <p className="mss-analytics-deal-equation-label">Final deal with client</p>
+                  <p className="mss-analytics-deal-equation-value">
+                    {formatSignedLedgerAmount(satyanarayanHeroMetrics.finalDeal)}
+                  </p>
+                </div>
+                <span className="mss-analytics-deal-equation-op" aria-hidden>
+                  −
+                </span>
+                <div className="mss-analytics-deal-equation-term">
+                  <p className="mss-analytics-deal-equation-label">Deal with MSS</p>
+                  <p className="mss-analytics-deal-equation-value">
+                    {formatSignedLedgerAmount(satyanarayanHeroMetrics.dealWithMss)}
+                  </p>
+                </div>
+                <span className="mss-analytics-deal-equation-op" aria-hidden>
+                  =
+                </span>
+                <div
+                  className={`mss-analytics-deal-equation-term mss-analytics-deal-equation-term--result mss-analytics-deal-equation-term--${satyanarayanHeroMetrics.partnerProfitSign}`}
+                >
+                  <p className="mss-analytics-deal-equation-label">Partner profit</p>
+                  <p
+                    className={`mss-analytics-deal-equation-value ${ledgerAmountClassName(satyanarayanHeroMetrics.partnerProfitSign)}`}
+                  >
+                    {formatSignedLedgerAmount(satyanarayanHeroMetrics.partnerProfit)}
+                  </p>
+                </div>
+              </div>
+            </article>
+            <article
+              className={`mss-analytics-hero-card mss-analytics-hero-card--balance-${satyanarayanHeroMetrics.satyaLedgerSign}`}
+            >
+              <p className="mss-analytics-hero-label">Sub Vendor · Money ledger</p>
+              <p className={`mss-analytics-hero-value ${ledgerAmountClassName(satyanarayanHeroMetrics.satyaLedgerSign)}`}>
+                {formatSignedLedgerAmount(satyanarayanHeroMetrics.satyaLedger)}
+              </p>
+              <p className="mss-analytics-hero-hint">
+                DR {formatSignedLedgerAmount(SATYANARAYAN_LEDGER_SUMMARY.totalDr)} ·{" "}
+                {netBalanceLabel(satyanarayanHeroMetrics.satyaLedger)}
+              </p>
+            </article>
+            <article
+              className={`mss-analytics-hero-card mss-analytics-hero-card--final mss-analytics-hero-card--balance-${satyanarayanHeroMetrics.finalSumSign}`}
             >
               <p className="mss-analytics-hero-label">
                 <Sigma size={14} aria-hidden /> Final sum
               </p>
-              <p className={`mss-analytics-hero-value ${ledgerAmountClassName(partnerHeroMetrics.finalSumSign)}`}>
-                {formatSignedLedgerAmount(partnerHeroMetrics.finalSum)}
+              <p className={`mss-analytics-hero-value ${ledgerAmountClassName(satyanarayanHeroMetrics.finalSumSign)}`}>
+                {formatSignedLedgerAmount(satyanarayanHeroMetrics.finalSum)}
               </p>
               <p className="mss-analytics-hero-hint">
-                Both registers + Satyanarayan Sub Vendor · {netBalanceLabel(partnerHeroMetrics.finalSum)}
+                Site register + Sub Vendor ledger · {netBalanceLabel(satyanarayanHeroMetrics.finalSum)}
               </p>
+            </article>
+          </>
+        ) : isRjGreenScope && rjgreenHeroMetrics ? (
+          <>
+            <article className="mss-analytics-hero-card">
+              <p className="mss-analytics-hero-label">Total sites</p>
+              <p className="mss-analytics-hero-value">{summary.sitesByVendor.total}</p>
+              <p className="mss-analytics-hero-hint">
+                {PROJECT_VENDORS.MSS} {summary.sitesByVendor.mss} · {PROJECT_VENDORS.ARKSHAKTI}{" "}
+                {summary.sitesByVendor.arkshakti}
+              </p>
+            </article>
+            <article
+              className={`mss-analytics-hero-card mss-analytics-hero-card--client-dues mss-analytics-hero-card--balance-${rjgreenHeroMetrics.dueFromClientsSign}`}
+            >
+              <p className="mss-analytics-hero-label">Total due from client</p>
+              <p className={`mss-analytics-hero-value ${ledgerAmountClassName(rjgreenHeroMetrics.dueFromClientsSign)}`}>
+                {formatSignedLedgerAmount(rjgreenHeroMetrics.dueFromClients)}
+              </p>
+              <p className="mss-analytics-hero-hint mss-analytics-hero-hint--strong">Cash + bank on register</p>
+              <dl className="mss-analytics-hero-dues-list">
+                <div>
+                  <dt>Cash due</dt>
+                  <dd className={ledgerAmountClassName(getLedgerSign(rjgreenHeroMetrics.cashDue))}>
+                    {formatSignedLedgerAmount(rjgreenHeroMetrics.cashDue)}
+                  </dd>
+                </div>
+                <div>
+                  <dt>Bank due</dt>
+                  <dd className={ledgerAmountClassName(getLedgerSign(rjgreenHeroMetrics.bankDue))}>
+                    {formatSignedLedgerAmount(rjgreenHeroMetrics.bankDue)}
+                  </dd>
+                </div>
+              </dl>
+            </article>
+            <article
+              className={`mss-analytics-hero-card mss-analytics-hero-card--balance-${rjgreenHeroMetrics.paymentWithPartnerSign}`}
+            >
+              <p className="mss-analytics-hero-label">Payment with partner</p>
+              <p
+                className={`mss-analytics-hero-value ${ledgerAmountClassName(rjgreenHeroMetrics.paymentWithPartnerSign)}`}
+              >
+                {formatSignedLedgerAmount(rjgreenHeroMetrics.paymentWithPartnerTotal)}
+              </p>
+              <p className="mss-analytics-hero-hint">Cash / installments held on RJ Green register</p>
+            </article>
+            <article
+              className={`mss-analytics-hero-card mss-analytics-hero-card--balance-${rjgreenHeroMetrics.totalDueToMssSign}`}
+            >
+              <p className="mss-analytics-hero-label">Total due to MSS</p>
+              <p className={`mss-analytics-hero-value ${ledgerAmountClassName(rjgreenHeroMetrics.totalDueToMssSign)}`}>
+                {formatSignedLedgerAmount(rjgreenHeroMetrics.totalDueToMss)}
+              </p>
+              <p className="mss-analytics-hero-hint mss-analytics-hero-hint--strong">Net due on site register</p>
+              <dl className="mss-analytics-hero-dues-list">
+                <div>
+                  <dt>{PROJECT_VENDORS.MSS}</dt>
+                  <dd className={ledgerAmountClassName(rjgreenHeroMetrics.netDueMssSign)}>
+                    {formatSignedLedgerAmount(rjgreenHeroMetrics.netDueMss)}
+                  </dd>
+                </div>
+                <div>
+                  <dt>{PROJECT_VENDORS.ARKSHAKTI}</dt>
+                  <dd className={ledgerAmountClassName(rjgreenHeroMetrics.netDueArkSign)}>
+                    {formatSignedLedgerAmount(rjgreenHeroMetrics.netDueArk)}
+                  </dd>
+                </div>
+              </dl>
+            </article>
+            <article className="mss-analytics-hero-card mss-analytics-hero-card--partner-deal">
+              <p className="mss-analytics-hero-label">Client deal vs Deal with MSS</p>
+              <p className="mss-analytics-hero-hint">
+                Client billing minus MSS deal = partner margin on this register
+              </p>
+              <div className="mss-analytics-deal-equation" aria-label="Deal equation">
+                <div className="mss-analytics-deal-equation-term">
+                  <p className="mss-analytics-deal-equation-label">Final deal with client</p>
+                  <p className="mss-analytics-deal-equation-value">
+                    {formatSignedLedgerAmount(rjgreenHeroMetrics.finalDeal)}
+                  </p>
+                </div>
+                <span className="mss-analytics-deal-equation-op" aria-hidden>
+                  −
+                </span>
+                <div className="mss-analytics-deal-equation-term">
+                  <p className="mss-analytics-deal-equation-label">Deal with MSS</p>
+                  <p className="mss-analytics-deal-equation-value">
+                    {formatSignedLedgerAmount(rjgreenHeroMetrics.dealWithMss)}
+                  </p>
+                </div>
+                <span className="mss-analytics-deal-equation-op" aria-hidden>
+                  =
+                </span>
+                <div
+                  className={`mss-analytics-deal-equation-term mss-analytics-deal-equation-term--result mss-analytics-deal-equation-term--${rjgreenHeroMetrics.partnerProfitSign}`}
+                >
+                  <p className="mss-analytics-deal-equation-label">Partner profit</p>
+                  <p
+                    className={`mss-analytics-deal-equation-value ${ledgerAmountClassName(rjgreenHeroMetrics.partnerProfitSign)}`}
+                  >
+                    {formatSignedLedgerAmount(rjgreenHeroMetrics.partnerProfit)}
+                  </p>
+                </div>
+              </div>
             </article>
           </>
         ) : (
@@ -1852,10 +2193,10 @@ export function MssSitesAnalytics({
       </section>
 
       <div
-        className={`mss-analytics-grid${isAjayScope || isRegisterStyleScope || isPartnerScope ? " mss-analytics-grid--single" : ""}`}
+        className={`mss-analytics-grid${isRegisterStyleScope || isPartnerStyleLayoutScope ? " mss-analytics-grid--single" : ""}`}
       >
         <section
-          className={`mss-sites-analytics-panel${isAjayScope || isRegisterStyleScope || isPartnerScope ? " mss-sites-analytics-panel--full" : ""}`}
+          className={`mss-sites-analytics-panel${isRegisterStyleScope || isPartnerStyleLayoutScope ? " mss-sites-analytics-panel--full" : ""}`}
           id="analytics-overview"
         >
           <header className="mss-sites-analytics-panel-header">
@@ -1867,9 +2208,13 @@ export function MssSitesAnalytics({
                   ? "Register split, payment activity, net-due mix, and how the final sum is built"
                   : isShripalScope
                     ? "Vendor registers, client dues, payment with partner, Cash / Bank ledger, and work status"
-                    : isOurScope
-                      ? "Residential + commercial registers, client dues, payments, and work status"
-                      : "Partner registers, deal margins, Satyanarayan Sub Vendor, and work status"}
+                    : isSatyanarayanScope
+                      ? "Site register, deal margins, Sub Vendor money ledger, and work status"
+                      : isRjGreenScope
+                        ? "RJ Green register, deal margins, payment with partner, and work status"
+                        : isOurScope
+                          ? "Residential + commercial registers, client dues, payments, and work status"
+                          : "Remaining partner registers, deal margins, and work status"}
               </p>
             </div>
           </header>
@@ -1896,7 +2241,7 @@ export function MssSitesAnalytics({
           {isAjayScope ? <AjayOverviewDetails headers={headers} rows={rows} summary={summary} /> : null}
           {isOurScope ? <OurOverviewDetails headers={headers} rows={rows} summary={summary} /> : null}
           {isShripalScope ? <ShripalOverviewDetails headers={headers} rows={rows} summary={summary} /> : null}
-          {isPartnerScope ? (
+          {isPartnerScope || isSatyanarayanScope || isRjGreenScope ? (
             <PartnerOverviewDetails
               headers={headers}
               rows={rows}
@@ -1945,7 +2290,7 @@ export function MssSitesAnalytics({
         </section>
       ) : null}
 
-      {isPartnerScope ? (
+      {isSatyanarayanScope ? (
         <section
           className="mss-sites-analytics-panel mss-sites-analytics-panel--full"
           id="analytics-satyanarayan"

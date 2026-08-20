@@ -32,7 +32,7 @@ A row belongs to **Our projects** when `PROJECT TYPE` is one of:
 
 Configured in code as `OUR_PROJECT_TYPES` / `isOurProjectType()` in `projects-config.ts`.
 
-Everything else → **Partner projects** (or Shripal / Ajay dedicated tabs).
+Everything else → **Partner projects** (or dedicated Shripal / Ajay / Satyanarayan / RJ Green tabs).
 
 **Live row counts (2026-08-09):** MSS res · MSS ≈ 53 · MSS res · Arkshakti ≈ 39 · MSS COMMERCIAL ≈ 11 · **~103** combined.
 

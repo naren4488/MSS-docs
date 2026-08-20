@@ -241,6 +241,17 @@ export function MssSitesTablePreview({ table, viewMode, scope }: MssSitesTablePr
                   <span className="mss-sites-source-badge mss-sites-source-badge--mss">MSS</span>
                   <span className="mss-sites-source-badge mss-sites-source-badge--arkshakti">Arkshakti</span>
                 </>
+              ) : scope === "satyanarayan" ? (
+                <>
+                  <span className="mss-sites-source-badge mss-sites-source-badge--partner">Satyanarayan Ji</span>
+                  <span className="mss-sites-source-badge mss-sites-source-badge--mss">MSS</span>
+                </>
+              ) : scope === "rjgreen" ? (
+                <>
+                  <span className="mss-sites-source-badge mss-sites-source-badge--partner">RJ Green</span>
+                  <span className="mss-sites-source-badge mss-sites-source-badge--mss">MSS</span>
+                  <span className="mss-sites-source-badge mss-sites-source-badge--arkshakti">Arkshakti</span>
+                </>
               ) : (
                 <>
                   <span className="mss-sites-source-badge mss-sites-source-badge--partner">Partners</span>

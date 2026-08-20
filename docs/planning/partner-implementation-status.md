@@ -2,12 +2,14 @@
 
 > **Purpose:** Living tracker for what we **built in the app** vs what is **still pending** per partner / scope.  
 > **Kind:** Product + engineering status (not raw sheet data).  
-> **Last updated:** 2026-08-09
+> **Last updated:** 2026-08-20
 
 Related docs:
 
 - Planning index → [`README.md`](./README.md)
 - Ajay UI spec → [`ui-ajay-sites.md`](./ui-ajay-sites.md)
+- Satyanarayan UI → [`ui-satyanarayan-sites.md`](./ui-satyanarayan-sites.md)
+- RJ Green UI → [`ui-rjgreen-sites.md`](./ui-rjgreen-sites.md)
 - Our projects UI → [`ui-our-projects.md`](./ui-our-projects.md)
 - Sub Vendor ledgers (sheet) → [`sub-vendor-partner-ledger.md`](./sub-vendor-partner-ledger.md)
 
@@ -81,36 +83,66 @@ Related docs:
 
 ---
 
-## Partner projects (aggregate tab)
+## Satyanarayan
 
-**Scope:** All partner tabs except Our / Shripal / Ajay · see [`ui-partner-projects.md`](./ui-partner-projects.md)
+**Scope:** `Satyanarayan` tab · see [`ui-satyanarayan-sites.md`](./ui-satyanarayan-sites.md)
 
 ### Done (codebase — current requirement)
 
 | Area | Status | Notes |
 |------|--------|-------|
-| Partner ledger + by-partner tables | ✅ / ❌ | By-partner receivable table kept; unified Partner ledger **removed** (Sub Vendor ledger instead) |
-| **Analytics (Our/Shripal-style)** | ✅ | Sites, net due by vendor, payments, due-from-clients, deal vs MSS, payment with partner, **final sum** |
-| **Satyanarayan Sub Vendor ledger** | ✅ | Tab `SATYANARAYAN ` · closing **₹1,63,372** · UI in Partner analytics |
-| Partner money seed (Satyanarayan) | ✅ | Full DR PAYMENT / cable / margin / petrol rows in `partner-mss-payments.ts` |
+| Top-level **Satyanarayan** tab | ✅ | Scope `satyanarayan`; excluded from Partner chips |
+| Partner-style columns | ✅ | Deal with MSS / commission / Payment with partner |
+| **Sub Vendor money ledger** | ✅ | Tab `SATYANARAYAN ` · closing **₹1,63,372** · moved off Partner analytics |
+| **Analytics** | ✅ | Partner-style hero + ledger + final sum (register + ledger) |
+| **Download analytics** | ✅ | Full-page PDF |
+
+---
+
+## RJ Green
+
+**Scope:** `RJ Green` tab · see [`ui-rjgreen-sites.md`](./ui-rjgreen-sites.md)
+
+### Done (codebase — current requirement)
+
+| Area | Status | Notes |
+|------|--------|-------|
+| Top-level **RJ Green** tab | ✅ | Scope `rjgreen`; excluded from Partner chips |
+| Dual registers | ✅ | `Rohit (RJ GREEN)` on MSS + Arkshakti |
+| Partner-style columns | ✅ | Same as Partner projects |
+| **Analytics** | ✅ | Partner-style hero + overview (no dedicated Sub Vendor ledger yet) |
+| **Download analytics** | ✅ | Full-page PDF |
+
+---
+
+## Partner projects (aggregate tab)
+
+**Scope:** All partner tabs except Our / Shripal / Ajay / Satyanarayan / RJ Green · see [`ui-partner-projects.md`](./ui-partner-projects.md)
+
+### Done (codebase — current requirement)
+
+| Area | Status | Notes |
+|------|--------|-------|
+| Partner ledger + by-partner tables | ✅ / ❌ | By-partner receivable table kept; unified Partner ledger **removed** |
+| **Analytics (partner-style)** | ✅ | Sites, dues, payment with partner, deal vs MSS (no Satyanarayan ledger / final-sum-with-ledger) |
+| ~~Satyanarayan Sub Vendor on Partner~~ | ✅ → moved | Now on **Satyanarayan** tab (2026-08-20) |
+| Partner money seed (Satyanarayan) | ✅ | Still in `partner-mss-payments.ts` for ledger history |
 | **Download analytics** | ✅ | Full-page PDF (same path as Our / Shripal) |
 | Rich Partner overview | ✅ | Portfolio snapshot, deal vs MSS, by-partner register table, work status |
 
 **Key code paths**
 
-- `projects-config.ts` — `SATYANARAYAN_SUB_VENDOR_LEDGER`
-- `satyanarayan-sub-vendor-ledger.ts` / `SatyanarayanSubVendorLedger.tsx`
-- `MssSitesAnalytics.tsx` — Partner hero + overview + Satya panel
-- `partner-mss-payments.ts` — Satyanarayan external lines
+- `projects-config.ts` — partner chip exclusion via `isDedicatedPartnerProjectType`
+- `MssSitesAnalytics.tsx` — Partner hero + overview + by-partner table
+- `partner-mss-payments.ts` — historical partner money seeds
 
 ### Pending
 
 | Item | Status | Notes |
 |------|--------|-------|
 | Other Sub Vendor tabs (Kavita, Vinod, …) | ⏳ Optional | Wire when prioritized — see [`sub-vendor-partner-ledger.md`](./sub-vendor-partner-ledger.md) |
-| Own top-level tab for Satyanarayan | ⏳ Optional | Currently stays under Partner aggregate |
 
-**Verdict:** Current Partner analytics + Satyanarayan ledger requirement is **done**.
+**Verdict:** Current Partner aggregate analytics requirement is **done**.
 
 ---
 
@@ -151,6 +183,7 @@ Related docs:
 
 | Date | Partner | Change |
 |------|---------|--------|
+| 2026-08-20 | Satyanarayan / RJ Green | Own top-level tabs; Sub Vendor ledger moved off Partner aggregate |
 | 2026-08-09 | Partner | Analytics = Our/Shripal-style + Satyanarayan Sub Vendor ledger; download PDF enabled |
 | 2026-08-20 | Shripal | UI = Our projects + Payment with partner only (deal columns/analytics removed) |
 | 2026-08-09 | Shripal | Analytics = Our layout + Payment with partner extra; download PDF enabled |

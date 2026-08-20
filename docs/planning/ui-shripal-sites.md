@@ -42,7 +42,7 @@ Shripal rows are **excluded** from Partner projects chips and partner row scope.
 
 | Element | Behaviour |
 |---------|-----------|
-| Page tabs | `Our projects` \| `Shripal sites` \| `Ajay sites` \| `Partner projects` |
+| Page tabs | `Our projects` \| `Shripal sites` \| `Ajay sites` \| `Satyanarayan` \| `RJ Green` \| `Partner projects` |
 | Row set | Only `SHRIPAL JI` rows (both vendors). |
 | Visible columns | Same as **Our projects**, plus **Payment with partner** only (`Deal with MSS` / `Partner commission` hidden; **PAYMENT STATUS** in MORE; **Cash due to MSS** hidden). |
 | Register pills | Single `Shripal Ji` chip (updates only Register filter). |

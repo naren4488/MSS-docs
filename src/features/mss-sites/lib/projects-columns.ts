@@ -405,7 +405,7 @@ export function getVisibleColumnIndices(
       return [];
     }
     if (PARTNER_ONLY_PROJECT_COLUMNS.has(header)) {
-      if (scope === "partner" || scope === "ajay") {
+      if (scope === "partner" || scope === "ajay" || scope === "satyanarayan" || scope === "rjgreen") {
         return [index];
       }
       if (scope === "shripal" && SHRIPAL_VISIBLE_PARTNER_COLUMNS.has(header)) {

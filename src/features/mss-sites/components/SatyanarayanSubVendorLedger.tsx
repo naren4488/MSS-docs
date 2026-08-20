@@ -5,6 +5,7 @@ import {
   formatLedgerAmount,
   formatSignedLedgerBalance,
 } from "../lib/satyanarayan-sub-vendor-ledger";
+import { getLedgerSign, ledgerAmountClassName, netBalanceLabel } from "../lib/compute-project-analytics";
 import { SATYANARAYAN_SUB_VENDOR_LEDGER } from "../lib/projects-config";
 
 function LedgerAmountCell({ amount }: { amount: number }) {
@@ -15,7 +16,20 @@ function LedgerAmountCell({ amount }: { amount: number }) {
   );
 }
 
+function SignedBalanceCell({ amount, emphasis = false }: { amount: number; emphasis?: boolean }) {
+  const sign = getLedgerSign(amount);
+  return (
+    <td
+      className={`mss-sites-analytics-table-num${emphasis ? " mss-sites-analytics-table-num--emphasis" : ""} ${ledgerAmountClassName(sign)}`}
+    >
+      {formatSignedLedgerBalance(amount)}
+    </td>
+  );
+}
+
 export function SatyanarayanSubVendorLedger() {
+  const closingSign = getLedgerSign(SATYANARAYAN_LEDGER_SUMMARY.closingBalance);
+
   return (
     <div className="mss-analytics-dual-ledgers mss-analytics-dual-ledgers--single">
       <section className="mss-subvendor-ledger-panel" id="analytics-satyanarayan-ledger">
@@ -48,15 +62,18 @@ export function SatyanarayanSubVendorLedger() {
           </div>
           <div className="mss-subvendor-ledger-summary-item">
             <p className="mss-subvendor-ledger-summary-label">Closing balance</p>
-            <p className="mss-subvendor-ledger-summary-value mss-subvendor-ledger-summary-value--emphasis">
+            <p
+              className={`mss-subvendor-ledger-summary-value mss-subvendor-ledger-summary-value--emphasis ${ledgerAmountClassName(closingSign)}`}
+            >
               {formatSignedLedgerBalance(SATYANARAYAN_LEDGER_SUMMARY.closingBalance)}
             </p>
           </div>
         </div>
 
         <p className="mss-subvendor-ledger-note" role="note">
-          Positive closing = advances / payments from MSS still outstanding on Satyanarayan&apos;s Sub Vendor book
-          (almost all DR PAYMENT rows; one material line for AC cable).
+          <strong>+ green</strong> = we will receive · <strong>− red</strong> = we need to pay. Closing{" "}
+          {netBalanceLabel(SATYANARAYAN_LEDGER_SUMMARY.closingBalance).toLowerCase()} (MSS advances still
+          outstanding on Satyanarayan&apos;s book).
         </p>
 
         <div className="mss-sites-analytics-table-wrap">
@@ -78,9 +95,7 @@ export function SatyanarayanSubVendorLedger() {
                   <td>{row.particular}</td>
                   <LedgerAmountCell amount={row.dr} />
                   <LedgerAmountCell amount={row.cr} />
-                  <td className="mss-sites-analytics-table-num mss-sites-analytics-table-num--emphasis">
-                    {formatSignedLedgerBalance(row.closingBalance)}
-                  </td>
+                  <SignedBalanceCell amount={row.closingBalance} emphasis />
                   <td className="mss-subvendor-ledger-remark">{row.remark || "—"}</td>
                 </tr>
               ))}
@@ -96,9 +111,7 @@ export function SatyanarayanSubVendorLedger() {
                 <td className="mss-sites-analytics-table-num">
                   {formatLedgerAmount(SATYANARAYAN_LEDGER_SUMMARY.totalCr)}
                 </td>
-                <td className="mss-sites-analytics-table-num mss-sites-analytics-table-num--emphasis">
-                  {formatSignedLedgerBalance(SATYANARAYAN_LEDGER_SUMMARY.closingBalance)}
-                </td>
+                <SignedBalanceCell amount={SATYANARAYAN_LEDGER_SUMMARY.closingBalance} emphasis />
                 <td />
               </tr>
             </tfoot>

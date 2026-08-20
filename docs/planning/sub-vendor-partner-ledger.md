@@ -100,8 +100,9 @@ Some cells that look like `DD-MM-YYYY` were Excel-serialized and appear as wrong
 Tab name **`SATYANARAYAN `** (trailing space). Maps to Projects **`SATAYNARAYAN JI`**.
 
 - Almost all **PAYMENT** / advance rows (DR); one material line (`10X2 ac cable 20m`); margin money + car petrol notes through Jul 2026.
-- Closing balance **₹1,63,372** (live sheet 2026-08-09).
+- Closing balance **₹1,63,372** (live sheet 2026-08-20) — unchanged since Jul; one date corrected to **07 Jun** (was mis-seeded as 06 Jul).
 - **Wired in app:** Partner projects analytics · `SATYANARAYAN_SUB_VENDOR_LEDGER` · `satyanarayan-sub-vendor-ledger.ts`.
+- Positive closing = **we will receive** (green).
 - Spelling differs from Projects register (`SATAYNARAYAN JI`).
 
 ### Ajay

@@ -1,6 +1,6 @@
 /**
  * Sub Vendor Payment · `SATYANARAYAN ` tab — money ledger.
- * Source: SUB VENDOR PAYMENT sheet (live snapshot 2026-08-09).
+ * Source: SUB VENDOR PAYMENT sheet (live snapshot 2026-08-20).
  * Maps to Projects PROJECT TYPE `SATAYNARAYAN JI`.
  */
 
@@ -33,7 +33,7 @@ export const SATYANARAYAN_LEDGER_ROWS: readonly SatyanarayanLedgerRow[] = [
   { date: "28 May 2026", particular: "PAYMENT", dr: 2_000, cr: 0, closingBalance: 51_020, remark: "" },
   { date: "31 May 2026", particular: "PAYMENT", dr: 20_000, cr: 0, closingBalance: 71_020, remark: "" },
   { date: "17 Jun 2026", particular: "PAYMENT", dr: 30_000, cr: 0, closingBalance: 101_020, remark: "" },
-  { date: "06 Jul 2026", particular: "PAYMENT", dr: 2_000, cr: 0, closingBalance: 103_020, remark: "" },
+  { date: "07 Jun 2026", particular: "PAYMENT", dr: 2_000, cr: 0, closingBalance: 103_020, remark: "" },
   { date: "11 Jun 2026", particular: "PAYMENT", dr: 2_000, cr: 0, closingBalance: 105_020, remark: "" },
   { date: "15 Jun 2026", particular: "PAYMENT", dr: 8_000, cr: 0, closingBalance: 113_020, remark: "" },
   { date: "16 Jun 2026", particular: "PAYMENT", dr: 8_000, cr: 0, closingBalance: 121_020, remark: "" },

@@ -7,7 +7,7 @@ For each Google Sheet / product area we keep **two kinds** of markdown:
 | Kind | What it captures | Example |
 |------|------------------|---------|
 | **Sheet data** | Raw workbook structure: tabs, columns, balances, caveats from the spreadsheet | [`mss-sheet.md`](./mss-sheet.md), [`dec-to-feb-sheet.md`](./dec-to-feb-sheet.md), [`sub-vendor-partner-ledger.md`](./sub-vendor-partner-ledger.md), [`loans-ledgers.md`](./loans-ledgers.md) |
-| **App UI / behaviour** | What we built (or plan to build) in the product: tabs, filters, column rules, UX | [`ui-our-projects.md`](./ui-our-projects.md), [`ui-shripal-sites.md`](./ui-shripal-sites.md), [`ui-ajay-sites.md`](./ui-ajay-sites.md), [`ui-partner-projects.md`](./ui-partner-projects.md) |
+| **App UI / behaviour** | What we built (or plan to build) in the product: tabs, filters, column rules, UX | [`ui-our-projects.md`](./ui-our-projects.md), [`ui-shripal-sites.md`](./ui-shripal-sites.md), [`ui-ajay-sites.md`](./ui-ajay-sites.md), [`ui-satyanarayan-sites.md`](./ui-satyanarayan-sites.md), [`ui-rjgreen-sites.md`](./ui-rjgreen-sites.md), [`ui-partner-projects.md`](./ui-partner-projects.md) |
 | **Implementation status** | Per-partner **done vs pending** in the codebase; open product questions | [`partner-implementation-status.md`](./partner-implementation-status.md) |
 
 **Rules**

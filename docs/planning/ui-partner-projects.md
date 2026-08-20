@@ -2,7 +2,7 @@
 
 > **Purpose:** Requirements and behaviour for the **Partner projects** tab on `/projects`.  
 > **Kind:** Application UI / logic (not raw sheet data).  
-> **Last updated:** 2026-08-09
+> **Last updated:** 2026-08-20
 
 Sister docs:
 
@@ -11,6 +11,8 @@ Sister docs:
 - Our projects UI → [`ui-our-projects.md`](./ui-our-projects.md)
 - App UI: Shripal sites → [`ui-shripal-sites.md`](./ui-shripal-sites.md)
 - App UI: Ajay sites → [`ui-ajay-sites.md`](./ui-ajay-sites.md)
+- App UI: Satyanarayan sites → [`ui-satyanarayan-sites.md`](./ui-satyanarayan-sites.md)
+- App UI: RJ Green sites → [`ui-rjgreen-sites.md`](./ui-rjgreen-sites.md)
 - Sub Vendor Payment (money ledgers, related partners) → [`sub-vendor-partner-ledger.md`](./sub-vendor-partner-ledger.md)
 - Dec–Feb sheet data (partner tabs in Arkshakti book) → [`dec-to-feb-sheet.md`](./dec-to-feb-sheet.md)
 
@@ -18,20 +20,22 @@ Sister docs:
 
 ## Goal
 
-Show **partner-led** site registers in their own surface, with partner money columns visible, filters scoped to partner tabs, and analytics that match Our/Shripal richness plus Satyanarayan’s Sub Vendor ledger.
+Show **remaining partner-led** site registers in one aggregate surface, with partner money columns visible, filters scoped to partner tabs, and analytics for dues / deal margins / by-partner rollups.
+
+Dedicated partners with their own tabs (Shripal, Ajay, Satyanarayan, RJ Green) are **excluded**.
 
 ---
 
 ## Scope definition
 
-A row belongs to **Partner projects** when `PROJECT TYPE` is **not** Our / Shripal / Ajay (see `getProjectsScopeForProjectType()` in `projects-config.ts`).
+A row belongs to **Partner projects** when `PROJECT TYPE` is **not** Our / Shripal / Ajay / Satyanarayan / RJ Green (see `getProjectsScopeForProjectType()` / `isDedicatedPartnerProjectType()` in `projects-config.ts`).
 
 Examples (non-exhaustive):
 
-- From MSS workbook: `Rohit (RJ GREEN)`, `SATAYNARAYAN JI`, `KAVITA MAM`, …
-- From Dec–Feb / Arkshakti: `Rohit (RJ GREEN)`, `Pradeep (veer)`, …
+- From MSS workbook: `KAVITA MAM`, `DHERAJ JI SITES`, …
+- From Dec–Feb / Arkshakti: `Pradeep (veer)`, …
 
-**Excluded** (own top-level tabs): `MSS res`, `MSS COMMERCIAL`, `SHRIPAL JI`, `Ajay (everest)`.
+**Excluded** (own top-level tabs): `MSS res`, `MSS COMMERCIAL`, `SHRIPAL JI`, `Ajay (everest)`, `SATAYNARAYAN JI`, `Rohit (RJ GREEN)`.
 
 ---
 
@@ -39,13 +43,13 @@ Examples (non-exhaustive):
 
 | Element | Behaviour |
 |---------|-----------|
-| Page tabs | `Our projects` \| `Shripal sites` \| `Ajay sites` \| `Partner projects` |
-| Row set | All partner-scoped rows from the merged fetch. |
+| Page tabs | `Our projects` \| `Shripal sites` \| `Ajay sites` \| `Satyanarayan` \| `RJ Green` \| `Partner projects` |
+| Row set | All remaining partner-scoped rows from the merged fetch. |
 | Visible columns | Include partner-only: `Deal with MSS`, `Partner commission`, `Payment with partner`. |
-| Partner filter | Labeled **Partner** — project types = partner sheet tabs. |
+| Partner filter | Labeled **Partner** — project types = remaining partner sheet tabs. |
 | Vendor filter | `MSS` / `Arkshakti` still apply. |
 | Sheet tab chips | One chip per partner name (from loaded registers). Click filters to that partner; click again clears. |
-| **Analytics** | Our/Shripal-style hero + overview, Satyanarayan Sub Vendor ledger, by-partner table. |
+| **Analytics** | Partner-style hero + overview + by-partner receivable table. |
 | **Download analytics** | Full-page PDF (not A4) — same path as Our / Shripal. |
 
 ### Analytics
@@ -57,14 +61,12 @@ Examples (non-exhaustive):
 3. **Payment with partner**
 4. **Total due to MSS** — with MSS / Arkshakti split
 5. **Client deal vs Deal with MSS** — equation layout: Final deal − Deal with MSS = Partner profit
-6. **Satyanarayan · Sub Vendor** closing balance
-7. **Final sum** — both vendor registers + Satyanarayan Sub Vendor (same pattern as Ajay)
 
 **Overview:** portfolio snapshot, partner deal vs MSS, by-partner register table, work status.
 
-**Satyanarayan ledger panel:** Sub Vendor Payment tab `SATYANARAYAN ` (trailing space) · closing **₹1,63,372** · maps to Projects `SATAYNARAYAN JI`.
+**By partner:** MSS receivable by partner (due from clients + partner advances).
 
-**By partner:** MSS receivable by partner (due from clients + partner advances). Unified Partner ledger table removed — Sub Vendor ledger covers cash detail.
+~~Satyanarayan Sub Vendor ledger~~ — moved to the **Satyanarayan** tab (2026-08-20).
 
 ---
 
@@ -72,38 +74,21 @@ Examples (non-exhaustive):
 
 - Partner columns are meaningful here (deal with MSS, commission, payment with partner).
 - Avoids mixing “our site” and “partner site” mental models in one table.
-- Satyanarayan has a Sub Vendor money book like Ajay — surface it on Partner analytics without a separate top-level tab yet.
+- Heavy partners (Ajay, Shripal, Satyanarayan, RJ Green) get dedicated tabs; this tab stays the catch-all.
 - Partner name chips mirror sheet tabs for fast filtering without the Partner dropdown.
 
 ---
 
 ## Decision log
 
-### 2026-08-20 — Hero money order
+### 2026-08-20 — Satyanarayan + RJ Green own tabs
 
-- **Total due from client** → **Payment with partner** → **Total due to MSS** (then deal / Satya / final sum). Same pattern as Shripal / Ajay.
+`SATAYNARAYAN JI` and `Rohit (RJ GREEN)` moved to top-level tabs. Partner analytics no longer includes Satyanarayan Sub Vendor or final-sum-with-ledger cards.
 
-### 2026-07-29 — Split introduced
+### 2026-08-09 — Partner analytics parity
 
-- Same product decision as Our projects — dual tabs + column rules.
-- Partner sheet-tab chips deferred until we pick which partners to shortcut.
+Hero + overview aligned with Our/Shripal richness; Satyanarayan Sub Vendor was embedded here before the dedicated tab.
 
-### 2026-07-30 — Partner name tabs
+### 2026-08-09 — Chip filter
 
-- Added chips for every unique partner PROJECT TYPE from MSS + Arkshakti loaded tabs (e.g. Rohit, Kavita, Pradeep, …).
-- Chip selects partner only (all vendors); partners on both MSS and Arkshakti still show together.
-- **Shripal** moved to its own top-level tab — not listed in Partner chips.
-
-### 2026-08-09 — Analytics + Satyanarayan ledger
-
-- Partner analytics upgraded to Our/Shripal-style hero + overview.
-- Wired Satyanarayan Sub Vendor money ledger (static snapshot + UI) into Partner analytics.
-- Enabled **Download analytics** for Partner scope.
-- Removed unified Partner ledger table (Sub Vendor ledger is the cash detail surface).
-- By-partner receivable table retained.
-
-### Upcoming
-
-- [ ] Optional vendor-split chips if same partner name needs MSS vs Arkshakti separately
-- [ ] Whether Satyanarayan (or other partners) eventually get their own top-level tab like Ajay/Shripal
-- [ ] Align remaining Sub Vendor tabs (Kavita, Vinod, …) when prioritized
+Partner sheet-tab chips replace the Partner dropdown for fast filtering.

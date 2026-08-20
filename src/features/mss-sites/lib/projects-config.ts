@@ -62,7 +62,7 @@ export const PROJECT_VENDORS = {
 } as const;
 
 /** Top-level Projects page scopes. */
-export type ProjectsScope = "our" | "partner" | "shripal" | "ajay";
+export type ProjectsScope = "our" | "partner" | "shripal" | "ajay" | "satyanarayan" | "rjgreen";
 
 /**
  * Sheet tab / PROJECT TYPE values that belong on **Our projects**.
@@ -81,6 +81,16 @@ export const AJAY_PROJECT_TYPES = ["Ajay (everest)"] as const;
 
 export const AJAY_PROJECT_TYPE_SET = new Set<string>(AJAY_PROJECT_TYPES);
 
+/** Satyanarayan has its own top-level tab (MSS workbook `SATAYNARAYAN JI`). */
+export const SATYANARAYAN_PROJECT_TYPES = ["SATAYNARAYAN JI"] as const;
+
+export const SATYANARAYAN_PROJECT_TYPE_SET = new Set<string>(SATYANARAYAN_PROJECT_TYPES);
+
+/** Rohit RJ Green has its own top-level tab (MSS + Arkshakti `Rohit (RJ GREEN)`). */
+export const RJGREEN_PROJECT_TYPES = ["Rohit (RJ GREEN)"] as const;
+
+export const RJGREEN_PROJECT_TYPE_SET = new Set<string>(RJGREEN_PROJECT_TYPES);
+
 export function isOurProjectType(projectType: string): boolean {
   return OUR_PROJECT_TYPE_SET.has(projectType.trim());
 }
@@ -93,6 +103,25 @@ export function isAjayProjectType(projectType: string): boolean {
   return AJAY_PROJECT_TYPE_SET.has(projectType.trim());
 }
 
+export function isSatyanarayanProjectType(projectType: string): boolean {
+  return SATYANARAYAN_PROJECT_TYPE_SET.has(projectType.trim());
+}
+
+export function isRjGreenProjectType(projectType: string): boolean {
+  return RJGREEN_PROJECT_TYPE_SET.has(projectType.trim());
+}
+
+/** Dedicated partner-style tabs excluded from the aggregate Partner projects scope. */
+export function isDedicatedPartnerProjectType(projectType: string): boolean {
+  const trimmed = projectType.trim();
+  return (
+    isShripalProjectType(trimmed) ||
+    isAjayProjectType(trimmed) ||
+    isSatyanarayanProjectType(trimmed) ||
+    isRjGreenProjectType(trimmed)
+  );
+}
+
 export function getProjectsScopeForProjectType(projectType: string): ProjectsScope {
   const trimmed = projectType.trim();
   if (isOurProjectType(trimmed)) {
@@ -103,6 +132,12 @@ export function getProjectsScopeForProjectType(projectType: string): ProjectsSco
   }
   if (isAjayProjectType(trimmed)) {
     return "ajay";
+  }
+  if (isSatyanarayanProjectType(trimmed)) {
+    return "satyanarayan";
+  }
+  if (isRjGreenProjectType(trimmed)) {
+    return "rjgreen";
   }
   return "partner";
 }
@@ -206,18 +241,13 @@ function partnerSlug(projectType: string) {
     .replace(/^-|-$/g, "");
 }
 
-/** Unique partner register names in workbook order (MSS first, then Arkshakti-only). Excludes Our + Shripal + Ajay. */
+/** Unique partner register names in workbook order (MSS first, then Arkshakti-only). Excludes dedicated tabs. */
 function buildPartnerSheetTabShortcuts(): ProjectSheetTabShortcut[] {
   const seen = new Set<string>();
   const shortcuts: ProjectSheetTabShortcut[] = [];
 
   for (const tab of [...PROJECT_SHEET_TABS, ...ARKSHAKTI_SHEET_TABS]) {
-    if (
-      isOurProjectType(tab.projectType) ||
-      isShripalProjectType(tab.projectType) ||
-      isAjayProjectType(tab.projectType) ||
-      seen.has(tab.projectType)
-    ) {
+    if (isOurProjectType(tab.projectType) || isDedicatedPartnerProjectType(tab.projectType) || seen.has(tab.projectType)) {
       continue;
     }
     seen.add(tab.projectType);
@@ -272,10 +302,34 @@ const AJAY_SHEET_TAB_SHORTCUTS: readonly ProjectSheetTabShortcut[] = [
   },
 ];
 
+/** Satyanarayan sites — single register chip. */
+const SATYANARAYAN_SHEET_TAB_SHORTCUTS: readonly ProjectSheetTabShortcut[] = [
+  {
+    id: "satyanarayan",
+    label: "Satyanarayan Ji",
+    projectType: "SATAYNARAYAN JI",
+    scope: "satyanarayan",
+    group: "Register",
+  },
+];
+
+/** RJ Green sites — vendor chips (MSS + Arkshakti). */
+const RJGREEN_SHEET_TAB_SHORTCUTS: readonly ProjectSheetTabShortcut[] = [
+  {
+    id: "rjgreen",
+    label: "RJ Green",
+    projectType: "Rohit (RJ GREEN)",
+    scope: "rjgreen",
+    group: "Register",
+  },
+];
+
 export const PROJECT_SHEET_TAB_SHORTCUTS: readonly ProjectSheetTabShortcut[] = [
   ...OUR_SHEET_TAB_SHORTCUTS,
   ...SHRIPAL_SHEET_TAB_SHORTCUTS,
   ...AJAY_SHEET_TAB_SHORTCUTS,
+  ...SATYANARAYAN_SHEET_TAB_SHORTCUTS,
+  ...RJGREEN_SHEET_TAB_SHORTCUTS,
   ...buildPartnerSheetTabShortcuts(),
 ];
 

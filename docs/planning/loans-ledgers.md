@@ -2,7 +2,7 @@
 
 > **Purpose:** Capture structure and decisions for the Loans Ledgers Google Sheet (cash/bank + bank-loan EMI books).  
 > **Status:** Analysis only — not wired into the app yet.  
-> **Last updated:** 2026-08-19
+> **Last updated:** 2026-08-20
 
 Keep **this workbook’s** notes here only. Sister planning docs:
 
@@ -28,18 +28,18 @@ Append new instructions under [Decision log](#decision-log).
 
 ## Tabs overview
 
-| Tab name (exact) | Layout type | Header balance(s) (as of read) | Keep? |
-|------------------|-------------|--------------------------------|-------|
-| `Shripal Ji` | **Dual on sheet** — **analysis:** Cash/Bank only (left) | Cash/Bank −1,37,455 | TBD |
-| `Mahesh Bhaia` | Loan EMI only | −6,59,281 | TBD |
-| `Yogeshwar` | Loan EMI only | −6,48,240 | TBD |
-| `Montu boss` | Empty | — | Skip / TBD |
-| `Sonu Uncle` | Loan EMI only | −3,04,257 | TBD |
+| Tab name (exact) | Layout type | Header balance(s) (live 2026-08-20) | Keep? |
+|------------------|-------------|---------------------------------------|-------|
+| `Shripal Ji` | Dual — Cash/Bank (left) + Loan EMI (right) | Cash/Bank −1,37,455 · Loan −3,68,750 · **both −5,06,205** | TBD |
+| `Mahesh Bhaia` | Loan EMI only | −6,38,678 | TBD |
+| `Yogeshwar` | Loan EMI only | −6,32,034 | TBD |
+| `Montu boss` | Empty | — | **Skip** |
+| `Sonu Uncle` | Loan EMI only | −2,83,877 | TBD |
 | `NK papa` | Cash loan only | −4,00,000 | TBD |
 | `Sanjay` | Cash loan (+ interest) | −5,50,000 | TBD |
-| `MK Home` | Cash loan (two tranches + interest) | −4,86,000 | TBD |
+| `MK Home` | Dual cash loans (left + right) | Left −1,68,000 · Right −2,64,000 · **both −4,32,000** | TBD |
 
-**8 tabs total** · 1 empty (`Montu boss`).
+**8 tabs total** · skip empty `Montu boss`.
 
 ---
 
@@ -208,18 +208,21 @@ Same as other sheets: Excel date serials vs `DD-MM-YYYY` / `DD-MM-YY` text — p
 
 ## Rough outstanding snapshot (header balances)
 
-| Person | Kind | Approx pending |
-|--------|------|----------------:|
-| Shripal Ji | Cash/Bank *(analysis scope)* | −1,37,455 |
-| Mahesh Bhaia | Bank loan | −6,59,281 |
-| Yogeshwar | Bank loan | −6,48,240 |
-| Sonu Uncle | Bank loan | −3,04,257 |
-| NK papa | Cash loan | −4,00,000 |
-| Sanjay | Cash loan | −5,50,000 |
-| MK Home | Cash loan | −4,86,000 |
-| Montu boss | — | empty |
+Live sheet read **2026-08-20** (gviz). Montu boss skipped. Shripal + MK Home = **both ledgers**.
 
-*(Header totals; verify before any product use.)*
+| Person | Kind | Pending |
+|--------|------|--------:|
+| Shripal Ji | Cash/Bank −1,37,455 + Loan EMI −3,68,750 | **−5,06,205** |
+| Mahesh Bhaia | Bank loan EMI | **−6,38,678** |
+| Yogeshwar | Bank loan EMI | **−6,32,034** |
+| Sonu Uncle | Bank loan EMI | **−2,83,877** |
+| NK papa | Cash loan | **−4,00,000** |
+| Sanjay | Cash loan (+ interest) | **−5,50,000** |
+| MK Home | Left −1,68,000 + Right −2,64,000 | **−4,32,000** |
+
+**Total outstanding (7 people, excl. Montu):** **−₹34,42,794**
+
+*(Header totals from live sheet; verify before any product use.)*
 
 ---
 
@@ -234,9 +237,17 @@ Same as other sheets: Excel date serials vs `DD-MM-YYYY` / `DD-MM-YY` text — p
 
 ## Decision log
 
+### 2026-08-20 — Live outstanding refresh (both Shripal ledgers)
+
+- Re-read live Loans Ledgers via gviz.
+- **Shripal Ji** dues = Cash/Bank **−₹1,37,455** + Loan EMI **−₹3,68,750** → **−₹5,06,205**.
+- **MK Home** is dual on sheet (left −1,68,000 + right −2,64,000 → **−₹4,32,000**).
+- Skip **Montu boss**. Combined pending for 7 people: **−₹34,42,794**.
+- Bank EMI books moved vs prior snapshot: Mahesh −6,38,678 · Yogeshwar −6,32,034 · Sonu −2,83,877.
+
 ### 2026-08-20 — Cash / Bank wired into Shripal analytics
 
-- Left block shown on **Shripal sites** analytics (hero + ledger table). Loan EMI block still out of scope.
+- Left block shown on **Shripal sites** analytics (hero + ledger table). Loan EMI block still out of scope for the app UI.
 
 ### 2026-08-19 — Shripal Ji analysis = Cash/Bank only
 

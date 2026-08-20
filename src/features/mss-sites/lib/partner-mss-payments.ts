@@ -138,7 +138,7 @@ export const PARTNER_LEDGER_TRANSACTIONS: readonly PartnerLedgerTransaction[] = 
     projectType: "SATAYNARAYAN JI",
     direction: "mss_to_partner",
     amount: 2_000,
-    date: "06-07-2026",
+    date: "07-06-2026",
     note: "Payment",
   },
   {

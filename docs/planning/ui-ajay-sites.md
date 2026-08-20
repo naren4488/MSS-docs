@@ -62,7 +62,7 @@ Money-ledger rows are seeded in `partner-mss-payments.ts` for analytics. Everest
 
 | Element | Behaviour |
 |---------|-----------|
-| Page tabs | `Our projects` \| `Shripal sites` \| `Ajay sites` \| `Partner projects` |
+| Page tabs | `Our projects` \| `Shripal sites` \| `Ajay sites` \| `Satyanarayan` \| `RJ Green` \| `Partner projects` |
 | Row set | Only `Ajay (everest)` rows (both vendors). |
 | Visible columns | Same as Partner — Deal with MSS / commission / Payment with partner. |
 | Register pills | Single `Ajay Ji` chip (updates only Register filter). |

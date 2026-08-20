@@ -50,7 +50,17 @@ export function MssSitesPage() {
     await new Promise((resolve) => window.setTimeout(resolve, 200));
     const previousTitle = document.title;
     document.title =
-      scope === "shripal" ? "Shripal sites — Analytics" : "Our projects — Analytics";
+      scope === "shripal"
+        ? "Shripal sites — Analytics"
+        : scope === "satyanarayan"
+          ? "Satyanarayan sites — Analytics"
+          : scope === "rjgreen"
+            ? "RJ Green sites — Analytics"
+            : scope === "ajay"
+              ? "Ajay sites — Analytics"
+              : scope === "partner"
+                ? "Partner projects — Analytics"
+                : "Our projects — Analytics";
     const cleanupPrint = prepareMssSitesAnalyticsPrint();
     const cleanup = () => {
       cleanupPrint();
@@ -68,7 +78,11 @@ export function MssSitesPage() {
         ? "Shripal Ji sites from MSS and Arkshakti — separate register for special cases."
         : scope === "ajay"
           ? "Ajay Ji sites from MSS and Arkshakti — separate register for Ajay (everest)."
-          : "Partner-led site registers from MSS and Arkshakti workbooks (excluding Shripal and Ajay).";
+          : scope === "satyanarayan"
+            ? "Satyanarayan Ji sites from the MSS workbook — separate register with Sub Vendor ledger."
+            : scope === "rjgreen"
+              ? "Rohit (RJ GREEN) sites from MSS and Arkshakti — separate register."
+              : "Remaining partner-led site registers (excluding Shripal, Ajay, Satyanarayan, RJ Green).";
 
   return (
     <div className="page-shell page-shell--mss-sites">
@@ -128,7 +142,13 @@ export function MssSitesPage() {
               Save as PDF
             </button>
           ) : null}
-          {viewMode === "analytics" && (scope === "our" || scope === "shripal" || scope === "partner") ? (
+          {viewMode === "analytics" &&
+          (scope === "our" ||
+            scope === "shripal" ||
+            scope === "ajay" ||
+            scope === "satyanarayan" ||
+            scope === "rjgreen" ||
+            scope === "partner") ? (
             <button
               className="primary-button"
               type="button"
@@ -172,6 +192,26 @@ export function MssSitesPage() {
         >
           <UserRound size={16} aria-hidden />
           Ajay sites
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={scope === "satyanarayan"}
+          className={`mss-sites-scope-tab${scope === "satyanarayan" ? " mss-sites-scope-tab--active" : ""}`}
+          onClick={() => setScope("satyanarayan")}
+        >
+          <UserRound size={16} aria-hidden />
+          Satyanarayan
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={scope === "rjgreen"}
+          className={`mss-sites-scope-tab${scope === "rjgreen" ? " mss-sites-scope-tab--active" : ""}`}
+          onClick={() => setScope("rjgreen")}
+        >
+          <UserRound size={16} aria-hidden />
+          RJ Green
         </button>
         <button
           type="button"
