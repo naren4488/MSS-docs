@@ -216,6 +216,10 @@ function defaultTerms(language: QuotationLanguage): QuotationTermItem[] {
         "कोटेशन केवल वाणिज्यिक प्रस्ताव में उल्लिखित कार्यक्षेत्र कवर करता है। अतिरिक्त कार्य जैसे:\n• DISCOM के साथ लोड एक्सटेंशन\n• अतिरिक्त विद्युत कार्य या रीवायरिंग\n• छत की संरचनात्मक मरम्मत या संशोधन\n• अतिरिक्त केबल रन या माउंटिंग समायोजन\n• इंस्टॉलेशन समझौते पर हस्ताक्षर के बाद मांगे गए परिवर्तन\n\nमाही सोलर सॉल्यूशन की प्रचलित दरों पर अलग से शुल्क लगेगा (पुनः कार्य या अतिरिक्त सेवाओं हेतु न्यूनतम ₹3,000 प्रति दिन)।",
       ),
       term(
+        "माप, योजना व इंस्टॉलेशन के बाद परिवर्तन",
+        "माही सोलर सॉल्यूशन का इंजीनियर साइट पर माप व इंस्टॉलेशन योजना करेगा। ग्राहक द्वारा उस योजना / लेआउट / विशिष्टताओं पर सहमति देने के बाद, इंस्टॉलेशन पूर्ण होने पर यदि ग्राहक किसी भी प्रकार का परिवर्तन, शिफ्टिंग, री-वर्क या लेआउट संशोधन मांगता है, तो वह माही सोलर सॉल्यूशन की जिम्मेदारी नहीं होगा। ऐसे परिवर्तन अतिरिक्त कार्य माने जाएँगे और कंपनी की प्रचलित दरों पर अलग से शुल्क लगेगा।",
+      ),
+      term(
         "सामग्री सुरक्षा व जिम्मेदारी",
         "ट्रांजिट के दौरान व प्रोजेक्ट साइट पर डिलीवरी तक सामग्री सुरक्षा माही सोलर सॉल्यूशन की जिम्मेदारी है। साइट पर डिलीवरी के बाद:\n• सभी आपूर्ति सामग्री की सुरक्षा व सुरक्षा ग्राहक की जिम्मेदारी।\n• साइट पर चोरी, क्षति, तोड़फोड़ या हानि हेतु माही सोलर उत्तरदायी नहीं।\n• इंस्टॉलेशन तक सामग्री सुरक्षित स्थान पर रखें।\n• डिलीवरी के बाद लापरवाही या अनुचित भंडारण से क्षति पर रिप्लेसमेंट हेतु अतिरिक्त शुल्क लगेगा।",
       ),
@@ -303,6 +307,10 @@ function defaultTerms(language: QuotationLanguage): QuotationTermItem[] {
     term(
       "Additional Work Charges",
       "The quotation covers only the scope mentioned in the Commercial Offer. Any additional work required, such as:\n• Load extension with DISCOM\n• Additional electrical work or rewiring\n• Structural repairs or modifications to the roof\n• Extra cable runs or mounting adjustments\n• Any changes requested after the installation agreement is signed\n\nwill be charged separately at Mahi Solar Solution's prevailing rates (minimum ₹3,000 per day for re-work or additional services).",
+    ),
+    term(
+      "Measurement, Planning & Post-Installation Changes",
+      "Once Mahi Solar Solution's engineer has completed site measurement and installation planning, and the client has agreed to that plan / layout / specifications, any changes, shifting, re-work, or layout modifications requested by the client after installation is complete shall not be Mahi Solar Solution's responsibility. Such changes will be treated as extra work and charged separately at the Company's prevailing rates.",
     ),
     term(
       "Material Safety & Responsibility",
