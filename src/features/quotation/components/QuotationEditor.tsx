@@ -115,6 +115,15 @@ export function QuotationEditor({ data, onChange }: QuotationEditorProps) {
             <input value={data.customerPhone} placeholder="e.g. 9876543210" onChange={(event) => update("customerPhone", event.target.value)} />
           </div>
           <div className="field">
+            <label>Customer Email (optional)</label>
+            <input
+              type="email"
+              value={data.customerEmail}
+              placeholder="Shown on PDF only if filled"
+              onChange={(event) => update("customerEmail", event.target.value)}
+            />
+          </div>
+          <div className="field">
             <label>Capacity of Power Plant</label>
             <input value={data.capacity} placeholder="e.g. 3 KW" onChange={(event) => update("capacity", event.target.value)} />
           </div>
@@ -146,10 +155,6 @@ export function QuotationEditor({ data, onChange }: QuotationEditorProps) {
         <MaterialItemEditor items={data.materialItems} onChange={(next) => update("materialItems", next)} />
       </AccordionSection>
 
-      <AccordionSection title="Installation Work">
-        <BulletListEditor label="Installation Work" items={data.installationWork} onChange={(next) => update("installationWork", next)} />
-      </AccordionSection>
-
       <AccordionSection title="Assumptions">
         <BulletListEditor label="Assumptions" items={data.assumptions} onChange={(next) => update("assumptions", next)} />
       </AccordionSection>
@@ -158,7 +163,11 @@ export function QuotationEditor({ data, onChange }: QuotationEditorProps) {
         <BulletListEditor label="Customer Scope" items={data.customerScope} onChange={(next) => update("customerScope", next)} />
       </AccordionSection>
 
-      <AccordionSection title="Commercial Offer" helper="Project amount is the charge for this project. It fills Customer Net Payable here and the investment box on the PDF." defaultOpen>
+      <AccordionSection
+        title="Commercial Offer"
+        helper="Solar Plant Capacity is auto-filled from panel watt × qty. Project amount fills Customer Net Payable and the investment box on the PDF."
+        defaultOpen
+      >
         <div className="field-grid" style={{ marginBottom: 12 }}>
           <div className="field full-span">
             <label>Project Amount (incl. GST) (₹)</label>
@@ -171,14 +180,10 @@ export function QuotationEditor({ data, onChange }: QuotationEditorProps) {
         />
       </AccordionSection>
 
-      <AccordionSection title="Manufacturing Defect Warranty">
-        <div className="field full-span">
-          <label>Warranty Text</label>
-          <textarea rows={3} value={data.warrantyText} onChange={(event) => update("warrantyText", event.target.value)} />
-        </div>
-      </AccordionSection>
-
-      <AccordionSection title="Solar Power Generation">
+      <AccordionSection
+        title="Solar Power Generation"
+        helper="Day / month / year figures auto-calculate from panel watt × qty. Year 1 = 4 units/kW/day; years 2–5 = 3.9 units/kW/day."
+      >
         <div className="toggle-row" style={{ marginBottom: 12 }}>
           <span>Show Generation Table</span>
           <button
@@ -192,20 +197,17 @@ export function QuotationEditor({ data, onChange }: QuotationEditorProps) {
         {data.showGeneration ? (
           <div className="field-grid">
             <div className="field">
-              <label>Per Day</label>
-              <input value={data.generation.perDay} onChange={(event) => updateGeneration("perDay", event.target.value)} />
+              <label>Saving unit rate (₹ / unit)</label>
+              <input
+                value={data.generation.unitRate}
+                placeholder="8"
+                onChange={(event) => updateGeneration("unitRate", event.target.value)}
+              />
             </div>
-            <div className="field">
-              <label>Per Month</label>
-              <input value={data.generation.perMonth} onChange={(event) => updateGeneration("perMonth", event.target.value)} />
-            </div>
-            <div className="field">
-              <label>Per Year</label>
-              <input value={data.generation.perYear} onChange={(event) => updateGeneration("perYear", event.target.value)} />
-            </div>
-            <div className="field">
-              <label>Saving Per Year</label>
-              <input value={data.generation.savingPerYear} onChange={(event) => updateGeneration("savingPerYear", event.target.value)} />
+            <div className="field full-span">
+              <p className="helper-text" style={{ margin: 0 }}>
+                Preview updates automatically when you change solar panel quantity or wattage in Material Description.
+              </p>
             </div>
           </div>
         ) : null}

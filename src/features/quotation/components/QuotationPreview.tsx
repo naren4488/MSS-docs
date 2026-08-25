@@ -20,13 +20,23 @@ import {
   PAGE_WIDTH,
 } from "../constants/sheet-layout";
 import type { QuotationCommercialRow, QuotationData } from "../types/quotation";
-import { filledValue, formatDate, commercialRowsForPreview, computeEffectivePayable, formatInrGrouped, totalGovtSubsidy } from "../lib/quotation-formatters";
+import {
+  filledValue,
+  formatDate,
+  commercialRowsForPreview,
+  computeEffectivePayable,
+  computeGenerationRows,
+  formatGenerationAmount,
+  formatGenerationSaving,
+  formatInrGrouped,
+  parseWattageFromMaterials,
+  totalGovtSubsidy,
+} from "../lib/quotation-formatters";
 import { formatCapacityWithPhase } from "../lib/quotation-defaults";
 import {
   isAcCableDescription,
+  isDcCableDescription,
   isEarthingWireDescription,
-  isSolarNetMeterDescription,
-  isSolarPvModulesDescription,
   quotationLabels,
 } from "../lib/quotation-labels";
 
@@ -99,6 +109,9 @@ function Header({ data }: { data: QuotationData }) {
         </div>
       ) : null}
       <div style={{ fontSize: 21, fontWeight: 700, letterSpacing: 1.2, textTransform: "uppercase" }}>{filledValue(data.company.name)}</div>
+      <div style={{ fontSize: 10.5, marginTop: 4, fontWeight: 600, color: "#1f4e79", letterSpacing: 0.2 }}>
+        {L.jvvnlGovRegisteredVendor}
+      </div>
       <div style={{ fontSize: 10, marginTop: 8 }}>{filledValue(data.company.address)}</div>
       <div style={{ fontSize: 10, marginTop: 4 }}>
         {[data.company.phone, data.company.email, data.company.website].filter(Boolean).join(" | ") || filledValue("")}
@@ -155,6 +168,7 @@ function SummaryBox({ data }: { data: QuotationData }) {
   const L = quotationLabels(data.language);
   const rowStyle: CSSProperties = { display: "grid", gridTemplateColumns: "150px 1fr", fontSize: 11.5, padding: "4px 0" };
   const labelStyle: CSSProperties = { fontWeight: 700, color: "#374151" };
+  const customerEmail = data.customerEmail?.trim() ?? "";
   return (
     <div style={{ border: TABLE_BORDER, borderRadius: 8, padding: "10px 14px", margin: "4px 0 14px", background: "#fafbfc" }}>
       <div style={rowStyle}>
@@ -165,6 +179,12 @@ function SummaryBox({ data }: { data: QuotationData }) {
         <span style={labelStyle}>{L.customerPhone}</span>
         <span>: {filledValue(data.customerPhone)}</span>
       </div>
+      {customerEmail ? (
+        <div style={rowStyle}>
+          <span style={labelStyle}>{L.customerEmail}</span>
+          <span>: {customerEmail}</span>
+        </div>
+      ) : null}
       <div style={rowStyle}>
         <span style={labelStyle}>{L.capacity}</span>
         <span>: {filledValue(formatCapacityWithPhase(data.capacity, data.phase))}</span>
@@ -214,24 +234,6 @@ function MaterialHeader({ data }: { data: QuotationData }) {
 
 
 
-function parseWattageFromMaterials(materialItems: QuotationData["materialItems"]): { panels: number; wattage: number } | null {
-  const solarPanelItem = materialItems.find((item) => isSolarPvModulesDescription(item.description));
-  if (!solarPanelItem) return null;
-  
-  const qtyMatch = solarPanelItem.qty.match(/\d+/);
-  const unitMatch = solarPanelItem.unit.match(/\d+/);
-  
-  if (!qtyMatch || !unitMatch) return null;
-  
-  const panels = parseInt(qtyMatch[0]);
-  const wattagePerPanel = parseInt(unitMatch[0]);
-  
-  return {
-    panels,
-    wattage: panels * wattagePerPanel,
-  };
-}
-
 function WattageInfoBox({ data }: { data: QuotationData }) {
   const L = quotationLabels(data.language);
   const wattageInfo = parseWattageFromMaterials(data.materialItems);
@@ -245,7 +247,7 @@ function WattageInfoBox({ data }: { data: QuotationData }) {
           wattageInfo.panels,
           Math.round(wattageInfo.wattage / wattageInfo.panels),
           wattageInfo.wattage.toLocaleString(),
-          (wattageInfo.wattage / 1000).toFixed(2),
+          wattageInfo.kw.toFixed(2),
         )}
       </div>
     </div>
@@ -288,25 +290,54 @@ function CommercialRow({ index, row }: { index: number; row: QuotationCommercial
 
 function GenerationTable({ data }: { data: QuotationData }) {
   const L = quotationLabels(data.language);
-  const g = data.generation;
-  const cols = [
-    { label: L.genPerDay, value: g.perDay },
-    { label: L.genPerMonth, value: g.perMonth },
-    { label: L.genPerYear, value: g.perYear },
-    { label: L.savingPerYear, value: g.savingPerYear },
-  ];
+  const rows = computeGenerationRows(data.materialItems, data.generation.unitRate);
+  const headers = [L.genPeriod, L.genPerDay, L.genPerMonth, L.genPerYear, L.savingPerYear];
+
+  if (!rows) {
+    return (
+      <div style={{ fontSize: 11, color: "#6b7280", fontStyle: "italic", padding: "8px 0" }}>
+        {L.genAssumptionsNote}
+      </div>
+    );
+  }
+
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr" }}>
-      {cols.map((col, index) => (
-        <div key={col.label} style={headerCell({ borderLeft: index === 0 ? TABLE_BORDER : undefined, textAlign: "center" })}>
-          {col.label}
-        </div>
-      ))}
-      {cols.map((col, index) => (
-        <div key={`${col.label}-v`} style={tableCell({ borderLeft: index === 0 ? TABLE_BORDER : undefined, textAlign: "center", fontWeight: 600 })}>
-          {filledValue(col.value)}
-        </div>
-      ))}
+    <div>
+      <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr 1fr 1fr 1fr" }}>
+        {headers.map((label, index) => (
+          <div
+            key={label}
+            style={headerCell({ borderLeft: index === 0 ? TABLE_BORDER : undefined, textAlign: "center" })}
+          >
+            {label}
+          </div>
+        ))}
+        {rows.map((row) => {
+          const periodLabel = row.periodKey === "year1" ? L.genYear1 : L.genYears2to5;
+          const values = [
+            periodLabel,
+            formatGenerationAmount(row.perDay, data.language, "day"),
+            formatGenerationAmount(row.perMonth, data.language, "month"),
+            formatGenerationAmount(row.perYear, data.language, "year"),
+            formatGenerationSaving(row.savingPerYear),
+          ];
+          return values.map((value, index) => (
+            <div
+              key={`${row.periodKey}-${index}`}
+              style={tableCell({
+                borderLeft: index === 0 ? TABLE_BORDER : undefined,
+                textAlign: index === 0 ? "left" : "center",
+                fontWeight: 600,
+              })}
+            >
+              {value}
+            </div>
+          ));
+        })}
+      </div>
+      <div style={{ marginTop: 8, fontSize: 10, color: "#6b7280", fontStyle: "italic", lineHeight: 1.45 }}>
+        {L.genAssumptionsNote}
+      </div>
     </div>
   );
 }
@@ -448,37 +479,6 @@ function EmiFinancingSection({ data }: { data: QuotationData }) {
       <div style={{ fontSize: 9.5, color: "#666", marginTop: 10, fontStyle: "italic" }}>
         {L.emiDisclaimer}
       </div>
-    </div>
-  );
-}
-
-function ComponentWarrantyTable({ data }: { data: QuotationData }) {
-  const L = quotationLabels(data.language);
-  const components = [
-    { name: L.solarPanelsProduct, years: L.yearsN(30) },
-    { name: L.solarPanelsPerformance, years: L.yearsN(25) },
-    { name: L.inverter, years: L.yearsN(10) },
-    { name: L.mountingStructure, years: L.yearsN(5) },
-    { name: L.bos, years: L.yearsN(5) },
-    { name: L.installationService, years: L.yearsN(5) },
-  ];
-
-  const GRID = "2fr 1fr";
-  const headerStyle: CSSProperties = { padding: "6px 8px", fontWeight: 700, background: "#14306b", color: "#ffffff", fontSize: 10.5, borderRight: TABLE_BORDER, textAlign: "left" };
-  const cellStyle: CSSProperties = { padding: "6px 8px", fontSize: 10.5, borderRight: TABLE_BORDER, borderBottom: TABLE_BORDER };
-
-  return (
-    <div style={{ marginTop: 12, marginBottom: 12 }}>
-      <div style={{ display: "grid", gridTemplateColumns: GRID }}>
-        <div style={headerStyle}>{L.component}</div>
-        <div style={{ ...headerStyle, textAlign: "center", borderRight: "none" }}>{L.warrantyPeriod}</div>
-      </div>
-      {components.map((comp, idx) => (
-        <div key={idx} style={{ display: "grid", gridTemplateColumns: GRID }}>
-          <div style={cellStyle}>{comp.name}</div>
-          <div style={{ ...cellStyle, textAlign: "center", borderRight: "none", fontWeight: 600 }}>{comp.years}</div>
-        </div>
-      ))}
     </div>
   );
 }
@@ -701,7 +701,7 @@ function createBlocks(data: QuotationData): PreviewBlock[] {
     });
   }
 
-  blocks.push({ key: "summary", estimate: 140, keepWithNext: true, node: <SummaryBox data={data} /> });
+  blocks.push({ key: "summary", estimate: data.customerEmail?.trim() ? 160 : 140, keepWithNext: true, node: <SummaryBox data={data} /> });
 
   // Material Description
   if (data.materialItems.length > 0) {
@@ -712,11 +712,15 @@ function createBlocks(data: QuotationData): PreviewBlock[] {
       blocks.push({ key: `material-${item.id}`, estimate: 16 + tall, node: <MaterialRow data={data} index={index} /> });
     });
 
-    const materialNotes = [
-      data.materialItems.some((item) => isSolarNetMeterDescription(item.description)) ? L.netMeterNote : null,
-      data.materialItems.some((item) => isAcCableDescription(item.description)) ? L.acCableNote : null,
-      data.materialItems.some((item) => isEarthingWireDescription(item.description)) ? L.earthingWireNote : null,
-    ].filter((note): note is string => Boolean(note));
+    const hasIncludedCableRows = data.materialItems.some(
+      (item) =>
+        isAcCableDescription(item.description) ||
+        isDcCableDescription(item.description) ||
+        isEarthingWireDescription(item.description),
+    );
+    const materialNotes = [hasIncludedCableRows ? L.includedCableNote : null].filter(
+      (note): note is string => Boolean(note),
+    );
     if (materialNotes.length > 0) {
       blocks.push({
         key: "material-notes",
@@ -735,12 +739,6 @@ function createBlocks(data: QuotationData): PreviewBlock[] {
     if (data.showWattageInfo && parseWattageFromMaterials(data.materialItems)) {
       blocks.push({ key: "wattage-info", estimate: 50, keepWithNext: true, node: <WattageInfoBox data={data} /> });
     }
-  }
-
-  // Installation Work
-  if (data.installationWork.some((item) => item.trim())) {
-    pushHeading(blocks, "install-heading", L.installationWork);
-    pushBulletList(blocks, "install", data.installationWork, false);
   }
 
   // Assumptions
@@ -766,21 +764,21 @@ function createBlocks(data: QuotationData): PreviewBlock[] {
     });
   }
 
-  // EMI & Financing Section
-  if (data.showEmiSection) {
-    pushHeading(blocks, "emi-heading", L.emiFinancing);
-    blocks.push({ key: "emi-section", estimate: 140, node: <EmiFinancingSection data={data} /> });
-  }
-
   // Effective Investment After Subsidy
   if (data.projectAmount.trim() || data.centralSubsidy.trim() || data.stateSubsidy.trim()) {
     blocks.push({ key: "effective-investment", estimate: 120, node: <EffectiveInvestmentBox data={data} /> });
   }
 
-  // Component Warranty Table
-  if (data.showComponentWarranty) {
-    pushHeading(blocks, "component-warranty-heading", L.componentWarranty);
-    blocks.push({ key: "component-warranty-table", estimate: 160, node: <ComponentWarrantyTable data={data} /> });
+  // Solar Power Generation
+  if (data.showGeneration) {
+    pushHeading(blocks, "gen-heading", L.solarGeneration);
+    blocks.push({ key: "gen-table", estimate: 110, node: <GenerationTable data={data} /> });
+  }
+
+  // EMI & Financing Section
+  if (data.showEmiSection) {
+    pushHeading(blocks, "emi-heading", L.emiFinancing);
+    blocks.push({ key: "emi-section", estimate: 140, node: <EmiFinancingSection data={data} /> });
   }
 
   // What's Included vs Excluded — heading stays with matrix; yellow box moves alone if it won't fit
@@ -790,26 +788,10 @@ function createBlocks(data: QuotationData): PreviewBlock[] {
     blocks.push({ key: "warranty-after-period", estimate: 72, node: <WarrantyAfterPeriodBox data={data} /> });
   }
 
-  // Manufacturing Defect Warranty
-  if (data.warrantyText.trim()) {
-    pushHeading(blocks, "warranty-heading", L.manufacturingWarranty);
-    blocks.push({
-      key: "warranty-body",
-      estimate: 12 + estimateParagraphHeight(data.warrantyText, 90),
-      node: <p style={{ ...paragraphStyle, fontSize: 11 }}>{data.warrantyText}</p>,
-    });
-  }
-
   // Warranty Coverage badges
   if (data.showWarrantyBadges) {
     pushHeading(blocks, "warranty-badges-heading", L.warrantyCoverage);
     blocks.push({ key: "warranty-badges", estimate: 280, node: <WarrantyBadges data={data} /> });
-  }
-
-  // Solar Power Generation
-  if (data.showGeneration) {
-    pushHeading(blocks, "gen-heading", L.solarGeneration);
-    blocks.push({ key: "gen-table", estimate: 52, node: <GenerationTable data={data} /> });
   }
 
   // Installation Process diagram
@@ -898,6 +880,9 @@ function createBlocks(data: QuotationData): PreviewBlock[] {
               <div style={{ fontWeight: 600, marginBottom: 4 }}>{filledValue(data.customerName || "")}</div>
               {data.customerPhone ? (
                 <div style={{ fontSize: 10, color: "#666666" }}>{L.mob} {data.customerPhone}</div>
+              ) : null}
+              {data.customerEmail?.trim() ? (
+                <div style={{ fontSize: 10, color: "#666666" }}>{data.customerEmail.trim()}</div>
               ) : null}
             </div>
           </div>

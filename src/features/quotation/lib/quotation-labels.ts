@@ -5,8 +5,10 @@ export const QUOTATION_LABELS: Record<
   {
     pageOf: (current: number, total: number) => string;
     gst: string;
+    jvvnlGovRegisteredVendor: string;
     customerName: string;
     customerPhone: string;
+    customerEmail: string;
     capacity: string;
     address: string;
     proposalDate: string;
@@ -24,6 +26,10 @@ export const QUOTATION_LABELS: Record<
     genPerMonth: string;
     genPerYear: string;
     savingPerYear: string;
+    genPeriod: string;
+    genYear1: string;
+    genYears2to5: string;
+    genAssumptionsNote: string;
     bankName: string;
     bank: string;
     accountNo: string;
@@ -86,9 +92,7 @@ export const QUOTATION_LABELS: Record<
     subsidyDocuments: string;
     bankDetails: string;
     termsConditions: string;
-    netMeterNote: string;
-    acCableNote: string;
-    earthingWireNote: string;
+    includedCableNote: string;
     clientSignature: string;
     authorizedSignatory: string;
     date: string;
@@ -98,8 +102,10 @@ export const QUOTATION_LABELS: Record<
   en: {
     pageOf: (current, total) => `Page ${current} of ${total}`,
     gst: "GST",
+    jvvnlGovRegisteredVendor: "JVVNL & Government Registered Solar Vendor",
     customerName: "Name of the Customer",
     customerPhone: "Customer Phone",
+    customerEmail: "Customer Email",
     capacity: "Capacity of Power Plant",
     address: "Address",
     proposalDate: "Date of Proposal",
@@ -118,6 +124,11 @@ export const QUOTATION_LABELS: Record<
     genPerMonth: "Per Month Generation",
     genPerYear: "Per Year Generation",
     savingPerYear: "Saving Per Year",
+    genPeriod: "Period",
+    genYear1: "1st Year (4 units / kW / day)",
+    genYears2to5: "2nd–5th Year (3.9 units / kW / day)",
+    genAssumptionsNote:
+      "* Generation is auto-calculated from panel watt × quantity (system kW). Year 1 assumes 4 units/kW/day; years 2–5 assume 3.9 units/kW/day. Savings use the unit rate entered in the editor.",
     bankName: "Name",
     bank: "Bank",
     accountNo: "A/c No.",
@@ -204,12 +215,8 @@ export const QUOTATION_LABELS: Record<
     subsidyDocuments: "Required Documents for Subsidy",
     bankDetails: "Bank Details",
     termsConditions: "Terms & Conditions",
-    netMeterNote:
-      "* Net meter will be provided only if the client doesn't already have a smart meter installed.",
-    acCableNote:
-      "* AC cable is included up to 50 mtr as mentioned above. Extra length will be charged extra.",
-    earthingWireNote:
-      "* Earthing wire is included up to 100 mtr as mentioned above. Extra length will be charged extra.",
+    includedCableNote:
+      "* AC cable, DC cable, and earthing wire are included up to the lengths mentioned above. Extra length will be charged extra.",
     clientSignature: "Client Signature",
     authorizedSignatory: "Authorized Signatory",
     date: "Date",
@@ -218,8 +225,10 @@ export const QUOTATION_LABELS: Record<
   hi: {
     pageOf: (current, total) => `पृष्ठ ${current} / ${total}`,
     gst: "जीएसटी",
+    jvvnlGovRegisteredVendor: "JVVNL व सरकार पंजीकृत सोलर विक्रेता",
     customerName: "ग्राहक का नाम",
     customerPhone: "ग्राहक फोन",
+    customerEmail: "ग्राहक ईमेल",
     capacity: "पावर प्लांट क्षमता",
     address: "पता",
     proposalDate: "प्रस्ताव की तिथि",
@@ -238,6 +247,11 @@ export const QUOTATION_LABELS: Record<
     genPerMonth: "प्रति माह उत्पादन",
     genPerYear: "प्रति वर्ष उत्पादन",
     savingPerYear: "प्रति वर्ष बचत",
+    genPeriod: "अवधि",
+    genYear1: "प्रथम वर्ष (4 यूनिट / किलोवाट / दिन)",
+    genYears2to5: "वर्ष 2–5 (3.9 यूनिट / किलोवाट / दिन)",
+    genAssumptionsNote:
+      "* उत्पादन पैनल वॉट × मात्रा (सिस्टम किलोवाट) से स्वतः गणना होता है। प्रथम वर्ष 4 यूनिट/किलोवाट/दिन; वर्ष 2–5 में 3.9 यूनिट/किलोवाट/दिन। बचत संपादक में दी गई यूनिट दर से।",
     bankName: "नाम",
     bank: "बैंक",
     accountNo: "खाता संख्या",
@@ -324,12 +338,8 @@ export const QUOTATION_LABELS: Record<
     subsidyDocuments: "सब्सिडी के लिए आवश्यक दस्तावेज़",
     bankDetails: "बैंक विवरण",
     termsConditions: "नियम व शर्तें",
-    netMeterNote:
-      "* नेट मीटर तभी प्रदान किया जाएगा जब ग्राहक के पास पहले से स्मार्ट मीटर न लगा हो।",
-    acCableNote:
-      "* AC केबल उपरोक्त अनुसार 50 मीटर तक शामिल है। अतिरिक्त लंबाई पर अलग से शुल्क लगेगा।",
-    earthingWireNote:
-      "* अर्थिंग वायर उपरोक्त अनुसार 100 मीटर तक शामिल है। अतिरिक्त लंबाई पर अलग से शुल्क लगेगा।",
+    includedCableNote:
+      "* AC केबल, DC केबल व अर्थिंग वायर उपरोक्त उल्लिखित लंबाई तक शामिल हैं। अतिरिक्त लंबाई पर अलग से शुल्क लगेगा।",
     clientSignature: "ग्राहक हस्ताक्षर",
     authorizedSignatory: "अधिकृत हस्ताक्षरकर्ता",
     date: "तिथि",
@@ -352,9 +362,19 @@ export function isSolarNetMeterDescription(description: string) {
   return value.includes("solar & net meter") || description.includes("सोलर व नेट मीटर");
 }
 
+export function isAcDbDcDbDescription(description: string) {
+  const value = description.toLowerCase();
+  return value.includes("acdb") || value.includes("dcdb") || description.includes("डिस्ट्रीब्यूशन बॉक्स");
+}
+
 export function isAcCableDescription(description: string) {
   const value = description.toLowerCase();
   return value.includes("ac cable") || description.includes("AC केबल");
+}
+
+export function isDcCableDescription(description: string) {
+  const value = description.toLowerCase();
+  return value.includes("dc cable") || description.includes("DC केबल");
 }
 
 export function isSolarInverterDescription(description: string) {

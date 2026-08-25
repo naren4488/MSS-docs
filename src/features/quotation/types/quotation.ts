@@ -27,10 +27,19 @@ export interface QuotationTermItem {
 }
 
 export interface QuotationGeneration {
-  perDay: string;
-  perMonth: string;
-  perYear: string;
-  savingPerYear: string;
+  /**
+   * ₹ per unit used for the annual saving estimate.
+   * Day / month / year figures are auto-calculated from panel watt × qty.
+   */
+  unitRate: string;
+  /** @deprecated Kept for older saved quotations; ignored when auto-calculating. */
+  perDay?: string;
+  /** @deprecated Kept for older saved quotations; ignored when auto-calculating. */
+  perMonth?: string;
+  /** @deprecated Kept for older saved quotations; ignored when auto-calculating. */
+  perYear?: string;
+  /** @deprecated Kept for older saved quotations; ignored when auto-calculating. */
+  savingPerYear?: string;
 }
 
 export interface QuotationData {
@@ -42,6 +51,8 @@ export interface QuotationData {
   // Top summary
   customerName: string;
   customerPhone: string;
+  /** Optional — shown on PDF only when filled. */
+  customerEmail: string;
   capacity: string;
   phase: QuotationPhase;
   address: string;

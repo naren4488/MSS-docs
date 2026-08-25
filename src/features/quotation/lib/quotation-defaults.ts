@@ -8,7 +8,7 @@ import type {
   QuotationTermItem,
 } from "../types/quotation";
 import { stripSyncedCommercialRows } from "./quotation-formatters";
-import { isAcCableDescription, isSolarInverterDescription } from "./quotation-labels";
+import { isAcCableDescription, isAcDbDcDbDescription, isSolarInverterDescription } from "./quotation-labels";
 
 function uuid() {
   return crypto.randomUUID();
@@ -38,12 +38,12 @@ function material(description: string, qty: string, unit: string, make: string):
 export function acCableMake(phase: QuotationPhase, language: QuotationLanguage): string {
   if (language === "hi") {
     return phase === "3PH"
-      ? "4 कोर 10 मिमी एल्युमिनियम आर्मर्ड केबल (3PH)"
-      : "2 कोर 10 मिमी एल्युमिनियम आर्मर्ड केबल (1PH)";
+      ? "Ramsons 4 कोर 10 मिमी एल्युमिनियम आर्मर्ड केबल (3PH) · JVVNL अनुमोदित"
+      : "Ramsons 2 कोर 10 मिमी एल्युमिनियम आर्मर्ड केबल (1PH) · JVVNL अनुमोदित";
   }
   return phase === "3PH"
-    ? "4 Core 10 mm Aluminium Armoured Cable (3PH)"
-    : "2 Core 10 mm Aluminium Armoured Cable (1PH)";
+    ? "Ramsons 4 Core 10 mm Aluminium Armoured Cable (3PH), JVVNL approved"
+    : "Ramsons 2 Core 10 mm Aluminium Armoured Cable (1PH), JVVNL approved";
 }
 
 export function inverterUnit(phase: QuotationPhase, language: QuotationLanguage): string {
@@ -51,6 +51,14 @@ export function inverterUnit(phase: QuotationPhase, language: QuotationLanguage)
     return phase === "3PH" ? "3 फेज" : "1 फेज";
   }
   return phase === "3PH" ? "3 Phase" : "1 Phase";
+}
+
+export function acDbDcDbUnit(phase: QuotationPhase): string {
+  return phase === "3PH" ? "64 Amp / 1000 V" : "32 Amp / 600 V";
+}
+
+export function acDbDcDbMake(language: QuotationLanguage): string {
+  return language === "hi" ? "AC — हैवेल्स · DC — सिबास" : "AC — Havells · DC — Sibass";
 }
 
 function stripPhaseFromCapacity(capacity: string): string {
@@ -74,6 +82,9 @@ export function applyPhaseToMaterialItems(
     if (isSolarInverterDescription(item.description)) {
       return { ...item, unit: inverterUnit(phase, language) };
     }
+    if (isAcDbDcDbDescription(item.description)) {
+      return { ...item, unit: acDbDcDbUnit(phase), make: acDbDcDbMake(language) };
+    }
     return item;
   });
 }
@@ -85,13 +96,13 @@ function defaultMaterialItems(language: QuotationLanguage, phase: QuotationPhase
       material("सोलर इनवर्टर", "1", inverterUnit(phase, language), "3.6 किलोवाट POLYCAB इनवर्टर · 10 वर्ष वारंटी"),
       material("माउंटिंग स्ट्रक्चर (GI अपोलो)", "आवश्यकतानुसार", "", "लेग 75×75, रैफ्टर 60×40, पर्लिन 40×40"),
       material("AC केबल", "50 तक", "मी.", acCableMake(phase, language)),
-      material("DC केबल", "आवश्यकतानुसार", "मी.", "4 वर्ग मिमी कॉपर वायर, पॉलीकैब केबल"),
+      material("DC केबल", "60 तक", "मी.", "4 वर्ग मिमी कॉपर वायर, पॉलीकैब केबल"),
       material("लाइटनिंग अरेस्टर किट", "1 नं.", "1 नं.", "1 मी., कॉपर बाउंड"),
-      material("अर्थिंग किट", "3 सेट", "सेट", "सिंगल कोर कॉपर अर्थिंग, सीमेंट अर्थिंग GI व केमिकल सॉल्यूशन सहित, 1 मीटर"),
-      material("अर्थिंग वायर", "100 तक", "मी.", "16 वर्ग मिमी एल्युमिनियम वायर या 6 वर्ग मिमी CCA वायर"),
-      material("ACDB / DCDB / MCB डिस्ट्रीब्यूशन बॉक्स", "1, 1 नं.", "32 Amp / 1000 V DC", "हैवेल्स या सिबास"),
-      material("सोलर व नेट मीटर LT-CT", "1, 1 नं.", "", "Avon मीटर उपलब्धता अनुसार, JVVNL द्वारा टेस्टेड"),
-      material("DC वायर डक्ट व केसिंग, कनेक्टिंग केबल, MC-4 कनेक्टर", "15 मी., 4 सेट", "6/4 मिमी 1500 V DC", "पॉलीकैब कॉपर 4 मिमी"),
+      material("अर्थिंग किट", "3 सेट", "सेट", "3 कॉपर बाउंड रॉड व अर्थिंग केमिकल बैग"),
+      material("अर्थिंग वायर", "100 तक", "मी.", "16 वर्ग मिमी एल्युमिनियम वायर (Ramsons) या 6 वर्ग मिमी कॉपर क्लैड वायर (Indo)"),
+      material("ACDB / DCDB / MCB डिस्ट्रीब्यूशन बॉक्स", "1, 1 नं.", acDbDcDbUnit(phase), acDbDcDbMake(language)),
+      material("सोलर व नेट मीटर", "1, 1 नं.", "", "Avon मीटर उपलब्धता अनुसार, JVVNL द्वारा टेस्टेड"),
+      material("कनेक्शन किट", "आवश्यकतानुसार", "—", "कनेक्टिंग केबल (4 वर्ग मिमी — पॉलीकैब), MC4, जम्पर"),
       material("डिज़ाइनेड इंस्टॉलेशन व कमीशनिंग", "", "साइट आवश्यकतानुसार", "टीम माही सोलर सॉल्यूशन"),
     ];
   }
@@ -100,42 +111,27 @@ function defaultMaterialItems(language: QuotationLanguage, phase: QuotationPhase
     material("Solar Inverter", "1", inverterUnit(phase, language), "3.6 KW POLYCAB Inverter with 10 Year Warranty"),
     material("Mounting Structure (GI Apollo)", "As per Requirement", "", "Leg 75×75, Rafter 60×40, Purline 40×40"),
     material("AC Cable", "Upto 50", "Mtr", acCableMake(phase, language)),
-    material("DC Cable", "As per Requirement", "M", "4 sq mm Copper Wire, Polycab cable"),
+    material("DC Cable", "Upto 60", "Mtr", "4 sq mm Copper Wire, Polycab cable"),
     material("Lightning Arrestor Kit", "1 No", "1 No", "1 M, Copper bound"),
-    material("Earthing Kit", "3 Set", "Set", "Earthing single core copper, cement earthing with GI and chemical solution, 1 Mtr"),
-    material("Earthing Wire", "Upto 100", "Mtr", "16 sq mm aluminium wire or 6 sq mm CCA wire"),
-    material("ACDB / DCDB / MCB Distribution Box", "1, 1 No", "32 Amp / 1000 V DC", "Havells or Sibass"),
-    material("Solar & Net Meter LT-CT", "1, 1 No", "", "Avon Meter as per availability, tested by JVVNL"),
-    material("DC Wire Duct & Casing, Connecting Cable, MC-4 Connector", "15 M, 4 Set", "6/4 mm 1500 V DC", "Polycab Copper 4 mm"),
+    material("Earthing Kit", "3 Set", "Set", "3 copper bound rods and earthing chemical bag"),
+    material("Earthing Wire", "Upto 100", "Mtr", "16 sq mm aluminium wire (Ramsons) or 6 sq mm copper clad wire (Indo)"),
+    material("ACDB / DCDB / MCB Distribution Box", "1, 1 No", acDbDcDbUnit(phase), acDbDcDbMake(language)),
+    material("Solar & Net Meter", "1, 1 No", "", "Avon Meter as per availability, tested by JVVNL"),
+    material("Connection Kit", "As per Requirement", "—", "Connecting cable (4 sq mm — Polycab), MC4, jumper"),
     material("Designed Installation & Commissioning", "", "As per site requirement", "Team Mahi Solar Solution"),
-  ];
-}
-
-function defaultInstallationWork(language: QuotationLanguage): string[] {
-  if (language === "hi") {
-    return [
-      "ग्रिड कनेक्शन हेतु फीडर / LT पैनल साइट पर उपलब्ध कराना ग्राहक के दायरे में होगा।",
-      "नेट मीटरिंग व DISCOM अनुमोदन।",
-      "वारंटी यहाँ उल्लिखित नियम व शर्तों के अनुसार।",
-    ];
-  }
-  return [
-    "Feeder / LT panel for connection to grid will be made available at site and shall be in the Client's scope.",
-    "Net metering and approval of DISCOM.",
-    "Warranty as per terms and conditions mentioned herein.",
   ];
 }
 
 function defaultAssumptions(language: QuotationLanguage): string[] {
   if (language === "hi") {
     return [
-      "भौगोलिक साइट स्थितियों के अनुसार औसत 5 घंटे पीक धूप उपलब्धता।",
+      "भौगोलिक साइट स्थितियों के अनुसार औसत 6 घंटे पीक धूप उपलब्धता।",
       "यह माना गया है कि मॉड्यूल इंस्टॉलेशन हेतु पर्याप्त छाया-मुक्त क्षेत्र उपलब्ध है। पहले से लगे उपकरण के कारण प्रतिबंध होने पर, उत्पादन पर न्यूनतम प्रभाव रखते हुए अन्य छत (साइट पर उपलब्ध) का उपयोग करना पड़ सकता है।",
       "छत की भार वहन क्षमता MMS सिस्टम का भार व क्षेत्र के विंड लोड को वहन करने के लिए पर्याप्त होनी चाहिए।",
     ];
   }
   return [
-    "Peak sunshine availability of 5 hours average as per the geographical site conditions.",
+    "Peak sunshine availability of 6 hours average as per the geographical site conditions.",
     "It is assumed that sufficient shadow-free area is available for installation of modules. In case of restriction due to already installed equipment, other roof (as available at site) may have to be used keeping minimum impact on generation.",
     "Load bearing capacity of the roof should be adequate to carry the load of the MMS system considering the wind load of the zone.",
   ];
@@ -144,23 +140,17 @@ function defaultAssumptions(language: QuotationLanguage): string[] {
 function defaultCustomerScope(language: QuotationLanguage): string[] {
   if (language === "hi") {
     return [
-      "सामग्री रखने हेतु स्थान ग्राहक प्रदान करेगा।",
       "साइट तैयार करना व छत/टेरेस से अवांछित सामग्री हटाना कार्यक्षेत्र में शामिल नहीं है। परिसर व छत तक सामग्री ले जाने में इंस्टॉलेशन टीम को आवश्यक सहयोग देना होगा; इंस्टॉलेशन पूर्ण होने तक सामग्री सुरक्षित स्थान पर रखनी होगी।",
       "साइट पर डिलीवरी के बाद आपूर्ति की गई सामग्री की सुरक्षा ग्राहक के दायरे में होगी।",
-      "भवन की ग्राउंड फ्लोर पर स्थित LT पैनल तक सोलर पावर फीड-इन हेतु पहुँच ग्राहक प्रदान करेगा; ग्रिड कनेक्शन हेतु फीडर / LT पैनल साइट पर उपलब्ध कराना ग्राहक के दायरे में होगा।",
       "क्लाउड मॉनिटरिंग हेतु LAN (इंटरनेट सुविधा) ग्राहक प्रदान करेगा।",
       "मॉड्यूल सफाई हमारे दायरे में नहीं है; ग्राहक से सप्ताह में एक बार पैनल साफ करने का अनुरोध है।",
-      "नेट मीटरिंग फाइल शुल्क ग्राहक के दायरे में होगा।",
     ];
   }
   return [
-    "Customer to provide space for storing of material.",
     "Making the site ready and cleaning the terrace / roof of any unwanted items is not included in scope of work. Necessary support will be extended to our installation team for taking material inside the premises and to the rooftop; the same has to be kept at a proper and secure place till completion of installation.",
     "Safety of material supplied would be in customer scope after delivery at site.",
-    "Customer shall provide access to feed-in solar power to the LT panel located on the ground floor of the building; the feeder / LT panel for connection to grid will be made available at site and shall be in customer scope.",
     "Customer to provide LAN (internet facility) for cloud monitoring.",
     "Cleaning of modules is not in our scope; customer is requested to clean the panels once a week.",
-    "Net metering file charges would be in the scope of customer.",
   ];
 }
 
@@ -171,13 +161,11 @@ function commercial(parameter: string, offering: string): QuotationCommercialRow
 function defaultCommercialOffer(language: QuotationLanguage): QuotationCommercialRow[] {
   if (language === "hi") {
     return [
-      commercial("सोलर पीवी प्लांट क्षमता", "3 किलोवाट, ऑन-ग्रिड SPV सिस्टम"),
       commercial("पैनल कॉन्फ़िगरेशन", "6 × 550W अदानी टॉपकॉन बाइफेशियल पैनल (कुल 3.3 किलोवाट)"),
       commercial("मूल्य आधार", "टर्नकी EPC"),
     ];
   }
   return [
-    commercial("Solar PV Plant Capacity", "3 KWp, On-grid SPV System"),
     commercial("Panel Configuration", "6 x 550W Adani Topcon Bifacial Panels (3.3 KW Total)"),
     commercial("Price Basis", "Turnkey EPC"),
   ];
@@ -229,7 +217,7 @@ function defaultTerms(language: QuotationLanguage): QuotationTermItem[] {
       ),
       term(
         "विद्युत उत्पादन व मौसमी भिन्नता",
-        "वार्षिक ऊर्जा उत्पादन औसत रूप से स्थापित क्षमता के प्रति किलोवाट प्रति दिन 4–4.5 यूनिट माना जाता है।\n\nमौसमी भिन्नता:\n• गर्मी (मार्च–मई): उच्च उत्पादन — वार्षिक औसत से लगभग 20–25% अधिक।\n• मानसून (जून–सितंबर): कम उत्पादन — बादल व बारिश के कारण औसत से लगभग 30–40% कम।\n• सर्दी (अक्टूबर–फरवरी): मध्यम उत्पादन — औसत से लगभग 5–10% कम।\n\nनोट: वार्षिक उत्पादन सभी मौसमों का औसत है। मासिक उत्पादन मौसम, बादल व दिन की लंबाई पर निर्भर करता है। उपरोक्त आँकड़े प्रति दिन औसत 4.5 घंटे पीक सन इक्विवेलेंट मानते हैं।",
+        "उत्पादन अनुमान सिस्टम किलोवाट (पैनल वॉट × मात्रा) पर आधारित है:\n• प्रथम वर्ष: औसत 4 यूनिट प्रति किलोवाट प्रति दिन\n• वर्ष 2–5: औसत 3.9 यूनिट प्रति किलोवाट प्रति दिन\n\nमौसमी भिन्नता:\n• गर्मी (मार्च–मई): उच्च उत्पादन — वार्षिक औसत से लगभग 20–25% अधिक।\n• मानसून (जून–सितंबर): कम उत्पादन — बादल व बारिश के कारण औसत से लगभग 30–40% कम।\n• सर्दी (अक्टूबर–फरवरी): मध्यम उत्पादन — औसत से लगभग 5–10% कम।\n\nनोट: मासिक उत्पादन मौसम, बादल व दिन की लंबाई पर निर्भर करता है।",
       ),
       term(
         "वारंटी कवरेज व सीमाएँ",
@@ -322,7 +310,7 @@ function defaultTerms(language: QuotationLanguage): QuotationTermItem[] {
     ),
     term(
       "Electricity Generation & Seasonal Variation",
-      "Annual energy generation is calculated as 4–4.5 kWh per kW of installed capacity per day on average across the year.\n\nSeasonal Variation:\n• SUMMER (March–May): Higher generation — typically 20–25% above annual average due to increased sunlight hours.\n• MONSOON (June–September): Lower generation — typically 30–40% below annual average due to cloud cover and rain.\n• WINTER (October–February): Moderate generation — typically 5–10% below annual average.\n\nNote: Annual generation is an average across all seasons. Monthly generation will vary based on weather conditions, cloud cover, and daylight hours. The above generation figures assume 4.5 hours of peak sun equivalent per day on average.",
+      "Generation estimates are based on system kW (panel watt × quantity):\n• Year 1: average 4 units per kW per day\n• Years 2–5: average 3.9 units per kW per day\n\nSeasonal Variation:\n• SUMMER (March–May): Higher generation — typically 20–25% above annual average due to increased sunlight hours.\n• MONSOON (June–September): Lower generation — typically 30–40% below annual average due to cloud cover and rain.\n• WINTER (October–February): Moderate generation — typically 5–10% below annual average.\n\nNote: Monthly generation will vary based on weather conditions, cloud cover, and daylight hours.",
     ),
     term(
       "Warranty Coverage & Limitations",
@@ -441,25 +429,21 @@ export function createDefaultQuotationData(language: QuotationLanguage = "en"): 
     coverImageUrl: "",
     customerName: "",
     customerPhone: "",
+    customerEmail: "",
     capacity: "3 KW",
     phase: "1PH",
     address: "Jaipur",
     proposalDate: today,
     company: defaultCompany(),
     materialItems: defaultMaterialItems(language),
-    installationWork: defaultInstallationWork(language),
+    installationWork: [],
     assumptions: defaultAssumptions(language),
     customerScope: defaultCustomerScope(language),
     commercialOffer: defaultCommercialOffer(language),
-    warrantyText: isHindi
-      ? "12 वर्ष उत्पाद निर्माण वारंटी। पावर प्रदर्शन गारंटी: प्रथम वर्ष में पावर डेग्रेडेशन < 2% तथा वर्ष 2–27 में प्रति वर्ष < 0.50%। BOS — 1 वर्ष वारंटी।"
-      : "12 year product manufacturing warranty. Power performance guarantee: power degradation < 2% in the first year and < 0.50% per year in years 2–27. BOS — 1 Year Warranty.",
+    warrantyText: "",
     showGeneration: true,
     generation: {
-      perDay: isHindi ? "12 यूनिट / दिन" : "12 Units / Day",
-      perMonth: isHindi ? "360 यूनिट / माह" : "360 Units / Month",
-      perYear: isHindi ? "4320 यूनिट / वर्ष" : "4320 Units / Year",
-      savingPerYear: "₹ 34,560",
+      unitRate: "8",
     },
     showWarrantyBadges: true,
     warrantySolarPanelYears: "30",
@@ -522,6 +506,7 @@ export function switchQuotationLanguage(data: QuotationData, language: Quotation
     coverImageUrl: data.coverImageUrl,
     customerName: data.customerName,
     customerPhone: data.customerPhone,
+    customerEmail: data.customerEmail,
     capacity: stripPhaseFromCapacity(data.capacity) || fresh.capacity,
     phase: data.phase,
     address: data.address,
@@ -529,7 +514,9 @@ export function switchQuotationLanguage(data: QuotationData, language: Quotation
     company: { ...fresh.company, ...data.company },
     materialItems: applyPhaseToMaterialItems(fresh.materialItems, data.phase, language),
     showGeneration: data.showGeneration,
-    generation: fresh.generation,
+    generation: {
+      unitRate: data.generation.unitRate || fresh.generation.unitRate,
+    },
     showWarrantyBadges: data.showWarrantyBadges,
     warrantySolarPanelYears: data.warrantySolarPanelYears,
     warrantyInverterYears: data.warrantyInverterYears,
@@ -573,8 +560,11 @@ export function normalizeQuotationData(input?: Partial<QuotationData> | null): Q
     language,
     phase,
     capacity: stripPhaseFromCapacity(input?.capacity ?? defaults.capacity) || defaults.capacity,
+    customerEmail: input?.customerEmail ?? defaults.customerEmail,
     company: { ...defaults.company, ...input?.company },
-    generation: { ...defaults.generation, ...input?.generation },
+    generation: {
+      unitRate: input?.generation?.unitRate ?? defaults.generation.unitRate,
+    },
     emiInfo: { ...defaults.emiInfo, ...input?.emiInfo },
     materialItems: input?.materialItems ?? defaults.materialItems,
     installationWork: input?.installationWork ?? defaults.installationWork,
