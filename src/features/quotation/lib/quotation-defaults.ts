@@ -452,13 +452,13 @@ export function createDefaultQuotationData(language: QuotationLanguage = "en"): 
     showInstallationProcess: true,
     installationSteps: defaultInstallationSteps(language),
     showWattageInfo: true,
-    projectAmount: "180000",
+    projectAmount: "190000",
     centralSubsidy: "78000",
     stateSubsidy: "17000",
-    effectivePayableAmount: "85000",
+    effectivePayableAmount: "95000",
     subsidyNote: isHindi
-      ? "*राज्य सरकार सब्सिडी (₹17,000) केवल वहीं दी जाएगी जहाँ वर्तमान में 100 यूनिट मुफ्त लाभ उपलब्ध है।"
-      : "*State Government Subsidy (₹17,000) will be provided only where 100 units free benefit is currently available.",
+      ? "*MNRE सब्सिडी (₹78,000) नेट मीटरिंग के ~60 दिन बाद ग्राहक खाते में ट्रांसफर होती है। राज्य सब्सिडी (₹17,000) वहाँ लागू जहाँ वर्तमान में 100 यूनिट मुफ्त लाभ उपलब्ध है।"
+      : "*MNRE subsidy (₹78,000) is transferred to the customer account ~60 days after net metering. State subsidy (₹17,000) applies where 100 units free benefit is currently available.",
     showEmiSection: true,
     emiInfo: {
       uptoLoanAmount: "₹2,00,000",

@@ -1,38 +1,27 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Languages } from "lucide-react";
-import { useBeforeUnload, useNavigate, useParams } from "react-router-dom";
+import { useBeforeUnload, useNavigate, useSearchParams } from "react-router-dom";
 import { MakerStickyTopbar } from "@/components/MakerStickyTopbar";
 import { QuotationEditor } from "../components/QuotationEditor";
 import { QuotationPreview } from "../components/QuotationPreview";
 import {
-  createDefaultQuotationData,
-  normalizeQuotationData,
-  switchQuotationLanguage,
-} from "../lib/quotation-defaults";
-import {
-  getQuotation,
-  getQuotationDraft,
-  saveQuotationDraft,
-} from "../lib/quotation-storage";
+  createQuotationFromTemplate,
+  DEFAULT_QUOTATION_TEMPLATE_ID,
+  isQuotationTemplate,
+  type QuotationTemplateId,
+} from "../lib/quotation-templates";
 import type { QuotationData, QuotationLanguage } from "../types/quotation";
 
-function cloneData(data: QuotationData) {
-  return JSON.parse(JSON.stringify(data)) as QuotationData;
-}
-
 export function QuotationMaker() {
-  const params = useParams();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const previewRef = useRef<HTMLDivElement | null>(null);
+  const templateParam = searchParams.get("template");
+  const activeTemplate: QuotationTemplateId = isQuotationTemplate(templateParam)
+    ? templateParam
+    : DEFAULT_QUOTATION_TEMPLATE_ID;
 
-  const initialData = useMemo(() => {
-    const currentRecord = params.id ? getQuotation(params.id) : null;
-    if (currentRecord) {
-      return normalizeQuotationData(cloneData(currentRecord.content));
-    }
-    const draft = getQuotationDraft();
-    return draft ? normalizeQuotationData(draft) : createDefaultQuotationData();
-  }, [params.id]);
+  const initialData = useMemo(() => createQuotationFromTemplate(activeTemplate), [activeTemplate]);
 
   const [data, setData] = useState<QuotationData>(initialData);
   const [viewMode, setViewMode] = useState<"split" | "editor" | "preview">("split");
@@ -43,15 +32,6 @@ export function QuotationMaker() {
     setData(initialData);
     setSavedSnapshot(JSON.stringify(initialData));
   }, [initialData]);
-
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      if (!params.id) {
-        saveQuotationDraft(data);
-      }
-    }, 400);
-    return () => window.clearTimeout(timer);
-  }, [data, params.id]);
 
   useBeforeUnload(
     (event) => {
@@ -85,17 +65,17 @@ export function QuotationMaker() {
   }
 
   function handleBack() {
-    if (isDirty && !window.confirm("You have unsaved changes. Go back to all quotations anyway?")) {
+    if (isDirty && !window.confirm("You have unsaved changes. Go back to packages anyway?")) {
       return;
     }
     navigate("/quotations");
   }
 
   function handleReset() {
-    if (!window.confirm("Reset the form to default values? Any unsaved edits will be lost.")) {
+    if (!window.confirm("Reset the form to the selected package template? Any unsaved edits will be lost.")) {
       return;
     }
-    setData(createDefaultQuotationData(data.language));
+    setData(createQuotationFromTemplate(activeTemplate, data.language));
   }
 
   function handleLanguageChange(next: QuotationLanguage) {
@@ -109,7 +89,29 @@ export function QuotationMaker() {
     ) {
       return;
     }
-    setData(switchQuotationLanguage(data, next));
+    const templated = createQuotationFromTemplate(activeTemplate, next);
+    setData({
+      ...templated,
+      customerName: data.customerName,
+      customerPhone: data.customerPhone,
+      customerEmail: data.customerEmail,
+      address: data.address,
+      proposalDate: data.proposalDate,
+      company: data.company,
+      projectAmount: data.projectAmount,
+      centralSubsidy: data.centralSubsidy,
+      stateSubsidy: data.stateSubsidy,
+      bankAccountName: data.bankAccountName,
+      bankName: data.bankName,
+      bankAccountNo: data.bankAccountNo,
+      bankIfsc: data.bankIfsc,
+      bankGst: data.bankGst,
+      repName: data.repName,
+      repTitle: data.repTitle,
+      repCompany: data.repCompany,
+      repMobiles: data.repMobiles,
+      coverImageUrl: data.coverImageUrl,
+    });
   }
 
   return (

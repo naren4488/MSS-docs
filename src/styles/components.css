@@ -277,6 +277,184 @@
   font-size: 16px;
 }
 
+.quotation-package-section {
+  margin-bottom: 32px;
+}
+
+.quotation-package-section-header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.quotation-package-section-header h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.quotation-package-section-header .muted-text {
+  margin: 0;
+  font-size: 13px;
+}
+
+.quotation-package-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.quotation-package-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 18px 18px 16px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 16px;
+  background: #ffffff;
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  min-height: 196px;
+}
+
+.quotation-package-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(15, 23, 42, 0.18);
+  box-shadow: 0 14px 36px rgba(15, 23, 42, 0.1);
+}
+
+.quotation-package-card--1ph {
+  border-top: 3px solid #2563eb;
+}
+
+.quotation-package-card--3ph {
+  border-top: 3px solid #0f766e;
+}
+
+.quotation-package-card--default {
+  box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.25);
+}
+
+.quotation-package-card-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.quotation-package-card-title-row h3 {
+  margin: 0;
+  font-size: 22px;
+  letter-spacing: -0.02em;
+}
+
+.quotation-package-card-sub {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+
+.quotation-package-card-phase {
+  margin: 0;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.quotation-package-card-default {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #1d4ed8;
+  background: rgba(37, 99, 235, 0.1);
+  border-radius: 999px;
+  padding: 3px 8px;
+}
+
+.quotation-phase-badge {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  border-radius: 999px;
+  padding: 4px 8px;
+}
+
+.quotation-phase-badge--1ph {
+  color: #1d4ed8;
+  background: rgba(37, 99, 235, 0.1);
+}
+
+.quotation-phase-badge--3ph {
+  color: #0f766e;
+  background: rgba(15, 118, 110, 0.1);
+}
+
+.quotation-package-card-pricing {
+  margin: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.quotation-package-card-pricing > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.quotation-package-card-pricing dt {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.quotation-package-card-pricing dd {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.quotation-package-card-net {
+  padding-top: 10px;
+  border-top: 1px dashed rgba(15, 23, 42, 0.1);
+}
+
+.quotation-package-card-net dd {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f766e;
+}
+
+.quotation-package-card-meta {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.quotation-package-card-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+  color: #2563eb;
+}
+
+.quotation-package-card--3ph .quotation-package-card-cta {
+  color: #0f766e;
+}
+
+.quotation-package-card:hover .quotation-package-card-cta {
+  gap: 6px;
+}
+
 .saved-card {
   padding: 20px;
   display: grid;

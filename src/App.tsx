@@ -34,7 +34,7 @@ export default function App() {
         <Route path="/partner-agreement/:id" element={<PartnerAgreementMaker />} />
         <Route path="/partner-agreements" element={<AllPartnerAgreements />} />
         <Route path="/quotation" element={<QuotationMaker />} />
-        <Route path="/quotation/:id" element={<QuotationMaker />} />
+        <Route path="/quotation/:id" element={<Navigate replace to="/quotations" />} />
         <Route path="/quotations" element={<AllQuotations />} />
         <Route path="/company-profile" element={<CompanyProfileMaker />} />
         <Route path="/company-profile/:id" element={<CompanyProfileMaker />} />
