@@ -1,6 +1,6 @@
 /**
  * Sub Vendor Payment · `SATYANARAYAN ` tab — money ledger.
- * Source: SUB VENDOR PAYMENT sheet (live snapshot 2026-08-20).
+ * Source: SUB VENDOR PAYMENT sheet (live snapshot 2026-08-28).
  * Maps to Projects PROJECT TYPE `SATAYNARAYAN JI`.
  */
 
@@ -17,7 +17,7 @@ export interface SatyanarayanLedgerRow {
 }
 
 export const SATYANARAYAN_LEDGER_SUMMARY = {
-  totalDr: 163_372,
+  totalDr: 168_342,
   totalCr: 0,
   closingBalance: SATYANARAYAN_SUB_VENDOR_LEDGER.headerBalance,
 } as const;
@@ -58,6 +58,30 @@ export const SATYANARAYAN_LEDGER_ROWS: readonly SatyanarayanLedgerRow[] = [
   { date: "16 Jul 2026", particular: "PAYMENT", dr: 2_000, cr: 0, closingBalance: 161_672, remark: "CAR PETROL" },
   { date: "22 Jul 2026", particular: "PAYMENT", dr: 700, cr: 0, closingBalance: 162_372, remark: "CAR PETROL" },
   { date: "31 Jul 2026", particular: "PAYMENT", dr: 1_000, cr: 0, closingBalance: 163_372, remark: "CAR PETROL" },
+  {
+    date: "20 Aug 2026",
+    particular: "Advance",
+    dr: 1_620,
+    cr: 0,
+    closingBalance: 164_992,
+    remark: "advance for fuel",
+  },
+  {
+    date: "23 Aug 2026",
+    particular: "Advance",
+    dr: 1_500,
+    cr: 0,
+    closingBalance: 166_492,
+    remark: "advance for fuel",
+  },
+  {
+    date: "26 Aug 2026",
+    particular: "Advance",
+    dr: 1_850,
+    cr: 0,
+    closingBalance: 168_342,
+    remark: "advance for fuel",
+  },
 ];
 
 export function formatLedgerAmount(amount: number): string {

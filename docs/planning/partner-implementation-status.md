@@ -2,7 +2,7 @@
 
 > **Purpose:** Living tracker for what we **built in the app** vs what is **still pending** per partner / scope.  
 > **Kind:** Product + engineering status (not raw sheet data).  
-> **Last updated:** 2026-08-20
+> **Last updated:** 2026-08-28
 
 Related docs:
 
@@ -93,7 +93,7 @@ Related docs:
 |------|--------|-------|
 | Top-level **Satyanarayan** tab | ✅ | Scope `satyanarayan`; excluded from Partner chips |
 | Partner-style columns | ✅ | Deal with MSS / commission / Payment with partner |
-| **Sub Vendor money ledger** | ✅ | Tab `SATYANARAYAN ` · closing **₹1,63,372** · moved off Partner analytics |
+| **Sub Vendor money ledger** | ✅ | Tab `SATYANARAYAN ` · closing **₹1,68,342** · moved off Partner analytics |
 | **Analytics** | ✅ | Partner-style hero + ledger + final sum (register + ledger) |
 | **Download analytics** | ✅ | Full-page PDF |
 
@@ -183,6 +183,7 @@ Related docs:
 
 | Date | Partner | Change |
 |------|---------|--------|
+| 2026-08-28 | Satyanarayan | Sub Vendor ledger refresh: closing **₹1,68,342** (three Aug fuel advances) |
 | 2026-08-20 | Satyanarayan / RJ Green | Own top-level tabs; Sub Vendor ledger moved off Partner aggregate |
 | 2026-08-09 | Partner | Analytics = Our/Shripal-style + Satyanarayan Sub Vendor ledger; download PDF enabled |
 | 2026-08-20 | Shripal | UI = Our projects + Payment with partner only (deal columns/analytics removed) |

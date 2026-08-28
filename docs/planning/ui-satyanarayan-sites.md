@@ -2,7 +2,7 @@
 
 > **Purpose:** Requirements and behaviour for the **Satyanarayan** tab on `/projects`.  
 > **Kind:** Application UI / logic (not raw sheet data).  
-> **Last updated:** 2026-08-20
+> **Last updated:** 2026-08-28
 
 Sister docs:
 
@@ -38,7 +38,7 @@ Satyanarayan rows are **excluded** from Partner projects chips and partner row s
 | Field | Value |
 |-------|-------|
 | Workbook tab | `SATYANARAYAN ` (trailing space) |
-| Closing | **₹1,63,372** (we will receive) |
+| Closing | **₹1,68,342** (we will receive) |
 | Maps to | Projects `SATAYNARAYAN JI` |
 
 Seed + UI: `satyanarayan-sub-vendor-ledger.ts`, `SatyanarayanSubVendorLedger.tsx`.
@@ -59,6 +59,11 @@ Seed + UI: `satyanarayan-sub-vendor-ledger.ts`, `SatyanarayanSubVendorLedger.tsx
 ---
 
 ## Decision log
+
+### 2026-08-28 — Money ledger refresh
+
+- Live re-read Sub Vendor `SATYANARAYAN `: three new DR advances for fuel — **20 Aug ₹1,620**, **23 Aug ₹1,500**, **26 Aug ₹1,850** → closing **+₹1,68,342** (was ₹1,63,372).
+- App seeds updated: `satyanarayan-sub-vendor-ledger.ts`, `SATYANARAYAN_SUB_VENDOR_LEDGER`.
 
 ### 2026-08-20 — Split from Partner projects
 

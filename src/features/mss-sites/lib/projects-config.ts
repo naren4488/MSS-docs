@@ -53,7 +53,7 @@ export const SATYANARAYAN_SUB_VENDOR_LEDGER = {
   projectType: "SATAYNARAYAN JI",
   title: "Satyanarayan money ledger",
   columnRange: "A–F",
-  headerBalance: 163_372,
+  headerBalance: 168_342,
 } as const;
 
 export const PROJECT_VENDORS = {

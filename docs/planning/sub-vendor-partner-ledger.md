@@ -2,7 +2,7 @@
 
 > **Purpose:** Capture sheet structure, product decisions, and pick-lists for the Sub Vendor Payment workbook / partner ledgers.  
 > **Status:** Partially wired — **Ajay** + **Satyanarayan** ledgers live in Projects analytics; other tabs still analysis-only.  
-> **Last updated:** 2026-08-25
+> **Last updated:** 2026-08-28
 
 Keep **this workbook’s** notes here only. Sister planning docs:
 
@@ -39,7 +39,7 @@ Related in-app code today:
 | Tab name (exact) | Role | Header balance (as of read) | Keep? |
 |------------------|------|-----------------------------|-------|
 | `VINOD JI` | Vendor ledger | −3,232 | TBD |
-| `SATYANARAYAN ` (trailing space) | Partner ledger | **+1,63,372** | ✅ Wired in Partner analytics |
+| `SATYANARAYAN ` (trailing space) | Partner ledger | **+1,68,342** | ✅ Wired in Satyanarayan analytics |
 | `Ajay` | Dual: money ledger + Everest Solar Bill | **+21,500** / +73,816 bills | ✅ Wired in Ajay analytics |
 | `KAVITA` | Partner ledger (shorter) | +47,000 | TBD |
 | `Copy of KAVITA` | Expanded Kavita + site payments | +1,20,000 | TBD |
@@ -100,8 +100,8 @@ Some cells that look like `DD-MM-YYYY` were Excel-serialized and appear as wrong
 Tab name **`SATYANARAYAN `** (trailing space). Maps to Projects **`SATAYNARAYAN JI`**.
 
 - Almost all **PAYMENT** / advance rows (DR); one material line (`10X2 ac cable 20m`); margin money + car petrol notes through Jul 2026.
-- Closing balance **₹1,63,372** (live sheet 2026-08-20) — unchanged since Jul; one date corrected to **07 Jun** (was mis-seeded as 06 Jul).
-- **Wired in app:** Partner projects analytics · `SATYANARAYAN_SUB_VENDOR_LEDGER` · `satyanarayan-sub-vendor-ledger.ts`.
+- Closing balance **₹1,68,342** (live sheet 2026-08-28) — three new **Advance / fuel** DR rows in Aug (₹1,620 · ₹1,500 · ₹1,850). Previously ₹1,63,372 through 31 Jul.
+- **Wired in app:** Satyanarayan analytics · `SATYANARAYAN_SUB_VENDOR_LEDGER` · `satyanarayan-sub-vendor-ledger.ts`.
 - Positive closing = **we will receive** (green).
 - Spelling differs from Projects register (`SATAYNARAYAN JI`).
 
