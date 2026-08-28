@@ -1,17 +1,17 @@
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties, ReactNode } from "react";
 import {
-  FIRST_PAGE_CAPACITY,
   FOLLOWING_PAGE_CAPACITY,
   HEADER_HEIGHT,
   PAGE_HEIGHT,
+  PAGE_NUMBER_FOOTER_HEIGHT,
   PAGE_SIDE_PADDING,
   PAGE_TOP_BOTTOM_PADDING,
   PAGE_WIDTH,
 } from "../constants/sheet-layout";
 import { filledValue, formatCurrency, formatDate } from "../lib/offer-letter-formatters";
 import { renderRichText } from "../lib/offer-letter-parser";
-import type { OfferLetterData } from "../types/offer-letter";
+import type { OfferLetterData, OfferLetterTerm } from "../types/offer-letter";
 
 interface OfferLetterPreviewProps {
   data: OfferLetterData;
@@ -23,6 +23,9 @@ interface PreviewBlock {
   node: ReactNode;
   keepWithNext?: boolean;
 }
+
+/** Small cushion so minor measure/render drift never clips the last line on a page. */
+const PAGINATION_BLOCK_BUFFER = 4;
 
 const pageBodyStyle: CSSProperties = {
   padding: `${PAGE_TOP_BOTTOM_PADDING}px ${PAGE_SIDE_PADDING}px`,
@@ -60,6 +63,36 @@ function estimateRichTextHeight(text: string) {
 
     return total + estimateTextLines(line, 72) * 22;
   }, 0);
+}
+
+function splitTermContent(content: string, maxEstimate = 320): string[] {
+  const trimmed = content.trim();
+  if (!trimmed) {
+    return [""];
+  }
+
+  if (estimateRichTextHeight(trimmed) <= maxEstimate) {
+    return [trimmed];
+  }
+
+  const chunks: string[] = [];
+  let current = "";
+
+  for (const line of trimmed.split("\n")) {
+    const candidate = current ? `${current}\n${line}` : line;
+    if (current && estimateRichTextHeight(candidate) > maxEstimate) {
+      chunks.push(current);
+      current = line;
+    } else {
+      current = candidate;
+    }
+  }
+
+  if (current) {
+    chunks.push(current);
+  }
+
+  return chunks.length ? chunks : [trimmed];
 }
 
 function Header({ data }: { data: OfferLetterData }) {
@@ -106,10 +139,12 @@ function Page({
   children,
   data,
   pageIndex,
+  pageCount,
 }: {
   children: ReactNode;
   data: OfferLetterData;
   pageIndex: number;
+  pageCount: number;
 }) {
   const showHeader = pageIndex === 0;
 
@@ -129,6 +164,7 @@ function Page({
         overflow: "hidden",
         display: "flex",
         flexDirection: "column",
+        position: "relative",
       }}
     >
       {showHeader ? <Header data={data} /> : null}
@@ -142,6 +178,19 @@ function Page({
       >
         {children}
       </div>
+      {data.showPageNumbers ? (
+        <div
+          style={{
+            position: "absolute",
+            right: PAGE_SIDE_PADDING,
+            bottom: 16,
+            fontSize: 10,
+            color: "#6b7280",
+          }}
+        >
+          Page {pageIndex + 1} of {pageCount}
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -173,8 +222,41 @@ function bulletItemBlocks(
   });
 }
 
-function createPrePolicyBlocks(data: OfferLetterData, signatory: string): PreviewBlock[] {
-  return [
+function createTermBlocks(term: OfferLetterTerm, index: number, total: number): PreviewBlock[] {
+  const blocks: PreviewBlock[] = [
+    {
+      key: `${term.id}-title`,
+      estimate: 34,
+      keepWithNext: true,
+      node: (
+        <h3 style={{ margin: "0 0 10px", fontSize: 13, fontWeight: 700 }}>
+          {index + 1}. {filledValue(term.title)}
+        </h3>
+      ),
+    },
+  ];
+
+  splitTermContent(term.content).forEach((chunk, chunkIndex) => {
+    blocks.push({
+      key: `${term.id}-chunk-${chunkIndex}`,
+      estimate: estimateRichTextHeight(chunk) + 8,
+      node: <div>{renderRichText(chunk, `${term.id}-${chunkIndex}`)}</div>,
+    });
+  });
+
+  if (index < total - 1) {
+    blocks.push({
+      key: `${term.id}-separator`,
+      estimate: 20,
+      node: <hr style={separatorStyle} />,
+    });
+  }
+
+  return blocks;
+}
+
+function createOfferLetterBlocks(data: OfferLetterData, signatory: string): PreviewBlock[] {
+  const blocks: PreviewBlock[] = [
     {
       key: "title",
       estimate: 60,
@@ -277,39 +359,30 @@ function createPrePolicyBlocks(data: OfferLetterData, signatory: string): Previe
       key: "closing-line",
       estimate: 58,
       node: (
-        <p style={{ margin: "0 0 26px", lineHeight: 1.8 }}>
+        <p style={{ margin: "0 0 20px", lineHeight: 1.8 }}>
           We look forward to having you as part of the team and hope for a successful and mutually rewarding association.
         </p>
       ),
     },
     {
       key: "signature-block",
-      estimate: 180,
+      estimate: 150,
       node: (
-        <div style={{ position: "relative", minHeight: 160, marginTop: 18 }}>
-          <p style={{ margin: "0 0 18px", lineHeight: 1.7 }}>Warm regards,</p>
-          <div style={{ position: "absolute", bottom: 0, left: 0 }}>
-            <p style={{ margin: "0 0 4px", fontWeight: 700 }}>{signatory}</p>
-            {data.company.founderTitle ? (
-              <p style={{ margin: "0 0 4px" }}>{data.company.founderTitle}</p>
-            ) : null}
-            <p style={{ margin: "0 0 4px" }}>{filledValue(data.company.name)}</p>
-            {[data.company.phone, data.company.email, data.company.website]
-              .filter(Boolean)
-              .map((line, index) => (
-                <p key={`signature-contact-${index}`} style={{ margin: "0 0 4px" }}>
-                  {line}
-                </p>
-              ))}
-          </div>
+        <div style={{ marginTop: 8, marginBottom: 4 }}>
+          <p style={{ margin: "0 0 16px", lineHeight: 1.7 }}>Warm regards,</p>
+          <p style={{ margin: "0 0 4px", fontWeight: 700 }}>{signatory}</p>
+          {data.company.founderTitle ? <p style={{ margin: "0 0 4px" }}>{data.company.founderTitle}</p> : null}
+          <p style={{ margin: "0 0 4px" }}>{filledValue(data.company.name)}</p>
+          {[data.company.phone, data.company.email, data.company.website]
+            .filter(Boolean)
+            .map((line, index) => (
+              <p key={`signature-contact-${index}`} style={{ margin: "0 0 4px" }}>
+                {line}
+              </p>
+            ))}
         </div>
       ),
     },
-  ];
-}
-
-function createPostPolicyBlocks(data: OfferLetterData): PreviewBlock[] {
-  const blocks: PreviewBlock[] = [
     {
       key: "policies-heading",
       estimate: 34,
@@ -322,10 +395,12 @@ function createPostPolicyBlocks(data: OfferLetterData): PreviewBlock[] {
     { title: "Leave Policy", items: data.leavePolicy },
     { title: "Other Benefits", items: data.otherBenefits },
   ];
+
   policySections.forEach((section, index) => {
     blocks.push({
       key: `policy-${section.title}`,
       estimate: 46 + section.items.reduce((sum, item) => sum + estimateTextLines(item, 64) * 22, 0),
+      keepWithNext: index === 0,
       node: (
         <div>
           <h3 style={{ margin: "0 0 10px", fontSize: 13, fontWeight: 700 }}>{section.title}</h3>
@@ -342,17 +417,21 @@ function createPostPolicyBlocks(data: OfferLetterData): PreviewBlock[] {
 
   blocks.push(
     {
-      key: "insurance",
-      estimate: 70,
+      key: "insurance-coverage",
+      estimate: 40 + estimateTextLines(data.insuranceCoverage, 72) * 22,
       node: (
-        <div>
-          <p style={{ margin: "14px 0 4px", lineHeight: 1.8 }}>
-            <strong>Insurance Policy:</strong> {filledValue(data.insuranceCoverage)}
-          </p>
-          <p style={{ margin: "0 0 18px", lineHeight: 1.8 }}>
-            <strong>Insurance Reimbursement Condition:</strong> {filledValue(data.insuranceMinTenure)}
-          </p>
-        </div>
+        <p style={{ margin: "14px 0 4px", lineHeight: 1.8 }}>
+          <strong>Insurance Policy:</strong> {filledValue(data.insuranceCoverage)}
+        </p>
+      ),
+    },
+    {
+      key: "insurance-tenure",
+      estimate: 40 + estimateTextLines(data.insuranceMinTenure, 72) * 22,
+      node: (
+        <p style={{ margin: "0 0 18px", lineHeight: 1.8 }}>
+          <strong>Insurance Reimbursement Condition:</strong> {filledValue(data.insuranceMinTenure)}
+        </p>
       ),
     },
     {
@@ -369,36 +448,39 @@ function createPostPolicyBlocks(data: OfferLetterData): PreviewBlock[] {
   );
 
   data.terms.forEach((term, index) => {
-    blocks.push({
-      key: term.id,
-      estimate: 34 + estimateRichTextHeight(term.content) + 34,
-      node: (
-        <div>
-          <h3 style={{ margin: "0 0 10px", fontSize: 13, fontWeight: 700 }}>
-            {index + 1}. {filledValue(term.title)}
-          </h3>
-          {renderRichText(term.content, term.id)}
-          {index < data.terms.length - 1 ? <hr style={separatorStyle} /> : null}
-        </div>
-      ),
-    });
+    blocks.push(...createTermBlocks(term, index, data.terms.length));
   });
 
   if (data.showAcceptance) {
-    blocks.push({
-      key: "acceptance",
-      estimate: 260,
-      node: (
-        <div style={{ marginTop: 24 }}>
-          <hr style={separatorStyle} />
-          <h2 style={headingStyle}>ACCEPTANCE</h2>
+    blocks.push(
+      {
+        key: "acceptance-separator",
+        estimate: 20,
+        node: <hr style={separatorStyle} />,
+      },
+      {
+        key: "acceptance-heading",
+        estimate: 34,
+        keepWithNext: true,
+        node: <h2 style={headingStyle}>ACCEPTANCE</h2>,
+      },
+      {
+        key: "acceptance-text",
+        estimate: 90,
+        node: (
           <p style={{ margin: "0 0 22px", lineHeight: 1.8 }}>
             I, <strong>{filledValue(data.employeeName)}</strong>, hereby acknowledge that I have read and understood the
             contents of this offer letter, and accept the offer for the role of <strong>{filledValue(data.role)}</strong>{" "}
             with <strong>{filledValue(data.company.name)}</strong>, with effect from{" "}
             <strong>{formatDate(data.dateOfJoining)}</strong>. I agree to abide by the terms and conditions stated herein.
           </p>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 30, marginTop: 34 }}>
+        ),
+      },
+      {
+        key: "acceptance-signatures",
+        estimate: 90,
+        node: (
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 30, marginTop: 8 }}>
             <div>
               <div style={{ borderTop: "1px solid #111827", paddingTop: 8 }}>Employee Signature</div>
             </div>
@@ -406,25 +488,28 @@ function createPostPolicyBlocks(data: OfferLetterData): PreviewBlock[] {
               <div style={{ borderTop: "1px solid #111827", paddingTop: 8 }}>Date</div>
             </div>
           </div>
-        </div>
-      ),
-    });
+        ),
+      },
+    );
   }
 
   return blocks;
 }
 
-function paginateBlocks(blocks: PreviewBlock[], heights: Record<string, number>, firstCapacity: number, nextCapacity: number) {
-  const heightOf = (block: PreviewBlock) => heights[block.key] ?? block.estimate;
+function blockHeight(heights: Record<string, number>, block: PreviewBlock) {
+  return (heights[block.key] ?? block.estimate) + PAGINATION_BLOCK_BUFFER;
+}
 
+function paginateBlocks(blocks: PreviewBlock[], heights: Record<string, number>, firstCapacity: number, nextCapacity: number) {
   const pages: PreviewBlock[][] = [];
   let currentPage: PreviewBlock[] = [];
-  let remaining = firstCapacity;
+  let pageUsed = 0;
+  let pageLimit = firstCapacity;
 
   for (const block of blocks) {
-    const blockHeight = heightOf(block);
+    const height = blockHeight(heights, block);
 
-    if (currentPage.length > 0 && blockHeight > remaining) {
+    if (currentPage.length > 0 && pageUsed + height > pageLimit) {
       const carryOver: PreviewBlock[] = [];
       while (currentPage.length > 0 && currentPage[currentPage.length - 1].keepWithNext) {
         carryOver.unshift(currentPage.pop() as PreviewBlock);
@@ -435,11 +520,12 @@ function paginateBlocks(blocks: PreviewBlock[], heights: Record<string, number>,
       }
 
       currentPage = carryOver;
-      remaining = nextCapacity - carryOver.reduce((sum, item) => sum + heightOf(item), 0);
+      pageUsed = carryOver.reduce((sum, item) => sum + blockHeight(heights, item), 0);
+      pageLimit = nextCapacity;
     }
 
     currentPage.push(block);
-    remaining -= blockHeight;
+    pageUsed += height;
   }
 
   if (currentPage.length > 0) {
@@ -451,11 +537,11 @@ function paginateBlocks(blocks: PreviewBlock[], heights: Record<string, number>,
 
 export function OfferLetterPreview({ data }: OfferLetterPreviewProps) {
   const signatory = filledValue(data.signatoryName || data.company.founderName);
-  const prePolicyBlocks = useMemo(() => createPrePolicyBlocks(data, signatory), [data, signatory]);
-  const postPolicyBlocks = useMemo(() => createPostPolicyBlocks(data), [data]);
-  const allBlocks = [...prePolicyBlocks, ...postPolicyBlocks];
+  const allBlocks = useMemo(() => createOfferLetterBlocks(data, signatory), [data, signatory]);
   const measureRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const headerMeasureRef = useRef<HTMLDivElement | null>(null);
   const [blockHeights, setBlockHeights] = useState<Record<string, number>>({});
+  const [measuredHeaderHeight, setMeasuredHeaderHeight] = useState(HEADER_HEIGHT);
 
   useLayoutEffect(() => {
     const nextHeights = Object.fromEntries(
@@ -468,8 +554,21 @@ export function OfferLetterPreview({ data }: OfferLetterPreviewProps) {
     }
   }, [allBlocks, blockHeights]);
 
-  const prePolicyPages = paginateBlocks(prePolicyBlocks, blockHeights, FIRST_PAGE_CAPACITY, FOLLOWING_PAGE_CAPACITY);
-  const postPolicyPages = paginateBlocks(postPolicyBlocks, blockHeights, FOLLOWING_PAGE_CAPACITY, FOLLOWING_PAGE_CAPACITY);
+  useLayoutEffect(() => {
+    const nextHeaderHeight = Math.ceil(headerMeasureRef.current?.offsetHeight ?? HEADER_HEIGHT);
+    if (nextHeaderHeight !== measuredHeaderHeight) {
+      setMeasuredHeaderHeight(nextHeaderHeight);
+    }
+  }, [data.company, measuredHeaderHeight]);
+
+  const footerReserve = data.showPageNumbers ? PAGE_NUMBER_FOOTER_HEIGHT : 0;
+  const firstCapacity = PAGE_HEIGHT - measuredHeaderHeight - PAGE_TOP_BOTTOM_PADDING * 2 - footerReserve;
+  const followingCapacity = FOLLOWING_PAGE_CAPACITY - footerReserve;
+
+  const pages = useMemo(
+    () => paginateBlocks(allBlocks, blockHeights, firstCapacity, followingCapacity),
+    [allBlocks, blockHeights, firstCapacity, followingCapacity],
+  );
 
   return (
     <>
@@ -485,6 +584,9 @@ export function OfferLetterPreview({ data }: OfferLetterPreviewProps) {
           pointerEvents: "none",
         }}
       >
+        <div ref={headerMeasureRef}>
+          <Header data={data} />
+        </div>
         {allBlocks.map((block) => (
           <div
             key={`measure-${block.key}`}
@@ -507,18 +609,8 @@ export function OfferLetterPreview({ data }: OfferLetterPreviewProps) {
           overflow: "visible",
         }}
       >
-        {prePolicyPages.map((pageBlocks, pageIndex) => (
-          <Page data={data} key={`pre-policy-${pageIndex + 1}`} pageIndex={pageIndex}>
-            {pageBlocks.map((block) => (
-              <div key={block.key} style={{ display: "flow-root" }}>
-                {block.node}
-              </div>
-            ))}
-          </Page>
-        ))}
-
-        {postPolicyPages.map((pageBlocks, pageOffset) => (
-          <Page data={data} key={`post-policy-${pageOffset + 1}`} pageIndex={prePolicyPages.length + pageOffset}>
+        {pages.map((pageBlocks, pageIndex) => (
+          <Page data={data} key={`offer-letter-page-${pageIndex + 1}`} pageIndex={pageIndex} pageCount={pages.length}>
             {pageBlocks.map((block) => (
               <div key={block.key} style={{ display: "flow-root" }}>
                 {block.node}

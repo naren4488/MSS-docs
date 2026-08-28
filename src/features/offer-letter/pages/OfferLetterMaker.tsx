@@ -8,10 +8,11 @@ import {
   buildLegacyResponsibilities,
   createDefaultOfferLetterData,
   normalizeOfferLetterData,
-  type OfferLetterTemplate,
+  OFFER_LETTER_TEMPLATES,
 } from "../lib/offer-letter-defaults";
 import { clearDraft, getDraft, getOfferLetter, saveDraft, saveOfferLetterRecord } from "../lib/offer-letter-storage";
 import type { OfferLetterData } from "../types/offer-letter";
+import type { OfferLetterTemplate } from "../types/offer-letter";
 
 const TEMPLATE_VALUES: OfferLetterTemplate[] = ["fresh", "full-time-conversion", "direct-full-time"];
 
@@ -88,7 +89,11 @@ export function OfferLetterMaker() {
     const saved = saveOfferLetterRecord({
       id: record?.id,
       name,
-      content: { ...data, responsibilities: buildLegacyResponsibilities(data) },
+      content: {
+        ...data,
+        templateId: data.templateId ?? activeTemplate,
+        responsibilities: buildLegacyResponsibilities(data),
+      },
     });
 
     clearDraft();
@@ -108,17 +113,23 @@ export function OfferLetterMaker() {
     navigate("/offer-letters");
   }
 
+  const activeTemplate: OfferLetterTemplate =
+    explicitTemplate ?? record?.content.templateId ?? data.templateId ?? "direct-full-time";
+
   function handleReset() {
     if (!window.confirm("Reset the form to default values? Any unsaved edits will be lost.")) {
       return;
     }
 
-    setData(createDefaultOfferLetterData(explicitTemplate ?? "fresh"));
+    setData(createDefaultOfferLetterData(activeTemplate));
   }
 
   if (shouldRedirectToList) {
     return <Navigate replace to="/offer-letters" />;
   }
+
+  const templateLabel =
+    OFFER_LETTER_TEMPLATES.find((template) => template.id === activeTemplate)?.label ?? "Offer Letter";
 
   return (
     <div className="page-shell page-shell--maker">
@@ -137,7 +148,7 @@ export function OfferLetterMaker() {
           <section className="content-card editor-shell no-print">
             <div className="panel-header">
               <div>
-                <p className="eyebrow">Editor</p>
+                <p className="eyebrow">{templateLabel}</p>
                 <h2>Offer Letter Details</h2>
               </div>
               <p className="muted-text">Fill each section in order and the document updates automatically.</p>

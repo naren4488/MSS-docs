@@ -34,21 +34,27 @@ export function AllOfferLetters() {
           </p>
         </div>
         <div className="template-grid">
-          {OFFER_LETTER_TEMPLATES.map((template) => (
-            <Link
-              className="template-card"
-              key={template.id}
-              to={`/offer-letter?template=${template.id}`}
-            >
-              <div className="template-card-icon">
-                <FilePlus2 size={20} />
-              </div>
-              <div>
-                <h3>{template.label}</h3>
-                <p className="muted-text" style={{ margin: 0 }}>{template.description}</p>
-              </div>
-            </Link>
-          ))}
+          {OFFER_LETTER_TEMPLATES.map((template) => {
+            const isFocus = template.id === "direct-full-time";
+            return (
+              <Link
+                className={`template-card${isFocus ? " template-card--default" : ""}`}
+                key={template.id}
+                to={`/offer-letter?template=${template.id}`}
+              >
+                <div className="template-card-icon">
+                  <FilePlus2 size={20} />
+                </div>
+                <div>
+                  <h3>
+                    {template.label}
+                    {isFocus ? <span className="template-card-badge">In focus</span> : null}
+                  </h3>
+                  <p className="muted-text" style={{ margin: 0 }}>{template.description}</p>
+                </div>
+              </Link>
+            );
+          })}
         </div>
       </section>
 

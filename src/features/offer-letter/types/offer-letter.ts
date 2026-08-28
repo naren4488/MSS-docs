@@ -1,3 +1,5 @@
+export type OfferLetterTemplate = "fresh" | "full-time-conversion" | "direct-full-time";
+
 export interface OfferLetterCompany {
   name: string;
   logoUrl: string;
@@ -18,6 +20,8 @@ export interface OfferLetterTerm {
 }
 
 export interface OfferLetterData {
+  /** Which baseline template this letter was created from. */
+  templateId?: OfferLetterTemplate;
   company: OfferLetterCompany;
   employeeName: string;
   employeeAddress: string;

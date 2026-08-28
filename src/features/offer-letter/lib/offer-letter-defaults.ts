@@ -1,8 +1,11 @@
-import type { OfferLetterData, OfferLetterTerm } from "../types/offer-letter";
-
-export type OfferLetterTemplate = "fresh" | "full-time-conversion" | "direct-full-time";
+import type { OfferLetterData, OfferLetterTerm, OfferLetterTemplate } from "../types/offer-letter";
 
 export const OFFER_LETTER_TEMPLATES: { id: OfferLetterTemplate; label: string; description: string }[] = [
+  {
+    id: "direct-full-time",
+    label: "Direct Full-time",
+    description: "Hired directly as full-time. No probation clause; includes a salary review schedule.",
+  },
   {
     id: "fresh",
     label: "Fresh Employment",
@@ -12,11 +15,6 @@ export const OFFER_LETTER_TEMPLATES: { id: OfferLetterTemplate; label: string; d
     id: "full-time-conversion",
     label: "Full-time Conversion",
     description: "Confirming full-time after probation. No probation clause; includes a salary review schedule.",
-  },
-  {
-    id: "direct-full-time",
-    label: "Direct Full-time",
-    description: "Hired directly as full-time. No probation clause; includes a salary review schedule.",
   },
 ];
 
@@ -72,6 +70,7 @@ export function normalizeOfferLetterData(input?: Partial<OfferLetterData> | null
   const normalized: OfferLetterData = {
     ...defaults,
     ...input,
+    templateId: input?.templateId ?? defaults.templateId,
     company: {
       ...defaults.company,
       ...input?.company,
@@ -187,8 +186,9 @@ function createTermsForTemplate(template: OfferLetterTemplate): OfferLetterTerm[
   return [salaryReviewTerm, ...commonTerms];
 }
 
-export function createDefaultOfferLetterData(template: OfferLetterTemplate = "fresh"): OfferLetterData {
+export function createDefaultOfferLetterData(template: OfferLetterTemplate = "direct-full-time"): OfferLetterData {
   return {
+    templateId: template,
     company: {
       name: "Mahi Solar Solution Private Limited",
       logoUrl: "/assets/mss-logo.png",
@@ -204,7 +204,7 @@ export function createDefaultOfferLetterData(template: OfferLetterTemplate = "fr
     employeeName: "Yogesh Poonia",
     employeeAddress: "Sikar, Rajasthan",
     role: "Site Supervisor",
-    dateOfJoining: '1 May, 2026',
+    dateOfJoining: "2026-05-01",
     location: "Jaipur, Rajasthan",
     monthlySalary: 18000,
     reportingTo: "Mahendra Kumawat (Director)",
