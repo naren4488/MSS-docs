@@ -7,9 +7,11 @@ import { QuotationPreview } from "../components/QuotationPreview";
 import {
   createQuotationFromTemplate,
   DEFAULT_QUOTATION_TEMPLATE_ID,
+  getQuotationTemplate,
   isQuotationTemplate,
   type QuotationTemplateId,
 } from "../lib/quotation-templates";
+import { switchQuotationLanguage } from "../lib/quotation-defaults";
 import type { QuotationData, QuotationLanguage } from "../types/quotation";
 
 export function QuotationMaker() {
@@ -89,30 +91,11 @@ export function QuotationMaker() {
     ) {
       return;
     }
-    const templated = createQuotationFromTemplate(activeTemplate, next);
-    setData({
-      ...templated,
-      customerName: data.customerName,
-      customerPhone: data.customerPhone,
-      customerEmail: data.customerEmail,
-      address: data.address,
-      proposalDate: data.proposalDate,
-      company: data.company,
-      projectAmount: data.projectAmount,
-      centralSubsidy: data.centralSubsidy,
-      stateSubsidy: data.stateSubsidy,
-      bankAccountName: data.bankAccountName,
-      bankName: data.bankName,
-      bankAccountNo: data.bankAccountNo,
-      bankIfsc: data.bankIfsc,
-      bankGst: data.bankGst,
-      repName: data.repName,
-      repTitle: data.repTitle,
-      repCompany: data.repCompany,
-      repMobiles: data.repMobiles,
-      coverImageUrl: data.coverImageUrl,
-    });
+    setData(switchQuotationLanguage(data, next));
   }
+
+  const templateMeta = getQuotationTemplate(activeTemplate);
+  const editorEyebrow = templateMeta.kind === "commercial" ? "Commercial" : templateMeta.label;
 
   return (
     <div className="page-shell page-shell--maker page-shell--maker-agreement">
@@ -149,7 +132,7 @@ export function QuotationMaker() {
           <section className="content-card editor-shell no-print">
             <div className="panel-header">
               <div>
-                <p className="eyebrow">Editor</p>
+                <p className="eyebrow">{editorEyebrow}</p>
                 <h2>Quotation Details</h2>
               </div>
               <p className="muted-text">Fill each section — line totals and the grand total are calculated automatically.</p>

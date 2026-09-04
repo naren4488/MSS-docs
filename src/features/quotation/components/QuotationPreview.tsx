@@ -32,7 +32,7 @@ import {
   parseWattageFromMaterials,
   totalGovtSubsidy,
 } from "../lib/quotation-formatters";
-import { formatCapacityWithPhase } from "../lib/quotation-defaults";
+import { formatCapacityWithPhase, isCommercialQuotation } from "../lib/quotation-defaults";
 import {
   isAcCableDescription,
   isDcCableDescription,
@@ -166,9 +166,23 @@ function Page({
 
 function SummaryBox({ data }: { data: QuotationData }) {
   const L = quotationLabels(data.language);
+  const commercial = isCommercialQuotation(data);
   const rowStyle: CSSProperties = { display: "grid", gridTemplateColumns: "150px 1fr", fontSize: 11.5, padding: "4px 0" };
   const labelStyle: CSSProperties = { fontWeight: 700, color: "#374151" };
   const customerEmail = data.customerEmail?.trim() ?? "";
+  const extraRows: { label: string; value: string }[] = [];
+  if (commercial || data.sanctionLoad.trim()) {
+    extraRows.push({ label: L.sanctionLoad, value: filledValue(data.sanctionLoad) });
+  }
+  if (commercial || data.shadowFreeArea.trim()) {
+    extraRows.push({ label: L.shadowFreeArea, value: filledValue(data.shadowFreeArea) });
+  }
+  if (commercial || data.connectionType.trim()) {
+    extraRows.push({ label: L.connectionType, value: filledValue(data.connectionType) });
+  }
+  if (commercial || data.roofType.trim()) {
+    extraRows.push({ label: L.roofType, value: filledValue(data.roofType) });
+  }
   return (
     <div style={{ border: TABLE_BORDER, borderRadius: 8, padding: "10px 14px", margin: "4px 0 14px", background: "#fafbfc" }}>
       <div style={rowStyle}>
@@ -189,6 +203,12 @@ function SummaryBox({ data }: { data: QuotationData }) {
         <span style={labelStyle}>{L.capacity}</span>
         <span>: {filledValue(formatCapacityWithPhase(data.capacity, data.phase))}</span>
       </div>
+      {extraRows.map((row) => (
+        <div key={row.label} style={rowStyle}>
+          <span style={labelStyle}>{row.label}</span>
+          <span>: {row.value}</span>
+        </div>
+      ))}
       <div style={rowStyle}>
         <span style={labelStyle}>{L.address}</span>
         <span>: {filledValue(data.address)}</span>
@@ -565,6 +585,36 @@ function MaintenanceServiceSection({ data }: { data: QuotationData }) {
   );
 }
 
+function TurnkeyEpcPriceBox({ data }: { data: QuotationData }) {
+  const L = quotationLabels(data.language);
+  const projectDisplay = formatInrGrouped(data.projectAmount) || filledValue(data.projectAmount);
+  const discomNote = data.discomChargesNote.trim() || filledValue("");
+
+  return (
+    <div style={{ border: `2px solid ${NAVY}`, borderRadius: 12, padding: "16px 20px", background: "#f4f7fb", marginTop: 12, marginBottom: 12 }}>
+      <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: 1.1, textTransform: "uppercase", color: NAVY, marginBottom: 12 }}>
+        {L.priceSchedule}
+      </div>
+      <div style={{ fontSize: 10.5, fontWeight: 700, color: "#374151", marginBottom: 6 }}>{L.priceIncluded}</div>
+      <div style={{ fontSize: 10.5, lineHeight: 1.55, marginBottom: 12, color: "#1f2937" }}>
+        {L.priceIncludedItems.map((item) => (
+          <div key={item}>• {item}</div>
+        ))}
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", alignItems: "center", padding: "8px 0", fontSize: 12, borderTop: `1px solid ${NAVY}` }}>
+        <span style={{ fontWeight: 700, color: NAVY }}>{L.projectAmount}</span>
+        <span style={{ textAlign: "right", fontWeight: 800, color: NAVY }}>
+          {data.projectAmount.trim() ? `₹${projectDisplay}` : projectDisplay}
+        </span>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", alignItems: "start", padding: "8px 0 0", fontSize: 11, color: "#374151" }}>
+        <span style={{ fontWeight: 600 }}>{L.discomCharges}</span>
+        <span style={{ textAlign: "right" }}>{discomNote}</span>
+      </div>
+    </div>
+  );
+}
+
 function EffectiveInvestmentBox({ data }: { data: QuotationData }) {
   const L = quotationLabels(data.language);
   const hasSubsidy = data.projectAmount.trim() || data.centralSubsidy.trim() || data.stateSubsidy.trim();
@@ -701,7 +751,31 @@ function createBlocks(data: QuotationData): PreviewBlock[] {
     });
   }
 
-  blocks.push({ key: "summary", estimate: data.customerEmail?.trim() ? 160 : 140, keepWithNext: true, node: <SummaryBox data={data} /> });
+  const commercial = isCommercialQuotation(data);
+  const extraSummaryRows =
+    (commercial || data.sanctionLoad.trim() ? 1 : 0) +
+    (commercial || data.shadowFreeArea.trim() ? 1 : 0) +
+    (commercial || data.connectionType.trim() ? 1 : 0) +
+    (commercial || data.roofType.trim() ? 1 : 0);
+  blocks.push({
+    key: "summary",
+    estimate: (data.customerEmail?.trim() ? 160 : 140) + extraSummaryRows * 22,
+    keepWithNext: true,
+    node: <SummaryBox data={data} />,
+  });
+
+  if (data.onGridNote?.trim()) {
+    blocks.push({
+      key: "on-grid-note",
+      estimate: 20 + estimateParagraphHeight(data.onGridNote, 90),
+      node: (
+        <div style={{ border: TABLE_BORDER, borderRadius: 8, padding: "10px 14px", margin: "0 0 14px", background: "#f4f7fb" }}>
+          <div style={{ fontWeight: 700, fontSize: 11, color: NAVY, marginBottom: 4 }}>{L.onGridTitle}</div>
+          <div style={{ fontSize: 11, lineHeight: 1.55, textAlign: "justify" }}>{data.onGridNote}</div>
+        </div>
+      ),
+    });
+  }
 
   // Material Description
   if (data.materialItems.length > 0) {
@@ -712,12 +786,14 @@ function createBlocks(data: QuotationData): PreviewBlock[] {
       blocks.push({ key: `material-${item.id}`, estimate: 16 + tall, node: <MaterialRow data={data} index={index} /> });
     });
 
-    const hasIncludedCableRows = data.materialItems.some(
-      (item) =>
-        isAcCableDescription(item.description) ||
-        isDcCableDescription(item.description) ||
-        isEarthingWireDescription(item.description),
-    );
+    const hasIncludedCableRows =
+      !isCommercialQuotation(data) &&
+      data.materialItems.some(
+        (item) =>
+          isAcCableDescription(item.description) ||
+          isDcCableDescription(item.description) ||
+          isEarthingWireDescription(item.description),
+      );
     const materialNotes = [hasIncludedCableRows ? L.includedCableNote : null].filter(
       (note): note is string => Boolean(note),
     );
@@ -753,6 +829,11 @@ function createBlocks(data: QuotationData): PreviewBlock[] {
     pushBulletList(blocks, "scope", data.customerScope, false);
   }
 
+  if ((data.ourScope ?? []).some((item) => item.trim())) {
+    pushHeading(blocks, "our-scope-heading", L.scopeOfWork);
+    pushBulletList(blocks, "our-scope", data.ourScope ?? [], false);
+  }
+
   // Commercial Offer
   const commercialRows = commercialRowsForPreview(data);
   if (commercialRows.length > 0) {
@@ -764,8 +845,12 @@ function createBlocks(data: QuotationData): PreviewBlock[] {
     });
   }
 
+  if (isCommercialQuotation(data)) {
+    blocks.push({ key: "turnkey-price", estimate: 150, node: <TurnkeyEpcPriceBox data={data} /> });
+  }
+
   // Effective Investment After Subsidy
-  if (data.projectAmount.trim() || data.centralSubsidy.trim() || data.stateSubsidy.trim()) {
+  if (data.showSubsidySection && (data.projectAmount.trim() || data.centralSubsidy.trim() || data.stateSubsidy.trim())) {
     blocks.push({ key: "effective-investment", estimate: 120, node: <EffectiveInvestmentBox data={data} /> });
   }
 
@@ -831,7 +916,7 @@ function createBlocks(data: QuotationData): PreviewBlock[] {
   }
 
   // Required Documents for Subsidy
-  if (data.subsidyDocuments.some((item) => item.trim())) {
+  if (data.showSubsidySection && data.subsidyDocuments.some((item) => item.trim())) {
     pushHeading(blocks, "docs-heading", L.subsidyDocuments);
     pushBulletList(blocks, "docs", data.subsidyDocuments, true);
   }

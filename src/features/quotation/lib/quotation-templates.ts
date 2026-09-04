@@ -1,5 +1,6 @@
 import type { QuotationData, QuotationLanguage, QuotationMaterialItem, QuotationPhase } from "../types/quotation";
 import {
+  applyCommercialCapacityToMaterials,
   applyPhaseToMaterialItems,
   createDefaultQuotationData,
   inverterUnit,
@@ -13,13 +14,16 @@ import { isSolarInverterDescription, isSolarPvModulesDescription } from "./quota
  * MNRE credited to customer account ~60 days after net metering.
  * Savings assumption: ₹8 / unit.
  */
+export type QuotationTemplateKind = "residential" | "commercial";
+
 export type QuotationTemplateId =
   | "3kw-1ph"
   | "5kw-1ph"
   | "5kw-3ph"
   | "6kw-3ph"
   | "8kw-3ph"
-  | "10kw-3ph";
+  | "10kw-3ph"
+  | "commercial";
 
 /** Default package when opening a new quotation. */
 export const DEFAULT_QUOTATION_TEMPLATE_ID: QuotationTemplateId = "3kw-1ph";
@@ -29,14 +33,15 @@ const STATE_SUBSIDY = "17000";
 
 export interface QuotationTemplateMeta {
   id: QuotationTemplateId;
+  kind: QuotationTemplateKind;
   label: string;
   description: string;
   capacity: string;
   phase: QuotationPhase;
   projectAmount: string;
-  /** MNRE / central subsidy transferred to customer. */
+  /** MNRE / central subsidy transferred to customer. Empty for commercial. */
   centralSubsidy: string;
-  /** State subsidy (₹17,000). */
+  /** State subsidy (₹17,000). Empty for commercial. */
   stateSubsidy: string;
   panels: number;
   wp: number;
@@ -68,6 +73,7 @@ function afterSubsidyLabel(projectAmount: number): string {
 export const QUOTATION_TEMPLATES: readonly QuotationTemplateMeta[] = [
   {
     id: "3kw-1ph",
+    kind: "residential",
     label: "3 KW · 1PH",
     description: `₹1,90,000 · ${afterSubsidyLabel(190_000)} · Single phase`,
     capacity: "3 KW",
@@ -81,6 +87,7 @@ export const QUOTATION_TEMPLATES: readonly QuotationTemplateMeta[] = [
   },
   {
     id: "5kw-1ph",
+    kind: "residential",
     label: "5 KW · 1PH",
     description: `₹2,70,000 · ${afterSubsidyLabel(270_000)} · Single phase`,
     capacity: "5 KW",
@@ -94,6 +101,7 @@ export const QUOTATION_TEMPLATES: readonly QuotationTemplateMeta[] = [
   },
   {
     id: "5kw-3ph",
+    kind: "residential",
     label: "5 KW · 3PH",
     description: `₹2,85,000 · ${afterSubsidyLabel(285_000)} · Three phase`,
     capacity: "5 KW",
@@ -107,6 +115,7 @@ export const QUOTATION_TEMPLATES: readonly QuotationTemplateMeta[] = [
   },
   {
     id: "6kw-3ph",
+    kind: "residential",
     label: "6 KW · 3PH",
     description: `₹3,20,000 · ${afterSubsidyLabel(320_000)} · Three phase`,
     capacity: "6 KW",
@@ -120,6 +129,7 @@ export const QUOTATION_TEMPLATES: readonly QuotationTemplateMeta[] = [
   },
   {
     id: "8kw-3ph",
+    kind: "residential",
     label: "8 KW · 3PH",
     description: `₹3,95,000 · ${afterSubsidyLabel(395_000)} · Three phase`,
     capacity: "8 KW",
@@ -133,6 +143,7 @@ export const QUOTATION_TEMPLATES: readonly QuotationTemplateMeta[] = [
   },
   {
     id: "10kw-3ph",
+    kind: "residential",
     label: "10 KW · 3PH",
     description: `₹4,80,000 · ${afterSubsidyLabel(480_000)} · Three phase`,
     capacity: "10 KW",
@@ -140,6 +151,20 @@ export const QUOTATION_TEMPLATES: readonly QuotationTemplateMeta[] = [
     projectAmount: "480000",
     centralSubsidy: MNRE_SUBSIDY,
     stateSubsidy: STATE_SUBSIDY,
+    panels: 18,
+    wp: 550,
+    inverterKw: "10",
+  },
+  {
+    id: "commercial",
+    kind: "commercial",
+    label: "Commercial",
+    description: "Commercial rooftop — MSS layout, commercial BOM and terms. No PM Surya Ghar subsidy.",
+    capacity: "10 KW",
+    phase: "3PH",
+    projectAmount: "",
+    centralSubsidy: "",
+    stateSubsidy: "",
     panels: 18,
     wp: 550,
     inverterKw: "10",
@@ -213,11 +238,15 @@ export function createQuotationFromTemplate(
   language: QuotationLanguage = "en",
 ): QuotationData {
   const template = getQuotationTemplate(templateId);
-  const base = createDefaultQuotationData(language);
+  const commercial = template.kind === "commercial";
+  const includeSubsidy = !commercial;
+  const base = createDefaultQuotationData(language, { includeSubsidy, commercial });
   const projectAmount = template.projectAmount;
-  const centralSubsidy = template.centralSubsidy;
-  const stateSubsidy = template.stateSubsidy;
-  const effectivePayable = computeEffectivePayable(projectAmount, centralSubsidy, stateSubsidy);
+  const centralSubsidy = includeSubsidy ? template.centralSubsidy : "";
+  const stateSubsidy = includeSubsidy ? template.stateSubsidy : "";
+  const effectivePayable = includeSubsidy
+    ? computeEffectivePayable(projectAmount, centralSubsidy, stateSubsidy)
+    : 0;
 
   return {
     ...base,
@@ -226,23 +255,28 @@ export function createQuotationFromTemplate(
     projectAmount,
     centralSubsidy,
     stateSubsidy,
-    subsidyNote: subsidyNoteForLanguage(language),
+    subsidyNote: includeSubsidy ? subsidyNoteForLanguage(language) : "",
+    showSubsidySection: includeSubsidy,
     generation: {
       unitRate: "8",
     },
-    effectivePayableAmount: String(Math.max(0, effectivePayable)),
-    materialItems: applyTemplateSizing(base.materialItems, template, language),
-    commercialOffer: stripSyncedCommercialRows([
-      {
-        id: crypto.randomUUID(),
-        parameter: language === "hi" ? "पैनल कॉन्फ़िगरेशन" : "Panel Configuration",
-        offering: panelConfigOffering(template, language),
-      },
-      {
-        id: crypto.randomUUID(),
-        parameter: language === "hi" ? "मूल्य आधार" : "Price Basis",
-        offering: language === "hi" ? "टर्नकी EPC" : "Turnkey EPC",
-      },
-    ]),
+    effectivePayableAmount: includeSubsidy ? String(Math.max(0, effectivePayable)) : "",
+    materialItems: commercial
+      ? applyCommercialCapacityToMaterials(base.materialItems, template.capacity, template.phase, language)
+      : applyTemplateSizing(base.materialItems, template, language),
+    commercialOffer: commercial
+      ? stripSyncedCommercialRows(base.commercialOffer)
+      : stripSyncedCommercialRows([
+          {
+            id: crypto.randomUUID(),
+            parameter: language === "hi" ? "पैनल कॉन्फ़िगरेशन" : "Panel Configuration",
+            offering: panelConfigOffering(template, language),
+          },
+          {
+            id: crypto.randomUUID(),
+            parameter: language === "hi" ? "मूल्य आधार" : "Price Basis",
+            offering: language === "hi" ? "टर्नकी EPC" : "Turnkey EPC",
+          },
+        ]),
   };
 }

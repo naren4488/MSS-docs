@@ -5,6 +5,7 @@ export type { AgreementCompany as QuotationCompany };
 
 export type QuotationLanguage = "en" | "hi";
 export type QuotationPhase = "1PH" | "3PH";
+export type QuotationKind = "residential" | "commercial";
 
 export interface QuotationMaterialItem {
   id: string;
@@ -44,6 +45,8 @@ export interface QuotationGeneration {
 
 export interface QuotationData {
   language: QuotationLanguage;
+  /** Residential PM Surya Ghar vs commercial rooftop. Independent of the subsidy toggle. */
+  kind: QuotationKind;
   title: string;
   tagline: string;
   coverImageUrl: string;
@@ -57,6 +60,11 @@ export interface QuotationData {
   phase: QuotationPhase;
   address: string;
   proposalDate: string;
+  /** Commercial summary extras — shown when filled. */
+  sanctionLoad: string;
+  shadowFreeArea: string;
+  connectionType: string;
+  roofType: string;
 
   company: AgreementCompany;
 
@@ -64,6 +72,8 @@ export interface QuotationData {
   installationWork: string[];
   assumptions: string[];
   customerScope: string[];
+  /** MSS scope of work — used on commercial quotes. */
+  ourScope: string[];
 
   commercialOffer: QuotationCommercialRow[];
   warrantyText: string;
@@ -86,9 +96,13 @@ export interface QuotationData {
   stateSubsidy: string;
   effectivePayableAmount: string;
   subsidyNote: string;
+  /** When false, Effective Investment and subsidy documents are hidden on the PDF. */
+  showSubsidySection: boolean;
 
   netMeteringNote: string;
   loadExtensionNote: string;
+  onGridNote: string;
+  discomChargesNote: string;
 
   showEmiSection: boolean;
   emiInfo: {

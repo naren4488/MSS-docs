@@ -352,6 +352,10 @@
   border-top: 3px solid #0f766e;
 }
 
+.quotation-package-card--commercial {
+  border-top: 3px solid #c2410c;
+}
+
 .quotation-package-card--default {
   box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.25);
 }
@@ -413,6 +417,18 @@
   background: rgba(15, 118, 110, 0.1);
 }
 
+.quotation-phase-badge--commercial {
+  color: #c2410c;
+  background: rgba(194, 65, 12, 0.1);
+}
+
+.quotation-package-card-copy {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #475569;
+}
+
 .quotation-package-card-pricing {
   margin: 0;
   display: grid;
@@ -469,6 +485,10 @@
 
 .quotation-package-card--3ph .quotation-package-card-cta {
   color: #0f766e;
+}
+
+.quotation-package-card--commercial .quotation-package-card-cta {
+  color: #c2410c;
 }
 
 .quotation-package-card:hover .quotation-package-card-cta {

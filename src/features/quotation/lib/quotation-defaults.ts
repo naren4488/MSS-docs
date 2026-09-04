@@ -2,13 +2,14 @@ import type { AgreementCompany } from "@/features/agreement/types/agreement";
 import type {
   QuotationCommercialRow,
   QuotationData,
+  QuotationKind,
   QuotationLanguage,
   QuotationMaterialItem,
   QuotationPhase,
   QuotationTermItem,
 } from "../types/quotation";
 import { stripSyncedCommercialRows } from "./quotation-formatters";
-import { isAcCableDescription, isAcDbDcDbDescription, isSolarInverterDescription } from "./quotation-labels";
+import { isAcCableDescription, isAcDbDcDbDescription, isSolarInverterDescription, isSolarPvModulesDescription } from "./quotation-labels";
 
 function uuid() {
   return crypto.randomUUID();
@@ -122,6 +123,158 @@ function defaultMaterialItems(language: QuotationLanguage, phase: QuotationPhase
   ];
 }
 
+export const COMMERCIAL_MODULE_WP = 550;
+
+export function parseCapacityKw(capacity: string): number | null {
+  const match = capacity.replace(/,/g, "").match(/(\d+(?:\.\d+)?)/);
+  if (!match) {
+    return null;
+  }
+  const value = Number(match[1]);
+  return value > 0 ? value : null;
+}
+
+function asPerSite(language: QuotationLanguage): string {
+  return language === "hi" ? "साइट आवश्यकतानुसार" : "As per site requirement";
+}
+
+function formatKwLabel(kw: number): string {
+  return String(Number(kw.toFixed(2))).replace(/\.0+$/, "");
+}
+
+function commercialAcCableMake(phase: QuotationPhase, language: QuotationLanguage): string {
+  const base = acCableMake(phase, language);
+  return language === "hi" ? `${base} · इनवर्टर से LT / HT पैनल` : `${base} · inverter to LT / HT panel`;
+}
+
+function commercialInverterMake(kw: string, language: QuotationLanguage): string {
+  return language === "hi"
+    ? `${kw} किलोवाट POLYCAB ग्रिड-टाई स्ट्रिंग इनवर्टर · 10 वर्ष वारंटी`
+    : `${kw} KW POLYCAB Grid Tie String Inverter with 10 Year Warranty`;
+}
+
+export function isCommercialQuotation(data: { kind?: QuotationKind; showSubsidySection?: boolean }): boolean {
+  if (data.kind === "commercial") {
+    return true;
+  }
+  if (data.kind === "residential") {
+    return false;
+  }
+  return data.showSubsidySection === false;
+}
+
+export function commercialPanelConfigOffering(capacity: string, language: QuotationLanguage): string {
+  const kw = parseCapacityKw(capacity) ?? 10;
+  const panels = Math.max(1, Math.round((kw * 1000) / COMMERCIAL_MODULE_WP));
+  const totalKw = formatKwLabel((panels * COMMERCIAL_MODULE_WP) / 1000);
+  if (language === "hi") {
+    return `${panels} × ${COMMERCIAL_MODULE_WP}W अदानी टॉपकॉन बाइफेशियल पैनल (कुल ${totalKw} किलोवाट)`;
+  }
+  return `${panels} x ${COMMERCIAL_MODULE_WP}W Adani Topcon Bifacial Panels (${totalKw} KW Total)`;
+}
+
+export function syncCommercialOfferToCapacity(
+  rows: QuotationCommercialRow[],
+  capacity: string,
+  language: QuotationLanguage,
+): QuotationCommercialRow[] {
+  return rows.map((row) => {
+    const parameter = row.parameter.trim();
+    if (parameter === "Panel Configuration" || parameter === "पैनल कॉन्फ़िगरेशन") {
+      return { ...row, offering: commercialPanelConfigOffering(capacity, language) };
+    }
+    return row;
+  });
+}
+
+function defaultCommercialMaterialItems(language: QuotationLanguage, phase: QuotationPhase): QuotationMaterialItem[] {
+  const site = asPerSite(language);
+  const acMake = commercialAcCableMake(phase, language);
+
+  if (language === "hi") {
+    return [
+      material("सोलर पीवी मॉड्यूल", "18 पैनल", `${COMMERCIAL_MODULE_WP} Wp`, "अदानी टॉपकॉन बाइफेशियल · 30 वर्ष वारंटी"),
+      material("सोलर इनवर्टर", "1", inverterUnit(phase, language), commercialInverterMake("10", language)),
+      material("माउंटिंग स्ट्रक्चर (GI अपोलो)", "आवश्यकतानुसार", "", "लेग 75×75, रैफ्टर 60×40, पर्लिन 40×40"),
+      material("AC केबल", site, "मी.", acMake),
+      material("DC केबल", site, "मी.", "4 वर्ग मिमी कॉपर, 1 kV UV रेज़िस्टेंट, पॉलीकैब केबल"),
+      material("केबल एक्सेसरीज़", site, "नं.", "Cu व Al लग्स, ग्लैंड, HDPE कंड्यूट, फेरुलिंग, UV केबल टाई"),
+      material("लाइटनिंग अरेस्टर", site, "नं.", "ESE टाइप LA, बेस प्लेट, माउंटिंग व पोर्सिलेन इंसुलेटर बुशिंग"),
+      material(
+        "अर्थिंग किट",
+        site,
+        "सेट",
+        "GI स्ट्रिप 25×3 वर्ग मिमी / ग्रीन वायर, GI/CU इलेक्ट्रोड 3 मी. रासायनिक अर्थिंग, अर्थ पिट चैंबर व केमिकल बैग",
+      ),
+      material("अर्थिंग वायर", site, "मी.", "16 वर्ग मिमी एल्युमिनियम वायर (Ramsons) या 6 वर्ग मिमी कॉपर क्लैड वायर (Indo)"),
+      material("ACDB पैनल", "1 नं.", "", "AC SPD, AL/CU बस बार, MCCB — L&T / हैवेल्स / Elmex"),
+      material("जनरेशन मीटर", "1 नं.", "", "HT एनर्जी जनरेशन मीटर — Secure, उपलब्धता अनुसार"),
+      material("कनेक्शन किट", site, "—", "कनेक्टिंग केबल (4 वर्ग मिमी — पॉलीकैब), MC4, जम्पर"),
+      material("केबल ट्रे", site, "मी.", "GI परफोरेटेड केबल ट्रे व असेम्बली"),
+      material("वॉकवे", site, "मी.", "FRP वॉकवे"),
+      material("MCS / UPVC पाइप", site, "मी.", "मॉड्यूल सफाई हेतु UPVC पाइप"),
+      material("डिज़ाइनेड इंस्टॉलेशन व कमीशनिंग", "", "साइट आवश्यकतानुसार", "टीम माही सोलर सॉल्यूशन"),
+    ];
+  }
+
+  return [
+    material("Solar PV Modules", "18 Panel", `${COMMERCIAL_MODULE_WP} Wp`, "Adani Topcon Bifacial with 30 Year Warranty"),
+    material("Solar Inverter", "1", inverterUnit(phase, language), commercialInverterMake("10", language)),
+    material("Mounting Structure (GI Apollo)", "As per Requirement", "", "Leg 75×75, Rafter 60×40, Purline 40×40"),
+    material("AC Cable", site, "Mtr", acMake),
+    material("DC Cable", site, "Mtr", "4 sq mm Copper Wire, 1 kV grade UV resistant, Polycab cable"),
+    material("Cable Accessories", site, "Nos", "Cu & Al lugs, gland, HDPE conduit, ferruling, UV protected cable tie"),
+    material("Lightning Arrestor", site, "Nos", "ESE type LA with base plate, mounting assembly and porcelain insulator bushing"),
+    material(
+      "Earthing Kit",
+      site,
+      "Set",
+      "GI strip 25×3 sq mm / green wire, GI/CU electrode 3 mtr with chemical earthing, earth pit chamber and chemical bags",
+    ),
+    material("Earthing Wire", site, "Mtr", "16 sq mm aluminium wire (Ramsons) or 6 sq mm copper clad wire (Indo)"),
+    material("ACDB Panel", "1 No", "", "AC SPDs, AL/CU bus bar, MCCBs — L&T / Havells / Elmex"),
+    material("Generation Meter", "1 No", "", "HT energy generation meter — Secure, as per availability"),
+    material("Connection Kit", site, "—", "Connecting cable (4 sq mm — Polycab), MC4, jumper"),
+    material("Cable Tray", site, "Mtr", "GI perforated cable tray with assembly"),
+    material("Walkway", site, "Mtr", "FRP walkway"),
+    material("MCS / UPVC Pipes", site, "Mtr", "UPVC pipes for module cleaning system"),
+    material("Designed Installation & Commissioning", "", "As per site requirement", "Team Mahi Solar Solution"),
+  ];
+}
+
+function panelQtyLabel(panels: number, language: QuotationLanguage): string {
+  return language === "hi" ? `${panels} पैनल` : `${panels} Panel`;
+}
+
+export function applyCommercialCapacityToMaterials(
+  items: QuotationMaterialItem[],
+  capacity: string,
+  phase: QuotationPhase,
+  language: QuotationLanguage,
+): QuotationMaterialItem[] {
+  const kw = parseCapacityKw(capacity);
+  const sized = items.map((item) => {
+    if (kw && isSolarPvModulesDescription(item.description)) {
+      const panels = Math.max(1, Math.round((kw * 1000) / COMMERCIAL_MODULE_WP));
+      return { ...item, qty: panelQtyLabel(panels, language), unit: `${COMMERCIAL_MODULE_WP} Wp` };
+    }
+    if (kw && isSolarInverterDescription(item.description)) {
+      return {
+        ...item,
+        unit: inverterUnit(phase, language),
+        make: commercialInverterMake(formatKwLabel(kw), language),
+      };
+    }
+    return item;
+  });
+  return applyPhaseToMaterialItems(sized, phase, language).map((item) => {
+    if (isAcCableDescription(item.description)) {
+      return { ...item, make: commercialAcCableMake(phase, language) };
+    }
+    return item;
+  });
+}
+
 function defaultAssumptions(language: QuotationLanguage): string[] {
   if (language === "hi") {
     return [
@@ -137,28 +290,97 @@ function defaultAssumptions(language: QuotationLanguage): string[] {
   ];
 }
 
-function defaultCustomerScope(language: QuotationLanguage): string[] {
+function defaultCustomerScope(language: QuotationLanguage, commercial = false): string[] {
+  const residential =
+    language === "hi"
+      ? [
+          "साइट तैयार करना व छत/टेरेस से अवांछित सामग्री हटाना कार्यक्षेत्र में शामिल नहीं है। परिसर व छत तक सामग्री ले जाने में इंस्टॉलेशन टीम को आवश्यक सहयोग देना होगा; इंस्टॉलेशन पूर्ण होने तक सामग्री सुरक्षित स्थान पर रखनी होगी।",
+          "साइट पर डिलीवरी के बाद आपूर्ति की गई सामग्री की सुरक्षा ग्राहक के दायरे में होगी।",
+          "क्लाउड मॉनिटरिंग हेतु LAN (इंटरनेट सुविधा) ग्राहक प्रदान करेगा।",
+          "मॉड्यूल सफाई हमारे दायरे में नहीं है; ग्राहक से सप्ताह में एक बार पैनल साफ करने का अनुरोध है।",
+        ]
+      : [
+          "Making the site ready and cleaning the terrace / roof of any unwanted items is not included in scope of work. Necessary support will be extended to our installation team for taking material inside the premises and to the rooftop; the same has to be kept at a proper and secure place till completion of installation.",
+          "Safety of material supplied would be in customer scope after delivery at site.",
+          "Customer to provide LAN (internet facility) for cloud monitoring.",
+          "Cleaning of modules is not in our scope; customer is requested to clean the panels once a week.",
+        ];
+
+  if (!commercial) {
+    return residential;
+  }
+
+  const extra =
+    language === "hi"
+      ? [
+          "कार्य दल को सप्ताह के 7 दिन साइट पहुँच देनी होगी, सामग्री डिलीवरी सहित।",
+          "प्रोजेक्ट हेतु आवश्यक सभी वैधानिक अनुमतियाँ, यदि हों, ग्राहक के दायरे में हैं।",
+          "सिस्टम इंस्टॉलेशन हेतु अतिरिक्त साइट-विशिष्ट सिविल कार्य, संशोधन या परिवर्तन ग्राहक के दायरे में हैं।",
+          "मॉड्यूल सफाई हेतु पानी का स्रोत ग्राहक प्रदान करेगा।",
+        ]
+      : [
+          "Facilitate access for the work crew 7 days a week, including for delivery of equipment and materials.",
+          "All statutory clearances required for the project, if any, are in the client's scope.",
+          "Additional site-specific civil work, modification or alteration required for system installation is in the client's scope.",
+          "Source of water for module cleaning is to be provided by the client.",
+        ];
+
+  return [...residential, ...extra];
+}
+
+function defaultOurScope(language: QuotationLanguage): string[] {
   if (language === "hi") {
     return [
-      "साइट तैयार करना व छत/टेरेस से अवांछित सामग्री हटाना कार्यक्षेत्र में शामिल नहीं है। परिसर व छत तक सामग्री ले जाने में इंस्टॉलेशन टीम को आवश्यक सहयोग देना होगा; इंस्टॉलेशन पूर्ण होने तक सामग्री सुरक्षित स्थान पर रखनी होगी।",
-      "साइट पर डिलीवरी के बाद आपूर्ति की गई सामग्री की सुरक्षा ग्राहक के दायरे में होगी।",
-      "क्लाउड मॉनिटरिंग हेतु LAN (इंटरनेट सुविधा) ग्राहक प्रदान करेगा।",
-      "मॉड्यूल सफाई हमारे दायरे में नहीं है; ग्राहक से सप्ताह में एक बार पैनल साफ करने का अनुरोध है।",
+      "सिविल, स्ट्रक्चरल, विद्युत व मैकेनिकल सहित पूर्ण सिस्टम डिज़ाइन, निर्माण ड्रॉइंग व विशिष्टताओं के साथ।",
+      "उपकरण व सामग्री खरीदकर साइट पर डिलीवरी।",
+      "निर्माता निर्देशों के अनुसार विद्युत घटकों का परीक्षण।",
+      "प्लांट का इंस्टॉलेशन, परीक्षण व कमीशनिंग।",
     ];
   }
   return [
-    "Making the site ready and cleaning the terrace / roof of any unwanted items is not included in scope of work. Necessary support will be extended to our installation team for taking material inside the premises and to the rooftop; the same has to be kept at a proper and secure place till completion of installation.",
-    "Safety of material supplied would be in customer scope after delivery at site.",
-    "Customer to provide LAN (internet facility) for cloud monitoring.",
-    "Cleaning of modules is not in our scope; customer is requested to clean the panels once a week.",
+    "Prepare full system design covering civil, structural, electrical and mechanical components, with construction drawings and specifications.",
+    "Procure equipment and materials and deliver to site.",
+    "Test electrical components in accordance with manufacturer instructions.",
+    "Installation, testing and commissioning of the plant.",
   ];
+}
+
+function defaultOnGridNote(language: QuotationLanguage): string {
+  return language === "hi"
+    ? "यह ग्रिड-कनेक्टेड (ऑन-ग्रिड) रूफटॉप प्लांट है: पैनलों से DC बिजली इनवर्टर द्वारा AC में बदलकर साइट पर उपयोग होती है। अतिरिक्त यूनिट मीटर के माध्यम से DISCOM ग्रिड में निर्यात होती हैं।"
+    : "This is a grid-connected (on-grid) rooftop plant: DC from the modules is converted to AC by the inverter and used on site. Surplus units export to the DISCOM grid through the meter.";
+}
+
+function defaultDiscomChargesNote(language: QuotationLanguage): string {
+  return language === "hi"
+    ? "अतिरिक्त — ग्राहक द्वारा वास्तविक के अनुसार देय"
+    : "Extra — payable by client as actual";
 }
 
 function commercial(parameter: string, offering: string): QuotationCommercialRow {
   return { id: uuid(), parameter, offering };
 }
 
-function defaultCommercialOffer(language: QuotationLanguage): QuotationCommercialRow[] {
+function defaultCommercialOffer(
+  language: QuotationLanguage,
+  options?: { commercial?: boolean; capacity?: string },
+): QuotationCommercialRow[] {
+  if (options?.commercial) {
+    const capacity = options.capacity || "10 KW";
+    if (language === "hi") {
+      return [
+        commercial("पैनल कॉन्फ़िगरेशन", commercialPanelConfigOffering(capacity, language)),
+        commercial("मूल्य आधार", "टर्नकी EPC"),
+        commercial("DISCOM / वैधानिक शुल्क", defaultDiscomChargesNote(language)),
+      ];
+    }
+    return [
+      commercial("Panel Configuration", commercialPanelConfigOffering(capacity, language)),
+      commercial("Price Basis", "Turnkey EPC"),
+      commercial("DISCOM / statutory charges", defaultDiscomChargesNote(language)),
+    ];
+  }
+
   if (language === "hi") {
     return [
       commercial("पैनल कॉन्फ़िगरेशन", "6 × 550W अदानी टॉपकॉन बाइफेशियल पैनल (कुल 3.3 किलोवाट)"),
@@ -175,9 +397,47 @@ function term(label: string, text: string): QuotationTermItem {
   return { id: uuid(), label, text };
 }
 
-function defaultTerms(language: QuotationLanguage): QuotationTermItem[] {
-  if (language === "hi") {
-    return [
+function stripSubsidyFromTimeline(text: string): string {
+  return text
+    .replace(/\n• सरकारी सब्सिडी प्रक्रिया:[^\n]*/u, "")
+    .replace(/\n• Government Subsidy processing:[^\n]*/u, "");
+}
+
+function isSubsidyTerm(item: QuotationTermItem): boolean {
+  const label = item.label.trim();
+  return label === "Government Subsidy Dependency" || label === "सरकारी सब्सिडी निर्भरता";
+}
+
+function isTimelineTerm(item: QuotationTermItem): boolean {
+  const label = item.label.trim();
+  return label === "Project Timeline & Installation Process" || label === "प्रोजेक्ट समयरेखा व इंस्टॉलेशन प्रक्रिया";
+}
+
+function isValidityTerm(item: QuotationTermItem): boolean {
+  const label = item.label.trim();
+  return label === "Quotation Validity" || label === "कोटेशन वैधता";
+}
+
+function commercialValidityText(language: QuotationLanguage): string {
+  return language === "hi"
+    ? "यह कोटेशन जारी होने की तिथि से 30 दिनों तक वैध है। वैधता अवधि समाप्त होने के बाद कीमतें व विशिष्टताएँ बदल सकती हैं। इस अवधि के बाद पुष्टि लेनी होगी; नया कोटेशन आवश्यक हो सकता है।"
+    : "This quotation is valid for 30 days from the date of issue. Prices and specifications are subject to change after the validity period expires. After this period a confirmation has to be taken; a fresh quotation may be required.";
+}
+
+function commercialTimelineText(language: QuotationLanguage): string {
+  return language === "hi"
+    ? "डिलीवरी, इंस्टॉलेशन व कमीशनिंग सामान्यतः तकनीकी व वाणिज्यिक रूप से स्पष्ट ऑर्डर तथा अग्रिम भुगतान की तिथि से 1 माह में पूर्ण होते हैं — साइट तैयारी व मौसम पर निर्भर। यह तभी लागू जब सहमत भुगतान अनुसूची का पालन हो।\n\nमहत्वपूर्ण - बाहरी निर्भरताएँ (उपरोक्त समयरेखा में शामिल नहीं):\n• नेट मीटरिंग / DISCOM अनुमोदन: DISCOM (JVVNL) — सामान्यतः 20–30 दिन। माही सोलर के नियंत्रण से बाहर।"
+    : "Delivery, installation and commissioning are typically completed within 1 month from the date of a technically and commercially clear order together with the advance payment, subject to site readiness and weather. This applies when the agreed payment schedule is followed.\n\nIMPORTANT - External Dependencies (NOT included in the above timeline):\n• Net Metering / DISCOM approval: handled by DISCOM (JVVNL) — typically 20–30 days. Timeline beyond Mahi Solar's control.";
+}
+
+function defaultTerms(
+  language: QuotationLanguage,
+  includeSubsidy = true,
+  variant: "residential" | "commercial" = "residential",
+): QuotationTermItem[] {
+  const terms =
+    language === "hi"
+      ? [
       term(
         "कोटेशन वैधता",
         "यह कोटेशन जारी होने की तिथि से 15 दिनों तक वैध है। वैधता अवधि समाप्त होने के बाद कीमतें व विशिष्टताएँ बदल सकती हैं। इस अवधि के बाद दिए गए ऑर्डर के लिए नया कोटेशन आवश्यक होगा।",
@@ -267,10 +527,8 @@ function defaultTerms(language: QuotationLanguage): QuotationTermItem[] {
         "विलंबित भुगतान व कानूनी वसूली",
         "प्रोजेक्ट पूर्णता के 21 दिनों के भीतर भुगतान न मिलने पर, लागू कानून के अंतर्गत कानूनी वसूली कार्यवाही शुरू करने का अधिकार माही सोलर सॉल्यूशन प्राइवेट लिमिटेड के पास सुरक्षित है।",
       ),
-    ];
-  }
-
-  return [
+    ]
+      : [
     term(
       "Quotation Validity",
       "This quotation is valid for 15 days from the date of issue. Prices and specifications are subject to change after the validity period expires. A fresh quotation will be required for orders placed after this period.",
@@ -361,6 +619,26 @@ function defaultTerms(language: QuotationLanguage): QuotationTermItem[] {
       "If payment is not received within 21 days of project completion, Mahi Solar Solution Private Limited reserves the right to initiate legal recovery proceedings as permitted under applicable law.",
     ),
   ];
+
+  const withoutSubsidy = includeSubsidy
+    ? terms
+    : terms
+        .filter((item) => !isSubsidyTerm(item))
+        .map((item) => (isTimelineTerm(item) ? { ...item, text: stripSubsidyFromTimeline(item.text) } : item));
+
+  if (variant !== "commercial") {
+    return withoutSubsidy;
+  }
+
+  return withoutSubsidy.map((item) => {
+    if (isValidityTerm(item)) {
+      return { ...item, text: commercialValidityText(language) };
+    }
+    if (isTimelineTerm(item)) {
+      return { ...item, text: commercialTimelineText(language) };
+    }
+    return item;
+  });
 }
 
 function defaultSubsidyDocuments(language: QuotationLanguage): string[] {
@@ -419,27 +697,43 @@ function defaultInstallationSteps(language: QuotationLanguage): string[] {
   ];
 }
 
-export function createDefaultQuotationData(language: QuotationLanguage = "en"): QuotationData {
+export function createDefaultQuotationData(
+  language: QuotationLanguage = "en",
+  options?: { includeSubsidy?: boolean; commercial?: boolean },
+): QuotationData {
   const isHindi = language === "hi";
+  const commercial = options?.commercial === true;
+  const includeSubsidy = commercial ? false : options?.includeSubsidy !== false;
+  const phase: QuotationPhase = commercial ? "3PH" : "1PH";
+  const capacity = commercial ? "10 KW" : "3 KW";
+  const materialItems = commercial
+    ? applyCommercialCapacityToMaterials(defaultCommercialMaterialItems(language, phase), capacity, phase, language)
+    : defaultMaterialItems(language, phase);
 
   return {
     language: isHindi ? "hi" : "en",
+    kind: commercial ? "commercial" : "residential",
     title: isHindi ? "सोलर प्रस्ताव" : "SOLAR PROPOSAL",
     tagline: isHindi ? "स्मार्ट  |  टिकाऊ  |  किफायती" : "SMART  |  SUSTAINABLE  |  COST EFFECTIVE",
     coverImageUrl: "",
     customerName: "",
     customerPhone: "",
     customerEmail: "",
-    capacity: "3 KW",
-    phase: "1PH",
+    capacity,
+    phase,
     address: "Jaipur",
     proposalDate: today,
+    sanctionLoad: "",
+    shadowFreeArea: "",
+    connectionType: commercial ? (isHindi ? "HT थ्री फेज" : "HT Three Phase") : "",
+    roofType: commercial ? (isHindi ? "टिन शेड / RCC छत" : "Tin shed / RCC rooftop") : "",
     company: defaultCompany(),
-    materialItems: defaultMaterialItems(language),
+    materialItems,
     installationWork: [],
     assumptions: defaultAssumptions(language),
-    customerScope: defaultCustomerScope(language),
-    commercialOffer: defaultCommercialOffer(language),
+    customerScope: defaultCustomerScope(language, commercial),
+    ourScope: commercial ? defaultOurScope(language) : [],
+    commercialOffer: defaultCommercialOffer(language, { commercial, capacity }),
     warrantyText: "",
     showGeneration: true,
     generation: {
@@ -452,14 +746,17 @@ export function createDefaultQuotationData(language: QuotationLanguage = "en"): 
     showInstallationProcess: true,
     installationSteps: defaultInstallationSteps(language),
     showWattageInfo: true,
-    projectAmount: "190000",
-    centralSubsidy: "78000",
-    stateSubsidy: "17000",
-    effectivePayableAmount: "95000",
-    subsidyNote: isHindi
-      ? "*MNRE सब्सिडी (₹78,000) नेट मीटरिंग के ~60 दिन बाद ग्राहक खाते में ट्रांसफर होती है। राज्य सब्सिडी (₹17,000) वहाँ लागू जहाँ वर्तमान में 100 यूनिट मुफ्त लाभ उपलब्ध है।"
-      : "*MNRE subsidy (₹78,000) is transferred to the customer account ~60 days after net metering. State subsidy (₹17,000) applies where 100 units free benefit is currently available.",
-    showEmiSection: true,
+    projectAmount: includeSubsidy ? "190000" : "",
+    centralSubsidy: includeSubsidy ? "78000" : "",
+    stateSubsidy: includeSubsidy ? "17000" : "",
+    effectivePayableAmount: includeSubsidy ? "95000" : "",
+    subsidyNote: includeSubsidy
+      ? isHindi
+        ? "*MNRE सब्सिडी (₹78,000) नेट मीटरिंग के ~60 दिन बाद ग्राहक खाते में ट्रांसफर होती है। राज्य सब्सिडी (₹17,000) वहाँ लागू जहाँ वर्तमान में 100 यूनिट मुफ्त लाभ उपलब्ध है।"
+        : "*MNRE subsidy (₹78,000) is transferred to the customer account ~60 days after net metering. State subsidy (₹17,000) applies where 100 units free benefit is currently available."
+      : "",
+    showSubsidySection: includeSubsidy,
+    showEmiSection: includeSubsidy,
     emiInfo: {
       uptoLoanAmount: "₹2,00,000",
       interestRate: isHindi ? "~6% प्रति वर्ष" : "~6% per annum",
@@ -478,8 +775,10 @@ export function createDefaultQuotationData(language: QuotationLanguage = "en"): 
     loadExtensionNote: isHindi
       ? "लोड एक्सटेंशन लागत JVVNL शर्तों के अनुसार अतिरिक्त होगी, और लोड बढ़ने पर नेट मीटरिंग अवधि शुरू होगी।"
       : "Load extension cost would be extra as per JVVNL terms, and the net metering period will start when the load is increased.",
-    terms: defaultTerms(language),
-    subsidyDocuments: defaultSubsidyDocuments(language),
+    onGridNote: commercial ? defaultOnGridNote(language) : "",
+    discomChargesNote: commercial ? defaultDiscomChargesNote(language) : "",
+    terms: defaultTerms(language, includeSubsidy, commercial ? "commercial" : "residential"),
+    subsidyDocuments: includeSubsidy ? defaultSubsidyDocuments(language) : [],
     bankAccountName: "MAHI SOLAR SOLUTION PRIVATE LIMITED",
     bankName: "AU Small Finance Bank",
     bankAccountNo: "7740889928413501",
@@ -499,10 +798,13 @@ export function createDefaultQuotationData(language: QuotationLanguage = "en"): 
  * customer details, amounts, company/bank/rep fields, and show* flags.
  */
 export function switchQuotationLanguage(data: QuotationData, language: QuotationLanguage): QuotationData {
-  const fresh = createDefaultQuotationData(language);
+  const commercial = isCommercialQuotation(data);
+  const previous = createDefaultQuotationData(data.language, { includeSubsidy: !commercial, commercial });
+  const fresh = createDefaultQuotationData(language, { includeSubsidy: !commercial, commercial });
 
   return {
     ...fresh,
+    kind: commercial ? "commercial" : "residential",
     coverImageUrl: data.coverImageUrl,
     customerName: data.customerName,
     customerPhone: data.customerPhone,
@@ -511,8 +813,17 @@ export function switchQuotationLanguage(data: QuotationData, language: Quotation
     phase: data.phase,
     address: data.address,
     proposalDate: data.proposalDate,
+    sanctionLoad: data.sanctionLoad,
+    shadowFreeArea: data.shadowFreeArea,
+    connectionType: data.connectionType === previous.connectionType ? fresh.connectionType : data.connectionType,
+    roofType: data.roofType === previous.roofType ? fresh.roofType : data.roofType,
     company: { ...fresh.company, ...data.company },
-    materialItems: applyPhaseToMaterialItems(fresh.materialItems, data.phase, language),
+    materialItems: commercial
+      ? applyCommercialCapacityToMaterials(fresh.materialItems, data.capacity, data.phase, language)
+      : applyPhaseToMaterialItems(fresh.materialItems, data.phase, language),
+    commercialOffer: commercial
+      ? stripSyncedCommercialRows(syncCommercialOfferToCapacity(fresh.commercialOffer, data.capacity, language))
+      : fresh.commercialOffer,
     showGeneration: data.showGeneration,
     generation: {
       unitRate: data.generation.unitRate || fresh.generation.unitRate,
@@ -527,6 +838,8 @@ export function switchQuotationLanguage(data: QuotationData, language: Quotation
     centralSubsidy: data.centralSubsidy,
     stateSubsidy: data.stateSubsidy,
     effectivePayableAmount: data.effectivePayableAmount,
+    subsidyNote: data.showSubsidySection === false ? data.subsidyNote : fresh.subsidyNote,
+    showSubsidySection: data.showSubsidySection !== false,
     showEmiSection: data.showEmiSection,
     emiInfo: {
       uptoLoanAmount: data.emiInfo.uptoLoanAmount || fresh.emiInfo.uptoLoanAmount,
@@ -552,7 +865,8 @@ export function switchQuotationLanguage(data: QuotationData, language: Quotation
 
 export function normalizeQuotationData(input?: Partial<QuotationData> | null): QuotationData {
   const language: QuotationLanguage = input?.language === "hi" ? "hi" : "en";
-  const defaults = createDefaultQuotationData(language);
+  const commercial = isCommercialQuotation(input ?? {});
+  const defaults = createDefaultQuotationData(language, { includeSubsidy: !commercial, commercial });
   const phase: QuotationPhase = input?.phase === "3PH" ? "3PH" : "1PH";
   return {
     ...defaults,
@@ -561,6 +875,10 @@ export function normalizeQuotationData(input?: Partial<QuotationData> | null): Q
     phase,
     capacity: stripPhaseFromCapacity(input?.capacity ?? defaults.capacity) || defaults.capacity,
     customerEmail: input?.customerEmail ?? defaults.customerEmail,
+    sanctionLoad: input?.sanctionLoad ?? defaults.sanctionLoad,
+    shadowFreeArea: input?.shadowFreeArea ?? defaults.shadowFreeArea,
+    connectionType: input?.connectionType ?? defaults.connectionType,
+    roofType: input?.roofType ?? defaults.roofType,
     company: { ...defaults.company, ...input?.company },
     generation: {
       unitRate: input?.generation?.unitRate ?? defaults.generation.unitRate,
@@ -570,9 +888,14 @@ export function normalizeQuotationData(input?: Partial<QuotationData> | null): Q
     installationWork: input?.installationWork ?? defaults.installationWork,
     assumptions: input?.assumptions ?? defaults.assumptions,
     customerScope: input?.customerScope ?? defaults.customerScope,
+    ourScope: input?.ourScope ?? defaults.ourScope,
     commercialOffer: stripSyncedCommercialRows(input?.commercialOffer ?? defaults.commercialOffer),
+    onGridNote: input?.onGridNote ?? defaults.onGridNote,
+    discomChargesNote: input?.discomChargesNote ?? defaults.discomChargesNote,
     terms: input?.terms ?? defaults.terms,
     subsidyDocuments: input?.subsidyDocuments ?? defaults.subsidyDocuments,
     installationSteps: input?.installationSteps ?? defaults.installationSteps,
+    kind: isCommercialQuotation({ ...defaults, ...input }) ? "commercial" : "residential",
+    showSubsidySection: input?.showSubsidySection ?? defaults.showSubsidySection,
   };
 }

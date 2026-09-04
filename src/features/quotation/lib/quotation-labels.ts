@@ -10,6 +10,10 @@ export const QUOTATION_LABELS: Record<
     customerPhone: string;
     customerEmail: string;
     capacity: string;
+    sanctionLoad: string;
+    shadowFreeArea: string;
+    connectionType: string;
+    roofType: string;
     address: string;
     proposalDate: string;
     sno: string;
@@ -80,6 +84,12 @@ export const QUOTATION_LABELS: Record<
     installationWork: string;
     assumptions: string;
     customerScope: string;
+    scopeOfWork: string;
+    onGridTitle: string;
+    priceSchedule: string;
+    priceIncluded: string;
+    priceIncludedItems: string[];
+    discomCharges: string;
     commercialOffer: string;
     customerNetPayable: string;
     emiFinancing: string;
@@ -107,6 +117,10 @@ export const QUOTATION_LABELS: Record<
     customerPhone: "Customer Phone",
     customerEmail: "Customer Email",
     capacity: "Capacity of Power Plant",
+    sanctionLoad: "Sanction load",
+    shadowFreeArea: "Shadow-free area",
+    connectionType: "Connection type",
+    roofType: "Type of roof",
     address: "Address",
     proposalDate: "Date of Proposal",
     sno: "S.No",
@@ -203,6 +217,16 @@ export const QUOTATION_LABELS: Record<
     installationWork: "Installation Work",
     assumptions: "Assumptions",
     customerScope: "Customer Scope",
+    scopeOfWork: "Scope of Work",
+    onGridTitle: "Grid-connected plant",
+    priceSchedule: "Turnkey EPC price",
+    priceIncluded: "Included",
+    priceIncludedItems: [
+      "SPV modules, module mounting structure, inverter",
+      "AC / DC cables, ACDB, rest of BOM (earthing, LA, meter, cable tray, walkway, MCS, accessories)",
+      "Installation, testing, commissioning and freight",
+    ],
+    discomCharges: "DISCOM / statutory charges",
     commercialOffer: "Commercial Offer",
     customerNetPayable: "Customer Net Payable Amount",
     emiFinancing: "EMI & Financing Options",
@@ -230,6 +254,10 @@ export const QUOTATION_LABELS: Record<
     customerPhone: "ग्राहक फोन",
     customerEmail: "ग्राहक ईमेल",
     capacity: "पावर प्लांट क्षमता",
+    sanctionLoad: "स्वीकृत लोड",
+    shadowFreeArea: "छाया-मुक्त क्षेत्र",
+    connectionType: "कनेक्शन प्रकार",
+    roofType: "छत का प्रकार",
     address: "पता",
     proposalDate: "प्रस्ताव की तिथि",
     sno: "क्र.",
@@ -326,6 +354,16 @@ export const QUOTATION_LABELS: Record<
     installationWork: "इंस्टॉलेशन कार्य",
     assumptions: "मान्यताएँ",
     customerScope: "ग्राहक का दायरा",
+    scopeOfWork: "कार्यक्षेत्र (MSS)",
+    onGridTitle: "ग्रिड-कनेक्टेड प्लांट",
+    priceSchedule: "टर्नकी EPC मूल्य",
+    priceIncluded: "शामिल",
+    priceIncludedItems: [
+      "SPV मॉड्यूल, माउंटिंग स्ट्रक्चर, इनवर्टर",
+      "AC / DC केबल, ACDB, शेष BOM (अर्थिंग, LA, मीटर, केबल ट्रे, वॉकवे, MCS, एक्सेसरीज़)",
+      "इंस्टॉलेशन, परीक्षण, कमीशनिंग व भाड़ा",
+    ],
+    discomCharges: "DISCOM / वैधानिक शुल्क",
     commercialOffer: "वाणिज्यिक प्रस्ताव",
     customerNetPayable: "ग्राहक नेट देय राशि",
     emiFinancing: "EMI व वित्त विकल्प",
@@ -364,7 +402,12 @@ export function isSolarNetMeterDescription(description: string) {
 
 export function isAcDbDcDbDescription(description: string) {
   const value = description.toLowerCase();
-  return value.includes("acdb") || value.includes("dcdb") || description.includes("डिस्ट्रीब्यूशन बॉक्स");
+  return (
+    value.includes("acdb / dcdb") ||
+    value.includes("dcdb") ||
+    description.includes("ACDB / DCDB") ||
+    description.includes("डिस्ट्रीब्यूशन बॉक्स")
+  );
 }
 
 export function isAcCableDescription(description: string) {
