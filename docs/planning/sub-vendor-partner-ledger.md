@@ -2,7 +2,7 @@
 
 > **Purpose:** Capture sheet structure, product decisions, and pick-lists for the Sub Vendor Payment workbook / partner ledgers.  
 > **Status:** Partially wired — **Ajay** + **Satyanarayan** ledgers live in Projects analytics; other tabs still analysis-only.  
-> **Last updated:** 2026-08-28
+> **Last updated:** 2026-09-05
 
 Keep **this workbook’s** notes here only. Sister planning docs:
 
@@ -40,7 +40,7 @@ Related in-app code today:
 |------------------|------|-----------------------------|-------|
 | `VINOD JI` | Vendor ledger | −3,232 | TBD |
 | `SATYANARAYAN ` (trailing space) | Partner ledger | **+1,68,342** | ✅ Wired in Satyanarayan analytics |
-| `Ajay` | Dual: money ledger + Everest Solar Bill | **+21,500** / +73,816 bills | ✅ Wired in Ajay analytics |
+| `Ajay` | Dual: money ledger + Everest Solar Bill | **+3,21,500** / +77,781 bills | ✅ Wired in Ajay analytics |
 | `KAVITA` | Partner ledger (shorter) | +47,000 | TBD |
 | `Copy of KAVITA` | Expanded Kavita + site payments | +1,20,000 | TBD |
 | `DILKHS TEJAS POWER` | Vendor ledger (settled) | 0 | TBD |
@@ -107,14 +107,14 @@ Tab name **`SATYANARAYAN `** (trailing space). Maps to Projects **`SATAYNARAYAN 
 
 ### Ajay
 
-Dual layout on tab **`Ajay`** — **two side-by-side tables** (live sheet as of 2026-08-25):
+Dual layout on tab **`Ajay`** — **two side-by-side tables** (live sheet as of 2026-09-05):
 
 | Block | Columns | Title | Headers | Balance |
 |-------|---------|-------|---------|---------|
-| Left | A–E | Money ledger | Date · DR · CR · Closing Balance · Remark | **+₹21,500** |
-| Right | K–P | Everest Solar Bill | DATE · INVOICE NO. · DR · CR · Closing Balance · Remark | **₹73,816** |
+| Left | A–E | Money ledger | Date · DR · CR · Closing Balance · Remark | **+₹3,21,500** |
+| Right | K–P | Everest Solar Bill | DATE · INVOICE NO. · DR · CR · Closing Balance · Remark | **₹77,781** |
 
-**Left — money ledger:** PP / CASH collections from Ajay (CR); MSS payments / NEFT out (DR). Totals in row 1: DR **₹8,10,000** · CR **₹7,88,500** · closing **+₹21,500** *(+ = we will receive)*.
+**Left — money ledger:** PP / CASH collections from Ajay (CR); MSS payments / NEFT out (DR). Totals in row 1: DR **₹11,10,000** · CR **₹7,88,500** · closing **+₹3,21,500** *(+ = we will receive)*.
 
 | Date | DR | CR | Closing | Remark |
 |------|-----|-----|---------|--------|
@@ -128,9 +128,10 @@ Dual layout on tab **`Ajay`** — **two side-by-side tables** (live sheet as of 
 | 28 May 2026 | — | 50,000 | −7,28,500 | CASH |
 | 30 Jul 2026 | 3,00,000 | — | −4,28,500 | EVEREST BUILD SOLAR NEFT |
 | 10 Aug 2026 | 2,50,000 | — | −1,78,500 | EVEREST BUILD SOLAR NEFT |
-| **25 Aug 2026** | **2,00,000** | — | **+21,500** | *(blank remark on sheet)* |
+| 25 Aug 2026 | 2,00,000 | — | +21,500 | EVEREST BUILD SOLAR NEFT |
+| **05 Sep 2026** | **3,00,000** | — | **+3,21,500** | *(blank remark on sheet)* |
 
-**Right — Everest Solar Bill:** MSE invoices (DR only). Eleven invoices when read:
+**Right — Everest Solar Bill:** MSE invoices (DR only). Twelve invoices when read:
 
 | Invoice | Amount | Running |
 |---------|--------|---------|
@@ -143,12 +144,13 @@ Dual layout on tab **`Ajay`** — **two side-by-side tables** (live sheet as of 
 | MSE/26-27/0117 | 2,183 | 43,381 |
 | MSE/26-27/0125 | 8,260 | 51,641 |
 | MSE/26-27/0137 | 17,538 | 69,179 |
-| **MSE/26-27/0141** | **2,655** | **71,834** |
-| **MSE/26-27/0157** | **1,982** | **73,816** |
+| MSE/26-27/0141 | 2,655 | 71,834 |
+| MSE/26-27/0157 | 1,982 | 73,816 |
+| **MSE/26-27/0179** | **3,965** | **77,781** |
 
 **Removed:** middle **site commission** block (columns I–O, ~₹1,000/KW per site, was +₹31,000) — no longer on the live tab.
 
-Links to Projects register **`Ajay (everest)`**. Money-ledger rows seeded in `partner-mss-payments.ts` (incl. Aug 2026 NEFT + 25 Aug ₹2L). Wired in `ajay-sub-vendor-ledger.ts`.
+Links to Projects register **`Ajay (everest)`**. Money-ledger rows seeded in `partner-mss-payments.ts` (incl. Aug–Sep 2026 NEFT). Wired in `ajay-sub-vendor-ledger.ts`.
 
 ### KAVITA vs Copy of KAVITA
 
@@ -201,6 +203,13 @@ When implementing:
 ## Decision log
 
 Append dated notes here. Do not delete older entries — strike through if superseded.
+
+### 2026-09-05 — Ajay money + Everest bills refresh
+
+- Live re-read Sub Vendor `Ajay`: new DR **₹3,00,000** on **05 Sep 2026** → closing **+₹3,21,500** (was +₹21,500). Header DR **₹11,10,000**.
+- 25 Aug ₹2L remark filled: **EVEREST BUILD SOLAR NEFT**.
+- New Everest invoice **MSE/26-27/0179** ₹3,965 (01 Sep) → bills **₹77,781**.
+- App seeds updated: `ajay-sub-vendor-ledger.ts`, `AJAY_SUB_VENDOR_LEDGER`, `partner-mss-payments.ts`.
 
 ### 2026-07-29 — Intake started
 

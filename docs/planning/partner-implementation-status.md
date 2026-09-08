@@ -2,7 +2,7 @@
 
 > **Purpose:** Living tracker for what we **built in the app** vs what is **still pending** per partner / scope.  
 > **Kind:** Product + engineering status (not raw sheet data).  
-> **Last updated:** 2026-08-28
+> **Last updated:** 2026-09-05
 
 Related docs:
 
@@ -31,10 +31,10 @@ Related docs:
 |------|--------|-------|
 | Top-level **Ajay sites** tab | ✅ | Scope `ajay` in `projects-config.ts`; excluded from Partner projects chips |
 | Dual registers in one view | ✅ | MSS pipeline (29 sites) + Arkshakti backlog (31 sites); zero name overlap after RAJENDRA SETHI removed from MSS sheet |
-| Sub Vendor · **Money ledger** | ✅ | Static data + UI in `ajay-sub-vendor-ledger.ts`, `AjaySubVendorLedgers.tsx`; closing **−₹1,78,500** (we need to pay) |
-| Sub Vendor · **Everest Solar Bill** | ✅ | Eleven MSE invoices; closing **₹73,816**; shown in analytics hero + ledger tables |
+| Sub Vendor · **Money ledger** | ✅ | Static data + UI in `ajay-sub-vendor-ledger.ts`, `AjaySubVendorLedgers.tsx`; closing **+₹3,21,500** (we will receive) |
+| Sub Vendor · **Everest Solar Bill** | ✅ | Twelve MSE invoices; closing **₹77,781**; shown in analytics hero + ledger tables |
 | Column import fixes | ✅ | `TOTAL Payment recieved` header aliases; Arkshakti-only money cols intentionally not imported |
-| Partner money ledger seed | ✅ | `partner-mss-payments.ts` — PP / cash / NEFT rows incl. Jul 2026 ₹3L EVEREST BUILD SOLAR |
+| Partner money ledger seed | ✅ | `partner-mss-payments.ts` — PP / cash / NEFT rows through 05 Sep 2026 ₹3L |
 | **Analytics (Ajay-specific)** | ✅ | Hero: total sites · net due Arkshakti · net due MSS · both Sub Vendor cards · **final sum** (registers + ledgers) |
 | Analytics (global cleanup) | ✅ | **Deal totals** and **Payment dues** sections removed from **all** Projects analytics tabs |
 | Rich Ajay overview | ✅ | Register snapshot, net-due mix by sign, final-sum breakdown table, work status per vendor |
@@ -183,6 +183,7 @@ Related docs:
 
 | Date | Partner | Change |
 |------|---------|--------|
+| 2026-09-05 | Ajay | Ledger refresh: money **+₹3,21,500** (new ₹3L NEFT 05 Sep); Everest bills **₹77,781** (invoice 0179) |
 | 2026-08-28 | Satyanarayan | Sub Vendor ledger refresh: closing **₹1,68,342** (three Aug fuel advances) |
 | 2026-08-20 | Satyanarayan / RJ Green | Own top-level tabs; Sub Vendor ledger moved off Partner aggregate |
 | 2026-08-09 | Partner | Analytics = Our/Shripal-style + Satyanarayan Sub Vendor ledger; download PDF enabled |

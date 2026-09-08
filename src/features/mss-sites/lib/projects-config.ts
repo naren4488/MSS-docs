@@ -33,13 +33,13 @@ export const AJAY_SUB_VENDOR_LEDGER = {
       id: "money",
       title: "Money ledger",
       columnRange: "A–E",
-      headerBalance: 21_500,
+      headerBalance: 321_500,
     },
     {
       id: "everest-bills",
       title: "Everest Solar Bill",
       columnRange: "K–P",
-      headerBalance: 73_816,
+      headerBalance: 77_781,
     },
   ],
 } as const;

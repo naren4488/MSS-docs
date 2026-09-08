@@ -2,7 +2,7 @@
 
 > **Purpose:** Requirements and behaviour for the **Ajay sites** tab on `/projects`.  
 > **Kind:** Application UI / logic (not raw sheet data).  
-> **Last updated:** 2026-08-25
+> **Last updated:** 2026-09-05
 
 Sister docs:
 
@@ -37,16 +37,16 @@ Ajay rows are **excluded** from Partner projects chips and partner row scope.
 
 ## Sub Vendor Payment — two tables on `Ajay` tab
 
-The **SUB VENDOR PAYMENT** workbook tab `Ajay` has **two side-by-side ledgers** (live sheet, 2026-08-25):
+The **SUB VENDOR PAYMENT** workbook tab `Ajay` has **two side-by-side ledgers** (live sheet, 2026-09-05):
 
 | Block | Columns | Title | Header balance |
 |-------|---------|-------|----------------|
-| Left | A–E | **Money ledger** | **+₹21,500** *(we will receive)* |
-| Right | K–P | **Everest Solar Bill** | **₹73,816** |
+| Left | A–E | **Money ledger** | **+₹3,21,500** *(we will receive)* |
+| Right | K–P | **Everest Solar Bill** | **₹77,781** |
 
-**Money ledger (left):** PP / CASH in from Ajay; MSS / NEFT out (latest: **₹2L** on 25 Aug 2026; prior ₹2.5L EVEREST BUILD SOLAR NEFT on 10 Aug, ₹3L on 30 Jul). Header DR **₹8,10,000** · CR **₹7,88,500**.
+**Money ledger (left):** PP / CASH in from Ajay; MSS / NEFT out (latest: **₹3L** on 05 Sep 2026; prior ₹2L on 25 Aug, ₹2.5L on 10 Aug, ₹3L on 30 Jul — all EVEREST BUILD SOLAR NEFT except 05 Sep remark blank on sheet). Header DR **₹11,10,000** · CR **₹7,88,500**.
 
-**Everest Solar Bill (right):** MSE vendor invoices through MSE/26-27/0157; eleven invoice lines totalling **₹73,816** (unchanged since 20 Aug).
+**Everest Solar Bill (right):** MSE vendor invoices through MSE/26-27/0179; twelve invoice lines totalling **₹77,781**.
 
 **Removed (older snapshot):** middle **site commission** table (I–O, ~₹1,000/KW, +₹31,000) is no longer on the live tab.
 
@@ -92,6 +92,12 @@ Money-ledger rows are seeded in `partner-mss-payments.ts` for analytics. Everest
 
 - Live re-read: money ledger **−₹1,78,500** (new ₹2.5L NEFT 10 Aug); Everest bills **₹73,816** (invoices 0141, 0157).
 - Hero / ledger cards: **− red** = we need to pay · **+ green** = we will receive.
+
+### 2026-09-05 — Money ledger + Everest bills refresh
+
+- Live re-read Sub Vendor `Ajay`: new DR **₹3,00,000** on **05 Sep 2026** → closing **+₹3,21,500** (was +₹21,500).
+- New invoice **MSE/26-27/0179** ₹3,965 (01 Sep) → Everest bills **₹77,781**.
+- 25 Aug ₹2L remark filled on sheet. App seeds updated: `ajay-sub-vendor-ledger.ts`, `AJAY_SUB_VENDOR_LEDGER`, `partner-mss-payments.ts`.
 
 ### 2026-08-25 — Money ledger refresh
 
