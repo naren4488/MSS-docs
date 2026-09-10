@@ -1,3 +1,4 @@
+import { MSS_LOGO_URL } from "@/features/company-profile/lib/company-profile-defaults";
 import type { AgreementCompany } from "@/features/agreement/types/agreement";
 import type {
   QuotationCommercialRow,
@@ -9,7 +10,13 @@ import type {
   QuotationTermItem,
 } from "../types/quotation";
 import { stripSyncedCommercialRows } from "./quotation-formatters";
-import { isAcCableDescription, isAcDbDcDbDescription, isSolarInverterDescription, isSolarPvModulesDescription } from "./quotation-labels";
+import {
+  isAcCableDescription,
+  isAcDbDcDbDescription,
+  isBatteryBankDescription,
+  isSolarInverterDescription,
+  isSolarPvModulesDescription,
+} from "./quotation-labels";
 
 function uuid() {
   return crypto.randomUUID();
@@ -20,7 +27,7 @@ const today = new Date().toISOString().slice(0, 10);
 function defaultCompany(): AgreementCompany {
   return {
     name: "Mahi Solar Solution Private Limited",
-    logoUrl: "/assets/mss-logo.png",
+    logoUrl: MSS_LOGO_URL,
     address: "Plot No. 44, Jai Bhawani Vihar Vistar, Radha Vihar, Govindpura, Jaipur, Rajasthan – 302044",
     phone: "+91 9928413501",
     email: "mahisolarsolution@gmail.com",
@@ -157,10 +164,14 @@ export function isCommercialQuotation(data: { kind?: QuotationKind; showSubsidyS
   if (data.kind === "commercial") {
     return true;
   }
-  if (data.kind === "residential") {
+  if (data.kind === "residential" || data.kind === "offgrid") {
     return false;
   }
   return data.showSubsidySection === false;
+}
+
+export function isOffgridQuotation(data: { kind?: QuotationKind }): boolean {
+  return data.kind === "offgrid";
 }
 
 export function commercialPanelConfigOffering(capacity: string, language: QuotationLanguage): string {
@@ -275,6 +286,159 @@ export function applyCommercialCapacityToMaterials(
   });
 }
 
+export const OFFGRID_MODULE_WP = 590;
+export const OFFGRID_PRICE_PER_KW = 100_000;
+export const OFFGRID_BATTERY_AH = 220;
+
+export function offgridPanelCount(kw: number): number {
+  return Math.max(1, Math.ceil((kw * 1000) / OFFGRID_MODULE_WP));
+}
+
+/**
+ * 12V 220Ah tubulars on a 48V Microtek PCU: 4 in series per string.
+ * 3 kW kit = 8 batteries (2 parallel strings) as specified.
+ * Other sizes scale in multiples of 4 so the bank stays 48V.
+ */
+export function offgridBatteryCount(kw: number): number {
+  const parallelStrings = Math.max(1, Math.round((kw / 3) * 2));
+  return parallelStrings * 4;
+}
+
+export function offgridProjectAmount(capacity: string): string {
+  const kw = parseCapacityKw(capacity);
+  if (!kw) {
+    return "";
+  }
+  return String(Math.round(kw * OFFGRID_PRICE_PER_KW));
+}
+
+function offgridInverterUnit(language: QuotationLanguage): string {
+  return language === "hi" ? "ऑफ-ग्रिड" : "Off-Grid";
+}
+
+function offgridInverterMake(kw: string, language: QuotationLanguage): string {
+  return language === "hi"
+    ? `${kw} किलोवाट MICROTEK ऑफ-ग्रिड PCU (48V) · 2 वर्ष वारंटी`
+    : `${kw} KW MICROTEK Off-Grid PCU (48V) with 2 Year Warranty`;
+}
+
+function offgridBatteryMake(count: number, language: QuotationLanguage): string {
+  const strings = Math.max(1, Math.round(count / 4));
+  if (language === "hi") {
+    return `12V ${OFFGRID_BATTERY_AH} Ah ट्यूबुलर · 48V बैंक (${strings} पैरेलल स्ट्रिंग × 4 सीरीज़) · Microtek / समकक्ष`;
+  }
+  return `12V ${OFFGRID_BATTERY_AH} Ah tubular · 48V bank (${strings} parallel strings × 4 in series) · Microtek / equivalent`;
+}
+
+function offgridBatteryQty(count: number, language: QuotationLanguage): string {
+  return language === "hi" ? `${count} नं.` : `${count} Nos`;
+}
+
+export function offgridPanelConfigOffering(capacity: string, language: QuotationLanguage): string {
+  const kw = parseCapacityKw(capacity) ?? 3;
+  const panels = offgridPanelCount(kw);
+  const totalKw = formatKwLabel((panels * OFFGRID_MODULE_WP) / 1000);
+  if (language === "hi") {
+    return `${panels} × ${OFFGRID_MODULE_WP}W Waaree नॉन-DCR पैनल (कुल ${totalKw} किलोवाट)`;
+  }
+  return `${panels} x ${OFFGRID_MODULE_WP}W Waaree Non-DCR Panels (${totalKw} KW Total)`;
+}
+
+export function offgridBatteryOffering(capacity: string, language: QuotationLanguage): string {
+  const kw = parseCapacityKw(capacity) ?? 3;
+  const count = offgridBatteryCount(kw);
+  const strings = Math.max(1, Math.round(count / 4));
+  if (language === "hi") {
+    return `${count} × 12V ${OFFGRID_BATTERY_AH} Ah ट्यूबुलर · 48V (${strings} पैरेलल × 4 सीरीज़)`;
+  }
+  return `${count} × 12V ${OFFGRID_BATTERY_AH} Ah tubular · 48V (${strings} parallel × 4 series)`;
+}
+
+export function syncOffgridOfferToCapacity(
+  rows: QuotationCommercialRow[],
+  capacity: string,
+  language: QuotationLanguage,
+): QuotationCommercialRow[] {
+  return rows.map((row) => {
+    const parameter = row.parameter.trim();
+    if (parameter === "Panel Configuration" || parameter === "पैनल कॉन्फ़िगरेशन") {
+      return { ...row, offering: offgridPanelConfigOffering(capacity, language) };
+    }
+    if (parameter === "Battery Bank" || parameter === "बैटरी बैंक") {
+      return { ...row, offering: offgridBatteryOffering(capacity, language) };
+    }
+    return row;
+  });
+}
+
+function defaultOffgridMaterialItems(language: QuotationLanguage): QuotationMaterialItem[] {
+  const site = asPerSite(language);
+  const inverterMake = offgridInverterMake("3", language);
+  const batteryMake = offgridBatteryMake(8, language);
+
+  if (language === "hi") {
+    return [
+      material("सोलर पीवी मॉड्यूल", "6 पैनल", `${OFFGRID_MODULE_WP} Wp`, "Waaree 590 Wp नॉन-DCR · 12 वर्ष उत्पाद + 25 वर्ष प्रदर्शन वारंटी"),
+      material("सोलर इनवर्टर", "1", offgridInverterUnit(language), inverterMake),
+      material("माउंटिंग स्ट्रक्चर (GI अपोलो)", "आवश्यकतानुसार", "", "लेग 75×75, रैफ्टर 60×40, पर्लिन 40×40"),
+      material("DC केबल", "60 तक", "मी.", "4 वर्ग मिमी कॉपर वायर, पॉलीकैब केबल"),
+      material("कनेक्शन किट", "आवश्यकतानुसार", "—", "कनेक्टिंग केबल (4 वर्ग मिमी — पॉलीकैब), MC4, जम्पर"),
+      material("ट्यूबुलर बैटरी बैंक", offgridBatteryQty(8, language), `12V ${OFFGRID_BATTERY_AH} Ah`, batteryMake),
+      material("बैटरी स्टैंड व इंटरकनेक्ट", site, "—", "बैटरी स्टैंड, इंटरकनेक्ट केबल व टर्मिनल — साइट आवश्यकतानुसार"),
+      material("डिज़ाइनेड इंस्टॉलेशन व कमीशनिंग", "", "साइट आवश्यकतानुसार", "टीम माही सोलर सॉल्यूशन"),
+    ];
+  }
+
+  return [
+    material("Solar PV Modules", "6 Panel", `${OFFGRID_MODULE_WP} Wp`, "Waaree 590 Wp Non-DCR with 12 Year Product + 25 Year Performance Warranty"),
+    material("Solar Inverter", "1", offgridInverterUnit(language), inverterMake),
+    material("Mounting Structure (GI Apollo)", "As per Requirement", "", "Leg 75×75, Rafter 60×40, Purline 40×40"),
+    material("DC Cable", "Upto 60", "Mtr", "4 sq mm Copper Wire, Polycab cable"),
+    material("Connection Kit", "As per Requirement", "—", "Connecting cable (4 sq mm — Polycab), MC4, jumper"),
+    material("Tubular Battery Bank", offgridBatteryQty(8, language), `12V ${OFFGRID_BATTERY_AH} Ah`, batteryMake),
+    material("Battery Stand & Interconnect", site, "—", "Battery stand, interconnect cables and terminals as per site"),
+    material("Designed Installation & Commissioning", "", "As per site requirement", "Team Mahi Solar Solution"),
+  ];
+}
+
+export function applyOffgridCapacityToMaterials(
+  items: QuotationMaterialItem[],
+  capacity: string,
+  phase: QuotationPhase,
+  language: QuotationLanguage,
+): QuotationMaterialItem[] {
+  const kw = parseCapacityKw(capacity);
+  const sized = items.map((item) => {
+    if (kw && isSolarPvModulesDescription(item.description)) {
+      const panels = offgridPanelCount(kw);
+      return { ...item, qty: panelQtyLabel(panels, language), unit: `${OFFGRID_MODULE_WP} Wp` };
+    }
+    if (kw && isSolarInverterDescription(item.description)) {
+      return {
+        ...item,
+        unit: offgridInverterUnit(language),
+        make: offgridInverterMake(formatKwLabel(kw), language),
+      };
+    }
+    if (kw && isBatteryBankDescription(item.description)) {
+      const count = offgridBatteryCount(kw);
+      return {
+        ...item,
+        qty: offgridBatteryQty(count, language),
+        unit: `12V ${OFFGRID_BATTERY_AH} Ah`,
+        make: offgridBatteryMake(count, language),
+      };
+    }
+    return item;
+  });
+  return applyPhaseToMaterialItems(sized, phase, language).map((item) => {
+    if (isSolarInverterDescription(item.description)) {
+      return { ...item, unit: offgridInverterUnit(language) };
+    }
+    return item;
+  });
+}
+
 function defaultAssumptions(language: QuotationLanguage): string[] {
   if (language === "hi") {
     return [
@@ -290,7 +454,7 @@ function defaultAssumptions(language: QuotationLanguage): string[] {
   ];
 }
 
-function defaultCustomerScope(language: QuotationLanguage, commercial = false): string[] {
+function defaultCustomerScope(language: QuotationLanguage, options?: { commercial?: boolean; offgrid?: boolean }): string[] {
   const residential =
     language === "hi"
       ? [
@@ -306,7 +470,15 @@ function defaultCustomerScope(language: QuotationLanguage, commercial = false): 
           "Cleaning of modules is not in our scope; customer is requested to clean the panels once a week.",
         ];
 
-  if (!commercial) {
+  if (options?.offgrid) {
+    const batteryRoom =
+      language === "hi"
+        ? "ट्यूबुलर बैटरी बैंक हेतु सूखा, हवादार इनडोर स्थान ग्राहक प्रदान करेगा — बारिश या सीधी धूप में नहीं।"
+        : "Customer to provide a dry, ventilated indoor space for the tubular battery bank (not in rain or direct sun).";
+    return [...residential, batteryRoom];
+  }
+
+  if (!options?.commercial) {
     return residential;
   }
 
@@ -357,16 +529,38 @@ function defaultDiscomChargesNote(language: QuotationLanguage): string {
     : "Extra — payable by client as actual";
 }
 
+function defaultOffGridNote(language: QuotationLanguage): string {
+  return language === "hi"
+    ? "यह ऑफ-ग्रिड (स्टैंडअलोन) प्लांट है: पैनलों से DC बिजली बैटरी बैंक को चार्ज करती है और Microtek ऑफ-ग्रिड इनवर्टर द्वारा AC में बदलकर साइट पर उपयोग होती है। यह DISCOM ग्रिड में निर्यात नहीं करता और पीएम सूर्य घर सब्सिडी के लिए पात्र नहीं है।"
+    : "This is an off-grid (standalone) plant: DC from the modules charges the battery bank and is converted to AC by the Microtek off-grid inverter for on-site use. It does not export to the DISCOM grid and is not eligible for PM Surya Ghar subsidy.";
+}
+
 function commercial(parameter: string, offering: string): QuotationCommercialRow {
   return { id: uuid(), parameter, offering };
 }
 
 function defaultCommercialOffer(
   language: QuotationLanguage,
-  options?: { commercial?: boolean; capacity?: string },
+  options?: { commercial?: boolean; offgrid?: boolean; capacity?: string },
 ): QuotationCommercialRow[] {
+  const capacity = options?.capacity || (options?.offgrid ? "3 KW" : "10 KW");
+
+  if (options?.offgrid) {
+    if (language === "hi") {
+      return [
+        commercial("पैनल कॉन्फ़िगरेशन", offgridPanelConfigOffering(capacity, language)),
+        commercial("बैटरी बैंक", offgridBatteryOffering(capacity, language)),
+        commercial("मूल्य आधार", "टर्नकी EPC · ₹1,00,000 प्रति किलोवाट"),
+      ];
+    }
+    return [
+      commercial("Panel Configuration", offgridPanelConfigOffering(capacity, language)),
+      commercial("Battery Bank", offgridBatteryOffering(capacity, language)),
+      commercial("Price Basis", "Turnkey EPC · ₹1,00,000 per kW"),
+    ];
+  }
+
   if (options?.commercial) {
-    const capacity = options.capacity || "10 KW";
     if (language === "hi") {
       return [
         commercial("पैनल कॉन्फ़िगरेशन", commercialPanelConfigOffering(capacity, language)),
@@ -408,6 +602,31 @@ function isSubsidyTerm(item: QuotationTermItem): boolean {
   return label === "Government Subsidy Dependency" || label === "सरकारी सब्सिडी निर्भरता";
 }
 
+function isNetMeteringTerm(item: QuotationTermItem): boolean {
+  const label = item.label.trim();
+  return label === "Net Metering Approval" || label === "नेट मीटरिंग अनुमोदन";
+}
+
+function isPaymentTerm(item: QuotationTermItem): boolean {
+  const label = item.label.trim();
+  return label === "Payment Terms & Project Phases" || label === "भुगतान शर्तें व प्रोजेक्ट चरण";
+}
+
+function isAdditionalWorkTerm(item: QuotationTermItem): boolean {
+  const label = item.label.trim();
+  return label === "Additional Work Charges" || label === "अतिरिक्त कार्य शुल्क";
+}
+
+function isPaymentDelayTerm(item: QuotationTermItem): boolean {
+  const label = item.label.trim();
+  return label === "Payment Delay" || label === "भुगतान विलंब";
+}
+
+function isWarrantyCoverageTerm(item: QuotationTermItem): boolean {
+  const label = item.label.trim();
+  return label === "Warranty Coverage & Limitations" || label === "वारंटी कवरेज व सीमाएँ";
+}
+
 function isTimelineTerm(item: QuotationTermItem): boolean {
   const label = item.label.trim();
   return label === "Project Timeline & Installation Process" || label === "प्रोजेक्ट समयरेखा व इंस्टॉलेशन प्रक्रिया";
@@ -430,10 +649,45 @@ function commercialTimelineText(language: QuotationLanguage): string {
     : "Delivery, installation and commissioning are typically completed within 1 month from the date of a technically and commercially clear order together with the advance payment, subject to site readiness and weather. This applies when the agreed payment schedule is followed.\n\nIMPORTANT - External Dependencies (NOT included in the above timeline):\n• Net Metering / DISCOM approval: handled by DISCOM (JVVNL) — typically 20–30 days. Timeline beyond Mahi Solar's control.";
 }
 
+function offgridPaymentTermsText(language: QuotationLanguage): string {
+  return language === "hi"
+    ? "भुगतान अनुसूची:\n\n• अग्रिम: ऑर्डर पुष्टि के साथ 20%\n• द्वितीय भुगतान: सामग्री डिस्पैच व इंस्टॉलेशन शुरू होने से पहले 70%\n• अंतिम भुगतान: इंस्टॉलेशन, परीक्षण व कमीशनिंग पूर्ण होने के बाद 10%\n\nऋण वित्त होने पर इंस्टॉलेशन बैंक की प्रथम किस्त मिलते ही शुरू होता है; शेष भुगतान बैंक वितरण अनुसूची के अनुसार। यह ऑफ-ग्रिड प्लांट है — DISCOM नेट मीटरिंग लागू नहीं।"
+    : "Payment schedule:\n\n• Advance: 20% with order confirmation\n• 2nd Payment: 70% before material dispatch & installation begins\n• Final Payment: 10% after installation, testing and commissioning are complete\n\nIf loan-financed, installation begins on receipt of the bank's first installment; subsequent payments follow the bank disbursement schedule. This is an off-grid plant — DISCOM net metering does not apply.";
+}
+
+function offgridTimelineText(language: QuotationLanguage): string {
+  return language === "hi"
+    ? "डिलीवरी, इंस्टॉलेशन व कमीशनिंग सामान्यतः तकनीकी व वाणिज्यिक रूप से स्पष्ट ऑर्डर तथा अग्रिम भुगतान की तिथि से 1 माह में पूर्ण होते हैं — साइट तैयारी, बैटरी स्थान व मौसम पर निर्भर। यह तभी लागू जब सहमत भुगतान अनुसूची का पालन हो। नेट मीटरिंग / DISCOM अनुमोदन इस ऑफ-ग्रिड प्लांट पर लागू नहीं।"
+    : "Delivery, installation and commissioning are typically completed within 1 month from the date of a technically and commercially clear order together with the advance payment, subject to site readiness, battery-room readiness and weather. This applies when the agreed payment schedule is followed. Net metering / DISCOM approval does not apply to this off-grid plant.";
+}
+
+function offgridAdditionalWorkText(language: QuotationLanguage): string {
+  return language === "hi"
+    ? "कोटेशन केवल वाणिज्यिक प्रस्ताव में उल्लिखित कार्यक्षेत्र कवर करता है। अतिरिक्त कार्य जैसे:\n• अतिरिक्त विद्युत कार्य या रीवायरिंग\n• छत की संरचनात्मक मरम्मत या संशोधन\n• अतिरिक्त केबल रन या माउंटिंग समायोजन\n• अतिरिक्त बैटरी, स्टैंड या बैटरी रूम सिविल कार्य\n• इंस्टॉलेशन समझौते पर हस्ताक्षर के बाद मांगे गए परिवर्तन\n\nमाही सोलर सॉल्यूशन की प्रचलित दरों पर अलग से शुल्क लगेगा (पुनः कार्य या अतिरिक्त सेवाओं हेतु न्यूनतम ₹3,000 प्रति दिन)।"
+    : "The quotation covers only the scope mentioned in the Commercial Offer. Any additional work required, such as:\n• Additional electrical work or rewiring\n• Structural repairs or modifications to the roof\n• Extra cable runs or mounting adjustments\n• Extra batteries, stand or battery-room civil work\n• Any changes requested after the installation agreement is signed\n\nwill be charged separately at Mahi Solar Solution's prevailing rates (minimum ₹3,000 per day for re-work or additional services).";
+}
+
+function offgridPaymentDelayText(language: QuotationLanguage): string {
+  return language === "hi"
+    ? "यदि ग्राहक सहमत अनुसूची के अनुसार भुगतान नहीं करता, तो बकाया भुगतान साफ होने तक सामग्री डिस्पैच, इंस्टॉलेशन या प्रोजेक्ट पूर्णता स्थगित करने का अधिकार माही सोलर सॉल्यूशन प्राइवेट लिमिटेड के पास सुरक्षित है।"
+    : "If the customer fails to make payments as per the agreed schedule, Mahi Solar Solution Private Limited reserves the right to suspend material dispatch, installation work, or project completion until all outstanding payments are cleared.";
+}
+
+function patchOffgridWarrantyText(text: string): string {
+  return text
+    .replace("Inverter: 10-year manufacturer warranty", "Inverter: 2-year manufacturer warranty (Microtek off-grid PCU)")
+    .replace(
+      "Batteries (if applicable): Covered under respective manufacturer's warranty terms",
+      "Batteries: 36-month manufacturer warranty (tubular), subject to OEM terms",
+    )
+    .replace("इनवर्टर: 10 वर्ष निर्माता वारंटी", "इनवर्टर: 2 वर्ष निर्माता वारंटी (Microtek ऑफ-ग्रिड PCU)")
+    .replace("बैटरी (यदि लागू): संबंधित निर्माता की शर्तों के अंतर्गत", "बैटरी: 36 माह निर्माता वारंटी (ट्यूबुलर), OEM शर्तों के अधीन");
+}
+
 function defaultTerms(
   language: QuotationLanguage,
   includeSubsidy = true,
-  variant: "residential" | "commercial" = "residential",
+  variant: "residential" | "commercial" | "offgrid" = "residential",
 ): QuotationTermItem[] {
   const terms =
     language === "hi"
@@ -623,8 +877,29 @@ function defaultTerms(
   const withoutSubsidy = includeSubsidy
     ? terms
     : terms
-        .filter((item) => !isSubsidyTerm(item))
+        .filter((item) => !isSubsidyTerm(item) && (variant !== "offgrid" || !isNetMeteringTerm(item)))
         .map((item) => (isTimelineTerm(item) ? { ...item, text: stripSubsidyFromTimeline(item.text) } : item));
+
+  if (variant === "offgrid") {
+    return withoutSubsidy.map((item) => {
+      if (isPaymentTerm(item)) {
+        return { ...item, text: offgridPaymentTermsText(language) };
+      }
+      if (isTimelineTerm(item)) {
+        return { ...item, text: offgridTimelineText(language) };
+      }
+      if (isAdditionalWorkTerm(item)) {
+        return { ...item, text: offgridAdditionalWorkText(language) };
+      }
+      if (isPaymentDelayTerm(item)) {
+        return { ...item, text: offgridPaymentDelayText(language) };
+      }
+      if (isWarrantyCoverageTerm(item)) {
+        return { ...item, text: patchOffgridWarrantyText(item.text) };
+      }
+      return item;
+    });
+  }
 
   if (variant !== "commercial") {
     return withoutSubsidy;
@@ -672,47 +947,65 @@ function defaultSubsidyDocuments(language: QuotationLanguage): string[] {
   ];
 }
 
-function defaultInstallationSteps(language: QuotationLanguage): string[] {
-  if (language === "hi") {
-    return [
-      "साइट सर्वे",
-      "सिस्टम डिज़ाइन",
-      "दस्तावेज़ीकरण",
-      "सामग्री डिस्पैच",
-      "इंस्टॉलेशन",
-      "परीक्षण व कमीशनिंग",
-      "नेट मीटरिंग व सक्रियण",
-      "हैंडओवर",
-    ];
+function defaultInstallationSteps(language: QuotationLanguage, offgrid = false): string[] {
+  const steps =
+    language === "hi"
+      ? [
+          "साइट सर्वे",
+          "सिस्टम डिज़ाइन",
+          "दस्तावेज़ीकरण",
+          "सामग्री डिस्पैच",
+          "इंस्टॉलेशन",
+          "परीक्षण व कमीशनिंग",
+          "नेट मीटरिंग व सक्रियण",
+          "हैंडओवर",
+        ]
+      : [
+          "Site Survey",
+          "System Design",
+          "Documentation",
+          "Material Dispatch",
+          "Installation",
+          "Testing & Commissioning",
+          "Net Metering & Activation",
+          "Handover",
+        ];
+
+  if (!offgrid) {
+    return steps;
   }
-  return [
-    "Site Survey",
-    "System Design",
-    "Documentation",
-    "Material Dispatch",
-    "Installation",
-    "Testing & Commissioning",
-    "Net Metering & Activation",
-    "Handover",
-  ];
+
+  return steps.map((step) => {
+    if (step === "Net Metering & Activation") return "Battery Commissioning";
+    if (step === "नेट मीटरिंग व सक्रियण") return "बैटरी कमीशनिंग";
+    return step;
+  });
 }
 
 export function createDefaultQuotationData(
   language: QuotationLanguage = "en",
-  options?: { includeSubsidy?: boolean; commercial?: boolean },
+  options?: { includeSubsidy?: boolean; commercial?: boolean; offgrid?: boolean },
 ): QuotationData {
   const isHindi = language === "hi";
-  const commercial = options?.commercial === true;
-  const includeSubsidy = commercial ? false : options?.includeSubsidy !== false;
+  const offgrid = options?.offgrid === true;
+  const commercial = !offgrid && options?.commercial === true;
+  const includeSubsidy = commercial || offgrid ? false : options?.includeSubsidy !== false;
   const phase: QuotationPhase = commercial ? "3PH" : "1PH";
   const capacity = commercial ? "10 KW" : "3 KW";
-  const materialItems = commercial
-    ? applyCommercialCapacityToMaterials(defaultCommercialMaterialItems(language, phase), capacity, phase, language)
-    : defaultMaterialItems(language, phase);
+  const termsVariant: "residential" | "commercial" | "offgrid" = offgrid
+    ? "offgrid"
+    : commercial
+      ? "commercial"
+      : "residential";
+  const materialItems = offgrid
+    ? applyOffgridCapacityToMaterials(defaultOffgridMaterialItems(language), capacity, phase, language)
+    : commercial
+      ? applyCommercialCapacityToMaterials(defaultCommercialMaterialItems(language, phase), capacity, phase, language)
+      : defaultMaterialItems(language, phase);
 
   return {
     language: isHindi ? "hi" : "en",
-    kind: commercial ? "commercial" : "residential",
+    kind: offgrid ? "offgrid" : commercial ? "commercial" : "residential",
     title: isHindi ? "सोलर प्रस्ताव" : "SOLAR PROPOSAL",
     tagline: isHindi ? "स्मार्ट  |  टिकाऊ  |  किफायती" : "SMART  |  SUSTAINABLE  |  COST EFFECTIVE",
     coverImageUrl: "",
@@ -731,22 +1024,22 @@ export function createDefaultQuotationData(
     materialItems,
     installationWork: [],
     assumptions: defaultAssumptions(language),
-    customerScope: defaultCustomerScope(language, commercial),
-    ourScope: commercial ? defaultOurScope(language) : [],
-    commercialOffer: defaultCommercialOffer(language, { commercial, capacity }),
+    customerScope: defaultCustomerScope(language, { commercial, offgrid }),
+    ourScope: commercial || offgrid ? defaultOurScope(language) : [],
+    commercialOffer: defaultCommercialOffer(language, { commercial, offgrid, capacity }),
     warrantyText: "",
     showGeneration: true,
     generation: {
       unitRate: "8",
     },
     showWarrantyBadges: true,
-    warrantySolarPanelYears: "30",
-    warrantyInverterYears: "10",
+    warrantySolarPanelYears: offgrid ? "12" : "30",
+    warrantyInverterYears: offgrid ? "2" : "10",
     warrantySetupBosYears: "5",
     showInstallationProcess: true,
-    installationSteps: defaultInstallationSteps(language),
+    installationSteps: defaultInstallationSteps(language, offgrid),
     showWattageInfo: true,
-    projectAmount: includeSubsidy ? "190000" : "",
+    projectAmount: offgrid ? offgridProjectAmount(capacity) : includeSubsidy ? "190000" : "",
     centralSubsidy: includeSubsidy ? "78000" : "",
     stateSubsidy: includeSubsidy ? "17000" : "",
     effectivePayableAmount: includeSubsidy ? "95000" : "",
@@ -769,15 +1062,19 @@ export function createDefaultQuotationData(
     maintenanceAfterYears: isHindi
       ? "प्रतिस्पर्धी दरों पर उपलब्ध"
       : "Available at competitive rates",
-    netMeteringNote: isHindi
-      ? "नेट मीटरिंग अवधि 25–30 दिनों में कवर होगी।"
-      : "Net metering period will be covered in 25–30 days.",
-    loadExtensionNote: isHindi
-      ? "लोड एक्सटेंशन लागत JVVNL शर्तों के अनुसार अतिरिक्त होगी, और लोड बढ़ने पर नेट मीटरिंग अवधि शुरू होगी।"
-      : "Load extension cost would be extra as per JVVNL terms, and the net metering period will start when the load is increased.",
-    onGridNote: commercial ? defaultOnGridNote(language) : "",
+    netMeteringNote: offgrid
+      ? ""
+      : isHindi
+        ? "नेट मीटरिंग अवधि 25–30 दिनों में कवर होगी।"
+        : "Net metering period will be covered in 25–30 days.",
+    loadExtensionNote: offgrid
+      ? ""
+      : isHindi
+        ? "लोड एक्सटेंशन लागत JVVNL शर्तों के अनुसार अतिरिक्त होगी, और लोड बढ़ने पर नेट मीटरिंग अवधि शुरू होगी।"
+        : "Load extension cost would be extra as per JVVNL terms, and the net metering period will start when the load is increased.",
+    onGridNote: offgrid ? defaultOffGridNote(language) : commercial ? defaultOnGridNote(language) : "",
     discomChargesNote: commercial ? defaultDiscomChargesNote(language) : "",
-    terms: defaultTerms(language, includeSubsidy, commercial ? "commercial" : "residential"),
+    terms: defaultTerms(language, includeSubsidy, termsVariant),
     subsidyDocuments: includeSubsidy ? defaultSubsidyDocuments(language) : [],
     bankAccountName: "MAHI SOLAR SOLUTION PRIVATE LIMITED",
     bankName: "AU Small Finance Bank",
@@ -798,13 +1095,14 @@ export function createDefaultQuotationData(
  * customer details, amounts, company/bank/rep fields, and show* flags.
  */
 export function switchQuotationLanguage(data: QuotationData, language: QuotationLanguage): QuotationData {
+  const offgrid = isOffgridQuotation(data);
   const commercial = isCommercialQuotation(data);
-  const previous = createDefaultQuotationData(data.language, { includeSubsidy: !commercial, commercial });
-  const fresh = createDefaultQuotationData(language, { includeSubsidy: !commercial, commercial });
+  const previous = createDefaultQuotationData(data.language, { includeSubsidy: !commercial && !offgrid, commercial, offgrid });
+  const fresh = createDefaultQuotationData(language, { includeSubsidy: !commercial && !offgrid, commercial, offgrid });
 
   return {
     ...fresh,
-    kind: commercial ? "commercial" : "residential",
+    kind: offgrid ? "offgrid" : commercial ? "commercial" : "residential",
     coverImageUrl: data.coverImageUrl,
     customerName: data.customerName,
     customerPhone: data.customerPhone,
@@ -818,12 +1116,16 @@ export function switchQuotationLanguage(data: QuotationData, language: Quotation
     connectionType: data.connectionType === previous.connectionType ? fresh.connectionType : data.connectionType,
     roofType: data.roofType === previous.roofType ? fresh.roofType : data.roofType,
     company: { ...fresh.company, ...data.company },
-    materialItems: commercial
-      ? applyCommercialCapacityToMaterials(fresh.materialItems, data.capacity, data.phase, language)
-      : applyPhaseToMaterialItems(fresh.materialItems, data.phase, language),
-    commercialOffer: commercial
-      ? stripSyncedCommercialRows(syncCommercialOfferToCapacity(fresh.commercialOffer, data.capacity, language))
-      : fresh.commercialOffer,
+    materialItems: offgrid
+      ? applyOffgridCapacityToMaterials(fresh.materialItems, data.capacity, data.phase, language)
+      : commercial
+        ? applyCommercialCapacityToMaterials(fresh.materialItems, data.capacity, data.phase, language)
+        : applyPhaseToMaterialItems(fresh.materialItems, data.phase, language),
+    commercialOffer: offgrid
+      ? stripSyncedCommercialRows(syncOffgridOfferToCapacity(fresh.commercialOffer, data.capacity, language))
+      : commercial
+        ? stripSyncedCommercialRows(syncCommercialOfferToCapacity(fresh.commercialOffer, data.capacity, language))
+        : fresh.commercialOffer,
     showGeneration: data.showGeneration,
     generation: {
       unitRate: data.generation.unitRate || fresh.generation.unitRate,
@@ -839,8 +1141,8 @@ export function switchQuotationLanguage(data: QuotationData, language: Quotation
     stateSubsidy: data.stateSubsidy,
     effectivePayableAmount: data.effectivePayableAmount,
     subsidyNote: data.showSubsidySection === false ? data.subsidyNote : fresh.subsidyNote,
-    showSubsidySection: data.showSubsidySection !== false,
-    showEmiSection: data.showEmiSection,
+    showSubsidySection: offgrid || commercial ? false : data.showSubsidySection !== false,
+    showEmiSection: offgrid || commercial ? data.showEmiSection : data.showEmiSection,
     emiInfo: {
       uptoLoanAmount: data.emiInfo.uptoLoanAmount || fresh.emiInfo.uptoLoanAmount,
       interestRate: fresh.emiInfo.interestRate,
@@ -865,8 +1167,9 @@ export function switchQuotationLanguage(data: QuotationData, language: Quotation
 
 export function normalizeQuotationData(input?: Partial<QuotationData> | null): QuotationData {
   const language: QuotationLanguage = input?.language === "hi" ? "hi" : "en";
-  const commercial = isCommercialQuotation(input ?? {});
-  const defaults = createDefaultQuotationData(language, { includeSubsidy: !commercial, commercial });
+  const offgrid = input?.kind === "offgrid";
+  const commercial = !offgrid && isCommercialQuotation(input ?? {});
+  const defaults = createDefaultQuotationData(language, { includeSubsidy: !commercial && !offgrid, commercial, offgrid });
   const phase: QuotationPhase = input?.phase === "3PH" ? "3PH" : "1PH";
   return {
     ...defaults,
@@ -895,7 +1198,7 @@ export function normalizeQuotationData(input?: Partial<QuotationData> | null): Q
     terms: input?.terms ?? defaults.terms,
     subsidyDocuments: input?.subsidyDocuments ?? defaults.subsidyDocuments,
     installationSteps: input?.installationSteps ?? defaults.installationSteps,
-    kind: isCommercialQuotation({ ...defaults, ...input }) ? "commercial" : "residential",
-    showSubsidySection: input?.showSubsidySection ?? defaults.showSubsidySection,
+    kind: offgrid ? "offgrid" : isCommercialQuotation({ ...defaults, ...input }) ? "commercial" : "residential",
+    showSubsidySection: offgrid || commercial ? false : (input?.showSubsidySection ?? defaults.showSubsidySection),
   };
 }

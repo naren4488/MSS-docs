@@ -86,9 +86,11 @@ export const QUOTATION_LABELS: Record<
     customerScope: string;
     scopeOfWork: string;
     onGridTitle: string;
+    offGridTitle: string;
     priceSchedule: string;
     priceIncluded: string;
     priceIncludedItems: string[];
+    offgridPriceIncludedItems: string[];
     discomCharges: string;
     commercialOffer: string;
     customerNetPayable: string;
@@ -103,6 +105,7 @@ export const QUOTATION_LABELS: Record<
     bankDetails: string;
     termsConditions: string;
     includedCableNote: string;
+    includedDcCableNote: string;
     clientSignature: string;
     authorizedSignatory: string;
     date: string;
@@ -219,11 +222,17 @@ export const QUOTATION_LABELS: Record<
     customerScope: "Customer Scope",
     scopeOfWork: "Scope of Work",
     onGridTitle: "Grid-connected plant",
+    offGridTitle: "Off-grid plant",
     priceSchedule: "Turnkey EPC price",
     priceIncluded: "Included",
     priceIncludedItems: [
       "SPV modules, module mounting structure, inverter",
       "AC / DC cables, ACDB, rest of BOM (earthing, LA, meter, cable tray, walkway, MCS, accessories)",
+      "Installation, testing, commissioning and freight",
+    ],
+    offgridPriceIncludedItems: [
+      "Waaree 590 Wp non-DCR modules, GI Apollo structure, Microtek off-grid inverter",
+      "DC cables, connection kit, 12V 220 Ah tubular battery bank",
       "Installation, testing, commissioning and freight",
     ],
     discomCharges: "DISCOM / statutory charges",
@@ -241,6 +250,8 @@ export const QUOTATION_LABELS: Record<
     termsConditions: "Terms & Conditions",
     includedCableNote:
       "* AC cable, DC cable, and earthing wire are included up to the lengths mentioned above. Extra length will be charged extra.",
+    includedDcCableNote:
+      "* DC cable is included up to the length mentioned above. Extra length will be charged extra.",
     clientSignature: "Client Signature",
     authorizedSignatory: "Authorized Signatory",
     date: "Date",
@@ -356,11 +367,17 @@ export const QUOTATION_LABELS: Record<
     customerScope: "ग्राहक का दायरा",
     scopeOfWork: "कार्यक्षेत्र (MSS)",
     onGridTitle: "ग्रिड-कनेक्टेड प्लांट",
+    offGridTitle: "ऑफ-ग्रिड प्लांट",
     priceSchedule: "टर्नकी EPC मूल्य",
     priceIncluded: "शामिल",
     priceIncludedItems: [
       "SPV मॉड्यूल, माउंटिंग स्ट्रक्चर, इनवर्टर",
       "AC / DC केबल, ACDB, शेष BOM (अर्थिंग, LA, मीटर, केबल ट्रे, वॉकवे, MCS, एक्सेसरीज़)",
+      "इंस्टॉलेशन, परीक्षण, कमीशनिंग व भाड़ा",
+    ],
+    offgridPriceIncludedItems: [
+      "Waaree 590 Wp नॉन-DCR मॉड्यूल, GI अपोलो स्ट्रक्चर, Microtek ऑफ-ग्रिड इनवर्टर",
+      "DC केबल, कनेक्शन किट, 12V 220 Ah ट्यूबुलर बैटरी बैंक",
       "इंस्टॉलेशन, परीक्षण, कमीशनिंग व भाड़ा",
     ],
     discomCharges: "DISCOM / वैधानिक शुल्क",
@@ -378,6 +395,8 @@ export const QUOTATION_LABELS: Record<
     termsConditions: "नियम व शर्तें",
     includedCableNote:
       "* AC केबल, DC केबल व अर्थिंग वायर उपरोक्त उल्लिखित लंबाई तक शामिल हैं। अतिरिक्त लंबाई पर अलग से शुल्क लगेगा।",
+    includedDcCableNote:
+      "* DC केबल उपरोक्त उल्लिखित लंबाई तक शामिल है। अतिरिक्त लंबाई पर अलग से शुल्क लगेगा।",
     clientSignature: "ग्राहक हस्ताक्षर",
     authorizedSignatory: "अधिकृत हस्ताक्षरकर्ता",
     date: "तिथि",
@@ -423,6 +442,11 @@ export function isDcCableDescription(description: string) {
 export function isSolarInverterDescription(description: string) {
   const value = description.toLowerCase();
   return value.includes("inverter") || description.includes("इनवर्टर");
+}
+
+export function isBatteryBankDescription(description: string) {
+  const value = description.toLowerCase();
+  return value.includes("battery bank") || description.includes("बैटरी बैंक");
 }
 
 export function isEarthingWireDescription(description: string) {

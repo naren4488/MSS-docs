@@ -26,9 +26,17 @@ export interface OfferLetterData {
   employeeName: string;
   employeeAddress: string;
   role: string;
+  /** Date this offer letter is issued. */
+  issuanceDate: string;
   dateOfJoining: string;
+  /** e.g. Full-time confirmed employment */
+  employmentType: string;
   location: string;
   monthlySalary: number;
+  /** Extra compensation notes (TDS, pay cycle, in-hand vs CTC, etc.). */
+  salaryNotes: string[];
+  /** e.g. 6 days a week, 9:00 AM – 5:00 PM */
+  workingHours: string;
   reportingTo: string;
   offerValidityDays: number;
   responsibilities?: string;

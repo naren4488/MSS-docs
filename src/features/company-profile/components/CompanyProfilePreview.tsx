@@ -1,14 +1,15 @@
 import type { CSSProperties, ReactNode } from "react";
+import { CompanyLogo } from "@/components/CompanyLogo";
 import { PAGE_HEIGHT, PAGE_SIDE_PADDING, PAGE_TOP_BOTTOM_PADDING, PAGE_WIDTH } from "../constants/sheet-layout";
+import { isAnnexureFirm, isLetterheadFirm } from "../lib/company-profile-defaults";
 import type { CompanyProfileData } from "../types/company-profile";
 import { filledValue } from "../lib/company-profile-formatters";
+import { CompanyProfileAnnexurePreview } from "./CompanyProfileAnnexurePreview";
+import { LetterheadPage, NAVY, NAVY2 } from "./MssLetterheadChrome";
 
 interface CompanyProfilePreviewProps {
   data: CompanyProfileData;
 }
-
-const NAVY = "#14306b";
-const NAVY2 = "#1f4aa0";
 
 const sectionBarStyle: CSSProperties = {
   background: `linear-gradient(90deg, ${NAVY}, ${NAVY2})`,
@@ -47,12 +48,12 @@ function InfoSection({ title, rows, show = true }: { title: string; rows: Row[];
   );
 }
 
-function Header({ data }: { data: CompanyProfileData }) {
+function DetailsHeader({ data }: { data: CompanyProfileData }) {
   return (
     <div style={{ textAlign: "center", borderBottom: `3px solid ${NAVY}`, paddingBottom: 16, marginBottom: 4 }}>
       {data.logoUrl ? (
         <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
-          <img alt="Logo" crossOrigin="anonymous" src={data.logoUrl} style={{ maxHeight: 100, width: "auto", objectFit: "contain" }} />
+          <CompanyLogo alt={`${filledValue(data.legalName)} logo`} maxHeight={88} maxWidth={240} src={data.logoUrl} />
         </div>
       ) : null}
       <div style={{ fontSize: 24, fontWeight: 800, letterSpacing: 1, color: NAVY, textTransform: "uppercase" }}>
@@ -64,6 +65,22 @@ function Header({ data }: { data: CompanyProfileData }) {
 }
 
 export function CompanyProfilePreview({ data }: CompanyProfilePreviewProps) {
+  if (isAnnexureFirm(data.firm)) {
+    return <CompanyProfileAnnexurePreview data={data} />;
+  }
+
+  if (isLetterheadFirm(data.firm)) {
+    return (
+      <div id="company-profile-preview" style={{ width: PAGE_WIDTH, display: "grid", gap: 28, overflow: "visible" }}>
+        <LetterheadPage data={data}>
+          {data.showNotes && data.notes.trim() ? (
+            <p style={{ margin: "28px 0 0", fontSize: 12, lineHeight: 1.7, whiteSpace: "pre-wrap", textAlign: "justify" }}>{data.notes}</p>
+          ) : null}
+        </LetterheadPage>
+      </div>
+    );
+  }
+
   const sections: ReactNode[] = [
     <InfoSection
       key="contact"
@@ -127,7 +144,7 @@ export function CompanyProfilePreview({ data }: CompanyProfilePreviewProps) {
           position: "relative",
         }}
       >
-        {data.showLetterhead ? <Header data={data} /> : null}
+        {data.showLetterhead ? <DetailsHeader data={data} /> : null}
 
         <div style={{ textAlign: "center", margin: "18px 0 4px" }}>
           <span

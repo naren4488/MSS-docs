@@ -95,7 +95,8 @@ export function QuotationMaker() {
   }
 
   const templateMeta = getQuotationTemplate(activeTemplate);
-  const editorEyebrow = templateMeta.kind === "commercial" ? "Commercial" : templateMeta.label;
+  const editorEyebrow =
+    templateMeta.kind === "commercial" ? "Commercial" : templateMeta.kind === "offgrid" ? "Off-grid" : templateMeta.label;
 
   return (
     <div className="page-shell page-shell--maker page-shell--maker-agreement">

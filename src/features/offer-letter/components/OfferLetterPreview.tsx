@@ -9,6 +9,7 @@ import {
   PAGE_TOP_BOTTOM_PADDING,
   PAGE_WIDTH,
 } from "../constants/sheet-layout";
+import { CompanyLogo } from "@/components/CompanyLogo";
 import { filledValue, formatCurrency, formatDate } from "../lib/offer-letter-formatters";
 import { renderRichText } from "../lib/offer-letter-parser";
 import type { OfferLetterData, OfferLetterTerm } from "../types/offer-letter";
@@ -108,12 +109,7 @@ function Header({ data }: { data: OfferLetterData }) {
     >
       {data.company.logoUrl ? (
         <div style={{ display: "flex", justifyContent: "center", marginBottom: 12, overflow: "visible" }}>
-          <img
-            alt="Company logo"
-            crossOrigin="anonymous"
-            src={data.company.logoUrl}
-            style={{ maxHeight: 88, width: "auto", objectFit: "contain", overflow: "visible" }}
-          />
+          <CompanyLogo alt="Company logo" src={data.company.logoUrl} />
         </div>
       ) : null}
       <div style={{ fontSize: 22, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase" }}>
@@ -282,7 +278,7 @@ function createOfferLetterBlocks(data: OfferLetterData, signatory: string): Prev
       estimate: 42,
       node: (
         <p style={{ margin: "0 0 14px", lineHeight: 1.7 }}>
-          <strong>Subject:</strong> Offer for the role of <strong>{filledValue(data.role)}</strong>
+          <strong>Subject:</strong> Offer of Appointment — <strong>{filledValue(data.role)}</strong>
         </p>
       ),
     },
@@ -297,21 +293,28 @@ function createOfferLetterBlocks(data: OfferLetterData, signatory: string): Prev
     },
     {
       key: "intro",
-      estimate: 50 + estimateTextLines(data.role + data.company.name, 52) * 10,
+      estimate: 70 + estimateTextLines(data.role + data.company.name + data.employmentType, 52) * 10,
       node: (
         <p style={{ margin: "0 0 14px", lineHeight: 1.8 }}>
           {filledValue(data.company.name)} is pleased to offer you the position of <strong>{filledValue(data.role)}</strong>{" "}
-          with our organization.
+          with our organization on a <strong>{filledValue(data.employmentType)}</strong> basis. This Offer Letter,
+          together with applicable Company policies, sets out the key terms of your employment.
         </p>
       ),
     },
     {
       key: "details",
-      estimate: 110,
+      estimate: 150,
       node: (
         <div style={{ marginBottom: 14, lineHeight: 1.8 }}>
           <p style={{ margin: "0 0 4px" }}>
+            <strong>Date of Issuance:</strong> {formatDate(data.issuanceDate)}
+          </p>
+          <p style={{ margin: "0 0 4px" }}>
             <strong>Date of Joining:</strong> {formatDate(data.dateOfJoining)}
+          </p>
+          <p style={{ margin: "0 0 4px" }}>
+            <strong>Employment Type:</strong> {filledValue(data.employmentType)}
           </p>
           {data.location ? (
             <p style={{ margin: "0 0 4px" }}>
@@ -321,12 +324,22 @@ function createOfferLetterBlocks(data: OfferLetterData, signatory: string): Prev
           <p style={{ margin: "0 0 4px" }}>
             <strong>Monthly Salary:</strong> {formatCurrency(data.monthlySalary)}
           </p>
+          <p style={{ margin: "0 0 4px" }}>
+            <strong>Working Hours:</strong> {filledValue(data.workingHours)}
+          </p>
           <p style={{ margin: 0 }}>
             <strong>Reporting To:</strong> {filledValue(data.reportingTo)}
           </p>
         </div>
       ),
     },
+    {
+      key: "salary-notes-heading",
+      estimate: 28,
+      keepWithNext: true,
+      node: <p style={{ margin: "0 0 8px", fontSize: 13, fontWeight: 700 }}>Compensation notes</p>,
+    },
+    ...bulletItemBlocks(data.salaryNotes, "salary-note", { bottomGap: 14 }),
     {
       key: "validity",
       estimate: 56,
@@ -466,25 +479,36 @@ function createOfferLetterBlocks(data: OfferLetterData, signatory: string): Prev
       },
       {
         key: "acceptance-text",
-        estimate: 90,
+        estimate: 100,
         node: (
           <p style={{ margin: "0 0 22px", lineHeight: 1.8 }}>
             I, <strong>{filledValue(data.employeeName)}</strong>, hereby acknowledge that I have read and understood the
             contents of this offer letter, and accept the offer for the role of <strong>{filledValue(data.role)}</strong>{" "}
             with <strong>{filledValue(data.company.name)}</strong>, with effect from{" "}
-            <strong>{formatDate(data.dateOfJoining)}</strong>. I agree to abide by the terms and conditions stated herein.
+            <strong>{formatDate(data.dateOfJoining)}</strong>. I agree to abide by the terms and conditions stated herein
+            and the applicable Company policies.
           </p>
         ),
       },
       {
         key: "acceptance-signatures",
-        estimate: 90,
+        estimate: 160,
         node: (
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 30, marginTop: 8 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 36, marginTop: 12 }}>
             <div>
-              <div style={{ borderTop: "1px solid #111827", paddingTop: 8 }}>Employee Signature</div>
+              <p style={{ margin: "0 0 28px", fontSize: 12, fontWeight: 700 }}>For the Employee</p>
+              <div style={{ borderTop: "1px solid #111827", paddingTop: 8, marginBottom: 18 }}>Signature</div>
+              <div style={{ borderTop: "1px solid #111827", paddingTop: 8 }}>Date</div>
             </div>
             <div>
+              <p style={{ margin: "0 0 28px", fontSize: 12, fontWeight: 700 }}>For the Company</p>
+              <div style={{ borderTop: "1px solid #111827", paddingTop: 8, marginBottom: 8 }}>Authorized Signatory</div>
+              <p style={{ margin: "0 0 4px", fontSize: 12 }}>{signatory}</p>
+              {data.company.founderTitle ? (
+                <p style={{ margin: "0 0 18px", fontSize: 12 }}>{data.company.founderTitle}</p>
+              ) : (
+                <div style={{ height: 18 }} />
+              )}
               <div style={{ borderTop: "1px solid #111827", paddingTop: 8 }}>Date</div>
             </div>
           </div>

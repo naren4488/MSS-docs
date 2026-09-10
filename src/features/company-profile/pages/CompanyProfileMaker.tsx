@@ -4,7 +4,8 @@ import { MakerStickyTopbar } from "@/components/MakerStickyTopbar";
 import { CompanyProfileEditor } from "../components/CompanyProfileEditor";
 import { CompanyProfilePreview } from "../components/CompanyProfilePreview";
 import { SaveCompanyProfileDialog } from "../components/SaveCompanyProfileDialog";
-import { createDefaultCompanyProfileData, isCompanyFirm, normalizeCompanyProfileData } from "../lib/company-profile-defaults";
+import { createDefaultCompanyProfileData, isAnnexureFirm, isCompanyFirm, isLetterheadFirm, normalizeCompanyProfileData } from "../lib/company-profile-defaults";
+import { downloadAnnexureDocx } from "../lib/download-annexure-docx";
 import {
   clearCompanyProfileDraft,
   getCompanyProfile,
@@ -43,6 +44,7 @@ export function CompanyProfileMaker() {
   const [viewMode, setViewMode] = useState<"split" | "editor" | "preview">("split");
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [savedSnapshot, setSavedSnapshot] = useState(JSON.stringify(initialData));
+  const [docxBusy, setDocxBusy] = useState(false);
   const isDirty = JSON.stringify(data) !== savedSnapshot;
 
   useEffect(() => {
@@ -75,6 +77,21 @@ export function CompanyProfileMaker() {
     window.print();
   }
 
+  async function handleSaveAsDocx() {
+    if (docxBusy) {
+      return;
+    }
+    setDocxBusy(true);
+    try {
+      await downloadAnnexureDocx(data);
+    } catch (error) {
+      console.error(error);
+      window.alert("Could not create the Word file. Try again.");
+    } finally {
+      setDocxBusy(false);
+    }
+  }
+
   function handleSave(name: string) {
     const saved = saveCompanyProfileRecord({ id: record?.id, name, content: data });
     clearCompanyProfileDraft();
@@ -99,7 +116,13 @@ export function CompanyProfileMaker() {
     setData(createDefaultCompanyProfileData(explicitFirm ?? data.firm));
   }
 
-  const defaultSaveName = data.legalName || record?.name || "Company Details";
+  const letterheadOnly = isLetterheadFirm(data.firm);
+  const annexureDoc = isAnnexureFirm(data.firm);
+  const defaultSaveName = annexureDoc
+    ? record?.name || "MSS Empanelment Annexure"
+    : letterheadOnly
+      ? record?.name || "MSS Letterhead"
+      : data.legalName || record?.name || "Company Details";
 
   if (shouldRedirectToList) {
     return <Navigate replace to="/company-profiles" />;
@@ -114,6 +137,7 @@ export function CompanyProfileMaker() {
         onBack={handleBack}
         onReset={handleReset}
         onSaveAsPdf={() => void handleSaveAsPdf()}
+        onSaveAsDocx={annexureDoc ? () => void handleSaveAsDocx() : undefined}
         onSave={() => setSaveDialogOpen(true)}
       />
 
@@ -123,9 +147,15 @@ export function CompanyProfileMaker() {
             <div className="panel-header">
               <div>
                 <p className="eyebrow">Editor</p>
-                <h2>Company Details</h2>
+                <h2>{annexureDoc ? "Empanelment Annexure" : letterheadOnly ? "MSS Letterhead" : "Company Details"}</h2>
               </div>
-              <p className="muted-text">Fill in the firm's contact, statutory and bank details.</p>
+              <p className="muted-text">
+                {annexureDoc
+                  ? "Experience certificate, project references and bureau consent printed on MSS letterhead."
+                  : letterheadOnly
+                    ? "Edit the header and footer. Leave the body blank to print stationery, or type a letter."
+                    : "Fill in the firm's contact, statutory and bank details."}
+              </p>
             </div>
             <CompanyProfileEditor data={data} onChange={setData} />
           </section>
@@ -138,9 +168,13 @@ export function CompanyProfileMaker() {
           <div className="panel-header no-print">
             <div>
               <p className="eyebrow">Preview</p>
-              <h2>Shareable Sheet</h2>
+              <h2>{annexureDoc ? "Letterhead Annexure" : letterheadOnly ? "Letterhead" : "Shareable Sheet"}</h2>
             </div>
-            <p className="muted-text">Save as PDF uses your browser — same layout as below.</p>
+            <p className="muted-text">
+              {annexureDoc
+                ? "PDF uses the print dialog. DOCX downloads a Word file of this annexure."
+                : "Save as PDF uses your browser — same layout as below."}
+            </p>
           </div>
           <div className="preview-scale-note no-print">
             Each page is <strong>210 × 297 mm (A4)</strong>. Use <strong>Save as PDF</strong> in the print dialog to download &amp; share.

@@ -1,3 +1,4 @@
+import { MSS_LOGO_URL } from "@/features/company-profile/lib/company-profile-defaults";
 import type {
   AgreementClause,
   AgreementClauseSubPoint,
@@ -86,7 +87,7 @@ function section(heading: string, clauses: AgreementClause[], intro = ""): Agree
 function defaultCompany(): AgreementCompany {
   return {
     name: "Mahi Solar Solution Private Limited",
-    logoUrl: "/assets/mss-logo.png",
+    logoUrl: MSS_LOGO_URL,
     address: "Plot No. 44, Jai Bhawani Vihar Vistar, Radha Vihar, Govindpura, Jaipur, Rajasthan – 302044",
     phone: "+91 9928413501",
     email: "mahisolarsolution@gmail.com",

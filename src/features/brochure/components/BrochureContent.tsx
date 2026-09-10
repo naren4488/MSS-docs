@@ -1,3 +1,4 @@
+import { CompanyLogo } from "@/components/CompanyLogo";
 import type { CSSProperties, ComponentType } from "react";
 import {
   BadgeCheck,
@@ -127,18 +128,15 @@ export function BrochureContent({ data }: BrochureContentProps) {
           />
 
           <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 18 }}>
-            <img
-              src={company.logo}
-              alt={`${company.name} logo`}
+            <div
               style={{
-                height: 72,
-                width: "auto",
-                objectFit: "contain",
                 background: "#ffffff",
                 borderRadius: 8,
                 padding: "6px 10px",
               }}
-            />
+            >
+              <CompanyLogo alt={`${company.name} logo`} maxHeight={60} maxWidth={160} src={company.logo} />
+            </div>
             <div>
               <div
                 style={{

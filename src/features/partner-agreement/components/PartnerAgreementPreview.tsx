@@ -1,5 +1,6 @@
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties, ReactNode } from "react";
+import { CompanyLogo } from "@/components/CompanyLogo";
 import {
   FIRST_PAGE_CAPACITY,
   FOLLOWING_PAGE_CAPACITY,
@@ -89,12 +90,7 @@ function Header({ data }: { data: PartnerAgreementData }) {
     >
       {data.company.logoUrl ? (
         <div style={{ display: "flex", justifyContent: "center", marginBottom: 12, overflow: "visible" }}>
-          <img
-            alt="Company logo"
-            crossOrigin="anonymous"
-            src={data.company.logoUrl}
-            style={{ maxHeight: 88, width: "auto", objectFit: "contain", overflow: "visible" }}
-          />
+          <CompanyLogo alt="Company logo" src={data.company.logoUrl} />
         </div>
       ) : null}
       <div style={{ fontSize: 22, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase" }}>

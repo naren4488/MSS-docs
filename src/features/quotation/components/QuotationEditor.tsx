@@ -7,7 +7,7 @@ import type { AgreementCompany } from "@/features/agreement/types/agreement";
 import type { QuotationData, QuotationGeneration, QuotationPhase } from "../types/quotation";
 import { CommercialOfferEditor, MaterialItemEditor, TermItemEditor } from "./QuotationRowEditors";
 import { stripSyncedCommercialRows, computeEffectivePayable, formatInrGrouped } from "../lib/quotation-formatters";
-import { applyCommercialCapacityToMaterials, applyPhaseToMaterialItems, isCommercialQuotation, syncCommercialOfferToCapacity } from "../lib/quotation-defaults";
+import { applyCommercialCapacityToMaterials, applyOffgridCapacityToMaterials, applyPhaseToMaterialItems, isCommercialQuotation, isOffgridQuotation, offgridProjectAmount, syncCommercialOfferToCapacity, syncOffgridOfferToCapacity } from "../lib/quotation-defaults";
 
 interface QuotationEditorProps {
   data: QuotationData;
@@ -57,11 +57,21 @@ export function QuotationEditor({ data, onChange }: QuotationEditorProps) {
   }
 
   const commercial = isCommercialQuotation(data);
+  const offgrid = isOffgridQuotation(data);
+  const sizesFromCapacity = commercial || offgrid;
 
   function applyCommercialSizing(capacity: string, phase: QuotationPhase) {
     return {
       materialItems: applyCommercialCapacityToMaterials(data.materialItems, capacity, phase, data.language),
       commercialOffer: syncCommercialOfferToCapacity(data.commercialOffer, capacity, data.language),
+    };
+  }
+
+  function applyOffgridSizing(capacity: string, phase: QuotationPhase) {
+    return {
+      materialItems: applyOffgridCapacityToMaterials(data.materialItems, capacity, phase, data.language),
+      commercialOffer: syncOffgridOfferToCapacity(data.commercialOffer, capacity, data.language),
+      projectAmount: offgridProjectAmount(capacity) || data.projectAmount,
     };
   }
 
@@ -116,9 +126,11 @@ export function QuotationEditor({ data, onChange }: QuotationEditorProps) {
       <AccordionSection
         title="Customer Details"
         helper={
-          commercial
-            ? "Customer, site address, plant capacity and commercial site facts. Panel qty and inverter kW update from the plant kW."
-            : "Customer, site address, plant capacity and phase."
+          offgrid
+            ? "Customer, site address and plant capacity. Panel qty, Microtek PCU kW, battery count and ₹1,00,000/kW price update from the plant kW."
+            : commercial
+              ? "Customer, site address, plant capacity and commercial site facts. Panel qty and inverter kW update from the plant kW."
+              : "Customer, site address, plant capacity and phase."
         }
         defaultOpen
       >
@@ -147,23 +159,23 @@ export function QuotationEditor({ data, onChange }: QuotationEditorProps) {
               placeholder={commercial ? "e.g. 100 KW" : "e.g. 3 KW"}
               onChange={(event) => {
                 const capacity = event.target.value;
-                if (!commercial || !/^\s*\d+(?:\.\d+)?\s*(kwp?|kilowatt)/i.test(capacity)) {
+                if (!sizesFromCapacity || !/^\s*\d+(?:\.\d+)?\s*(kwp?|kilowatt)/i.test(capacity)) {
                   update("capacity", capacity);
                   return;
                 }
                 onChange({
                   ...data,
                   capacity,
-                  ...applyCommercialSizing(capacity, data.phase),
+                  ...(offgrid ? applyOffgridSizing(capacity, data.phase) : applyCommercialSizing(capacity, data.phase)),
                 });
               }}
               onBlur={(event) => {
-                if (!commercial) return;
+                if (!sizesFromCapacity) return;
                 const capacity = event.target.value;
                 onChange({
                   ...data,
                   capacity,
-                  ...applyCommercialSizing(capacity, data.phase),
+                  ...(offgrid ? applyOffgridSizing(capacity, data.phase) : applyCommercialSizing(capacity, data.phase)),
                 });
               }}
             />
@@ -177,9 +189,11 @@ export function QuotationEditor({ data, onChange }: QuotationEditorProps) {
                 onChange({
                   ...data,
                   phase,
-                  ...(commercial
-                    ? applyCommercialSizing(data.capacity, phase)
-                    : { materialItems: applyPhaseToMaterialItems(data.materialItems, phase, data.language) }),
+                  ...(offgrid
+                    ? applyOffgridSizing(data.capacity, phase)
+                    : commercial
+                      ? applyCommercialSizing(data.capacity, phase)
+                      : { materialItems: applyPhaseToMaterialItems(data.materialItems, phase, data.language) }),
                 });
               }}
             >
@@ -233,9 +247,11 @@ export function QuotationEditor({ data, onChange }: QuotationEditorProps) {
       <AccordionSection
         title="Material Description"
         helper={
-          commercial
-            ? "Commercial BOM: cables as per site, ESE LA, HT generation meter, ACDB panel, cable tray / walkway / MCS. Drag items to reorder."
-            : "Bill of materials. Drag items to reorder."
+          offgrid
+            ? "Off-grid BOM: Waaree 590 Wp non-DCR, Microtek PCU, DC cable, 220 Ah battery bank. No earthing, LA, AC cable, AC/DC DB, or solar meter. Drag items to reorder."
+            : commercial
+              ? "Commercial BOM: cables as per site, ESE LA, HT generation meter, ACDB panel, cable tray / walkway / MCS. Drag items to reorder."
+              : "Bill of materials. Drag items to reorder."
         }
         defaultOpen
       >
@@ -250,7 +266,7 @@ export function QuotationEditor({ data, onChange }: QuotationEditorProps) {
         <BulletListEditor label="Customer Scope" items={data.customerScope} onChange={(next) => update("customerScope", next)} />
       </AccordionSection>
 
-      {commercial ? (
+      {commercial || offgrid ? (
         <AccordionSection title="Scope of Work" helper="MSS design, supply, testing and commissioning.">
           <BulletListEditor label="Scope of Work" items={data.ourScope} onChange={(next) => update("ourScope", next)} />
         </AccordionSection>
@@ -259,11 +275,13 @@ export function QuotationEditor({ data, onChange }: QuotationEditorProps) {
       <AccordionSection
         title="Commercial Offer"
         helper={
-          commercial
-            ? "Solar Plant Capacity is auto-filled from panel watt × qty. Project amount fills Customer Net Payable and the turnkey EPC price box. DISCOM charges stay extra as actual."
-            : data.showSubsidySection
-              ? "Solar Plant Capacity is auto-filled from panel watt × qty. Project amount fills Customer Net Payable and the investment box on the PDF."
-              : "Solar Plant Capacity is auto-filled from panel watt × qty. Project amount fills Customer Net Payable on the PDF. Subsidy section is hidden."
+          offgrid
+            ? "Solar Plant Capacity is auto-filled from panel watt × qty. Plant kW sets the project amount at ₹1,00,000 per kW. Customer Net Payable and the turnkey price box follow that amount."
+            : commercial
+              ? "Solar Plant Capacity is auto-filled from panel watt × qty. Project amount fills Customer Net Payable and the turnkey EPC price box. DISCOM charges stay extra as actual."
+              : data.showSubsidySection
+                ? "Solar Plant Capacity is auto-filled from panel watt × qty. Project amount fills Customer Net Payable and the investment box on the PDF."
+                : "Solar Plant Capacity is auto-filled from panel watt × qty. Project amount fills Customer Net Payable on the PDF. Subsidy section is hidden."
         }
         defaultOpen
       >
@@ -357,7 +375,7 @@ export function QuotationEditor({ data, onChange }: QuotationEditorProps) {
         ) : null}
       </AccordionSection>
 
-      {commercial ? null : (
+      {commercial || offgrid ? null : (
       <AccordionSection title="Effective Investment Section" helper="Subsidies only. Effective payable is calculated as project amount minus total subsidy.">
         <div className="toggle-row" style={{ marginBottom: 12 }}>
           <span>Show Subsidy Section</span>
@@ -463,7 +481,12 @@ export function QuotationEditor({ data, onChange }: QuotationEditorProps) {
 
       <AccordionSection title="Additional Notes">
         <div className="field-grid">
-          {commercial ? (
+          {offgrid ? (
+            <div className="field full-span">
+              <label>Off-grid plant note</label>
+              <textarea rows={3} value={data.onGridNote} onChange={(event) => update("onGridNote", event.target.value)} />
+            </div>
+          ) : commercial ? (
             <>
               <div className="field full-span">
                 <label>On-grid plant note</label>
@@ -475,14 +498,18 @@ export function QuotationEditor({ data, onChange }: QuotationEditorProps) {
               </div>
             </>
           ) : null}
-          <div className="field full-span">
-            <label>Net Metering Note</label>
-            <input value={data.netMeteringNote} onChange={(event) => update("netMeteringNote", event.target.value)} />
-          </div>
-          <div className="field full-span">
-            <label>Load Extension Note</label>
-            <textarea rows={2} value={data.loadExtensionNote} onChange={(event) => update("loadExtensionNote", event.target.value)} />
-          </div>
+          {offgrid ? null : (
+            <>
+              <div className="field full-span">
+                <label>Net Metering Note</label>
+                <input value={data.netMeteringNote} onChange={(event) => update("netMeteringNote", event.target.value)} />
+              </div>
+              <div className="field full-span">
+                <label>Load Extension Note</label>
+                <textarea rows={2} value={data.loadExtensionNote} onChange={(event) => update("loadExtensionNote", event.target.value)} />
+              </div>
+            </>
+          )}
         </div>
       </AccordionSection>
 
@@ -490,7 +517,7 @@ export function QuotationEditor({ data, onChange }: QuotationEditorProps) {
         <TermItemEditor items={data.terms} onChange={(next) => update("terms", next)} />
       </AccordionSection>
 
-      {!commercial && data.showSubsidySection ? (
+      {!commercial && !offgrid && data.showSubsidySection ? (
       <AccordionSection title="Required Documents for Subsidy">
         <BulletListEditor label="Documents" items={data.subsidyDocuments} onChange={(next) => update("subsidyDocuments", next)} />
       </AccordionSection>

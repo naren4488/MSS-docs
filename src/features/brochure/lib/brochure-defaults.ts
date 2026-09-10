@@ -1,3 +1,4 @@
+import { MSS_LOGO_URL } from "@/features/company-profile/lib/company-profile-defaults";
 import type { BrochureData } from "../types/brochure";
 
 export function createDefaultBrochureData(): BrochureData {
@@ -7,7 +8,7 @@ export function createDefaultBrochureData(): BrochureData {
       shortName: "MSS",
       tagline: "Smart · Sustainable · Cost Effective",
       slogan: "Switch to Solar — Bijli Bill Bachao",
-      logo: "/assets/mss-logo.png",
+      logo: MSS_LOGO_URL,
       phone: "+91 9928413501",
       email: "mahisolarsolution@gmail.com",
       website: "mahisolarsolution.com",

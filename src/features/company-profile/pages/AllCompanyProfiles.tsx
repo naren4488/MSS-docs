@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
-import { Building2, Trash2 } from "lucide-react";
+import { Building2, ClipboardList, ScrollText, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { COMPANY_FIRMS, getCompanyFirmLabel } from "../lib/company-profile-defaults";
+import { COMPANY_FIRMS, getCompanyFirmLabel, isAnnexureFirm, isLetterheadFirm } from "../lib/company-profile-defaults";
 import { formatRecordDate } from "../lib/company-profile-formatters";
 import { deleteCompanyProfileRecord, listCompanyProfiles } from "../lib/company-profile-storage";
 
@@ -23,18 +23,18 @@ export function AllCompanyProfiles() {
         <div className="panel-header">
           <div>
             <p className="eyebrow">Create New</p>
-            <h2 style={{ margin: "4px 0 0" }}>Pick a firm</h2>
+            <h2 style={{ margin: "4px 0 0" }}>Pick a document</h2>
             <p className="muted-text" style={{ marginTop: 8, marginBottom: 0 }}>
-              Choose a firm to create a shareable company details sheet. Saved sheets appear further down.
+              Choose a firm details sheet, MSS letterhead, or the empanelment annexure. Saved documents appear further down.
             </p>
           </div>
-          <p className="muted-text">Each firm pre-fills its own name, contact, statutory and bank details.</p>
+          <p className="muted-text">Each option pre-fills Mahi Solar Solution or Mahi Solar Energy details.</p>
         </div>
         <div className="template-grid">
           {COMPANY_FIRMS.map((firm) => (
             <Link className="template-card" key={firm.id} to={`/company-profile?firm=${firm.id}`}>
               <div className="template-card-icon">
-                <Building2 size={20} />
+                {isAnnexureFirm(firm.id) ? <ClipboardList size={20} /> : isLetterheadFirm(firm.id) ? <ScrollText size={20} /> : <Building2 size={20} />}
               </div>
               <div>
                 <h3>{firm.label}</h3>
@@ -59,7 +59,7 @@ export function AllCompanyProfiles() {
         <div className="empty-card">
           <p className="eyebrow">Nothing Saved Yet</p>
           <h2 style={{ marginTop: 0 }}>No saved company details yet</h2>
-          <p className="muted-text">Pick a firm above to create a sheet. Saved sheets will appear here.</p>
+          <p className="muted-text">Pick a document above to get started. Saved sheets will appear here.</p>
         </div>
       ) : (
         <div className="saved-grid">
@@ -67,7 +67,7 @@ export function AllCompanyProfiles() {
             <article className="saved-card" key={record.id}>
               <div>
                 <p className="eyebrow">{getCompanyFirmLabel(record.content.firm)}</p>
-                <h3>{record.name || record.content.legalName || "Company Details"}</h3>
+                <h3>{record.name || record.content.legalName || getCompanyFirmLabel(record.content.firm)}</h3>
                 <p className="muted-text" style={{ marginBottom: 0 }}>
                   Last updated {formatRecordDate(record.updatedAt)}
                 </p>

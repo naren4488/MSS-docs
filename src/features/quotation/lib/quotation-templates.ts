@@ -1,6 +1,7 @@
 import type { QuotationData, QuotationLanguage, QuotationMaterialItem, QuotationPhase } from "../types/quotation";
 import {
   applyCommercialCapacityToMaterials,
+  applyOffgridCapacityToMaterials,
   applyPhaseToMaterialItems,
   createDefaultQuotationData,
   inverterUnit,
@@ -14,7 +15,7 @@ import { isSolarInverterDescription, isSolarPvModulesDescription } from "./quota
  * MNRE credited to customer account ~60 days after net metering.
  * Savings assumption: ₹8 / unit.
  */
-export type QuotationTemplateKind = "residential" | "commercial";
+export type QuotationTemplateKind = "residential" | "commercial" | "offgrid";
 
 export type QuotationTemplateId =
   | "3kw-1ph"
@@ -23,7 +24,8 @@ export type QuotationTemplateId =
   | "6kw-3ph"
   | "8kw-3ph"
   | "10kw-3ph"
-  | "commercial";
+  | "commercial"
+  | "offgrid";
 
 /** Default package when opening a new quotation. */
 export const DEFAULT_QUOTATION_TEMPLATE_ID: QuotationTemplateId = "3kw-1ph";
@@ -46,6 +48,8 @@ export interface QuotationTemplateMeta {
   panels: number;
   wp: number;
   inverterKw: string;
+  /** Off-grid 12V 220Ah tubular count. */
+  batteries?: number;
 }
 
 function formatInr(amount: number): string {
@@ -169,6 +173,21 @@ export const QUOTATION_TEMPLATES: readonly QuotationTemplateMeta[] = [
     wp: 550,
     inverterKw: "10",
   },
+  {
+    id: "offgrid",
+    kind: "offgrid",
+    label: "Off-grid",
+    description: "₹1,00,000 per kW · no subsidy · Waaree 590 Wp non-DCR · Microtek off-grid · 220 Ah battery bank",
+    capacity: "3 KW",
+    phase: "1PH",
+    projectAmount: "300000",
+    centralSubsidy: "",
+    stateSubsidy: "",
+    panels: 6,
+    wp: 590,
+    inverterKw: "3",
+    batteries: 8,
+  },
 ] as const;
 
 export function isQuotationTemplate(value: string | null | undefined): value is QuotationTemplateId {
@@ -238,9 +257,10 @@ export function createQuotationFromTemplate(
   language: QuotationLanguage = "en",
 ): QuotationData {
   const template = getQuotationTemplate(templateId);
+  const offgrid = template.kind === "offgrid";
   const commercial = template.kind === "commercial";
-  const includeSubsidy = !commercial;
-  const base = createDefaultQuotationData(language, { includeSubsidy, commercial });
+  const includeSubsidy = !commercial && !offgrid;
+  const base = createDefaultQuotationData(language, { includeSubsidy, commercial, offgrid });
   const projectAmount = template.projectAmount;
   const centralSubsidy = includeSubsidy ? template.centralSubsidy : "";
   const stateSubsidy = includeSubsidy ? template.stateSubsidy : "";
@@ -261,10 +281,12 @@ export function createQuotationFromTemplate(
       unitRate: "8",
     },
     effectivePayableAmount: includeSubsidy ? String(Math.max(0, effectivePayable)) : "",
-    materialItems: commercial
-      ? applyCommercialCapacityToMaterials(base.materialItems, template.capacity, template.phase, language)
-      : applyTemplateSizing(base.materialItems, template, language),
-    commercialOffer: commercial
+    materialItems: offgrid
+      ? applyOffgridCapacityToMaterials(base.materialItems, template.capacity, template.phase, language)
+      : commercial
+        ? applyCommercialCapacityToMaterials(base.materialItems, template.capacity, template.phase, language)
+        : applyTemplateSizing(base.materialItems, template, language),
+    commercialOffer: commercial || offgrid
       ? stripSyncedCommercialRows(base.commercialOffer)
       : stripSyncedCommercialRows([
           {

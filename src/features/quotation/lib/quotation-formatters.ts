@@ -2,6 +2,7 @@ export { formatDate, filledValue, formatRecordDate } from "@/features/offer-lett
 import type {
   QuotationCommercialRow,
   QuotationData,
+  QuotationKind,
   QuotationLanguage,
   QuotationMaterialItem,
 } from "../types/quotation";
@@ -177,12 +178,16 @@ export function customerNetPayableOffering(projectAmount: string, language: Quot
 export function solarPlantCapacityOffering(
   materialItems: readonly QuotationMaterialItem[],
   language: QuotationLanguage,
+  kind?: QuotationKind,
 ): string {
   const wattage = parseWattageFromMaterials(materialItems);
   if (!wattage || wattage.kw <= 0) {
     return "";
   }
   const kw = formatUnitCount(wattage.kw);
+  if (kind === "offgrid") {
+    return language === "hi" ? `${kw} किलोवाट, ऑफ-ग्रिड सोलर सिस्टम` : `${kw} KW, Off-grid solar system`;
+  }
   return language === "hi"
     ? `${kw} किलोवाट, ऑन-ग्रिड सोलर सिस्टम`
     : `${kw} KW, On-grid solar system`;
@@ -202,7 +207,7 @@ export function commercialRowsForPreview(data: QuotationData): QuotationCommerci
   const L = quotationLabels(language);
   const synced: QuotationCommercialRow[] = [];
 
-  const capacityOffering = solarPlantCapacityOffering(data.materialItems, language);
+  const capacityOffering = solarPlantCapacityOffering(data.materialItems, language, data.kind);
   if (capacityOffering) {
     synced.push({
       id: "synced-solar-plant-capacity",

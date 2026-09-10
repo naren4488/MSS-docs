@@ -1,5 +1,6 @@
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties, ComponentType, ReactNode } from "react";
+import { CompanyLogo } from "@/components/CompanyLogo";
 import {
   BadgeCheck,
   ClipboardList,
@@ -32,7 +33,7 @@ import {
   parseWattageFromMaterials,
   totalGovtSubsidy,
 } from "../lib/quotation-formatters";
-import { formatCapacityWithPhase, isCommercialQuotation } from "../lib/quotation-defaults";
+import { formatCapacityWithPhase, isCommercialQuotation, isOffgridQuotation } from "../lib/quotation-defaults";
 import {
   isAcCableDescription,
   isDcCableDescription,
@@ -105,7 +106,7 @@ function Header({ data }: { data: QuotationData }) {
     <div style={{ background: "#ffffff", textAlign: "center", borderBottom: "2px solid #e5e7eb", padding: "24px 0 18px" }}>
       {data.company.logoUrl ? (
         <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
-          <img alt="Company logo" crossOrigin="anonymous" src={data.company.logoUrl} style={{ maxHeight: 88, width: "auto", objectFit: "contain" }} />
+          <CompanyLogo alt="Company logo" src={data.company.logoUrl} />
         </div>
       ) : null}
       <div style={{ fontSize: 21, fontWeight: 700, letterSpacing: 1.2, textTransform: "uppercase" }}>{filledValue(data.company.name)}</div>
@@ -587,8 +588,10 @@ function MaintenanceServiceSection({ data }: { data: QuotationData }) {
 
 function TurnkeyEpcPriceBox({ data }: { data: QuotationData }) {
   const L = quotationLabels(data.language);
+  const offgrid = isOffgridQuotation(data);
   const projectDisplay = formatInrGrouped(data.projectAmount) || filledValue(data.projectAmount);
   const discomNote = data.discomChargesNote.trim() || filledValue("");
+  const includedItems = offgrid ? L.offgridPriceIncludedItems : L.priceIncludedItems;
 
   return (
     <div style={{ border: `2px solid ${NAVY}`, borderRadius: 12, padding: "16px 20px", background: "#f4f7fb", marginTop: 12, marginBottom: 12 }}>
@@ -597,7 +600,7 @@ function TurnkeyEpcPriceBox({ data }: { data: QuotationData }) {
       </div>
       <div style={{ fontSize: 10.5, fontWeight: 700, color: "#374151", marginBottom: 6 }}>{L.priceIncluded}</div>
       <div style={{ fontSize: 10.5, lineHeight: 1.55, marginBottom: 12, color: "#1f2937" }}>
-        {L.priceIncludedItems.map((item) => (
+        {includedItems.map((item) => (
           <div key={item}>• {item}</div>
         ))}
       </div>
@@ -607,10 +610,12 @@ function TurnkeyEpcPriceBox({ data }: { data: QuotationData }) {
           {data.projectAmount.trim() ? `₹${projectDisplay}` : projectDisplay}
         </span>
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", alignItems: "start", padding: "8px 0 0", fontSize: 11, color: "#374151" }}>
-        <span style={{ fontWeight: 600 }}>{L.discomCharges}</span>
-        <span style={{ textAlign: "right" }}>{discomNote}</span>
-      </div>
+      {offgrid ? null : (
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", alignItems: "start", padding: "8px 0 0", fontSize: 11, color: "#374151" }}>
+          <span style={{ fontWeight: 600 }}>{L.discomCharges}</span>
+          <span style={{ textAlign: "right" }}>{discomNote}</span>
+        </div>
+      )}
     </div>
   );
 }
@@ -770,7 +775,9 @@ function createBlocks(data: QuotationData): PreviewBlock[] {
       estimate: 20 + estimateParagraphHeight(data.onGridNote, 90),
       node: (
         <div style={{ border: TABLE_BORDER, borderRadius: 8, padding: "10px 14px", margin: "0 0 14px", background: "#f4f7fb" }}>
-          <div style={{ fontWeight: 700, fontSize: 11, color: NAVY, marginBottom: 4 }}>{L.onGridTitle}</div>
+          <div style={{ fontWeight: 700, fontSize: 11, color: NAVY, marginBottom: 4 }}>
+            {isOffgridQuotation(data) ? L.offGridTitle : L.onGridTitle}
+          </div>
           <div style={{ fontSize: 11, lineHeight: 1.55, textAlign: "justify" }}>{data.onGridNote}</div>
         </div>
       ),
@@ -788,13 +795,18 @@ function createBlocks(data: QuotationData): PreviewBlock[] {
 
     const hasIncludedCableRows =
       !isCommercialQuotation(data) &&
+      !isOffgridQuotation(data) &&
       data.materialItems.some(
         (item) =>
           isAcCableDescription(item.description) ||
           isDcCableDescription(item.description) ||
           isEarthingWireDescription(item.description),
       );
-    const materialNotes = [hasIncludedCableRows ? L.includedCableNote : null].filter(
+    const hasDcCableOnly = isOffgridQuotation(data) && data.materialItems.some((item) => isDcCableDescription(item.description));
+    const materialNotes = [
+      hasIncludedCableRows ? L.includedCableNote : null,
+      hasDcCableOnly ? L.includedDcCableNote : null,
+    ].filter(
       (note): note is string => Boolean(note),
     );
     if (materialNotes.length > 0) {
@@ -845,7 +857,7 @@ function createBlocks(data: QuotationData): PreviewBlock[] {
     });
   }
 
-  if (isCommercialQuotation(data)) {
+  if (isCommercialQuotation(data) || isOffgridQuotation(data)) {
     blocks.push({ key: "turnkey-price", estimate: 150, node: <TurnkeyEpcPriceBox data={data} /> });
   }
 

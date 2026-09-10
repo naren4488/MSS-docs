@@ -1,5 +1,6 @@
 import type { ChangeEvent } from "react";
 import { Trash2, UploadCloud } from "lucide-react";
+import { CompanyLogo } from "@/components/CompanyLogo";
 
 interface ImageUploaderProps {
   label: string;
@@ -35,7 +36,7 @@ export function ImageUploader({ label, value, onChange }: ImageUploaderProps) {
       </div>
       {value ? (
         <div className="upload-preview">
-          <img src={value} alt={label} />
+          <CompanyLogo alt={label} maxHeight={64} maxWidth={140} src={value} />
           <button className="danger-button" type="button" onClick={() => onChange("")}>
             <Trash2 size={16} />
             Remove

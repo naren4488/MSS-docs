@@ -1,4 +1,4 @@
-import { ArrowRight, Building2, Zap } from "lucide-react";
+import { ArrowRight, BatteryCharging, Building2, Zap } from "lucide-react";
 import { Link } from "react-router-dom";
 import {
   DEFAULT_QUOTATION_TEMPLATE_ID,
@@ -86,9 +86,42 @@ function CommercialCard({ template }: { template: QuotationTemplateMeta }) {
   );
 }
 
+function OffgridCard({ template }: { template: QuotationTemplateMeta }) {
+  return (
+    <Link className="quotation-package-card quotation-package-card--offgrid" to={`/quotation?template=${template.id}`}>
+      <div className="quotation-package-card-top">
+        <div className="quotation-package-card-title-row">
+          <h3>{template.label}</h3>
+          <span className="quotation-phase-badge quotation-phase-badge--offgrid">No subsidy</span>
+        </div>
+        <div className="quotation-package-card-sub">
+          <p className="quotation-package-card-phase">
+            Standalone plant · starts at {template.capacity} · ₹1,00,000 / kW
+          </p>
+        </div>
+      </div>
+
+      <p className="quotation-package-card-copy">
+        Same MSS layout with off-grid defaults: Waaree 590 Wp non-DCR, Microtek off-grid PCU, 12V 220 Ah tubular
+        bank (8 batteries at 3 kW). No earthing, LA, AC cable, AC/DC DB, solar meter, or subsidy.
+      </p>
+
+      <div className="quotation-package-card-meta">
+        <span>
+          {template.panels} × {template.wp}W · {template.batteries ?? 8} × 220Ah
+        </span>
+        <span className="quotation-package-card-cta">
+          Open <ArrowRight size={14} aria-hidden />
+        </span>
+      </div>
+    </Link>
+  );
+}
+
 export function AllQuotations() {
   const residential = QUOTATION_TEMPLATES.filter((t) => t.kind === "residential");
   const commercial = QUOTATION_TEMPLATES.filter((t) => t.kind === "commercial");
+  const offgrid = QUOTATION_TEMPLATES.filter((t) => t.kind === "offgrid");
   const singlePhase = residential.filter((t) => t.phase === "1PH");
   const threePhase = residential.filter((t) => t.phase === "3PH");
 
@@ -99,8 +132,9 @@ export function AllQuotations() {
           <p className="eyebrow">Quotations</p>
           <h1>Packages</h1>
           <p>
-            PM SURYA GHAR residential packages include MNRE ₹78,000 + state ₹17,000. Commercial quotes are separate and
-            have no subsidy section. <strong>New Quotation</strong> opens the 3 KW single-phase package.
+            PM SURYA GHAR residential packages include MNRE ₹78,000 + state ₹17,000. Commercial and off-grid quotes
+            have no subsidy. Off-grid is ₹1,00,000 per kW. <strong>New Quotation</strong> opens the 3 KW single-phase
+            package.
           </p>
         </div>
         <Link className="primary-button" to={`/quotation?template=${DEFAULT_QUOTATION_TEMPLATE_ID}`}>
@@ -142,6 +176,19 @@ export function AllQuotations() {
         <div className="quotation-package-grid">
           {commercial.map((template) => (
             <CommercialCard key={template.id} template={template} />
+          ))}
+        </div>
+      </section>
+
+      <section className="quotation-package-section">
+        <header className="quotation-package-section-header">
+          <BatteryCharging size={18} aria-hidden />
+          <h2>Off-grid</h2>
+          <p className="muted-text">₹1,00,000 / kW · no subsidy</p>
+        </header>
+        <div className="quotation-package-grid">
+          {offgrid.map((template) => (
+            <OffgridCard key={template.id} template={template} />
           ))}
         </div>
       </section>

@@ -88,11 +88,26 @@
   gap: 12px;
 }
 
-.upload-preview img {
-  width: 72px;
-  height: 72px;
+.company-logo {
+  display: block;
+  line-height: 0;
+}
+
+.company-logo svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
+}
+
+.upload-preview img,
+.upload-preview .company-logo {
+  max-height: 64px;
+  max-width: 140px;
+  width: auto;
+  height: auto;
   object-fit: contain;
-  border-radius: 14px;
+  border-radius: 10px;
   border: 1px solid #e4e9f2;
   background: #fff;
 }
@@ -356,6 +371,10 @@
   border-top: 3px solid #c2410c;
 }
 
+.quotation-package-card--offgrid {
+  border-top: 3px solid #7c3aed;
+}
+
 .quotation-package-card--default {
   box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.25);
 }
@@ -420,6 +439,11 @@
 .quotation-phase-badge--commercial {
   color: #c2410c;
   background: rgba(194, 65, 12, 0.1);
+}
+
+.quotation-phase-badge--offgrid {
+  color: #6d28d9;
+  background: rgba(124, 58, 237, 0.1);
 }
 
 .quotation-package-card-copy {
@@ -489,6 +513,10 @@
 
 .quotation-package-card--commercial .quotation-package-card-cta {
   color: #c2410c;
+}
+
+.quotation-package-card--offgrid .quotation-package-card-cta {
+  color: #7c3aed;
 }
 
 .quotation-package-card:hover .quotation-package-card-cta {

@@ -18,6 +18,12 @@
     print-color-adjust: exact;
   }
 
+  .company-logo,
+  .company-logo svg {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
   .app-root {
     padding-bottom: 0 !important;
     min-height: 0 !important;

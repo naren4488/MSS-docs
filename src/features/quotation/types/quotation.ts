@@ -5,7 +5,7 @@ export type { AgreementCompany as QuotationCompany };
 
 export type QuotationLanguage = "en" | "hi";
 export type QuotationPhase = "1PH" | "3PH";
-export type QuotationKind = "residential" | "commercial";
+export type QuotationKind = "residential" | "commercial" | "offgrid";
 
 export interface QuotationMaterialItem {
   id: string;
@@ -45,7 +45,7 @@ export interface QuotationGeneration {
 
 export interface QuotationData {
   language: QuotationLanguage;
-  /** Residential PM Surya Ghar vs commercial rooftop. Independent of the subsidy toggle. */
+  /** Residential PM Surya Ghar, commercial rooftop, or off-grid. Independent of the subsidy toggle. */
   kind: QuotationKind;
   title: string;
   tagline: string;

@@ -1,4 +1,33 @@
-export type CompanyFirm = "mahi-solar-solution" | "mahi-solar-energy";
+export type CompanyFirm = "mahi-solar-solution" | "mahi-solar-energy" | "mss-letterhead" | "mss-empanelment-annexure";
+
+export interface AnnexureProjectReference {
+  details: string;
+  address: string;
+  contactName: string;
+  mobile: string;
+}
+
+export interface EmpanelmentAnnexure {
+  constitution: string;
+  proprietors: string;
+  officeAddress: string;
+  registeredAddress: string;
+  contactPerson: string;
+  yearsCurrentBusiness: string;
+  yearsOtherBusiness: string;
+  infrastructure: string;
+  employeeCount: string;
+  yearsAtOffice: string;
+  nbfcBanks: string;
+  attachProfile: string;
+  references: AnnexureProjectReference[];
+  consentRecipient: string;
+  consentBody: string;
+  signatoryName: string;
+  signatoryTitle: string;
+  place: string;
+  date: string;
+}
 
 export interface CompanyProfileData {
   firm: CompanyFirm;
@@ -28,6 +57,7 @@ export interface CompanyProfileData {
   contactTitle: string;
 
   notes: string;
+  annexure: EmpanelmentAnnexure;
 
   // Per-section print toggles
   showContact: boolean;

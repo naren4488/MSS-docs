@@ -102,12 +102,24 @@ export function OfferLetterEditor({ data, onChange }: OfferLetterEditorProps) {
             <input value={data.role} onChange={(event) => update("role", event.target.value)} />
           </div>
           <div className="field">
+            <label>Date of Issuance</label>
+            <input type="date" value={data.issuanceDate} onChange={(event) => update("issuanceDate", event.target.value)} />
+          </div>
+          <div className="field">
             <label>Date of Joining</label>
             <input type="date" value={data.dateOfJoining} onChange={(event) => update("dateOfJoining", event.target.value)} />
+          </div>
+          <div className="field full-span">
+            <label>Employment Type</label>
+            <input value={data.employmentType} onChange={(event) => update("employmentType", event.target.value)} />
           </div>
           <div className="field">
             <label>Work Location</label>
             <input value={data.location} onChange={(event) => update("location", event.target.value)} />
+          </div>
+          <div className="field">
+            <label>Reporting To</label>
+            <input value={data.reportingTo} onChange={(event) => update("reportingTo", event.target.value)} />
           </div>
           <div className="field">
             <label>Monthly Salary</label>
@@ -118,10 +130,6 @@ export function OfferLetterEditor({ data, onChange }: OfferLetterEditorProps) {
             />
           </div>
           <div className="field">
-            <label>Reporting To</label>
-            <input value={data.reportingTo} onChange={(event) => update("reportingTo", event.target.value)} />
-          </div>
-          <div className="field">
             <label>Offer Validity in Days</label>
             <input
               type="number"
@@ -130,15 +138,24 @@ export function OfferLetterEditor({ data, onChange }: OfferLetterEditorProps) {
             />
           </div>
           <div className="field full-span">
+            <label>Working Hours</label>
+            <input value={data.workingHours} onChange={(event) => update("workingHours", event.target.value)} />
+          </div>
+          <div className="field full-span">
             <label>Employee Address</label>
             <textarea rows={3} value={data.employeeAddress} onChange={(event) => update("employeeAddress", event.target.value)} />
           </div>
         </div>
+        <BulletListEditor
+          label="Salary structure notes (TDS, pay cycle, etc.)"
+          items={data.salaryNotes}
+          onChange={(next) => update("salaryNotes", next)}
+        />
       </AccordionSection>
 
       <AccordionSection
         title="Role & Responsibilities"
-        helper="Add the role overview paragraph and the primary responsibility bullets."
+        helper="Role-specific — edit per hire. We can refine templates later by role."
       >
         <div className="stack">
           <div className="field">
@@ -155,7 +172,7 @@ export function OfferLetterEditor({ data, onChange }: OfferLetterEditorProps) {
 
       <AccordionSection
         title="Signatory"
-        helper="The person signing this letter. Shown in the closing block above the company contact details."
+        helper="Shown in the closing block and on the Company side of Acceptance."
       >
         <div className="field-grid">
           <div className="field">

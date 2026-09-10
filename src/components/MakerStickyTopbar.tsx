@@ -1,4 +1,4 @@
-import { ArrowLeft, Columns2, Eye, Maximize2, Printer, RotateCcw, Save } from "lucide-react";
+import { ArrowLeft, Columns2, Eye, FileDown, Maximize2, Printer, RotateCcw, Save } from "lucide-react";
 import type { ReactNode } from "react";
 import { MakerFeatureNav } from "@/components/MakerFeatureNav";
 
@@ -11,6 +11,7 @@ interface MakerStickyTopbarProps {
   onBack: () => void;
   onReset: () => void;
   onSaveAsPdf: () => void;
+  onSaveAsDocx?: () => void;
   onSave?: () => void;
   extraControls?: ReactNode;
 }
@@ -22,6 +23,7 @@ export function MakerStickyTopbar({
   onBack,
   onReset,
   onSaveAsPdf,
+  onSaveAsDocx,
   onSave,
   extraControls,
 }: MakerStickyTopbarProps) {
@@ -96,6 +98,17 @@ export function MakerStickyTopbar({
               <Printer size={14} aria-hidden />
               PDF
             </button>
+            {onSaveAsDocx ? (
+              <button
+                className="ghost-button toolbar-button"
+                type="button"
+                onClick={onSaveAsDocx}
+                title="Download as Word (.docx)"
+              >
+                <FileDown size={14} aria-hidden />
+                DOCX
+              </button>
+            ) : null}
             {onSave ? (
               <button className="primary-button toolbar-button" type="button" onClick={onSave}>
                 <Save size={14} aria-hidden />
