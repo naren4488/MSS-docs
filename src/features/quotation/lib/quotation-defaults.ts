@@ -149,9 +149,20 @@ function formatKwLabel(kw: number): string {
   return String(Number(kw.toFixed(2))).replace(/\.0+$/, "");
 }
 
-function commercialAcCableMake(phase: QuotationPhase, language: QuotationLanguage): string {
+function commercialAcCableMake(phase: QuotationPhase, language: QuotationLanguage, kw?: number | null): string {
+  if (kw != null && kw >= 30) {
+    return language === "hi"
+      ? "पॉलीकैब 4 कोर 50 मिमी एल्युमिनियम आर्मर्ड केबल (3PH) · JVVNL अनुमोदित · इनवर्टर से LT / HT पैनल"
+      : "Polycab 4 Core 50 mm Aluminium Armoured Cable (3PH), JVVNL approved · inverter to LT / HT panel";
+  }
   const base = acCableMake(phase, language);
   return language === "hi" ? `${base} · इनवर्टर से LT / HT पैनल` : `${base} · inverter to LT / HT panel`;
+}
+
+function commercialModuleWp(item: QuotationMaterialItem): number {
+  const match = item.unit.match(/(\d+)/);
+  const wp = match ? Number(match[1]) : 0;
+  return wp > 0 ? wp : COMMERCIAL_MODULE_WP;
 }
 
 function commercialInverterMake(kw: string, language: QuotationLanguage): string {
@@ -252,8 +263,9 @@ export function applyCommercialCapacityToMaterials(
   const kw = parseCapacityKw(capacity);
   const sized = items.map((item) => {
     if (kw && isSolarPvModulesDescription(item.description)) {
-      const panels = Math.max(1, Math.round((kw * 1000) / COMMERCIAL_MODULE_WP));
-      return { ...item, qty: panelQtyLabel(panels, language), unit: `${COMMERCIAL_MODULE_WP} Wp` };
+      const wp = commercialModuleWp(item);
+      const panels = Math.max(1, Math.round((kw * 1000) / wp));
+      return { ...item, qty: panelQtyLabel(panels, language), unit: `${wp} Wp` };
     }
     if (kw && isSolarInverterDescription(item.description)) {
       return {
@@ -266,7 +278,7 @@ export function applyCommercialCapacityToMaterials(
   });
   return applyPhaseToMaterialItems(sized, phase, language).map((item) => {
     if (isAcCableDescription(item.description)) {
-      return { ...item, make: commercialAcCableMake(phase, language) };
+      return { ...item, make: commercialAcCableMake(phase, language, kw) };
     }
     return item;
   });

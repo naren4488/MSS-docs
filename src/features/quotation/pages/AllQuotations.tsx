@@ -55,6 +55,8 @@ function PackageCard({ template }: { template: QuotationTemplateMeta }) {
 }
 
 function CommercialCard({ template }: { template: QuotationTemplateMeta }) {
+  const priced = Boolean(template.projectAmount.trim());
+
   return (
     <Link className="quotation-package-card quotation-package-card--commercial" to={`/quotation?template=${template.id}`}>
       <div className="quotation-package-card-top">
@@ -64,19 +66,34 @@ function CommercialCard({ template }: { template: QuotationTemplateMeta }) {
         </div>
         <div className="quotation-package-card-sub">
           <p className="quotation-package-card-phase">
-            Commercial rooftop · starts at {template.capacity} {template.phase}
+            {priced
+              ? `Commercial rooftop · ${template.capacity} ${template.phase}`
+              : `Commercial rooftop · starts at ${template.capacity} ${template.phase}`}
           </p>
         </div>
       </div>
 
-      <p className="quotation-package-card-copy">
-        Same MSS layout with commercial defaults: site summary extras, grid-tie BOM sized to plant kW, turnkey EPC
-        price with DISCOM extra as actual, 30-day validity. No PM Surya Ghar subsidy.
-      </p>
+      {priced ? (
+        <dl className="quotation-package-card-pricing">
+          <div>
+            <dt>Project cost</dt>
+            <dd>{formatTemplateInr(template.projectAmount)}</dd>
+          </div>
+          <div className="quotation-package-card-net">
+            <dt>Customer payable</dt>
+            <dd>{formatTemplateInr(template.projectAmount)}</dd>
+          </div>
+        </dl>
+      ) : (
+        <p className="quotation-package-card-copy">
+          Same MSS layout with commercial defaults: site summary extras, grid-tie BOM sized to plant kW, turnkey EPC
+          price with DISCOM extra as actual, 30-day validity. No PM Surya Ghar subsidy.
+        </p>
+      )}
 
       <div className="quotation-package-card-meta">
         <span>
-          {template.panels} × {template.wp}W starter BOM
+          {template.panels} × {template.wp}W {template.moduleBrand ? template.moduleBrand.split(" ")[0] : "starter BOM"}
         </span>
         <span className="quotation-package-card-cta">
           Open <ArrowRight size={14} aria-hidden />

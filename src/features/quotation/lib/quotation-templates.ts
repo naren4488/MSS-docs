@@ -25,6 +25,7 @@ export type QuotationTemplateId =
   | "8kw-3ph"
   | "10kw-3ph"
   | "commercial"
+  | "commercial-30kw"
   | "offgrid";
 
 /** Default package when opening a new quotation. */
@@ -48,6 +49,8 @@ export interface QuotationTemplateMeta {
   panels: number;
   wp: number;
   inverterKw: string;
+  /** Commercial / off-grid module brand shown in BOM (warranty suffix added when applied). */
+  moduleBrand?: string;
   /** Off-grid 12V 220Ah tubular count. */
   batteries?: number;
 }
@@ -174,6 +177,21 @@ export const QUOTATION_TEMPLATES: readonly QuotationTemplateMeta[] = [
     inverterKw: "10",
   },
   {
+    id: "commercial-30kw",
+    kind: "commercial",
+    label: "30 KW · 3PH",
+    description: "₹10,20,000 · 51 × 590W Waaree Topcon · HT three phase · no subsidy",
+    capacity: "30 KW",
+    phase: "3PH",
+    projectAmount: "1020000",
+    centralSubsidy: "",
+    stateSubsidy: "",
+    panels: 51,
+    wp: 590,
+    inverterKw: "30",
+    moduleBrand: "Waaree Topcon Bifacial",
+  },
+  {
     id: "offgrid",
     kind: "offgrid",
     label: "Off-grid",
@@ -216,6 +234,36 @@ function subsidyNoteForLanguage(language: QuotationLanguage): string {
   return language === "hi"
     ? "*MNRE सब्सिडी (₹78,000) नेट मीटरिंग के ~60 दिन बाद ग्राहक खाते में ट्रांसफर होती है। राज्य सब्सिडी (₹17,000) वहाँ लागू जहाँ वर्तमान में 100 यूनिट मुफ्त लाभ उपलब्ध है।"
     : "*MNRE subsidy (₹78,000) is transferred to the customer account ~60 days after net metering. State subsidy (₹17,000) applies where 100 units free benefit is currently available.";
+}
+
+function applyCommercialModuleSpec(
+  items: QuotationMaterialItem[],
+  template: QuotationTemplateMeta,
+  language: QuotationLanguage,
+): QuotationMaterialItem[] {
+  const brand = template.moduleBrand?.trim();
+  if (!brand && template.wp === 550) {
+    return items;
+  }
+
+  return items.map((item) => {
+    if (!isSolarPvModulesDescription(item.description)) {
+      return item;
+    }
+
+    const make = brand
+      ? language === "hi"
+        ? `${brand} · 30 वर्ष वारंटी`
+        : `${brand} with 30 Year Warranty`
+      : item.make;
+
+    return {
+      ...item,
+      qty: panelQtyLabel(template.panels, language),
+      unit: `${template.wp} Wp`,
+      make,
+    };
+  });
 }
 
 function applyTemplateSizing(
@@ -276,7 +324,12 @@ export function createQuotationFromTemplate(
     materialItems: offgrid
       ? applyOffgridCapacityToMaterials(base.materialItems, template.capacity, template.phase, language)
       : commercial
-        ? applyCommercialCapacityToMaterials(base.materialItems, template.capacity, template.phase, language)
+        ? applyCommercialCapacityToMaterials(
+            applyCommercialModuleSpec(base.materialItems, template, language),
+            template.capacity,
+            template.phase,
+            language,
+          )
         : applyTemplateSizing(base.materialItems, template, language),
     commercialOffer: stripSyncedCommercialRows(base.commercialOffer),
   };
