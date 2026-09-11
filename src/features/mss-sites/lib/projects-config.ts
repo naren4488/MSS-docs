@@ -202,9 +202,10 @@ export interface ProjectSheetTab {
 
 function projectTab(
   sheetName: string,
-  options: Omit<ProjectSheetTab, "sheetName"> = {},
+  options: Partial<Omit<ProjectSheetTab, "sheetName">> = {},
 ): ProjectSheetTab {
-  return { sheetName, projectType: sheetName, ...options };
+  const { projectType = sheetName, ...rest } = options;
+  return { sheetName, projectType, ...rest };
 }
 
 /**
