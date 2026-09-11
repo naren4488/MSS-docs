@@ -107,7 +107,7 @@ function defaultMaterialItems(language: QuotationLanguage, phase: QuotationPhase
       material("DC केबल", "60 तक", "मी.", "4 वर्ग मिमी कॉपर वायर, पॉलीकैब केबल"),
       material("लाइटनिंग अरेस्टर किट", "1 नं.", "1 नं.", "1 मी., कॉपर बाउंड"),
       material("अर्थिंग किट", "3 सेट", "सेट", "3 कॉपर बाउंड रॉड व अर्थिंग केमिकल बैग"),
-      material("अर्थिंग वायर", "100 तक", "मी.", "16 वर्ग मिमी एल्युमिनियम वायर (Ramsons) या 6 वर्ग मिमी कॉपर क्लैड वायर (Indo)"),
+      material("अर्थिंग वायर", "100 तक", "मी.", "6 वर्ग मिमी कॉपर क्लैड वायर (Indo) या 16 वर्ग मिमी एल्युमिनियम वायर (Ramsons)"),
       material("ACDB / DCDB / MCB डिस्ट्रीब्यूशन बॉक्स", "1, 1 नं.", acDbDcDbUnit(phase), acDbDcDbMake(language)),
       material("सोलर व नेट मीटर", "1, 1 नं.", "", "Avon मीटर उपलब्धता अनुसार, JVVNL द्वारा टेस्टेड"),
       material("कनेक्शन किट", "आवश्यकतानुसार", "—", "कनेक्टिंग केबल (4 वर्ग मिमी — पॉलीकैब), MC4, जम्पर"),
@@ -122,7 +122,7 @@ function defaultMaterialItems(language: QuotationLanguage, phase: QuotationPhase
     material("DC Cable", "Upto 60", "Mtr", "4 sq mm Copper Wire, Polycab cable"),
     material("Lightning Arrestor Kit", "1 No", "1 No", "1 M, Copper bound"),
     material("Earthing Kit", "3 Set", "Set", "3 copper bound rods and earthing chemical bag"),
-    material("Earthing Wire", "Upto 100", "Mtr", "16 sq mm aluminium wire (Ramsons) or 6 sq mm copper clad wire (Indo)"),
+    material("Earthing Wire", "Upto 100", "Mtr", "6 sq mm copper clad wire (Indo) or 16 sq mm aluminium wire (Ramsons)"),
     material("ACDB / DCDB / MCB Distribution Box", "1, 1 No", acDbDcDbUnit(phase), acDbDcDbMake(language)),
     material("Solar & Net Meter", "1, 1 No", "", "Avon Meter as per availability, tested by JVVNL"),
     material("Connection Kit", "As per Requirement", "—", "Connecting cable (4 sq mm — Polycab), MC4, jumper"),
@@ -184,20 +184,6 @@ export function commercialPanelConfigOffering(capacity: string, language: Quotat
   return `${panels} x ${COMMERCIAL_MODULE_WP}W Adani Topcon Bifacial Panels (${totalKw} KW Total)`;
 }
 
-export function syncCommercialOfferToCapacity(
-  rows: QuotationCommercialRow[],
-  capacity: string,
-  language: QuotationLanguage,
-): QuotationCommercialRow[] {
-  return rows.map((row) => {
-    const parameter = row.parameter.trim();
-    if (parameter === "Panel Configuration" || parameter === "पैनल कॉन्फ़िगरेशन") {
-      return { ...row, offering: commercialPanelConfigOffering(capacity, language) };
-    }
-    return row;
-  });
-}
-
 function defaultCommercialMaterialItems(language: QuotationLanguage, phase: QuotationPhase): QuotationMaterialItem[] {
   const site = asPerSite(language);
   const acMake = commercialAcCableMake(phase, language);
@@ -217,7 +203,7 @@ function defaultCommercialMaterialItems(language: QuotationLanguage, phase: Quot
         "सेट",
         "GI स्ट्रिप 25×3 वर्ग मिमी / ग्रीन वायर, GI/CU इलेक्ट्रोड 3 मी. रासायनिक अर्थिंग, अर्थ पिट चैंबर व केमिकल बैग",
       ),
-      material("अर्थिंग वायर", site, "मी.", "16 वर्ग मिमी एल्युमिनियम वायर (Ramsons) या 6 वर्ग मिमी कॉपर क्लैड वायर (Indo)"),
+      material("अर्थिंग वायर", site, "मी.", "6 वर्ग मिमी कॉपर क्लैड वायर (Indo) या 16 वर्ग मिमी एल्युमिनियम वायर (Ramsons)"),
       material("ACDB पैनल", "1 नं.", "", "AC SPD, AL/CU बस बार, MCCB — L&T / हैवेल्स / Elmex"),
       material("जनरेशन मीटर", "1 नं.", "", "HT एनर्जी जनरेशन मीटर — Secure, उपलब्धता अनुसार"),
       material("कनेक्शन किट", site, "—", "कनेक्टिंग केबल (4 वर्ग मिमी — पॉलीकैब), MC4, जम्पर"),
@@ -242,7 +228,7 @@ function defaultCommercialMaterialItems(language: QuotationLanguage, phase: Quot
       "Set",
       "GI strip 25×3 sq mm / green wire, GI/CU electrode 3 mtr with chemical earthing, earth pit chamber and chemical bags",
     ),
-    material("Earthing Wire", site, "Mtr", "16 sq mm aluminium wire (Ramsons) or 6 sq mm copper clad wire (Indo)"),
+    material("Earthing Wire", site, "Mtr", "6 sq mm copper clad wire (Indo) or 16 sq mm aluminium wire (Ramsons)"),
     material("ACDB Panel", "1 No", "", "AC SPDs, AL/CU bus bar, MCCBs — L&T / Havells / Elmex"),
     material("Generation Meter", "1 No", "", "HT energy generation meter — Secure, as per availability"),
     material("Connection Kit", site, "—", "Connecting cable (4 sq mm — Polycab), MC4, jumper"),
@@ -361,9 +347,6 @@ export function syncOffgridOfferToCapacity(
 ): QuotationCommercialRow[] {
   return rows.map((row) => {
     const parameter = row.parameter.trim();
-    if (parameter === "Panel Configuration" || parameter === "पैनल कॉन्फ़िगरेशन") {
-      return { ...row, offering: offgridPanelConfigOffering(capacity, language) };
-    }
     if (parameter === "Battery Bank" || parameter === "बैटरी बैंक") {
       return { ...row, offering: offgridBatteryOffering(capacity, language) };
     }
@@ -548,13 +531,11 @@ function defaultCommercialOffer(
   if (options?.offgrid) {
     if (language === "hi") {
       return [
-        commercial("पैनल कॉन्फ़िगरेशन", offgridPanelConfigOffering(capacity, language)),
         commercial("बैटरी बैंक", offgridBatteryOffering(capacity, language)),
         commercial("मूल्य आधार", "टर्नकी EPC · ₹1,00,000 प्रति किलोवाट"),
       ];
     }
     return [
-      commercial("Panel Configuration", offgridPanelConfigOffering(capacity, language)),
       commercial("Battery Bank", offgridBatteryOffering(capacity, language)),
       commercial("Price Basis", "Turnkey EPC · ₹1,00,000 per kW"),
     ];
@@ -563,28 +544,20 @@ function defaultCommercialOffer(
   if (options?.commercial) {
     if (language === "hi") {
       return [
-        commercial("पैनल कॉन्फ़िगरेशन", commercialPanelConfigOffering(capacity, language)),
         commercial("मूल्य आधार", "टर्नकी EPC"),
         commercial("DISCOM / वैधानिक शुल्क", defaultDiscomChargesNote(language)),
       ];
     }
     return [
-      commercial("Panel Configuration", commercialPanelConfigOffering(capacity, language)),
       commercial("Price Basis", "Turnkey EPC"),
       commercial("DISCOM / statutory charges", defaultDiscomChargesNote(language)),
     ];
   }
 
   if (language === "hi") {
-    return [
-      commercial("पैनल कॉन्फ़िगरेशन", "6 × 550W अदानी टॉपकॉन बाइफेशियल पैनल (कुल 3.3 किलोवाट)"),
-      commercial("मूल्य आधार", "टर्नकी EPC"),
-    ];
+    return [commercial("मूल्य आधार", "टर्नकी EPC")];
   }
-  return [
-    commercial("Panel Configuration", "6 x 550W Adani Topcon Bifacial Panels (3.3 KW Total)"),
-    commercial("Price Basis", "Turnkey EPC"),
-  ];
+  return [commercial("Price Basis", "Turnkey EPC")];
 }
 
 function term(label: string, text: string): QuotationTermItem {
@@ -1123,9 +1096,7 @@ export function switchQuotationLanguage(data: QuotationData, language: Quotation
         : applyPhaseToMaterialItems(fresh.materialItems, data.phase, language),
     commercialOffer: offgrid
       ? stripSyncedCommercialRows(syncOffgridOfferToCapacity(fresh.commercialOffer, data.capacity, language))
-      : commercial
-        ? stripSyncedCommercialRows(syncCommercialOfferToCapacity(fresh.commercialOffer, data.capacity, language))
-        : fresh.commercialOffer,
+      : stripSyncedCommercialRows(fresh.commercialOffer),
     showGeneration: data.showGeneration,
     generation: {
       unitRate: data.generation.unitRate || fresh.generation.unitRate,

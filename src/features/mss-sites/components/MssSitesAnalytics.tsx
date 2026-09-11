@@ -347,43 +347,57 @@ function OurOverviewDetails({
   headers,
   rows,
   summary,
+  mode = "our",
 }: {
   headers: readonly string[];
   rows: readonly (readonly string[])[];
   summary: ProjectAnalyticsSummary;
+  mode?: "our" | "sales";
 }) {
   const details = useMemo(() => {
     const netDueIndex = headers.indexOf("Total Due to MSS");
     const cashDueIndex = headers.indexOf("CASH DUE FROM CLIENT");
     const bankDueIndex = headers.indexOf("Bank due");
     const paymentReceivedIndex = headers.indexOf("TOTAL Payment recieved");
+    const isSales = mode === "sales";
 
-    const registers: Record<string, RegisterSlice> = {
-      "MSS res · MSS": {
-        label: `MSS res · ${PROJECT_VENDORS.MSS} workbook`,
-        sites: 0,
-        netDue: 0,
-        cashDue: 0,
-        bankDue: 0,
-        paymentReceived: 0,
-      },
-      "MSS res · Ark": {
-        label: `MSS res · ${PROJECT_VENDORS.ARKSHAKTI}`,
-        sites: 0,
-        netDue: 0,
-        cashDue: 0,
-        bankDue: 0,
-        paymentReceived: 0,
-      },
-      "MSS COMMERCIAL": {
-        label: "MSS COMMERCIAL · Arkshakti",
-        sites: 0,
-        netDue: 0,
-        cashDue: 0,
-        bankDue: 0,
-        paymentReceived: 0,
-      },
-    };
+    const registers: Record<string, RegisterSlice> = isSales
+      ? {
+          sales: {
+            label: "Sales team sites · MSS workbook",
+            sites: 0,
+            netDue: 0,
+            cashDue: 0,
+            bankDue: 0,
+            paymentReceived: 0,
+          },
+        }
+      : {
+          "MSS res · MSS": {
+            label: `MSS res · ${PROJECT_VENDORS.MSS} workbook`,
+            sites: 0,
+            netDue: 0,
+            cashDue: 0,
+            bankDue: 0,
+            paymentReceived: 0,
+          },
+          "MSS res · Ark": {
+            label: `MSS res · ${PROJECT_VENDORS.ARKSHAKTI}`,
+            sites: 0,
+            netDue: 0,
+            cashDue: 0,
+            bankDue: 0,
+            paymentReceived: 0,
+          },
+          "MSS COMMERCIAL": {
+            label: "MSS COMMERCIAL · Arkshakti",
+            sites: 0,
+            netDue: 0,
+            cashDue: 0,
+            bankDue: 0,
+            paymentReceived: 0,
+          },
+        };
 
     const netDueCounts = {
       mss: { credit: 0, debit: 0, settled: 0 },
@@ -393,8 +407,9 @@ function OurOverviewDetails({
     for (const row of rows) {
       const projectType = row[PROJECT_TYPE_COLUMN_INDEX]?.trim() ?? "";
       const vendor = row[VENDOR_COLUMN_INDEX]?.trim() ?? "";
-      const registerKey =
-        projectType === "MSS COMMERCIAL"
+      const registerKey = isSales
+        ? "sales"
+        : projectType === "MSS COMMERCIAL"
           ? "MSS COMMERCIAL"
           : projectType === "MSS res" && vendor === PROJECT_VENDORS.MSS
             ? "MSS res · MSS"
@@ -438,7 +453,7 @@ function OurOverviewDetails({
       registers: Object.values(registers),
       netDueCounts,
     };
-  }, [headers, rows]);
+  }, [headers, mode, rows]);
 
   const paymentTotal = details.registers.reduce((total, slice) => total + slice.paymentReceived, 0);
   const netDueSign = getLedgerSign(summary.totalDueToMss);
@@ -470,29 +485,31 @@ function OurOverviewDetails({
             Sites grouped by sign of <strong>Net due to MSS</strong> on each row.
           </p>
           <div className="mss-analytics-ajay-netdue-grid">
-            {[PROJECT_VENDORS.MSS, PROJECT_VENDORS.ARKSHAKTI].map((vendor) => {
-              const key = vendor === PROJECT_VENDORS.MSS ? "mss" : "arkshakti";
-              const counts = details.netDueCounts[key];
-              return (
-                <div key={vendor} className="mss-analytics-ajay-netdue-group">
-                  <p className="mss-analytics-ajay-netdue-vendor">{vendor}</p>
-                  <ul>
-                    <li>
-                      <span>We will receive</span>
-                      <strong>{counts.credit}</strong>
-                    </li>
-                    <li>
-                      <span>Surplus / return</span>
-                      <strong>{counts.debit}</strong>
-                    </li>
-                    <li>
-                      <span>Settled / zero</span>
-                      <strong>{counts.settled}</strong>
-                    </li>
-                  </ul>
-                </div>
-              );
-            })}
+            {(mode === "sales" ? [PROJECT_VENDORS.MSS] : [PROJECT_VENDORS.MSS, PROJECT_VENDORS.ARKSHAKTI]).map(
+              (vendor) => {
+                const key = vendor === PROJECT_VENDORS.MSS ? "mss" : "arkshakti";
+                const counts = details.netDueCounts[key];
+                return (
+                  <div key={vendor} className="mss-analytics-ajay-netdue-group">
+                    <p className="mss-analytics-ajay-netdue-vendor">{vendor}</p>
+                    <ul>
+                      <li>
+                        <span>We will receive</span>
+                        <strong>{counts.credit}</strong>
+                      </li>
+                      <li>
+                        <span>Surplus / return</span>
+                        <strong>{counts.debit}</strong>
+                      </li>
+                      <li>
+                        <span>Settled / zero</span>
+                        <strong>{counts.settled}</strong>
+                      </li>
+                    </ul>
+                  </div>
+                );
+              },
+            )}
           </div>
         </article>
       </div>
@@ -1112,10 +1129,11 @@ export function MssSitesAnalytics({
   const isPartnerScope = scope === "partner";
   const isAjayScope = scope === "ajay";
   const isOurScope = scope === "our";
+  const isSalesScope = scope === "sales";
   const isShripalScope = scope === "shripal";
   const isSatyanarayanScope = scope === "satyanarayan";
   const isRjGreenScope = scope === "rjgreen";
-  const isRegisterStyleScope = isOurScope || isShripalScope;
+  const isRegisterStyleScope = isOurScope || isSalesScope || isShripalScope;
   const isPartnerStyleLayoutScope =
     isPartnerScope || isAjayScope || isSatyanarayanScope || isRjGreenScope;
   const analyticsSections = isAjayScope
@@ -1126,7 +1144,7 @@ export function MssSitesAnalytics({
         ? SATYANARAYAN_ANALYTICS_SECTIONS
         : isRjGreenScope
           ? RJGREEN_ANALYTICS_SECTIONS
-          : isOurScope
+          : isOurScope || isSalesScope
             ? OUR_ANALYTICS_SECTIONS
             : PARTNER_ANALYTICS_SECTIONS;
   const analytics = useMemo(() => computeProjectAnalytics(headers, rows), [headers, rows]);
@@ -1190,7 +1208,7 @@ export function MssSitesAnalytics({
   ]);
 
   const ourHeroMetrics = useMemo(() => {
-    if (!isOurScope) {
+    if (!isOurScope && !isSalesScope) {
       return null;
     }
 
@@ -1227,6 +1245,7 @@ export function MssSitesAnalytics({
   }, [
     headers,
     isOurScope,
+    isSalesScope,
     rows,
     summary.totalBankDue,
     summary.totalCashDueFromClient,
@@ -1466,27 +1485,31 @@ export function MssSitesAnalytics({
   const registerLabel =
     scope === "our"
       ? "register"
-      : scope === "shripal"
-        ? "Shripal register"
-        : scope === "ajay"
-          ? "Ajay register"
-          : scope === "satyanarayan"
-            ? "Satyanarayan register"
-            : scope === "rjgreen"
-              ? "RJ Green register"
-              : "partner tab";
+      : scope === "sales"
+        ? "Sales register"
+        : scope === "shripal"
+          ? "Shripal register"
+          : scope === "ajay"
+            ? "Ajay register"
+            : scope === "satyanarayan"
+              ? "Satyanarayan register"
+              : scope === "rjgreen"
+                ? "RJ Green register"
+                : "partner tab";
   const summaryTitle =
     scope === "our"
       ? "Our projects summary"
-      : scope === "shripal"
-        ? "Shripal sites summary"
-        : scope === "ajay"
-          ? "Ajay sites summary"
-          : scope === "satyanarayan"
-            ? "Satyanarayan sites summary"
-            : scope === "rjgreen"
-              ? "RJ Green sites summary"
-              : "Partner projects summary";
+      : scope === "sales"
+        ? "Sales team sites summary"
+        : scope === "shripal"
+          ? "Shripal sites summary"
+          : scope === "ajay"
+            ? "Ajay sites summary"
+            : scope === "satyanarayan"
+              ? "Satyanarayan sites summary"
+              : scope === "rjgreen"
+                ? "RJ Green sites summary"
+                : "Partner projects summary";
 
   return (
     <div id="mss-sites-analytics" className="mss-sites-analytics">
@@ -1501,7 +1524,13 @@ export function MssSitesAnalytics({
               ? ` · ${analytics.byProjectType.length} ${registerLabel}${analytics.byProjectType.length === 1 ? "" : "s"}`
               : ""}
           </p>
-          {isOurScope || isShripalScope || isSatyanarayanScope || isRjGreenScope || isPartnerScope || isAjayScope ? (
+          {isOurScope ||
+          isSalesScope ||
+          isShripalScope ||
+          isSatyanarayanScope ||
+          isRjGreenScope ||
+          isPartnerScope ||
+          isAjayScope ? (
             <p className="mss-analytics-print-meta">
               {isShripalScope
                 ? "Shripal sites"
@@ -1511,9 +1540,11 @@ export function MssSitesAnalytics({
                     ? "RJ Green sites"
                     : isAjayScope
                       ? "Ajay sites"
-                      : isOurScope
-                        ? "Our projects"
-                        : "Partner projects"}{" "}
+                      : isSalesScope
+                        ? "Sales team sites"
+                        : isOurScope
+                          ? "Our projects"
+                          : "Partner projects"}{" "}
               analytics · {rows.length} site
               {rows.length === 1 ? "" : "s"}
               {isFiltered ? ` (filtered from ${totalRowCount})` : ""} · Generated{" "}
@@ -1553,6 +1584,13 @@ export function MssSitesAnalytics({
         </AnalyticsInfoBanner>
       ) : null}
 
+      {isSalesScope ? (
+        <AnalyticsInfoBanner title="Sales team register">
+          Sites from the MSS workbook tab <strong>CALL TEAM SITE</strong>, shown here as Sales team sites. Same
+          dues columns as Our projects — no partner deal fields.
+        </AnalyticsInfoBanner>
+      ) : null}
+
       {isShripalScope ? (
         <AnalyticsInfoBanner title="Shripal register">
           Same dues view as Our projects, plus <strong>Payment with partner</strong> on each site row.{" "}
@@ -1563,7 +1601,7 @@ export function MssSitesAnalytics({
 
       {isPartnerScope ? (
         <AnalyticsInfoBanner title="Remaining partner portfolio">
-          Aggregate partner registers excluding Our / Shripal / Ajay / Satyanarayan / RJ Green. Site dues and
+          Aggregate partner registers excluding Our / Sales / Shripal / Ajay / Satyanarayan / RJ Green. Site dues and
           deal margins roll up here.
         </AnalyticsInfoBanner>
       ) : null}
@@ -1772,18 +1810,24 @@ export function MssSitesAnalytics({
               </p>
             </article>
           </>
-        ) : isOurScope && ourHeroMetrics ? (
+        ) : (isOurScope || isSalesScope) && ourHeroMetrics ? (
           <>
             <article className="mss-analytics-hero-card">
               <p className="mss-analytics-hero-label">Total sites</p>
               <p className="mss-analytics-hero-value">{summary.sitesByVendor.total}</p>
-              <p className="mss-analytics-hero-hint">
-                MSS res {ourHeroMetrics.mssResSites} · Commercial {ourHeroMetrics.commercialSites}
-              </p>
-              <p className="mss-analytics-hero-hint">
-                {PROJECT_VENDORS.MSS} {summary.sitesByVendor.mss} · {PROJECT_VENDORS.ARKSHAKTI}{" "}
-                {summary.sitesByVendor.arkshakti}
-              </p>
+              {isSalesScope ? (
+                <p className="mss-analytics-hero-hint">CALL TEAM SITE register · {PROJECT_VENDORS.MSS}</p>
+              ) : (
+                <>
+                  <p className="mss-analytics-hero-hint">
+                    MSS res {ourHeroMetrics.mssResSites} · Commercial {ourHeroMetrics.commercialSites}
+                  </p>
+                  <p className="mss-analytics-hero-hint">
+                    {PROJECT_VENDORS.MSS} {summary.sitesByVendor.mss} · {PROJECT_VENDORS.ARKSHAKTI}{" "}
+                    {summary.sitesByVendor.arkshakti}
+                  </p>
+                </>
+              )}
             </article>
             <article
               className={`mss-analytics-hero-card mss-analytics-hero-card--balance-${ourHeroMetrics.netDueMssSign}`}
@@ -1792,17 +1836,21 @@ export function MssSitesAnalytics({
               <p className={`mss-analytics-hero-value ${ledgerAmountClassName(ourHeroMetrics.netDueMssSign)}`}>
                 {formatSignedLedgerAmount(ourHeroMetrics.netDueMss)}
               </p>
-              <p className="mss-analytics-hero-hint">MSS res pipeline register</p>
-            </article>
-            <article
-              className={`mss-analytics-hero-card mss-analytics-hero-card--balance-${ourHeroMetrics.netDueArkSign}`}
-            >
-              <p className="mss-analytics-hero-label">Net due · {PROJECT_VENDORS.ARKSHAKTI}</p>
-              <p className={`mss-analytics-hero-value ${ledgerAmountClassName(ourHeroMetrics.netDueArkSign)}`}>
-                {formatSignedLedgerAmount(ourHeroMetrics.netDueArk)}
+              <p className="mss-analytics-hero-hint">
+                {isSalesScope ? "Sales team register" : "MSS res pipeline register"}
               </p>
-              <p className="mss-analytics-hero-hint">MSS res backlog + MSS COMMERCIAL</p>
             </article>
+            {isSalesScope ? null : (
+              <article
+                className={`mss-analytics-hero-card mss-analytics-hero-card--balance-${ourHeroMetrics.netDueArkSign}`}
+              >
+                <p className="mss-analytics-hero-label">Net due · {PROJECT_VENDORS.ARKSHAKTI}</p>
+                <p className={`mss-analytics-hero-value ${ledgerAmountClassName(ourHeroMetrics.netDueArkSign)}`}>
+                  {formatSignedLedgerAmount(ourHeroMetrics.netDueArk)}
+                </p>
+                <p className="mss-analytics-hero-hint">MSS res backlog + MSS COMMERCIAL</p>
+              </article>
+            )}
             <article className="mss-analytics-hero-card">
               <p className="mss-analytics-hero-label">Payments received</p>
               <p className="mss-analytics-hero-value">{formatSignedLedgerAmount(ourHeroMetrics.paymentReceivedTotal)}</p>
@@ -2214,7 +2262,9 @@ export function MssSitesAnalytics({
                         ? "RJ Green register, deal margins, payment with partner, and work status"
                         : isOurScope
                           ? "Residential + commercial registers, client dues, payments, and work status"
-                          : "Remaining partner registers, deal margins, and work status"}
+                          : isSalesScope
+                            ? "Sales team register, client dues, payments, and work status"
+                            : "Remaining partner registers, deal margins, and work status"}
               </p>
             </div>
           </header>
@@ -2240,6 +2290,9 @@ export function MssSitesAnalytics({
           <VendorSplitBar breakdown={summary.sitesByVendor} />
           {isAjayScope ? <AjayOverviewDetails headers={headers} rows={rows} summary={summary} /> : null}
           {isOurScope ? <OurOverviewDetails headers={headers} rows={rows} summary={summary} /> : null}
+          {isSalesScope ? (
+            <OurOverviewDetails headers={headers} rows={rows} summary={summary} mode="sales" />
+          ) : null}
           {isShripalScope ? <ShripalOverviewDetails headers={headers} rows={rows} summary={summary} /> : null}
           {isPartnerScope || isSatyanarayanScope || isRjGreenScope ? (
             <PartnerOverviewDetails

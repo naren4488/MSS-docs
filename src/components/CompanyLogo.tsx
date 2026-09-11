@@ -23,6 +23,15 @@ function prepareSvg(raw: string) {
   return svg;
 }
 
+/** Clip SVG padding so the company name sits close under the mark — same as MSS letterhead. */
+export const LETTERHEAD_LOGO_WRAP: CSSProperties = {
+  display: "flex",
+  justifyContent: "center",
+  height: 84,
+  overflow: "hidden",
+  marginBottom: 2,
+};
+
 interface CompanyLogoProps {
   src?: string;
   alt: string;

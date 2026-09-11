@@ -7,7 +7,7 @@ import type { AgreementCompany } from "@/features/agreement/types/agreement";
 import type { QuotationData, QuotationGeneration, QuotationPhase } from "../types/quotation";
 import { CommercialOfferEditor, MaterialItemEditor, TermItemEditor } from "./QuotationRowEditors";
 import { stripSyncedCommercialRows, computeEffectivePayable, formatInrGrouped } from "../lib/quotation-formatters";
-import { applyCommercialCapacityToMaterials, applyOffgridCapacityToMaterials, applyPhaseToMaterialItems, isCommercialQuotation, isOffgridQuotation, offgridProjectAmount, syncCommercialOfferToCapacity, syncOffgridOfferToCapacity } from "../lib/quotation-defaults";
+import { applyCommercialCapacityToMaterials, applyOffgridCapacityToMaterials, applyPhaseToMaterialItems, isCommercialQuotation, isOffgridQuotation, offgridProjectAmount, syncOffgridOfferToCapacity } from "../lib/quotation-defaults";
 
 interface QuotationEditorProps {
   data: QuotationData;
@@ -63,7 +63,6 @@ export function QuotationEditor({ data, onChange }: QuotationEditorProps) {
   function applyCommercialSizing(capacity: string, phase: QuotationPhase) {
     return {
       materialItems: applyCommercialCapacityToMaterials(data.materialItems, capacity, phase, data.language),
-      commercialOffer: syncCommercialOfferToCapacity(data.commercialOffer, capacity, data.language),
     };
   }
 
@@ -248,10 +247,10 @@ export function QuotationEditor({ data, onChange }: QuotationEditorProps) {
         title="Material Description"
         helper={
           offgrid
-            ? "Off-grid BOM: Waaree 590 Wp non-DCR, Microtek PCU, DC cable, 220 Ah battery bank. No earthing, LA, AC cable, AC/DC DB, or solar meter. Drag items to reorder."
+            ? "Off-grid BOM: Waaree 590 Wp non-DCR, Microtek PCU, DC cable, 220 Ah battery bank. No earthing, LA, AC cable, AC/DC DB, or solar meter. Solar Plant Capacity on the PDF follows the Solar PV Modules row. Drag items to reorder."
             : commercial
-              ? "Commercial BOM: cables as per site, ESE LA, HT generation meter, ACDB panel, cable tray / walkway / MCS. Drag items to reorder."
-              : "Bill of materials. Drag items to reorder."
+              ? "Commercial BOM: cables as per site, ESE LA, HT generation meter, ACDB panel, cable tray / walkway / MCS. Solar Plant Capacity on the PDF follows the Solar PV Modules row. Drag items to reorder."
+              : "Bill of materials. Solar Plant Capacity on the PDF follows the Solar PV Modules row. Drag items to reorder."
         }
         defaultOpen
       >
@@ -276,12 +275,12 @@ export function QuotationEditor({ data, onChange }: QuotationEditorProps) {
         title="Commercial Offer"
         helper={
           offgrid
-            ? "Solar Plant Capacity is auto-filled from panel watt × qty. Plant kW sets the project amount at ₹1,00,000 per kW. Customer Net Payable and the turnkey price box follow that amount."
+            ? "Solar Plant Capacity on the PDF is filled from Solar PV Modules (qty, wattage and make). Plant kW sets the project amount at ₹1,00,000 per kW. Customer Net Payable and the turnkey price box follow that amount."
             : commercial
-              ? "Solar Plant Capacity is auto-filled from panel watt × qty. Project amount fills Customer Net Payable and the turnkey EPC price box. DISCOM charges stay extra as actual."
+              ? "Solar Plant Capacity on the PDF is filled from Solar PV Modules (qty, wattage and make). Project amount fills Customer Net Payable and the turnkey EPC price box. DISCOM charges stay extra as actual."
               : data.showSubsidySection
-                ? "Solar Plant Capacity is auto-filled from panel watt × qty. Project amount fills Customer Net Payable and the investment box on the PDF."
-                : "Solar Plant Capacity is auto-filled from panel watt × qty. Project amount fills Customer Net Payable on the PDF. Subsidy section is hidden."
+                ? "Solar Plant Capacity on the PDF is filled from Solar PV Modules (qty, wattage and make). Project amount fills Customer Net Payable and the investment box on the PDF."
+                : "Solar Plant Capacity on the PDF is filled from Solar PV Modules (qty, wattage and make). Project amount fills Customer Net Payable on the PDF. Subsidy section is hidden."
         }
         defaultOpen
       >

@@ -1,5 +1,6 @@
 import {
   getProjectsScopeForProjectType,
+  isOurStyleProjectsScope,
   type ProjectsScope,
 } from "./projects-config";
 
@@ -70,7 +71,7 @@ export const HIDDEN_PROJECT_COLUMNS = new Set<string>([
 ]);
 
 /**
- * Hidden from the main table on Our + Shripal only — duplicates Cash due from client on those registers.
+ * Hidden from the main table on Our + Sales + Shripal only — duplicates Cash due from client on those registers.
  */
 export const OUR_SHRIPAL_HIDDEN_TABLE_COLUMNS = new Set<string>(["Cash due to MSS"]);
 
@@ -151,7 +152,7 @@ export type NonzeroDuesFilterOption = (typeof NONZERO_DUES_FILTER_OPTIONS)[numbe
 
 /** Column used for the “Cash due ≠ 0” filter — Our/Shripal use Cash due from client. */
 export function getCashDueFilterColumnIndex(scope: ProjectsScope): number {
-  if (scope === "our" || scope === "shripal") {
+  if (isOurStyleProjectsScope(scope) || scope === "shripal") {
     return CASH_DUE_FROM_CLIENT_COLUMN_INDEX;
   }
   return CASH_DUE_TO_MSS_COLUMN_INDEX;
@@ -390,7 +391,7 @@ export function isHiddenFromMainProjectTable(header: string, scope: ProjectsScop
   if (HIDDEN_PROJECT_COLUMNS.has(header)) {
     return true;
   }
-  if ((scope === "our" || scope === "shripal") && OUR_SHRIPAL_HIDDEN_TABLE_COLUMNS.has(header)) {
+  if ((isOurStyleProjectsScope(scope) || scope === "shripal") && OUR_SHRIPAL_HIDDEN_TABLE_COLUMNS.has(header)) {
     return true;
   }
   return false;

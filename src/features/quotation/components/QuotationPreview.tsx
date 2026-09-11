@@ -1,6 +1,6 @@
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties, ComponentType, ReactNode } from "react";
-import { CompanyLogo } from "@/components/CompanyLogo";
+import { CompanyLogo, LETTERHEAD_LOGO_WRAP } from "@/components/CompanyLogo";
 import {
   BadgeCheck,
   ClipboardList,
@@ -105,7 +105,7 @@ function Header({ data }: { data: QuotationData }) {
   return (
     <div style={{ background: "#ffffff", textAlign: "center", borderBottom: "2px solid #e5e7eb", padding: "24px 0 18px" }}>
       {data.company.logoUrl ? (
-        <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
+        <div style={LETTERHEAD_LOGO_WRAP}>
           <CompanyLogo alt="Company logo" src={data.company.logoUrl} />
         </div>
       ) : null}
@@ -240,6 +240,15 @@ function headerCell(extra?: CSSProperties): CSSProperties {
   return tableCell({ borderTop: TABLE_BORDER, background: NAVY, color: "#ffffff", fontWeight: 700, ...extra });
 }
 
+/** Keep Amp and Volt on their own lines so "32 Amp / 600 V" does not wrap as "600" then "V". */
+function formatMaterialUnit(unit: string) {
+  const match = unit.trim().match(/^(\d+\s*Amp)\s*\/\s*(\d+\s*V)$/i);
+  if (!match) {
+    return unit;
+  }
+  return `${match[1]}\n${match[2]}`;
+}
+
 function MaterialHeader({ data }: { data: QuotationData }) {
   const L = quotationLabels(data.language);
   return (
@@ -277,12 +286,13 @@ function WattageInfoBox({ data }: { data: QuotationData }) {
 
 function MaterialRow({ index, data }: { index: number; data: QuotationData }) {
   const item = data.materialItems[index];
+  const unit = formatMaterialUnit(item.unit || "—");
   return (
     <div style={{ display: "grid", gridTemplateColumns: MATERIAL_GRID }}>
       <div style={tableCell({ borderLeft: TABLE_BORDER, textAlign: "center" })}>{index + 1}</div>
       <div style={tableCell({ fontWeight: 600 })}>{filledValue(item.description)}</div>
       <div style={tableCell({ textAlign: "center" })}>{item.qty || "—"}</div>
-      <div style={tableCell({ textAlign: "center" })}>{item.unit || "—"}</div>
+      <div style={tableCell({ textAlign: "center", whiteSpace: "pre-line" })}>{unit}</div>
       <div style={tableCell()}>{item.make || "—"}</div>
     </div>
   );
@@ -789,7 +799,11 @@ function createBlocks(data: QuotationData): PreviewBlock[] {
     pushHeading(blocks, "material-heading", L.materialDescription);
     blocks.push({ key: "material-table-header", estimate: 26, keepWithNext: true, node: <MaterialHeader data={data} /> });
     data.materialItems.forEach((item, index) => {
-      const tall = Math.max(estimateParagraphHeight(item.make, 34, 14), estimateParagraphHeight(item.description, 26, 14));
+      const tall = Math.max(
+        estimateParagraphHeight(item.make, 34, 14),
+        estimateParagraphHeight(item.description, 26, 14),
+        estimateParagraphHeight(formatMaterialUnit(item.unit), 12, 14),
+      );
       blocks.push({ key: `material-${item.id}`, estimate: 16 + tall, node: <MaterialRow data={data} index={index} /> });
     });
 

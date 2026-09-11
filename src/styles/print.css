@@ -377,41 +377,4 @@
     font-size: 11px;
     color: #6b7280;
   }
-
-  .brochure-content {
-    padding: 0 !important;
-    background: #fff !important;
-  }
-
-  .brochure-page-shell {
-    height: auto !important;
-    overflow: visible !important;
-  }
-
-  .brochure-preview,
-  .brochure-preview-scroll {
-    height: auto !important;
-    overflow: visible !important;
-    display: block !important;
-  }
-
-  .app-root:has(.brochure-page-shell) {
-    height: auto !important;
-    overflow: visible !important;
-    display: block !important;
-  }
-
-  .brochure-content [data-export-page="true"] {
-    width: 210mm !important;
-    min-height: 297mm !important;
-    margin: 0 !important;
-    box-shadow: none !important;
-    page-break-after: always;
-    break-after: page;
-  }
-
-  .brochure-content [data-export-page="true"]:last-child {
-    page-break-after: auto;
-    break-after: auto;
-  }
 }

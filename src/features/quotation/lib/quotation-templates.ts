@@ -212,14 +212,6 @@ function panelQtyLabel(panels: number, language: QuotationLanguage): string {
   return language === "hi" ? `${panels} पैनल` : `${panels} Panel`;
 }
 
-function panelConfigOffering(template: QuotationTemplateMeta, language: QuotationLanguage): string {
-  const totalKw = ((template.panels * template.wp) / 1000).toFixed(1).replace(/\.0$/, "");
-  if (language === "hi") {
-    return `${template.panels} × ${template.wp}W अदानी टॉपकॉन बाइफेशियल पैनल (कुल ${totalKw} किलोवाट)`;
-  }
-  return `${template.panels} x ${template.wp}W Adani Topcon Bifacial Panels (${totalKw} KW Total)`;
-}
-
 function subsidyNoteForLanguage(language: QuotationLanguage): string {
   return language === "hi"
     ? "*MNRE सब्सिडी (₹78,000) नेट मीटरिंग के ~60 दिन बाद ग्राहक खाते में ट्रांसफर होती है। राज्य सब्सिडी (₹17,000) वहाँ लागू जहाँ वर्तमान में 100 यूनिट मुफ्त लाभ उपलब्ध है।"
@@ -286,19 +278,6 @@ export function createQuotationFromTemplate(
       : commercial
         ? applyCommercialCapacityToMaterials(base.materialItems, template.capacity, template.phase, language)
         : applyTemplateSizing(base.materialItems, template, language),
-    commercialOffer: commercial || offgrid
-      ? stripSyncedCommercialRows(base.commercialOffer)
-      : stripSyncedCommercialRows([
-          {
-            id: crypto.randomUUID(),
-            parameter: language === "hi" ? "पैनल कॉन्फ़िगरेशन" : "Panel Configuration",
-            offering: panelConfigOffering(template, language),
-          },
-          {
-            id: crypto.randomUUID(),
-            parameter: language === "hi" ? "मूल्य आधार" : "Price Basis",
-            offering: language === "hi" ? "टर्नकी EPC" : "Turnkey EPC",
-          },
-        ]),
+    commercialOffer: stripSyncedCommercialRows(base.commercialOffer),
   };
 }

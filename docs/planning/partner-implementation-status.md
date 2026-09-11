@@ -11,6 +11,7 @@ Related docs:
 - Satyanarayan UI → [`ui-satyanarayan-sites.md`](./ui-satyanarayan-sites.md)
 - RJ Green UI → [`ui-rjgreen-sites.md`](./ui-rjgreen-sites.md)
 - Our projects UI → [`ui-our-projects.md`](./ui-our-projects.md)
+- Sales team sites UI → [`ui-sales-team-sites.md`](./ui-sales-team-sites.md)
 - Sub Vendor ledgers (sheet) → [`sub-vendor-partner-ledger.md`](./sub-vendor-partner-ledger.md)
 
 **How to use this file**
@@ -179,10 +180,42 @@ Related docs:
 
 ---
 
+## Sales team sites
+
+**Scope:** `Sales team sites` tab · sheet `CALL TEAM SITE` · see [`ui-sales-team-sites.md`](./ui-sales-team-sites.md)
+
+### Done (codebase — current requirement)
+
+| Area | Status | Notes |
+|------|--------|-------|
+| Top-level **Sales team sites** tab | ✅ | Scope `sales`; placed next to Our projects |
+| Load `CALL TEAM SITE` | ✅ | Exact sheet name for gviz; app `PROJECT TYPE` = `Sales team sites` |
+| Our-style columns | ✅ | Partner deal columns hidden; cash due = from client |
+| **Analytics** | ✅ | Our-style hero + overview (MSS-only register) |
+| **Download analytics** | ✅ | Full-page PDF |
+
+**Key code paths**
+
+- `projects-config.ts` — `CALL_TEAM_SHEET_NAME`, `SALES_PROJECT_TYPE`, `isSalesProjectType()`
+- `projects-columns.ts` — `isOurStyleProjectsScope`
+- `MssSitesPage.tsx` — page tab
+- `MssSitesAnalytics.tsx` — sales hero + overview
+
+### Pending
+
+| Item | Status | Notes |
+|------|--------|-------|
+| PENDING SITES / other new MSS tabs | ⏳ Discuss | Not Sales — still unloaded |
+
+**Verdict:** Current Sales-team requirement is **done**.
+
+---
+
 ## Changelog
 
 | Date | Partner | Change |
 |------|---------|--------|
+| 2026-09-11 | Sales | New **Sales team sites** tab from MSS `CALL TEAM SITE`; placed next to Our projects |
 | 2026-09-05 | Ajay | Ledger refresh: money **+₹3,21,500** (new ₹3L NEFT 05 Sep); Everest bills **₹77,781** (invoice 0179) |
 | 2026-08-28 | Satyanarayan | Sub Vendor ledger refresh: closing **₹1,68,342** (three Aug fuel advances) |
 | 2026-08-20 | Satyanarayan / RJ Green | Own top-level tabs; Sub Vendor ledger moved off Partner aggregate |

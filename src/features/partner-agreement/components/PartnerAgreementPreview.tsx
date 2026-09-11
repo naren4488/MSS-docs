@@ -1,6 +1,6 @@
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties, ReactNode } from "react";
-import { CompanyLogo } from "@/components/CompanyLogo";
+import { CompanyLogo, LETTERHEAD_LOGO_WRAP } from "@/components/CompanyLogo";
 import {
   FIRST_PAGE_CAPACITY,
   FOLLOWING_PAGE_CAPACITY,
@@ -89,7 +89,7 @@ function Header({ data }: { data: PartnerAgreementData }) {
       }}
     >
       {data.company.logoUrl ? (
-        <div style={{ display: "flex", justifyContent: "center", marginBottom: 12, overflow: "visible" }}>
+        <div style={LETTERHEAD_LOGO_WRAP}>
           <CompanyLogo alt="Company logo" src={data.company.logoUrl} />
         </div>
       ) : null}

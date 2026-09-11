@@ -1,4 +1,4 @@
-import { Building2, FolderKanban, Handshake, LayoutGrid, Printer, RefreshCw, Table2, UserRound } from "lucide-react";
+import { Building2, FolderKanban, Handshake, LayoutGrid, PhoneCall, Printer, RefreshCw, Table2, UserRound } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { MssSitesTablePreview, type MssSitesViewMode } from "../components/MssSitesTablePreview";
 import { fetchMssSitesTable } from "../lib/fetch-mss-sites";
@@ -58,9 +58,11 @@ export function MssSitesPage() {
             ? "RJ Green sites — Analytics"
             : scope === "ajay"
               ? "Ajay sites — Analytics"
-              : scope === "partner"
-                ? "Partner projects — Analytics"
-                : "Our projects — Analytics";
+              : scope === "sales"
+                ? "Sales team sites — Analytics"
+                : scope === "partner"
+                  ? "Partner projects — Analytics"
+                  : "Our projects — Analytics";
     const cleanupPrint = prepareMssSitesAnalyticsPrint();
     const cleanup = () => {
       cleanupPrint();
@@ -74,15 +76,17 @@ export function MssSitesPage() {
   const scopeSubtitle =
     scope === "our"
       ? "MSS residential & commercial sites (MSS + Arkshakti registers)."
-      : scope === "shripal"
-        ? "Shripal Ji sites from MSS and Arkshakti — separate register for special cases."
-        : scope === "ajay"
-          ? "Ajay Ji sites from MSS and Arkshakti — separate register for Ajay (everest)."
-          : scope === "satyanarayan"
-            ? "Satyanarayan Ji sites from the MSS workbook — separate register with Sub Vendor ledger."
-            : scope === "rjgreen"
-              ? "Rohit (RJ GREEN) sites from MSS and Arkshakti — separate register."
-              : "Remaining partner-led site registers (excluding Shripal, Ajay, Satyanarayan, RJ Green).";
+      : scope === "sales"
+        ? "Sales team sites from the MSS CALL TEAM SITE register."
+        : scope === "shripal"
+          ? "Shripal Ji sites from MSS and Arkshakti — separate register for special cases."
+          : scope === "ajay"
+            ? "Ajay Ji sites from MSS and Arkshakti — separate register for Ajay (everest)."
+            : scope === "satyanarayan"
+              ? "Satyanarayan Ji sites from the MSS workbook — separate register with Sub Vendor ledger."
+              : scope === "rjgreen"
+                ? "Rohit (RJ GREEN) sites from MSS and Arkshakti — separate register."
+                : "Remaining partner-led site registers (excluding Sales, Shripal, Ajay, Satyanarayan, RJ Green).";
 
   return (
     <div className="page-shell page-shell--mss-sites">
@@ -144,6 +148,7 @@ export function MssSitesPage() {
           ) : null}
           {viewMode === "analytics" &&
           (scope === "our" ||
+            scope === "sales" ||
             scope === "shripal" ||
             scope === "ajay" ||
             scope === "satyanarayan" ||
@@ -172,6 +177,16 @@ export function MssSitesPage() {
         >
           <Building2 size={16} aria-hidden />
           Our projects
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={scope === "sales"}
+          className={`mss-sites-scope-tab${scope === "sales" ? " mss-sites-scope-tab--active" : ""}`}
+          onClick={() => setScope("sales")}
+        >
+          <PhoneCall size={16} aria-hidden />
+          Sales team sites
         </button>
         <button
           type="button"

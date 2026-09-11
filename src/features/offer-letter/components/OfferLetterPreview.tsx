@@ -9,7 +9,7 @@ import {
   PAGE_TOP_BOTTOM_PADDING,
   PAGE_WIDTH,
 } from "../constants/sheet-layout";
-import { CompanyLogo } from "@/components/CompanyLogo";
+import { CompanyLogo, LETTERHEAD_LOGO_WRAP } from "@/components/CompanyLogo";
 import { filledValue, formatCurrency, formatDate } from "../lib/offer-letter-formatters";
 import { renderRichText } from "../lib/offer-letter-parser";
 import type { OfferLetterData, OfferLetterTerm } from "../types/offer-letter";
@@ -108,7 +108,7 @@ function Header({ data }: { data: OfferLetterData }) {
       }}
     >
       {data.company.logoUrl ? (
-        <div style={{ display: "flex", justifyContent: "center", marginBottom: 12, overflow: "visible" }}>
+        <div style={LETTERHEAD_LOGO_WRAP}>
           <CompanyLogo alt="Company logo" src={data.company.logoUrl} />
         </div>
       ) : null}

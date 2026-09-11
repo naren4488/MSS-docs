@@ -1,5 +1,5 @@
 import type { CSSProperties, ReactNode } from "react";
-import { CompanyLogo } from "@/components/CompanyLogo";
+import { CompanyLogo, LETTERHEAD_LOGO_WRAP } from "@/components/CompanyLogo";
 import { PAGE_HEIGHT, PAGE_SIDE_PADDING, PAGE_TOP_BOTTOM_PADDING, PAGE_WIDTH } from "../constants/sheet-layout";
 import { isAnnexureFirm, isLetterheadFirm } from "../lib/company-profile-defaults";
 import type { CompanyProfileData } from "../types/company-profile";
@@ -52,8 +52,8 @@ function DetailsHeader({ data }: { data: CompanyProfileData }) {
   return (
     <div style={{ textAlign: "center", borderBottom: `3px solid ${NAVY}`, paddingBottom: 16, marginBottom: 4 }}>
       {data.logoUrl ? (
-        <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
-          <CompanyLogo alt={`${filledValue(data.legalName)} logo`} maxHeight={88} maxWidth={240} src={data.logoUrl} />
+        <div style={LETTERHEAD_LOGO_WRAP}>
+          <CompanyLogo alt={`${filledValue(data.legalName)} logo`} src={data.logoUrl} />
         </div>
       ) : null}
       <div style={{ fontSize: 24, fontWeight: 800, letterSpacing: 1, color: NAVY, textTransform: "uppercase" }}>

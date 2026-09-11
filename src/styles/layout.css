@@ -3,37 +3,6 @@
   padding-bottom: 40px;
 }
 
-.app-root:has(.brochure-page-shell) {
-  padding-bottom: 0;
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  height: 100dvh;
-  overflow: hidden;
-}
-
-.brochure-page-shell {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.brochure-preview {
-  flex: 1;
-  min-height: 0;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-.brochure-preview-scroll {
-  flex: 1;
-  min-height: 0;
-  overflow: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
 .feature-nav {
   position: sticky;
   top: 0;

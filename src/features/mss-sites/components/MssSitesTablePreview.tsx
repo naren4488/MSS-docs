@@ -229,6 +229,11 @@ export function MssSitesTablePreview({ table, viewMode, scope }: MssSitesTablePr
                   <span className="mss-sites-source-badge mss-sites-source-badge--mss">MSS res / comm</span>
                   <span className="mss-sites-source-badge mss-sites-source-badge--arkshakti">Arkshakti</span>
                 </>
+              ) : scope === "sales" ? (
+                <>
+                  <span className="mss-sites-source-badge mss-sites-source-badge--mss">Sales team</span>
+                  <span className="mss-sites-source-badge mss-sites-source-badge--mss">MSS</span>
+                </>
               ) : scope === "shripal" ? (
                 <>
                   <span className="mss-sites-source-badge mss-sites-source-badge--partner">Shripal Ji</span>

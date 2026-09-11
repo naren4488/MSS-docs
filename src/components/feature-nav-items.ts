@@ -1,5 +1,4 @@
 import {
-  BookOpen,
   Building2,
   FileText,
   FolderKanban,
@@ -70,12 +69,5 @@ export const FEATURE_NAV_ITEMS: FeatureNavItem[] = [
     icon: Users,
     matchList: (pathname) => pathname === "/employees",
     matchMaker: (pathname) => pathname.startsWith("/employee-directory") || pathname === "/employees",
-  },
-  {
-    path: "/brochure",
-    label: "Brochure",
-    icon: BookOpen,
-    matchList: (pathname) => pathname === "/brochure",
-    matchMaker: (pathname) => pathname === "/brochure",
   },
 ];

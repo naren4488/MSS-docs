@@ -22,20 +22,20 @@ Sister docs:
 
 Show **remaining partner-led** site registers in one aggregate surface, with partner money columns visible, filters scoped to partner tabs, and analytics for dues / deal margins / by-partner rollups.
 
-Dedicated partners with their own tabs (Shripal, Ajay, Satyanarayan, RJ Green) are **excluded**.
+Dedicated partners with their own tabs (Shripal, Ajay, Satyanarayan, RJ Green) are **excluded**. **Sales team sites** (`CALL TEAM SITE`) is also excluded — it sits next to Our, not in Partner.
 
 ---
 
 ## Scope definition
 
-A row belongs to **Partner projects** when `PROJECT TYPE` is **not** Our / Shripal / Ajay / Satyanarayan / RJ Green (see `getProjectsScopeForProjectType()` / `isDedicatedPartnerProjectType()` in `projects-config.ts`).
+A row belongs to **Partner projects** when `PROJECT TYPE` is **not** Our / Sales / Shripal / Ajay / Satyanarayan / RJ Green (see `getProjectsScopeForProjectType()` / `isDedicatedPartnerProjectType()` / `isSalesProjectType()` in `projects-config.ts`).
 
 Examples (non-exhaustive):
 
 - From MSS workbook: `KAVITA MAM`, `DHERAJ JI SITES`, …
 - From Dec–Feb / Arkshakti: `Pradeep (veer)`, …
 
-**Excluded** (own top-level tabs): `MSS res`, `MSS COMMERCIAL`, `SHRIPAL JI`, `Ajay (everest)`, `SATAYNARAYAN JI`, `Rohit (RJ GREEN)`.
+**Excluded** (own top-level tabs): `MSS res`, `MSS COMMERCIAL`, `Sales team sites` (`CALL TEAM SITE`), `SHRIPAL JI`, `Ajay (everest)`, `SATAYNARAYAN JI`, `Rohit (RJ GREEN)`.
 
 ---
 

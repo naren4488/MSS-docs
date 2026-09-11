@@ -9,6 +9,7 @@ Keep **this workbook’s** notes here only. Sister planning docs:
 - Planning index → [`README.md`](./README.md)
 - Dec–Feb / Arkshakti workbook (also has `MSS res`, partner tabs) → [`dec-to-feb-sheet.md`](./dec-to-feb-sheet.md)
 - App UI: Our projects → [`ui-our-projects.md`](./ui-our-projects.md)
+- App UI: Sales team sites → [`ui-sales-team-sites.md`](./ui-sales-team-sites.md)
 - App UI: Shripal / Ajay / Partner → [`ui-shripal-sites.md`](./ui-shripal-sites.md), [`ui-ajay-sites.md`](./ui-ajay-sites.md), [`ui-partner-projects.md`](./ui-partner-projects.md)
 - Sub Vendor Payment → [`sub-vendor-partner-ledger.md`](./sub-vendor-partner-ledger.md)
 - Loans Ledgers → [`loans-ledgers.md`](./loans-ledgers.md)
@@ -45,7 +46,7 @@ Configured as an **explicit tab list** in `PROJECT_SHEET_TABS` (not “everythin
 | 2 | `SHRIPAL JI` | 32 | Yes | **Shripal sites** |
 | 3 | `SATAYNARAYAN JI` | 23 | Yes | Partner projects |
 | 4 | `Rohit (RJ GREEN)` | 10 | Yes | Partner projects |
-| 5 | `CALL TEAM SITE` | 18 | No | — |
+| 5 | `CALL TEAM SITE` | 26 | Yes | **Sales team sites** |
 | 6 | `POORAN JI ` _(trailing space)_ | 3 | No | — |
 | 7 | `Ajay (everest)` | 30 | Yes | **Ajay sites** |
 | 8 | `RAVI JI SITES` | 6 | Yes | Partner projects |
@@ -59,7 +60,7 @@ Configured as an **explicit tab list** in `PROJECT_SHEET_TABS` (not “everythin
 | 16 | `ALWAR SITES` | 22 | No (excluded) | — |
 | 17 | `summary` | 9 | No (dashboard) | — |
 
-**11 tabs loaded** · **129 named site rows** (MSS vendor only; merged with Arkshakti in app).
+**12 tabs loaded** · includes `CALL TEAM SITE` as Sales team sites (~26 named rows).
 
 Same partner tab names often exist on the **Dec–Feb** workbook under vendor **Arkshakti** — see [`dec-to-feb-sheet.md`](./dec-to-feb-sheet.md). Row counts and columns can differ between workbooks.
 
@@ -176,7 +177,7 @@ Older Dec–Feb / Arkshakti `MSS res` snapshot used different strings (`Panel`, 
 |-----|-------------------|
 | `summary` | Dashboard — not site register |
 | `ALWAR SITES` | Explicitly excluded in config |
-| `CALL TEAM SITE` | Not in `PROJECT_SHEET_TABS` |
+| `CALL TEAM SITE` | Loaded as app tab **Sales team sites** (`PROJECT TYPE` remapped; sheet name unchanged) |
 | `POORAN JI ` | Not in list |
 | `ravi inc ` / `dilkhush inc ` | Not in list |
 
@@ -189,10 +190,16 @@ Older Dec–Feb / Arkshakti `MSS res` snapshot used different strings (`Panel`, 
 - User noted there was no dedicated MD for the MSS workbook (only Dec–Feb, Sub Vendor, Loans).
 - Created this file; live tab audit + `MSS res` column/work-status snapshot from Google Sheet.
 
+### 2026-09-11 — CALL TEAM SITE loaded as Sales team sites
+
+- App page tab **Sales team sites** (next to Our projects) fetches exact sheet name `CALL TEAM SITE`.
+- `PROJECT TYPE` in the app is `Sales team sites`; gviz still uses `CALL TEAM SITE`.
+- See [`ui-sales-team-sites.md`](./ui-sales-team-sites.md).
+
 ### Upcoming
 
 - [ ] Per-tab analysis for loaded partner registers
-- [ ] Decide whether `CALL TEAM SITE`, `POORAN JI`, `ravi inc`, `dilkhush inc` should load
+- [ ] Decide whether `POORAN JI`, `ravi inc`, `dilkhush inc`, `PENDING SITES` should load
 - [ ] Map Work status strings MSS vs Arkshakti vs app filters
 - [ ] Column mapping vs `PROJECT_TABLE_HEADERS` for MSS-only vs partner tabs
 - [ ] Align config comments with explicit tab list vs workbook order

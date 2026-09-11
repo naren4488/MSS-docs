@@ -145,13 +145,32 @@ export function isSolarPlantCapacityParameter(parameter: string) {
   );
 }
 
+export function isPanelConfigurationParameter(parameter: string) {
+  const value = parameter.trim().toLowerCase();
+  return value === "panel configuration" || parameter.includes("पैनल कॉन्फ़िगरेशन");
+}
+
+/** Brand from the PV-module make, without warranty / wattage suffixes. */
+export function panelBrandFromMake(make: string) {
+  let brand = make.trim();
+  if (!brand) {
+    return "";
+  }
+  brand = brand.split("·")[0].trim();
+  brand = brand.replace(/\s+with\s+\d[\s\S]*/i, "").trim();
+  brand = brand.replace(/\s+\d+\s*वर्ष[\s\S]*/u, "").trim();
+  brand = brand.replace(/\b\d+\s*Wp\b/gi, " ").replace(/\s{2,}/g, " ").trim();
+  return brand;
+}
+
 /** Derived commercial rows — keep them out of the editable table. */
 export function stripSyncedCommercialRows(rows: QuotationCommercialRow[]) {
   return rows.filter(
     (row) =>
       !isProjectPriceParameter(row.parameter) &&
       !isCustomerNetPayableParameter(row.parameter) &&
-      !isSolarPlantCapacityParameter(row.parameter),
+      !isSolarPlantCapacityParameter(row.parameter) &&
+      !isPanelConfigurationParameter(row.parameter),
   );
 }
 
@@ -184,13 +203,23 @@ export function solarPlantCapacityOffering(
   if (!wattage || wattage.kw <= 0) {
     return "";
   }
+  const pvItem = materialItems.find((item) => isSolarPvModulesDescription(item.description));
+  const wp = Math.round(wattage.wattage / wattage.panels);
+  const brand = panelBrandFromMake(pvItem?.make ?? "");
+  const hasPanelNoun = /panels?|पैनल/i.test(brand);
+  const noun = hasPanelNoun ? "" : language === "hi" ? " पैनल" : " Panels";
+  const brandPart = brand ? ` ${brand}` : "";
   const kw = formatUnitCount(wattage.kw);
+  const head =
+    language === "hi" ? `${wattage.panels} × ${wp}W${brandPart}${noun}` : `${wattage.panels} x ${wp}W${brandPart}${noun}`;
   if (kind === "offgrid") {
-    return language === "hi" ? `${kw} किलोवाट, ऑफ-ग्रिड सोलर सिस्टम` : `${kw} KW, Off-grid solar system`;
+    return language === "hi"
+      ? `${head} (${kw} किलोवाट, ऑफ-ग्रिड सोलर सिस्टम)`
+      : `${head} (${kw} KW, Off-grid solar system)`;
   }
   return language === "hi"
-    ? `${kw} किलोवाट, ऑन-ग्रिड सोलर सिस्टम`
-    : `${kw} KW, On-grid solar system`;
+    ? `${head} (${kw} किलोवाट, ऑन-ग्रिड सोलर सिस्टम)`
+    : `${head} (${kw} KW, On-grid solar system)`;
 }
 
 export function totalGovtSubsidy(centralSubsidy: string, stateSubsidy: string) {
@@ -205,25 +234,28 @@ export function commercialRowsForPreview(data: QuotationData): QuotationCommerci
   const rows = stripSyncedCommercialRows(data.commercialOffer);
   const language: QuotationLanguage = data.language === "hi" ? "hi" : "en";
   const L = quotationLabels(language);
-  const synced: QuotationCommercialRow[] = [];
 
-  const capacityOffering = solarPlantCapacityOffering(data.materialItems, language, data.kind);
-  if (capacityOffering) {
-    synced.push({
-      id: "synced-solar-plant-capacity",
-      parameter: language === "hi" ? "सोलर प्लांट क्षमता" : "Solar Plant Capacity",
-      offering: capacityOffering,
-    });
-  }
+  const plantOffering = solarPlantCapacityOffering(data.materialItems, language, data.kind);
+  const leadRows: QuotationCommercialRow[] = plantOffering
+    ? [
+        {
+          id: "synced-solar-plant-capacity",
+          parameter: language === "hi" ? "सोलर प्लांट क्षमता" : "Solar Plant Capacity",
+          offering: plantOffering,
+        },
+      ]
+    : [];
 
   const netPayable = customerNetPayableOffering(data.projectAmount, language);
-  if (netPayable) {
-    synced.push({
-      id: "synced-customer-net-payable",
-      parameter: L.customerNetPayable,
-      offering: netPayable,
-    });
-  }
+  const trailRows: QuotationCommercialRow[] = netPayable
+    ? [
+        {
+          id: "synced-customer-net-payable",
+          parameter: L.customerNetPayable,
+          offering: netPayable,
+        },
+      ]
+    : [];
 
-  return [...synced.filter((row) => row.id === "synced-solar-plant-capacity"), ...rows, ...synced.filter((row) => row.id === "synced-customer-net-payable")];
+  return [...leadRows, ...rows, ...trailRows];
 }

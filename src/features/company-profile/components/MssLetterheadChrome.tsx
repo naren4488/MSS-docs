@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { CompanyLogo } from "@/components/CompanyLogo";
+import { CompanyLogo, LETTERHEAD_LOGO_WRAP } from "@/components/CompanyLogo";
 import { PAGE_HEIGHT, PAGE_SIDE_PADDING, PAGE_WIDTH } from "../constants/sheet-layout";
 import type { CompanyProfileData } from "../types/company-profile";
 import { filledValue } from "../lib/company-profile-formatters";
@@ -29,7 +29,7 @@ export function LetterheadHeader({ data }: { data: CompanyProfileData }) {
     <div style={{ background: "#ffffff" }}>
       <div style={{ textAlign: "center", padding: "22px 56px 14px" }}>
         {data.logoUrl ? (
-          <div style={{ display: "flex", justifyContent: "center", height: 84, overflow: "hidden", marginBottom: 2 }}>
+          <div style={LETTERHEAD_LOGO_WRAP}>
             <CompanyLogo alt={`${filledValue(data.legalName)} logo`} src={data.logoUrl} />
           </div>
         ) : null}
