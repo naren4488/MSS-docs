@@ -119,13 +119,13 @@ function OffgridCard({ template }: { template: QuotationTemplateMeta }) {
       </div>
 
       <p className="quotation-package-card-copy">
-        Same MSS layout with off-grid defaults: Waaree 590 Wp non-DCR, Microtek off-grid PCU, 12V 220 Ah tubular
-        bank (8 batteries at 3 kW). No earthing, LA, AC cable, AC/DC DB, solar meter, or subsidy.
+        Same MSS layout with off-grid defaults: 6 × Waaree 590 Wp Topcon Bifacial, Microtek 3 kW off-grid PCU, 5 × 12V
+        220 Ah non-lithium tubular. No phase, earthing, LA, AC cable, AC/DC DB, solar meter, or subsidy.
       </p>
 
       <div className="quotation-package-card-meta">
         <span>
-          {template.panels} × {template.wp}W · {template.batteries ?? 8} × 220Ah
+          {template.panels} × {template.wp}W · {template.batteries ?? 5} × 220Ah
         </span>
         <span className="quotation-package-card-cta">
           Open <ArrowRight size={14} aria-hidden />

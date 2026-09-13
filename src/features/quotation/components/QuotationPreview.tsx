@@ -202,7 +202,7 @@ function SummaryBox({ data }: { data: QuotationData }) {
       ) : null}
       <div style={rowStyle}>
         <span style={labelStyle}>{L.capacity}</span>
-        <span>: {filledValue(formatCapacityWithPhase(data.capacity, data.phase))}</span>
+        <span>: {filledValue(isOffgridQuotation(data) ? data.capacity : formatCapacityWithPhase(data.capacity, data.phase))}</span>
       </div>
       {extraRows.map((row) => (
         <div key={row.label} style={rowStyle}>
@@ -443,36 +443,94 @@ function CoverBand({ data }: { data: QuotationData }) {
 
 function WarrantyBadges({ data }: { data: QuotationData }) {
   const L = quotationLabels(data.language);
-  const badge = (years: string, label: string) => (
-    <div style={{ textAlign: "center" }}>
-      <div
-        style={{
-          width: 88,
-          height: 88,
-          borderRadius: "50%",
-          background: `linear-gradient(135deg, ${NAVY}, ${NAVY2})`,
-          color: "#ffffff",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          margin: "0 auto 8px",
-        }}
-      >
-        <span style={{ fontSize: 10, opacity: 0.9 }}>{L.upTo}</span>
-        <span style={{ fontSize: 20, fontWeight: 800, lineHeight: 1 }}>{years || "—"}</span>
-        <span style={{ fontSize: 11, fontWeight: 600 }}>{L.years}</span>
+  const offgrid = isOffgridQuotation(data);
+  const itemCount = offgrid ? 4 : 3;
+
+  const circleBase: CSSProperties = {
+    width: 86,
+    height: 86,
+    borderRadius: "50%",
+    background: `linear-gradient(145deg, ${NAVY2} 0%, ${NAVY} 55%, #0d224f 100%)`,
+    color: "#ffffff",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    margin: "0 auto 8px",
+    boxSizing: "border-box",
+  };
+
+  const labelStyle: CSSProperties = {
+    background: NAVY,
+    color: "#ffffff",
+    fontSize: 8,
+    fontWeight: 700,
+    letterSpacing: 0.35,
+    lineHeight: 1.2,
+    padding: "5px 6px",
+    borderRadius: 5,
+    minHeight: 32,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    textAlign: "center",
+    width: "100%",
+    maxWidth: 118,
+    margin: "0 auto",
+    boxSizing: "border-box",
+  };
+
+  const yearsBadge = (years: string, label: string) => (
+    <div style={{ textAlign: "center", width: "100%" }}>
+      <div style={circleBase}>
+        <span style={{ fontSize: 8.5, opacity: 0.88, letterSpacing: 0.3 }}>{L.upTo}</span>
+        <span style={{ fontSize: 24, fontWeight: 800, lineHeight: 1, margin: "1px 0" }}>{years || "—"}</span>
+        <span style={{ fontSize: 9.5, fontWeight: 600, opacity: 0.95 }}>{L.years}</span>
       </div>
-      <div style={{ background: NAVY, color: "#ffffff", fontSize: 9.5, fontWeight: 700, letterSpacing: 0.5, padding: "4px 10px", borderRadius: 4, display: "inline-block" }}>
-        {label}
-      </div>
+      <div style={labelStyle}>{label}</div>
     </div>
   );
+
+  const companyBadge = (label: string) => (
+    <div style={{ textAlign: "center", width: "100%" }}>
+      <div style={{ ...circleBase, padding: "6px 5px" }}>
+        <span style={{ fontSize: 7.5, opacity: 0.88, letterSpacing: 0.2 }}>
+          {data.language === "hi" ? "के अनुसार" : "As per"}
+        </span>
+        <span
+          style={{
+            fontSize: 12,
+            fontWeight: 800,
+            letterSpacing: 0.5,
+            lineHeight: 1.05,
+            margin: "3px 0 2px",
+          }}
+        >
+          {L.microtekBrand}
+        </span>
+        <span style={{ fontSize: 7.5, fontWeight: 600, lineHeight: 1.15, opacity: 0.92, textAlign: "center" }}>
+          {data.language === "hi" ? "कंपनी वारंटी" : "company warranty"}
+        </span>
+      </div>
+      <div style={labelStyle}>{label}</div>
+    </div>
+  );
+
   return (
-    <div style={{ display: "flex", justifyContent: "center", gap: 24, margin: "10px 0 4px", flexWrap: "wrap" }}>
-      {badge(data.warrantySolarPanelYears, L.solarPanelWarranty)}
-      {badge(data.warrantyInverterYears, L.inverterWarranty)}
-      {badge(data.warrantySetupBosYears, L.setupBosWarranty)}
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: `repeat(${itemCount}, minmax(0, 1fr))`,
+        gap: itemCount === 4 ? 8 : 16,
+        alignItems: "start",
+        margin: "12px 0 6px",
+        padding: "2px 0",
+      }}
+    >
+      {yearsBadge(data.warrantySolarPanelYears || "30", L.solarPanelWarranty)}
+      {offgrid ? companyBadge(L.inverterWarranty) : yearsBadge(data.warrantyInverterYears, L.inverterWarranty)}
+      {offgrid ? companyBadge(L.batteryWarranty) : null}
+      {yearsBadge(data.warrantySetupBosYears || "5", L.setupBosWarranty)}
     </div>
   );
 }

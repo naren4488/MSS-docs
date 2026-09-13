@@ -293,13 +293,11 @@ export function offgridPanelCount(kw: number): number {
 }
 
 /**
- * 12V 220Ah tubulars on a 48V Microtek PCU: 4 in series per string.
- * 3 kW kit = 8 batteries (2 parallel strings) as specified.
- * Other sizes scale in multiples of 4 so the bank stays 48V.
+ * 3 kW kit = 5 × 12V 220Ah tubulars.
+ * Other sizes scale from that count.
  */
 export function offgridBatteryCount(kw: number): number {
-  const parallelStrings = Math.max(1, Math.round((kw / 3) * 2));
-  return parallelStrings * 4;
+  return Math.max(1, Math.round((kw / 3) * 5));
 }
 
 export function offgridProjectAmount(capacity: string): string {
@@ -316,16 +314,20 @@ function offgridInverterUnit(language: QuotationLanguage): string {
 
 function offgridInverterMake(kw: string, language: QuotationLanguage): string {
   return language === "hi"
-    ? `${kw} किलोवाट MICROTEK ऑफ-ग्रिड PCU (48V) · 2 वर्ष वारंटी`
-    : `${kw} KW MICROTEK Off-Grid PCU (48V) with 2 Year Warranty`;
+    ? `${kw} किलोवाट MICROTEK ऑफ-ग्रिड PCU (48V) · वारंटी कंपनी के अनुसार`
+    : `${kw} KW MICROTEK Off-Grid PCU (48V) with warranty as per company`;
 }
 
-function offgridBatteryMake(count: number, language: QuotationLanguage): string {
-  const strings = Math.max(1, Math.round(count / 4));
-  if (language === "hi") {
-    return `12V ${OFFGRID_BATTERY_AH} Ah ट्यूबुलर · 48V बैंक (${strings} पैरेलल स्ट्रिंग × 4 सीरीज़) · Microtek / समकक्ष`;
-  }
-  return `12V ${OFFGRID_BATTERY_AH} Ah tubular · 48V bank (${strings} parallel strings × 4 in series) · Microtek / equivalent`;
+function offgridModuleMake(language: QuotationLanguage): string {
+  return language === "hi"
+    ? "Waaree Topcon Bifacial · 30 वर्ष वारंटी"
+    : "Waaree Topcon Bifacial with 30 Year Warranty";
+}
+
+function offgridBatteryMake(language: QuotationLanguage): string {
+  return language === "hi"
+    ? "नॉन-लिथियम ट्यूबुलर · Microtek / समकक्ष"
+    : "Non-lithium tubular · Microtek / equivalent";
 }
 
 function offgridBatteryQty(count: number, language: QuotationLanguage): string {
@@ -337,19 +339,18 @@ export function offgridPanelConfigOffering(capacity: string, language: Quotation
   const panels = offgridPanelCount(kw);
   const totalKw = formatKwLabel((panels * OFFGRID_MODULE_WP) / 1000);
   if (language === "hi") {
-    return `${panels} × ${OFFGRID_MODULE_WP}W Waaree नॉन-DCR पैनल (कुल ${totalKw} किलोवाट)`;
+    return `${panels} × ${OFFGRID_MODULE_WP}W Waaree Topcon Bifacial (कुल ${totalKw} किलोवाट)`;
   }
-  return `${panels} x ${OFFGRID_MODULE_WP}W Waaree Non-DCR Panels (${totalKw} KW Total)`;
+  return `${panels} x ${OFFGRID_MODULE_WP}W Waaree Topcon Bifacial (${totalKw} KW Total)`;
 }
 
 export function offgridBatteryOffering(capacity: string, language: QuotationLanguage): string {
   const kw = parseCapacityKw(capacity) ?? 3;
   const count = offgridBatteryCount(kw);
-  const strings = Math.max(1, Math.round(count / 4));
   if (language === "hi") {
-    return `${count} × 12V ${OFFGRID_BATTERY_AH} Ah ट्यूबुलर · 48V (${strings} पैरेलल × 4 सीरीज़)`;
+    return `${count} × 12V ${OFFGRID_BATTERY_AH} Ah नॉन-लिथियम ट्यूबुलर`;
   }
-  return `${count} × 12V ${OFFGRID_BATTERY_AH} Ah tubular · 48V (${strings} parallel × 4 series)`;
+  return `${count} × 12V ${OFFGRID_BATTERY_AH} Ah non-lithium tubular`;
 }
 
 export function syncOffgridOfferToCapacity(
@@ -367,31 +368,29 @@ export function syncOffgridOfferToCapacity(
 }
 
 function defaultOffgridMaterialItems(language: QuotationLanguage): QuotationMaterialItem[] {
-  const site = asPerSite(language);
   const inverterMake = offgridInverterMake("3", language);
-  const batteryMake = offgridBatteryMake(8, language);
+  const batteryMake = offgridBatteryMake(language);
+  const moduleMake = offgridModuleMake(language);
 
   if (language === "hi") {
     return [
-      material("सोलर पीवी मॉड्यूल", "6 पैनल", `${OFFGRID_MODULE_WP} Wp`, "Waaree 590 Wp नॉन-DCR · 12 वर्ष उत्पाद + 25 वर्ष प्रदर्शन वारंटी"),
+      material("सोलर पीवी मॉड्यूल", "6 पैनल", `${OFFGRID_MODULE_WP} Wp`, moduleMake),
       material("सोलर इनवर्टर", "1", offgridInverterUnit(language), inverterMake),
       material("माउंटिंग स्ट्रक्चर (GI अपोलो)", "आवश्यकतानुसार", "", "लेग 75×75, रैफ्टर 60×40, पर्लिन 40×40"),
       material("DC केबल", "60 तक", "मी.", "4 वर्ग मिमी कॉपर वायर, पॉलीकैब केबल"),
       material("कनेक्शन किट", "आवश्यकतानुसार", "—", "कनेक्टिंग केबल (4 वर्ग मिमी — पॉलीकैब), MC4, जम्पर"),
-      material("ट्यूबुलर बैटरी बैंक", offgridBatteryQty(8, language), `12V ${OFFGRID_BATTERY_AH} Ah`, batteryMake),
-      material("बैटरी स्टैंड व इंटरकनेक्ट", site, "—", "बैटरी स्टैंड, इंटरकनेक्ट केबल व टर्मिनल — साइट आवश्यकतानुसार"),
+      material("ट्यूबुलर बैटरी बैंक", offgridBatteryQty(5, language), `12V ${OFFGRID_BATTERY_AH} Ah`, batteryMake),
       material("डिज़ाइनेड इंस्टॉलेशन व कमीशनिंग", "", "साइट आवश्यकतानुसार", "टीम माही सोलर सॉल्यूशन"),
     ];
   }
 
   return [
-    material("Solar PV Modules", "6 Panel", `${OFFGRID_MODULE_WP} Wp`, "Waaree 590 Wp Non-DCR with 12 Year Product + 25 Year Performance Warranty"),
+    material("Solar PV Modules", "6 Panel", `${OFFGRID_MODULE_WP} Wp`, moduleMake),
     material("Solar Inverter", "1", offgridInverterUnit(language), inverterMake),
     material("Mounting Structure (GI Apollo)", "As per Requirement", "", "Leg 75×75, Rafter 60×40, Purline 40×40"),
     material("DC Cable", "Upto 60", "Mtr", "4 sq mm Copper Wire, Polycab cable"),
     material("Connection Kit", "As per Requirement", "—", "Connecting cable (4 sq mm — Polycab), MC4, jumper"),
-    material("Tubular Battery Bank", offgridBatteryQty(8, language), `12V ${OFFGRID_BATTERY_AH} Ah`, batteryMake),
-    material("Battery Stand & Interconnect", site, "—", "Battery stand, interconnect cables and terminals as per site"),
+    material("Tubular Battery Bank", offgridBatteryQty(5, language), `12V ${OFFGRID_BATTERY_AH} Ah`, batteryMake),
     material("Designed Installation & Commissioning", "", "As per site requirement", "Team Mahi Solar Solution"),
   ];
 }
@@ -421,7 +420,7 @@ export function applyOffgridCapacityToMaterials(
         ...item,
         qty: offgridBatteryQty(count, language),
         unit: `12V ${OFFGRID_BATTERY_AH} Ah`,
-        make: offgridBatteryMake(count, language),
+        make: offgridBatteryMake(language),
       };
     }
     return item;
@@ -544,12 +543,12 @@ function defaultCommercialOffer(
     if (language === "hi") {
       return [
         commercial("बैटरी बैंक", offgridBatteryOffering(capacity, language)),
-        commercial("मूल्य आधार", "टर्नकी EPC · ₹1,00,000 प्रति किलोवाट"),
+        commercial("मूल्य आधार", "टर्नकी EPC"),
       ];
     }
     return [
       commercial("Battery Bank", offgridBatteryOffering(capacity, language)),
-      commercial("Price Basis", "Turnkey EPC · ₹1,00,000 per kW"),
+      commercial("Price Basis", "Turnkey EPC"),
     ];
   }
 
@@ -660,13 +659,16 @@ function offgridPaymentDelayText(language: QuotationLanguage): string {
 
 function patchOffgridWarrantyText(text: string): string {
   return text
-    .replace("Inverter: 10-year manufacturer warranty", "Inverter: 2-year manufacturer warranty (Microtek off-grid PCU)")
+    .replace(
+      "Inverter: 10-year manufacturer warranty",
+      "Inverter: As per MICROTEK company warranty",
+    )
     .replace(
       "Batteries (if applicable): Covered under respective manufacturer's warranty terms",
-      "Batteries: 36-month manufacturer warranty (tubular), subject to OEM terms",
+      "Batteries: As per MICROTEK company warranty",
     )
-    .replace("इनवर्टर: 10 वर्ष निर्माता वारंटी", "इनवर्टर: 2 वर्ष निर्माता वारंटी (Microtek ऑफ-ग्रिड PCU)")
-    .replace("बैटरी (यदि लागू): संबंधित निर्माता की शर्तों के अंतर्गत", "बैटरी: 36 माह निर्माता वारंटी (ट्यूबुलर), OEM शर्तों के अधीन");
+    .replace("इनवर्टर: 10 वर्ष निर्माता वारंटी", "इनवर्टर: MICROTEK कंपनी वारंटी के अनुसार")
+    .replace("बैटरी (यदि लागू): संबंधित निर्माता की शर्तों के अंतर्गत", "बैटरी: MICROTEK कंपनी वारंटी के अनुसार");
 }
 
 function defaultTerms(
@@ -1013,13 +1015,13 @@ export function createDefaultQuotationData(
     ourScope: commercial || offgrid ? defaultOurScope(language) : [],
     commercialOffer: defaultCommercialOffer(language, { commercial, offgrid, capacity }),
     warrantyText: "",
-    showGeneration: true,
+    showGeneration: !offgrid,
     generation: {
       unitRate: "8",
     },
     showWarrantyBadges: true,
-    warrantySolarPanelYears: offgrid ? "12" : "30",
-    warrantyInverterYears: offgrid ? "2" : "10",
+    warrantySolarPanelYears: "30",
+    warrantyInverterYears: offgrid ? "" : "10",
     warrantySetupBosYears: "5",
     showInstallationProcess: true,
     installationSteps: defaultInstallationSteps(language, offgrid),
@@ -1109,14 +1111,14 @@ export function switchQuotationLanguage(data: QuotationData, language: Quotation
     commercialOffer: offgrid
       ? stripSyncedCommercialRows(syncOffgridOfferToCapacity(fresh.commercialOffer, data.capacity, language))
       : stripSyncedCommercialRows(fresh.commercialOffer),
-    showGeneration: data.showGeneration,
+    showGeneration: offgrid ? false : data.showGeneration,
     generation: {
       unitRate: data.generation.unitRate || fresh.generation.unitRate,
     },
     showWarrantyBadges: data.showWarrantyBadges,
-    warrantySolarPanelYears: data.warrantySolarPanelYears,
-    warrantyInverterYears: data.warrantyInverterYears,
-    warrantySetupBosYears: data.warrantySetupBosYears,
+    warrantySolarPanelYears: offgrid ? fresh.warrantySolarPanelYears : data.warrantySolarPanelYears,
+    warrantyInverterYears: offgrid ? fresh.warrantyInverterYears : data.warrantyInverterYears,
+    warrantySetupBosYears: offgrid ? fresh.warrantySetupBosYears : data.warrantySetupBosYears,
     showInstallationProcess: data.showInstallationProcess,
     showWattageInfo: data.showWattageInfo,
     projectAmount: data.projectAmount,
@@ -1183,5 +1185,6 @@ export function normalizeQuotationData(input?: Partial<QuotationData> | null): Q
     installationSteps: input?.installationSteps ?? defaults.installationSteps,
     kind: offgrid ? "offgrid" : isCommercialQuotation({ ...defaults, ...input }) ? "commercial" : "residential",
     showSubsidySection: offgrid || commercial ? false : (input?.showSubsidySection ?? defaults.showSubsidySection),
+    showGeneration: offgrid ? false : (input?.showGeneration ?? defaults.showGeneration),
   };
 }

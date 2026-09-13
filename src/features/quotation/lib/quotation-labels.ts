@@ -46,6 +46,10 @@ export const QUOTATION_LABELS: Record<
     solarPanelWarranty: string;
     inverterWarranty: string;
     setupBosWarranty: string;
+    batteryWarranty: string;
+    asPerMicrotekWarranty: string;
+    microtekBrand: string;
+    asPerCompanyWarranty: string;
     emiGovSupport: string;
     emiZeroDown: string;
     emiInterest: string;
@@ -153,11 +157,15 @@ export const QUOTATION_LABELS: Record<
     gstNo: "GST No.",
     representedBy: "Represented by:",
     mobNo: "Mob. No.",
-    upTo: "Up to",
-    years: "Years",
     solarPanelWarranty: "SOLAR PANEL WARRANTY",
     inverterWarranty: "INVERTER WARRANTY",
     setupBosWarranty: "SETUP & BOS WARRANTY",
+    batteryWarranty: "BATTERY WARRANTY",
+    asPerMicrotekWarranty: "As per MICROTEK\ncompany warranty",
+    microtekBrand: "MICROTEK",
+    asPerCompanyWarranty: "As per company\nwarranty",
+    upTo: "Up to",
+    years: "Years",
     emiGovSupport: "Government Bank Support Available Under PM Surya Ghar Scheme:",
     emiZeroDown: "Loans available up to {amount} with Zero Down Payment",
     emiInterest: "Interest rate: {rate} (subject to bank approval)",
@@ -231,8 +239,8 @@ export const QUOTATION_LABELS: Record<
       "Installation, testing, commissioning and freight",
     ],
     offgridPriceIncludedItems: [
-      "Waaree 590 Wp non-DCR modules, GI Apollo structure, Microtek off-grid inverter",
-      "DC cables, connection kit, 12V 220 Ah tubular battery bank",
+      "Waaree Topcon Bifacial modules, GI Apollo structure, Microtek off-grid inverter",
+      "DC cables, connection kit, 5 × 12V 220 Ah non-lithium tubular batteries",
       "Installation, testing, commissioning and freight",
     ],
     discomCharges: "DISCOM / statutory charges",
@@ -303,6 +311,10 @@ export const QUOTATION_LABELS: Record<
     solarPanelWarranty: "सोलर पैनल वारंटी",
     inverterWarranty: "इनवर्टर वारंटी",
     setupBosWarranty: "सेटअप व BOS वारंटी",
+    batteryWarranty: "बैटरी वारंटी",
+    asPerMicrotekWarranty: "MICROTEK कंपनी\nवारंटी के अनुसार",
+    microtekBrand: "MICROTEK",
+    asPerCompanyWarranty: "कंपनी वारंटी\nके अनुसार",
     emiGovSupport: "पीएम सूर्य घर योजना के अंतर्गत सरकारी बैंक सहायता उपलब्ध:",
     emiZeroDown: "{amount} तक ऋण · शून्य डाउन पेमेंट",
     emiInterest: "ब्याज दर: {rate} (बैंक स्वीकृति के अधीन)",
@@ -376,8 +388,8 @@ export const QUOTATION_LABELS: Record<
       "इंस्टॉलेशन, परीक्षण, कमीशनिंग व भाड़ा",
     ],
     offgridPriceIncludedItems: [
-      "Waaree 590 Wp नॉन-DCR मॉड्यूल, GI अपोलो स्ट्रक्चर, Microtek ऑफ-ग्रिड इनवर्टर",
-      "DC केबल, कनेक्शन किट, 12V 220 Ah ट्यूबुलर बैटरी बैंक",
+      "Waaree Topcon Bifacial मॉड्यूल, GI अपोलो स्ट्रक्चर, Microtek ऑफ-ग्रिड इनवर्टर",
+      "DC केबल, कनेक्शन किट, 5 × 12V 220 Ah नॉन-लिथियम ट्यूबुलर बैटरी",
       "इंस्टॉलेशन, परीक्षण, कमीशनिंग व भाड़ा",
     ],
     discomCharges: "DISCOM / वैधानिक शुल्क",

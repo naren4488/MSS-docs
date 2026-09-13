@@ -179,27 +179,27 @@ export function QuotationEditor({ data, onChange }: QuotationEditorProps) {
               }}
             />
           </div>
-          <div className="field">
-            <label>System Phase</label>
-            <select
-              value={data.phase}
-              onChange={(event) => {
-                const phase = event.target.value as QuotationPhase;
-                onChange({
-                  ...data,
-                  phase,
-                  ...(offgrid
-                    ? applyOffgridSizing(data.capacity, phase)
-                    : commercial
+          {offgrid ? null : (
+            <div className="field">
+              <label>System Phase</label>
+              <select
+                value={data.phase}
+                onChange={(event) => {
+                  const phase = event.target.value as QuotationPhase;
+                  onChange({
+                    ...data,
+                    phase,
+                    ...(commercial
                       ? applyCommercialSizing(data.capacity, phase)
                       : { materialItems: applyPhaseToMaterialItems(data.materialItems, phase, data.language) }),
-                });
-              }}
-            >
-              <option value="1PH">Single Phase (1PH)</option>
-              <option value="3PH">Three Phase (3PH)</option>
-            </select>
-          </div>
+                  });
+                }}
+              >
+                <option value="1PH">Single Phase (1PH)</option>
+                <option value="3PH">Three Phase (3PH)</option>
+              </select>
+            </div>
+          )}
           <div className="field full-span">
             <label>Address</label>
             <textarea rows={2} value={data.address} onChange={(event) => update("address", event.target.value)} />
@@ -247,7 +247,7 @@ export function QuotationEditor({ data, onChange }: QuotationEditorProps) {
         title="Material Description"
         helper={
           offgrid
-            ? "Off-grid BOM: Waaree 590 Wp non-DCR, Microtek PCU, DC cable, 220 Ah battery bank. No earthing, LA, AC cable, AC/DC DB, or solar meter. Solar Plant Capacity on the PDF follows the Solar PV Modules row. Drag items to reorder."
+            ? "Off-grid BOM: 6 × Waaree 590 Wp Topcon Bifacial, Microtek 3 kW PCU, DC cable, 5 × 220 Ah non-lithium tubular. No earthing, LA, AC cable, AC/DC DB, or solar meter. Solar Plant Capacity on the PDF follows the Solar PV Modules row. Drag items to reorder."
             : commercial
               ? "Commercial BOM: cables as per site, ESE LA, HT generation meter, ACDB panel, cable tray / walkway / MCS. Solar Plant Capacity on the PDF follows the Solar PV Modules row. Drag items to reorder."
               : "Bill of materials. Solar Plant Capacity on the PDF follows the Solar PV Modules row. Drag items to reorder."
@@ -296,6 +296,7 @@ export function QuotationEditor({ data, onChange }: QuotationEditorProps) {
         />
       </AccordionSection>
 
+      {offgrid ? null : (
       <AccordionSection
         title="Solar Power Generation"
         helper="Day / month / year figures auto-calculate from panel watt × qty. Year 1 = 4 units/kW/day; years 2–5 = 3.9 units/kW/day."
@@ -328,8 +329,16 @@ export function QuotationEditor({ data, onChange }: QuotationEditorProps) {
           </div>
         ) : null}
       </AccordionSection>
+      )}
 
-      <AccordionSection title="Warranty Badges" helper="The 'Up to N Years' circular badges.">
+      <AccordionSection
+        title="Warranty Badges"
+        helper={
+          offgrid
+            ? "Panel shows 30 years. Inverter and battery show as per MICROTEK company warranty. Setup & BOS stays at 5 years."
+            : "The 'Up to N Years' circular badges."
+        }
+      >
         <div className="toggle-row" style={{ marginBottom: 12 }}>
           <span>Show Warranty Badges</span>
           <button
@@ -346,14 +355,30 @@ export function QuotationEditor({ data, onChange }: QuotationEditorProps) {
               <label>Solar Panel Warranty (years)</label>
               <input value={data.warrantySolarPanelYears} onChange={(event) => update("warrantySolarPanelYears", event.target.value)} />
             </div>
-            <div className="field">
-              <label>Inverter Warranty (years)</label>
-              <input value={data.warrantyInverterYears} onChange={(event) => update("warrantyInverterYears", event.target.value)} />
-            </div>
-            <div className="field">
-              <label>Setup & BOS Warranty (years)</label>
-              <input value={data.warrantySetupBosYears} onChange={(event) => update("warrantySetupBosYears", event.target.value)} />
-            </div>
+            {offgrid ? (
+              <>
+                <div className="field">
+                  <label>Setup & BOS Warranty (years)</label>
+                  <input value={data.warrantySetupBosYears} onChange={(event) => update("warrantySetupBosYears", event.target.value)} />
+                </div>
+                <div className="field full-span">
+                  <p className="helper-text" style={{ margin: 0 }}>
+                    Inverter and battery badges always show “As per MICROTEK company warranty” on the PDF.
+                  </p>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="field">
+                  <label>Inverter Warranty (years)</label>
+                  <input value={data.warrantyInverterYears} onChange={(event) => update("warrantyInverterYears", event.target.value)} />
+                </div>
+                <div className="field">
+                  <label>Setup & BOS Warranty (years)</label>
+                  <input value={data.warrantySetupBosYears} onChange={(event) => update("warrantySetupBosYears", event.target.value)} />
+                </div>
+              </>
+            )}
           </div>
         ) : null}
       </AccordionSection>

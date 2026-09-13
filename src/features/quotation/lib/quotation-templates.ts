@@ -195,7 +195,7 @@ export const QUOTATION_TEMPLATES: readonly QuotationTemplateMeta[] = [
     id: "offgrid",
     kind: "offgrid",
     label: "Off-grid",
-    description: "₹1,00,000 per kW · no subsidy · Waaree 590 Wp non-DCR · Microtek off-grid · 220 Ah battery bank",
+    description: "₹3,00,000 · no subsidy · 6 × Waaree 590 Wp Topcon Bifacial · Microtek 3 kW · 5 × 220 Ah non-lithium",
     capacity: "3 KW",
     phase: "1PH",
     projectAmount: "300000",
@@ -204,7 +204,7 @@ export const QUOTATION_TEMPLATES: readonly QuotationTemplateMeta[] = [
     panels: 6,
     wp: 590,
     inverterKw: "3",
-    batteries: 8,
+    batteries: 5,
   },
 ] as const;
 
