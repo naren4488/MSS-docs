@@ -2358,3 +2358,166 @@
   display: none;
 }
 
+.handover-landing {
+  display: grid;
+  gap: 28px;
+}
+
+.handover-landing-copy h1 {
+  margin: 6px 0 10px;
+  font-size: 34px;
+  letter-spacing: -0.03em;
+}
+
+.handover-landing-copy p:last-child {
+  max-width: 62ch;
+  margin: 0;
+  color: #4b5563;
+  line-height: 1.6;
+}
+
+.handover-kind-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.handover-kind-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 280px;
+  padding: 22px;
+  border-radius: 18px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: #fff;
+  color: inherit;
+  text-decoration: none;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.handover-kind-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.1);
+}
+
+.handover-kind-card--grid {
+  border-top: 3px solid #2563eb;
+}
+
+.handover-kind-card--offgrid {
+  border-top: 3px solid #7c3aed;
+}
+
+.handover-kind-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.handover-kind-icon {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: #eef3fb;
+  color: #14306b;
+}
+
+.handover-kind-card--offgrid .handover-kind-icon {
+  background: #f3e8ff;
+  color: #6d28d9;
+}
+
+.handover-kind-badge {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #14306b;
+  background: #eef3fb;
+  border-radius: 999px;
+  padding: 4px 8px;
+}
+
+.handover-kind-card--offgrid .handover-kind-badge {
+  color: #6d28d9;
+  background: #f3e8ff;
+}
+
+.handover-kind-card h2 {
+  margin: 4px 0 0;
+  font-size: 22px;
+}
+
+.handover-kind-card p {
+  margin: 0;
+  color: #4b5563;
+  line-height: 1.5;
+}
+
+.handover-kind-card ul {
+  margin: 4px 0 0;
+  padding-left: 18px;
+  color: #1f2937;
+  display: grid;
+  gap: 6px;
+}
+
+.handover-kind-cta {
+  margin-top: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  color: #14306b;
+}
+
+.editor-stack {
+  display: grid;
+  gap: 12px;
+}
+
+.editor-repeat {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 12px;
+  background: #fafbfc;
+}
+
+.editor-repeat-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.editor-repeat-head input {
+  flex: 1;
+  font-weight: 700;
+}
+
+.handover-check-row {
+  display: grid;
+  grid-template-columns: 18px 1fr 32px;
+  gap: 8px;
+  align-items: center;
+}
+
+.handover-check-row input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+}
+
+@media (max-width: 800px) {
+  .handover-kind-grid {
+    grid-template-columns: 1fr;
+  }
+}
+

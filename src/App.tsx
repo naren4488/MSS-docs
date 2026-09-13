@@ -4,6 +4,7 @@ import { AllOfferLetters, OfferLetterMaker } from "@/features/offer-letter";
 import { AgreementMaker, AllAgreements } from "@/features/agreement";
 import { AllPartnerAgreements, PartnerAgreementMaker } from "@/features/partner-agreement";
 import { AllQuotations, QuotationMaker } from "@/features/quotation";
+import { AllHandovers, HandoverMaker } from "@/features/handover";
 import { AllCompanyProfiles, CompanyProfileMaker } from "@/features/company-profile";
 import { AllEmployeeDirectories, EmployeeDirectoryMaker } from "@/features/employee-directory";
 import { MssSitesPage } from "@/features/mss-sites";
@@ -15,6 +16,7 @@ export default function App() {
     (location.pathname.startsWith("/agreement") && location.pathname !== "/agreements") ||
     (location.pathname.startsWith("/partner-agreement") && location.pathname !== "/partner-agreements") ||
     (location.pathname.startsWith("/quotation") && location.pathname !== "/quotations") ||
+    (location.pathname.startsWith("/handover") && location.pathname !== "/handovers") ||
     (location.pathname.startsWith("/company-profile") && location.pathname !== "/company-profiles") ||
     (location.pathname.startsWith("/employee-directory") && location.pathname !== "/employees");
 
@@ -35,6 +37,8 @@ export default function App() {
         <Route path="/quotation" element={<QuotationMaker />} />
         <Route path="/quotation/:id" element={<Navigate replace to="/quotations" />} />
         <Route path="/quotations" element={<AllQuotations />} />
+        <Route path="/handover" element={<HandoverMaker />} />
+        <Route path="/handovers" element={<AllHandovers />} />
         <Route path="/company-profile" element={<CompanyProfileMaker />} />
         <Route path="/company-profile/:id" element={<CompanyProfileMaker />} />
         <Route path="/company-profiles" element={<AllCompanyProfiles />} />

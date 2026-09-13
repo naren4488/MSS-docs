@@ -1,5 +1,6 @@
 import {
   Building2,
+  ClipboardCheck,
   FileText,
   FolderKanban,
   Handshake,
@@ -48,6 +49,13 @@ export const FEATURE_NAV_ITEMS: FeatureNavItem[] = [
     icon: ReceiptIndianRupee,
     matchList: (pathname) => pathname === "/quotations",
     matchMaker: (pathname) => pathname.startsWith("/quotation"),
+  },
+  {
+    path: "/handovers",
+    label: "Handover",
+    icon: ClipboardCheck,
+    matchList: (pathname) => pathname === "/handovers",
+    matchMaker: (pathname) => pathname.startsWith("/handover") && pathname !== "/handovers",
   },
   {
     path: "/company-profiles",
