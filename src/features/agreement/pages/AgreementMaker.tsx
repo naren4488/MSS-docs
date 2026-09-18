@@ -6,11 +6,14 @@ import { AgreementEditor } from "../components/AgreementEditor";
 import { AgreementPreview } from "../components/AgreementPreview";
 import {
   createDefaultAgreementData,
+  getAgreementTemplateLabel,
   isAgreementTemplate,
   isHindiSupported,
   normalizeAgreementData,
   switchAgreementLanguage,
 } from "../lib/agreement-defaults";
+import { documentDownloadName } from "@/lib/document-filename";
+import { formatDate } from "../lib/agreement-formatters";
 import {
   getAgreement,
   getAgreementDraft,
@@ -80,13 +83,7 @@ export function AgreementMaker() {
 
   async function handleSaveAsPdf() {
     const previousTitle = document.title;
-    const pdfName =
-      record?.name?.trim() ||
-      (data.party.entityName.trim()
-        ? `${data.party.entityName.trim()} — Agreement`
-        : data.title.trim()) ||
-      "Agreement";
-    document.title = pdfName;
+    document.title = documentDownloadName(data.party.entityName, getAgreementTemplateLabel(data.template));
 
     const restoreTitle = () => {
       document.title = previousTitle;
@@ -173,6 +170,20 @@ export function AgreementMaker() {
           </div>
         }
       />
+
+      {record?.signed ? (
+        <div className="agreement-signed-banner no-print" role="status">
+          <span className="agreement-signed-banner-pill">Signed</span>
+          <div>
+            <strong>{record.signedNote?.trim() || "Hard copy signed"}</strong>
+            <p>
+              Kept for our records only
+              {record.signedAt ? ` · ${formatDate(record.signedAt)}` : ""}.
+              This status is not printed on the PDF.
+            </p>
+          </div>
+        </div>
+      ) : null}
 
       <div
         className={`layout-grid ${

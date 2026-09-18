@@ -23,7 +23,7 @@ export type {
 };
 
 /** The two kinds of partner deal we currently support. */
-export type PartnerDealType = "fixed-rate" | "profit-share";
+export type PartnerDealType = "fixed-rate";
 
 export type PartnerAgreementLanguage = "en" | "hi";
 
@@ -53,9 +53,8 @@ export interface PartnerAgreementData {
 
   sections: AgreementSection[];
 
-  // The "actual deal" between the two parties. For a fixed-rate deal the
-  // rateCards hold the price schedule; for a profit-share deal the split is
-  // described in dealIntro using {{var.mssShare}} / {{var.partnerShare}}.
+  // The commercial deal between the two parties. rateCards hold the fixed
+  // per-system price schedule; dealIntro describes how Partner margin is calculated.
   dealHeading: string;
   dealIntro: string;
   rateCards: PartnerRateCard[];

@@ -11,6 +11,7 @@ import {
   OFFER_LETTER_TEMPLATES,
 } from "../lib/offer-letter-defaults";
 import { clearDraft, getDraft, getOfferLetter, saveDraft, saveOfferLetterRecord } from "../lib/offer-letter-storage";
+import { documentDownloadName, plantDocumentName } from "@/lib/document-filename";
 import type { OfferLetterData } from "../types/offer-letter";
 import type { OfferLetterTemplate } from "../types/offer-letter";
 
@@ -80,9 +81,20 @@ export function OfferLetterMaker() {
   );
 
   async function handleSaveAsPdf() {
-    await document.fonts.ready;
-    await new Promise((resolve) => window.setTimeout(resolve, 150));
-    window.print();
+    const previousTitle = document.title;
+    document.title = documentDownloadName(data.employeeName, plantDocumentName([data.role.trim()], "Offer Letter"));
+    const restoreTitle = () => {
+      document.title = previousTitle;
+      window.removeEventListener("afterprint", restoreTitle);
+    };
+    window.addEventListener("afterprint", restoreTitle);
+    try {
+      await document.fonts.ready;
+      await new Promise((resolve) => window.setTimeout(resolve, 150));
+      window.print();
+    } catch {
+      restoreTitle();
+    }
   }
 
   function handleSave(name: string) {

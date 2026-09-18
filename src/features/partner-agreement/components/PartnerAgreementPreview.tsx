@@ -289,7 +289,7 @@ function createBlocks(data: PartnerAgreementData): PreviewBlock[] {
   });
 
   // The "actual deal" between the parties — rendered as the final numbered
-  // section: a rate table (fixed-rate) or a profit-share description.
+  // Commercial terms section: fixed-rate schedule table.
   appendDealBlocks(blocks, data);
 
   if (data.governingLawParagraph.trim()) {

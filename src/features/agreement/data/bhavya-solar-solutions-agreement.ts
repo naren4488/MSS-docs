@@ -10,6 +10,7 @@ function createBhavyaSolarSolutionsAgreementData() {
       website: "mahisolarsolution.com",
     },
     partyIsIndividual: false,
+    showPartyPan: true,
     party: {
       ...base.party,
       entityName: "Bhavya Solar Solutions",
@@ -18,6 +19,7 @@ function createBhavyaSolarSolutionsAgreementData() {
       representativeName: "Pooran Mal Kumawat",
       representativeTitle: "Proprietor",
       gst: "08JGVPK9818N1Z0",
+      pan: "JGVPK9818N",
       consumerNumber: "",
       discom: "JVVNL",
     },
@@ -31,5 +33,8 @@ export const bhavyaSolarSolutionsAgreement: AgreementRecord = {
   name: "Bhavya Solar Solutions — Vendor Code Agreement",
   createdAt: "2026-07-17T00:00:00Z",
   updatedAt: "2026-07-17T00:00:00Z",
+  signed: true,
+  signedAt: "2026-07-17",
+  signedNote: "Hard copy signed",
   content: createBhavyaSolarSolutionsAgreementData(),
 };

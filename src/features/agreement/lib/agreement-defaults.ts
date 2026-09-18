@@ -18,6 +18,12 @@ export const AGREEMENT_TEMPLATES: { id: AgreementTemplate; label: string; descri
       "Authorise a regional partner to operate under your National Portal vendor code. Covers scope, payment flow by customer payment mode, confidentiality and termination.",
   },
   {
+    id: "project-referral",
+    label: "Project Referral — Fixed Commission",
+    description:
+      "Referrer brings the client/project; MSS does all work end-to-end. Referrer receives a fixed commission (e.g. ₹20,000) from the deal amount.",
+  },
+  {
     id: "inc-installation-assign",
     label: "INC Project — Installation Assignment",
     description:
@@ -39,6 +45,7 @@ export const AGREEMENT_TEMPLATES: { id: AgreementTemplate; label: string; descri
 
 const AGREEMENT_TEMPLATE_IDS: AgreementTemplate[] = [
   "partnership",
+  "project-referral",
   "inc-installation-assign",
   "inc-goodwill-execution",
   "client-agreement",
@@ -285,6 +292,11 @@ function createPartnershipSections(): AgreementSection[] {
             text:
               "Right of Set-off: {{company.name}} shall be entitled to recover any amount payable by Authorised Firm under this clause (i) by set-off against any commission, balance, or other amount payable by {{company.name}} to Authorised Firm under this Agreement; and/or (ii) by separate written demand, payable by Authorised Firm within seven (7) days of receipt.",
           },
+          {
+            label: "e",
+            text:
+              "Prior Projects: If Authorised Firm (including its proprietor, partners or directors) has earlier completed, installed or handed over any solar plant or site under {{company.name}}'s Vendor Code, name, brand or empanelment before the Effective Date of this Agreement (\"Prior Projects\"), Authorised Firm shall remain fully responsible for those Prior Projects as well — including customer service, operation & maintenance, warranty, punch-point resolution, indemnity and related obligations under this Agreement — as if such Prior Projects had been executed under this Agreement. Completion of any such site before the Effective Date does not release Authorised Firm from that responsibility.",
+          },
         ],
       }),
       clause({
@@ -349,11 +361,11 @@ const partnershipPreamble =
 
 export const partnershipVendorChargeHeadingEn = "Vendor Charges";
 export const partnershipVendorChargeTextEn =
-  "As consideration for {{company.name}}'s authorisation to use the Vendor Code and for facilitation under {{var.scheme}}, Authorised Firm agrees to pay {{company.name}} a vendor charge of ₹ {{vendorChargePerWatt}} per watt of installed plant capacity for each project executed under this Agreement. This charge shall be calculated on the total installed capacity of the rooftop solar plant and may be deducted by {{company.name}} from loan disbursements or other amounts received on behalf of Authorised Firm before release of the balance to Authorised Firm, in accordance with the payment flow set out in Clause 1(i).";
+  "As consideration for {{company.name}}'s authorisation to use the Vendor Code and for facilitation under {{var.scheme}}, Authorised Firm agrees to pay {{company.name}} a vendor charge of ₹ {{vendorChargePerWatt}} per watt of installed plant capacity for each project executed under this Agreement. This charge shall be calculated on the total installed capacity of the rooftop solar plant and may be deducted by {{company.name}} from loan disbursements or other amounts received on behalf of Authorised Firm before release of the balance to Authorised Firm, in accordance with the payment flow set out in Clause 1(i).\n\nSeparately, any additional or project-specific expenses incurred by {{company.name}} in connection with a project — including without limitation material cost, file / documentation charges, portal or DISCOM fees, or other facilitation costs — shall be payable by Authorised Firm as per the actual bill or invoice raised by {{company.name}} for that project.";
 
 export const partnershipVendorChargeHeadingHi = "विक्रेता शुल्क";
 export const partnershipVendorChargeTextHi =
-  "{{company.name}} द्वारा विक्रेता कोड के प्राधिकरण एवं {{var.scheme}} के अंतर्गत सुगम क्रियान्वयन के प्रतिफल में, अधिकृत फर्म सहमत है कि वह इस समझौते के अंतर्गत निष्पादित प्रत्येक परियोजना की कुल स्थापित क्षमता पर ₹ {{vendorChargePerWatt}} प्रति वाट का विक्रेता शुल्क {{company.name}} को देगा। यह शुल्क छत पर स्थापित सौर संयंत्र की कुल स्थापित कक्षमता पर गणना किया जाएगा तथा धारा 1(झ) में वर्णित भुगतान प्रवाह के अनुसार, ऋण संवितरण या अधिकृत फर्म की ओर से प्राप्त अन्य राशियों से कटौती कर {{company.name}} द्वारा अधिकृत फर्म को शेष राशि निर्गत करने से पूर्व वसूला जा सकता है।";
+  "{{company.name}} द्वारा विक्रेता कोड के प्राधिकरण एवं {{var.scheme}} के अंतर्गत सुगम क्रियान्वयन के प्रतिफल में, अधिकृत फर्म सहमत है कि वह इस समझौते के अंतर्गत निष्पादित प्रत्येक परियोजना की कुल स्थापित क्षमता पर ₹ {{vendorChargePerWatt}} प्रति वाट का विक्रेता शुल्क {{company.name}} को देगा। यह शुल्क छत पर स्थापित सौर संयंत्र की कुल स्थापित क्षमता पर गणना किया जाएगा तथा धारा 1(झ) में वर्णित भुगतान प्रवाह के अनुसार, ऋण संवितरण या अधिकृत फर्म की ओर से प्राप्त अन्य राशियों से कटौती कर {{company.name}} द्वारा अधिकृत फर्म को शेष राशि निर्गत करने से पूर्व वसूला जा सकता है।\n\nइसके अतिरिक्त, किसी परियोजना के संबंध में {{company.name}} द्वारा वहन किए गए कोई अतिरिक्त अथवा परियोजना-विशिष्ट व्यय — जिनमें सीमा के बिना सामग्री लागत, फाइल / दस्तावेज़ीकरण शुल्क, पोर्टल अथवा DISCOM शुल्क, अथवा अन्य सुगम क्रियान्वयन लागतें सम्मिलित हैं — अधिकृत फर्म द्वारा उस परियोजना हेतु {{company.name}} द्वारा जारी वास्तविक बिल अथवा बीजक के अनुसार देय होंगे।";
 
 export function getPartnershipVendorChargeContent(data: AgreementData): { heading: string; text: string } {
   return data.language === "hi"
@@ -541,6 +553,11 @@ function createPartnershipSectionsHi(): AgreementSection[] {
             text:
               "समायोजन का अधिकार: {{company.name}} इस खंड के अंतर्गत अधिकृत फर्म द्वारा देय किसी भी राशि को (i) इस समझौते के अंतर्गत {{company.name}} द्वारा अधिकृत फर्म को देय किसी भी कमीशन, शेष राशि अथवा अन्य राशि के साथ समायोजित करके; एवं/अथवा (ii) पृथक लिखित मांग द्वारा, जो प्राप्ति के सात (7) दिनों के भीतर अधिकृत फर्म द्वारा देय होगी, वसूल करने का अधिकारी होगा।",
           },
+          {
+            label: "ङ",
+            text:
+              "पूर्व परियोजनाएँ: यदि अधिकृत फर्म (उसके स्वामी, साझेदारों अथवा निदेशकों सहित) ने इस समझौते की प्रभावी तिथि से पूर्व {{company.name}} के विक्रेता कोड, नाम, ब्रांड अथवा सूचीयन के अंतर्गत कोई सौर संयंत्र अथवा साइट पहले ही पूर्ण, स्थापित अथवा हस्तांतरित की है (\"पूर्व परियोजनाएँ\"), तो अधिकृत फर्म उन पूर्व परियोजनाओं के लिए भी पूर्ण रूप से उत्तरदायी रहेगा — जिसमें ग्राहक सेवा, संचालन व रखरखाव, वारंटी, पंच-पॉइंट निवारण, क्षतिपूर्ति एवं इस समझौते के अंतर्गत संबंधित दायित्व सम्मिलित हैं — मानो वे पूर्व परियोजनाएँ इस समझौते के अंतर्गत ही निष्पादित हुई हों। प्रभावी तिथि से पूर्व किसी साइट का पूर्ण होना अधिकृत फर्म को उस दायित्व से मुक्त नहीं करता।",
+          },
         ],
       }),
       clause({
@@ -589,6 +606,180 @@ const partnershipGoverningLawHi =
 
 const partnershipClosingHi =
   "नीचे हस्ताक्षर करके, पक्षकार सहमत होते हैं कि यह समझौता पक्षकारों के मध्य संपूर्ण समझौता है तथा इसे केवल दोनों पक्षकारों के प्राधिकृत अधिकारियों द्वारा निष्पादित लिखित लिखत द्वारा ही संशोधित किया जा सकता है।";
+
+// ---------- Project Referral — Fixed Commission template ----------
+
+const referralVariableFields: AgreementVariableField[] = [
+  { key: "scheme", label: "Scheme / Programme", helper: "e.g. PM Surya Ghar: Muft Bijli Yojana" },
+  { key: "region", label: "Territory", helper: "e.g. Jaipur Discom (JVVNL) area, Rajasthan" },
+  { key: "oAndMYears", label: "O&M / Workmanship Period (Years)", helper: "e.g. 5" },
+  { key: "arbitrationVenue", label: "Arbitration Venue", helper: "e.g. Jaipur, Rajasthan" },
+];
+
+const referralVariableDefaults: Record<string, string> = {
+  scheme: "PM Surya Ghar: Muft Bijli Yojana",
+  region: "Jaipur Discom (JVVNL) area, Rajasthan",
+  oAndMYears: "5",
+  arbitrationVenue: "Jaipur, Rajasthan",
+};
+
+function createProjectReferralSections(): AgreementSection[] {
+  return [
+    section("Scope of Arrangement", [
+      clause({
+        number: "1",
+        title: "Referral of Projects & End-to-End Execution by Company",
+        content:
+          "The Parties agree that Referrer shall source and refer rooftop solar customers and projects to {{company.name}}, and that {{company.name}} shall execute each accepted project end-to-end, on the following terms:",
+        subPoints: [
+          {
+            label: "a",
+            text:
+              "Referrer may introduce prospective customers and sites under {{var.scheme}} in {{var.region}} to {{company.name}}. A referred matter becomes a \"Referred Project\" only after {{company.name}} accepts it in writing or by commencing work.",
+          },
+          {
+            label: "b",
+            text:
+              "{{company.name}} shall be solely responsible for all end-to-end execution of each Referred Project, including without limitation order finalisation with the customer, material procurement, installation, commissioning, DISCOM / net-metering related work, portal or scheme submissions attributable to {{company.name}}, customer handling during execution, and operation & maintenance for not less than {{var.oAndMYears}} years from commissioning (or such longer period as {{company.name}} remains obliged under the scheme).",
+          },
+          {
+            label: "c",
+            text:
+              "The commercial deal with the customer — including quotation, plant capacity, price and payment schedule — shall be concluded by {{company.name}}. Referrer shall not bind {{company.name}} to any price, capacity, timeline or warranty without {{company.name}}'s prior written confirmation.",
+          },
+          {
+            label: "d",
+            text:
+              "Referrer is not authorised to install, supervise installation, or hold itself out as the executing vendor for any Referred Project. Use of {{company.name}}'s Vendor Code, letterhead, portal credentials or brand for execution remains exclusively with {{company.name}}.",
+          },
+        ],
+      }),
+    ]),
+    section("Role of the Referrer", [
+      clause({
+        number: "2",
+        title: "Cooperation Only — No Execution Duty",
+        content: "Referrer's role under this Agreement is limited as follows:",
+        subPoints: [
+          {
+            label: "a",
+            text:
+              "Referrer shall introduce the customer and site in good faith, share accurate contact and site information known to Referrer, and reasonably cooperate so that {{company.name}} can inspect the site and complete documentation.",
+          },
+          {
+            label: "b",
+            text:
+              "Referrer shall not collect customer payments on behalf of {{company.name}} unless {{company.name}} has given prior written authorisation for a specific collection, and shall promptly hand over any authorised collection with supporting details.",
+          },
+          {
+            label: "c",
+            text:
+              "Referrer shall not make false representations about subsidy, generation, payback, materials or {{company.name}}'s obligations. Any such misrepresentation shall be Referrer's sole responsibility.",
+          },
+          {
+            label: "d",
+            text:
+              "Except for Referrer's own acts of fraud, wilful misconduct or misrepresentation, Referrer shall not be responsible for installation quality, material defects, DISCOM delays, scheme outcomes, customer punch points, or operation & maintenance of Referred Projects — which remain {{company.name}}'s responsibility under Clause 1.",
+          },
+        ],
+      }),
+    ]),
+    section("Referral Commission", [
+      clause({
+        number: "3",
+        title: "Fixed Commission from the Customer Deal",
+        content:
+          "As consideration for referring an accepted Referred Project, {{company.name}} shall pay Referrer a fixed referral commission as follows:",
+        subPoints: [
+          {
+            label: "a",
+            text:
+              "Commission amount: ₹ {{referralCommissionAmount}} (Rupees only) per accepted Referred Project, irrespective of plant capacity, unless the Parties agree a different amount in writing for a specific project.",
+          },
+          {
+            label: "b",
+            text:
+              "The commission is a fixed amount drawn from the total quotation / deal value agreed with the customer for that Referred Project. It is not a share of profit, and Referrer is not entitled to any further margin, per-watt charge, or surplus on the project unless separately agreed in writing.",
+          },
+          {
+            label: "c",
+            text:
+              "Payment timing: {{company.name}} shall pay the commission only after {{company.name}} has received the corresponding customer payment / project proceeds for that Referred Project (in full or in such installment as {{company.name}} reasonably treats as unlocking the commission for that project). {{company.name}} is not obliged to pay commission from its own funds in advance of receipt from the customer or lender.",
+          },
+          {
+            label: "d",
+            text:
+              "If the Referred Project is cancelled, not accepted, or customer payments are not received, no commission shall be payable for that project. If a commission was paid and the underlying receipt is later reversed or clawed back, Referrer shall refund the commission within seven (7) days of written demand.",
+          },
+          {
+            label: "e",
+            text:
+              "Any tax deduction at source or statutory deduction applicable to the commission shall be made by {{company.name}} as required by law. Referrer shall provide PAN and such other details as are reasonably required for payment.",
+          },
+        ],
+      }),
+    ]),
+    section("General Terms", [
+      clause({
+        number: "4",
+        title: "Independent Contractor & Limitation of Liability",
+        content:
+          "Referrer is an independent referring party, not {{company.name}}'s partner, employee or agent for execution. Nothing in this Agreement authorises Referrer to bind {{company.name}} except as expressly set out herein.\n\nIN NO EVENT SHALL {{company.name}} BE LIABLE TO REFERRER FOR ANY INDIRECT, INCIDENTAL, SPECIAL OR CONSEQUENTIAL DAMAGES, INCLUDING LOST PROFITS OR LOST BUSINESS OPPORTUNITY, ARISING OUT OF THIS AGREEMENT. {{company.name}}'S TOTAL LIABILITY TO REFERRER UNDER THIS AGREEMENT SHALL NOT EXCEED THE TOTAL REFERRAL COMMISSION ACTUALLY PAID TO REFERRER IN RESPECT OF THE REFERRED PROJECT GIVING RISE TO THE CLAIM.",
+      }),
+      clause({
+        number: "5",
+        title: "Confidentiality",
+        content:
+          "Each Party shall keep confidential the other Party's non-public business information, customer details and commercial terms obtained under this Agreement, and shall use such information only for performing this Agreement, except where disclosure is required by law.",
+      }),
+      clause({
+        number: "6",
+        title: "Term & Termination",
+        content: "The term and termination of this Agreement shall be governed as follows:",
+        subPoints: [
+          {
+            label: "a",
+            text:
+              "This Agreement is effective from the Effective Date and continues until terminated under this clause.",
+          },
+          {
+            label: "b",
+            text:
+              "Either Party may terminate for convenience by giving thirty (30) days' prior written notice.",
+          },
+          {
+            label: "c",
+            text:
+              "{{company.name}} may terminate immediately for cause upon Referrer's fraud, wilful misconduct, material misrepresentation to a customer, or material breach not cured within fifteen (15) days of written notice.",
+          },
+          {
+            label: "d",
+            text:
+              "Termination does not affect commission already earned on Referred Projects accepted before termination, subject to Clause 3, or confidentiality obligations, which shall survive.",
+          },
+        ],
+      }),
+    ]),
+  ];
+}
+
+const referralGoverningLaw =
+  "In case any dispute arises in respect of the validity, interpretation, implementation or alleged breach of this Agreement, the Parties shall attempt in the first instance to resolve the same through negotiation. If not resolved through negotiation, either Party may refer the dispute to arbitration by a sole arbitrator under the Arbitration and Conciliation Act, 1996 (as amended), and the arbitrator's decision shall be binding. The place of arbitration shall be {{var.arbitrationVenue}}. Each Party shall bear its own cost of arbitration.";
+
+const referralClosing =
+  "By signing below, the Parties agree that this Agreement constitutes the entire agreement between them on project referral and commission, and may be modified only by a written instrument signed by both Parties.";
+
+const referralIntroTemplate =
+  "THIS AGREEMENT (the \"Agreement\") is made as of {{effectiveDateFormatted}} (the \"Effective Date\") by and between {{company.name}} with a principal place of business at {{company.address}}.\n\nAnd {{party.entityName}} (\"Referrer\") with address at {{party.address}}.";
+
+const referralRecitals = [
+  "{{company.name}} designs, supplies, installs and commissions rooftop solar projects under {{var.scheme}} and related programmes.",
+  "Referrer has contacts and sites that may become rooftop solar customers of {{company.name}}.",
+  "The Parties wish to record that Referrer will refer such projects to {{company.name}}, that {{company.name}} will execute accepted projects end-to-end, and that Referrer will receive a fixed referral commission from the customer deal amount.",
+];
+
+const referralPreamble =
+  "NOW, THEREFORE, in consideration of the mutual promises set out below, {{company.name}} and Referrer agree as follows:";
 
 // ---------- INC Installation Assignment template ----------
 
@@ -1148,6 +1339,48 @@ export function createDefaultAgreementData(
       showPartyPan: false,
       showVendorChargePerWatt: false,
       vendorChargePerWatt: "",
+      showReferralCommission: false,
+      referralCommissionAmount: "",
+      showWitnesses: true,
+      witnesses: baseWitnesses,
+      showPageNumbers: true,
+      showLetterhead: true,
+    };
+  }
+
+  if (template === "project-referral") {
+    return {
+      template: "project-referral",
+      language: "en",
+      title: "PROJECT REFERRAL AGREEMENT — FIXED COMMISSION",
+      effectiveDate: today,
+      company: defaultCompany(),
+      party: {
+        entityName: "",
+        partyLabel: "Referrer",
+        address: "",
+        representativeName: "",
+        representativeTitle: "",
+        consumerNumber: "",
+        discom: "JVVNL",
+        aadhaar: "",
+        gst: "",
+        pan: "",
+      },
+      variableFields: referralVariableFields,
+      variables: { ...referralVariableDefaults },
+      introTemplate: referralIntroTemplate,
+      recitals: referralRecitals,
+      preambleAfterRecitals: referralPreamble,
+      sections: createProjectReferralSections(),
+      closingParagraph: referralClosing,
+      governingLawParagraph: referralGoverningLaw,
+      partyIsIndividual: true,
+      showPartyPan: true,
+      showVendorChargePerWatt: false,
+      vendorChargePerWatt: "",
+      showReferralCommission: true,
+      referralCommissionAmount: "20,000",
       showWitnesses: true,
       witnesses: baseWitnesses,
       showPageNumbers: true,
@@ -1186,6 +1419,8 @@ export function createDefaultAgreementData(
       showPartyPan: false,
       showVendorChargePerWatt: false,
       vendorChargePerWatt: "",
+      showReferralCommission: false,
+      referralCommissionAmount: "",
       showWitnesses: true,
       witnesses: baseWitnesses,
       showPageNumbers: true,
@@ -1224,6 +1459,8 @@ export function createDefaultAgreementData(
       showPartyPan: false,
       showVendorChargePerWatt: false,
       vendorChargePerWatt: "",
+      showReferralCommission: false,
+      referralCommissionAmount: "",
       showWitnesses: true,
       witnesses: baseWitnesses,
       showPageNumbers: true,
@@ -1262,6 +1499,8 @@ export function createDefaultAgreementData(
     showPartyPan: false,
     showVendorChargePerWatt: false,
     vendorChargePerWatt: "",
+    showReferralCommission: false,
+    referralCommissionAmount: "",
     showWitnesses: true,
     witnesses: baseWitnesses,
     showPageNumbers: true,
@@ -1294,6 +1533,8 @@ export function switchAgreementLanguage(
     showPartyPan: data.showPartyPan,
     showVendorChargePerWatt: data.showVendorChargePerWatt,
     vendorChargePerWatt: data.vendorChargePerWatt,
+    showReferralCommission: data.showReferralCommission,
+    referralCommissionAmount: data.referralCommissionAmount,
     showWitnesses: data.showWitnesses,
     showPageNumbers: data.showPageNumbers,
     showLetterhead: data.showLetterhead,
@@ -1321,6 +1562,8 @@ export function normalizeAgreementData(input?: Partial<AgreementData> | null): A
     witnesses: input?.witnesses ?? defaults.witnesses,
     showVendorChargePerWatt: input?.showVendorChargePerWatt ?? defaults.showVendorChargePerWatt,
     vendorChargePerWatt: input?.vendorChargePerWatt ?? defaults.vendorChargePerWatt,
+    showReferralCommission: input?.showReferralCommission ?? defaults.showReferralCommission,
+    referralCommissionAmount: input?.referralCommissionAmount ?? defaults.referralCommissionAmount,
     showPartyPan: input?.showPartyPan ?? defaults.showPartyPan,
   };
 }

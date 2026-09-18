@@ -226,7 +226,7 @@ export function AgreementEditor({ data, onChange }: AgreementEditorProps) {
       {data.template === "partnership" ? (
         <AccordionSection
           title="Vendor Charge (Per Watt)"
-          helper="Optional clause for the vendor charge payable to the company, expressed in ₹ per watt of installed capacity."
+          helper="₹ per watt can be 0. The clause also covers extra project expenses (material, file charges, etc.) as per actual billing."
           defaultOpen
         >
           <div className="toggle-row" style={{ marginBottom: 12 }}>
@@ -247,8 +247,41 @@ export function AgreementEditor({ data, onChange }: AgreementEditorProps) {
                   type="text"
                   inputMode="decimal"
                   value={data.vendorChargePerWatt ?? ""}
-                  placeholder="e.g. 1"
+                  placeholder="e.g. 1 or 0"
                   onChange={(event) => update("vendorChargePerWatt", event.target.value)}
+                />
+              </div>
+            </div>
+          ) : null}
+        </AccordionSection>
+      ) : null}
+
+      {data.template === "project-referral" ? (
+        <AccordionSection
+          title="Referral Commission"
+          helper="Fixed amount paid to the referrer from the customer deal after MSS receives payment."
+          defaultOpen
+        >
+          <div className="toggle-row" style={{ marginBottom: 12 }}>
+            <span>Include commission amount on agreement</span>
+            <button
+              className={`toggle ${data.showReferralCommission ? "on" : ""}`}
+              type="button"
+              onClick={() => update("showReferralCommission", !data.showReferralCommission)}
+            >
+              <span className="toggle-thumb" />
+            </button>
+          </div>
+          {data.showReferralCommission ? (
+            <div className="field-grid">
+              <div className="field">
+                <label>Commission (₹ per project) *</label>
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  value={data.referralCommissionAmount ?? ""}
+                  placeholder="e.g. 20,000"
+                  onChange={(event) => update("referralCommissionAmount", event.target.value)}
                 />
               </div>
             </div>

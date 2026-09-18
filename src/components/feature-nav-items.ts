@@ -4,7 +4,7 @@ import {
   FileText,
   FolderKanban,
   Handshake,
-  HeartHandshake,
+  Receipt,
   ReceiptIndianRupee,
   Users,
 } from "lucide-react";
@@ -32,16 +32,10 @@ export const FEATURE_NAV_ITEMS: FeatureNavItem[] = [
     path: "/agreements",
     label: "Agreements",
     icon: Handshake,
-    matchList: (pathname) => pathname === "/agreements",
+    matchList: (pathname) => pathname === "/agreements" || pathname === "/partner-agreements",
     matchMaker: (pathname) =>
-      pathname.startsWith("/agreement") && !pathname.startsWith("/partner-agreement"),
-  },
-  {
-    path: "/partner-agreements",
-    label: "Partners",
-    icon: HeartHandshake,
-    matchList: (pathname) => pathname === "/partner-agreements",
-    matchMaker: (pathname) => pathname.startsWith("/partner-agreement"),
+      (pathname.startsWith("/agreement") && pathname !== "/agreements") ||
+      pathname.startsWith("/partner-agreement"),
   },
   {
     path: "/quotations",
@@ -49,6 +43,13 @@ export const FEATURE_NAV_ITEMS: FeatureNavItem[] = [
     icon: ReceiptIndianRupee,
     matchList: (pathname) => pathname === "/quotations",
     matchMaker: (pathname) => pathname.startsWith("/quotation"),
+  },
+  {
+    path: "/receipts",
+    label: "Receipt",
+    icon: Receipt,
+    matchList: (pathname) => pathname === "/receipts",
+    matchMaker: (pathname) => pathname.startsWith("/receipt") && pathname !== "/receipts",
   },
   {
     path: "/handovers",

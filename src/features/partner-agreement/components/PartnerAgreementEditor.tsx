@@ -65,26 +65,6 @@ export function PartnerAgreementEditor({ data, onChange }: PartnerAgreementEdito
     onChange({ ...data, variables: { ...data.variables, [key]: value } });
   }
 
-  // Profit-share split: edit MSE's percentage, auto-derive the Partner's as the
-  // remainder of 100%. Both are stored as "N%" so they flow into the clauses.
-  function updateMssShare(raw: string) {
-    if (raw.trim() === "") {
-      onChange({ ...data, variables: { ...data.variables, mssShare: "", partnerShare: "" } });
-      return;
-    }
-    const n = Number(raw);
-    if (!Number.isFinite(n)) {
-      return;
-    }
-    const clamped = Math.min(100, Math.max(0, n));
-    const partner = Math.round((100 - clamped) * 1000) / 1000;
-    const mssStr = clamped === n ? raw.trim() : String(clamped);
-    onChange({
-      ...data,
-      variables: { ...data.variables, mssShare: `${mssStr}%`, partnerShare: `${partner}%` },
-    });
-  }
-
   function updateSection(index: number, next: PartnerSection) {
     onChange({
       ...data,
@@ -117,11 +97,6 @@ export function PartnerAgreementEditor({ data, onChange }: PartnerAgreementEdito
   function updateWitnesses(next: PartnerWitness[]) {
     onChange({ ...data, witnesses: next });
   }
-
-  const isFixedRate = data.dealType === "fixed-rate";
-  const PROFIT_SPLIT_KEYS = ["mssShare", "partnerShare"];
-  const hasProfitSplit = data.variableFields.some((field) => field.key === "mssShare");
-  const mssShareValue = (data.variables.mssShare ?? "").replace("%", "").trim();
 
   return (
     <div className="stack">
@@ -219,9 +194,7 @@ export function PartnerAgreementEditor({ data, onChange }: PartnerAgreementEdito
           helper="These values get substituted into the clauses below wherever you see {{var.key}} placeholders."
         >
           <div className="field-grid">
-            {data.variableFields
-              .filter((field) => !PROFIT_SPLIT_KEYS.includes(field.key))
-              .map((field) => (
+            {data.variableFields.map((field) => (
                 <div className={`field ${field.multiline ? "full-span" : ""}`} key={field.key}>
                   <label>{field.label}</label>
                   {field.multiline ? (
@@ -241,33 +214,6 @@ export function PartnerAgreementEditor({ data, onChange }: PartnerAgreementEdito
                 </div>
               ))}
           </div>
-
-          {hasProfitSplit ? (
-            <div style={{ marginTop: 16 }}>
-              <label style={{ display: "block", fontWeight: 600, marginBottom: 8 }}>Profit Split</label>
-              <div className="field-grid">
-                <div className="field">
-                  <label>MSE Share (%)</label>
-                  <input
-                    type="number"
-                    min={0}
-                    max={100}
-                    step="0.5"
-                    value={mssShareValue}
-                    placeholder="e.g. 50"
-                    onChange={(event) => updateMssShare(event.target.value)}
-                  />
-                </div>
-                <div className="field">
-                  <label>Partner Share (%) — auto</label>
-                  <input value={data.variables.partnerShare ?? ""} readOnly tabIndex={-1} />
-                </div>
-              </div>
-              <p className="helper-text">
-                Enter MSE's share — the Partner's share is calculated automatically as the remainder of 100%.
-              </p>
-            </div>
-          ) : null}
         </AccordionSection>
       ) : null}
 
@@ -312,11 +258,7 @@ export function PartnerAgreementEditor({ data, onChange }: PartnerAgreementEdito
 
       <AccordionSection
         title="The Deal — Commercial Terms"
-        helper={
-          isFixedRate
-            ? "The fixed per-system rate schedule. This renders as a table at the end of the agreement."
-            : "How the net profit of each completed project is shared. Use the Deal Variables above for the split percentages."
-        }
+        helper="The fixed per-system rate schedule. This renders as a table at the end of the agreement."
       >
         <div className="field full-span">
           <label>Commercial Terms Heading</label>
@@ -326,25 +268,21 @@ export function PartnerAgreementEditor({ data, onChange }: PartnerAgreementEdito
         <div className="field full-span">
           <label>Commercial Terms Intro</label>
           <textarea
-            rows={isFixedRate ? 4 : 6}
+            rows={4}
             value={data.dealIntro}
             onChange={(event) => update("dealIntro", event.target.value)}
             placeholder="Supports {{var.key}}, {{company.name}}, {{party.entityName}} placeholders."
           />
         </div>
 
-        {isFixedRate ? (
-          <>
-            <div style={{ height: 16 }} />
-            <label style={{ display: "block", fontWeight: 600, marginBottom: 8 }}>Fixed Rate Schedule</label>
-            <PartnerRateCardEditor rateCards={data.rateCards} onChange={(next) => update("rateCards", next)} />
-            <div style={{ height: 14 }} />
-            <div className="field full-span">
-              <label>Note Below the Rate Table (optional)</label>
-              <textarea rows={3} value={data.rateNote} onChange={(event) => update("rateNote", event.target.value)} />
-            </div>
-          </>
-        ) : null}
+        <div style={{ height: 16 }} />
+        <label style={{ display: "block", fontWeight: 600, marginBottom: 8 }}>Fixed Rate Schedule</label>
+        <PartnerRateCardEditor rateCards={data.rateCards} onChange={(next) => update("rateCards", next)} />
+        <div style={{ height: 14 }} />
+        <div className="field full-span">
+          <label>Note Below the Rate Table (optional)</label>
+          <textarea rows={3} value={data.rateNote} onChange={(event) => update("rateNote", event.target.value)} />
+        </div>
       </AccordionSection>
 
       <AccordionSection title="Closing & Dispute Resolution">

@@ -68,7 +68,7 @@ const sectionHeadingStyle: CSSProperties = {
 const paragraphStyle: CSSProperties = {
   margin: "0 0 12px",
   lineHeight: 1.7,
-  textAlign: "justify",
+  textAlign: "left",
 };
 
 const vendorChargeHighlightStyle: CSSProperties = {
@@ -102,23 +102,6 @@ function estimateParagraphHeight(text: string, charsPerLine = BODY_CHARS_PER_LIN
   return text.split("\n").reduce((total, line) => total + estimateTextLines(line, charsPerLine) * 22 + 4, 0);
 }
 
-function hardSplitAtWords(text: string, maxChars: number): string[] {
-  const chunks: string[] = [];
-  let remaining = text.trim();
-  while (remaining.length > maxChars) {
-    let splitAt = remaining.lastIndexOf(" ", maxChars);
-    if (splitAt <= 0) {
-      splitAt = maxChars;
-    }
-    chunks.push(remaining.slice(0, splitAt).trim());
-    remaining = remaining.slice(splitAt).trim();
-  }
-  if (remaining) {
-    chunks.push(remaining);
-  }
-  return chunks.length ? chunks : [""];
-}
-
 function mergeSegmentsIntoChunks(segments: string[], maxChars: number): string[] {
   const chunks: string[] = [];
   let current = "";
@@ -129,12 +112,13 @@ function mergeSegmentsIntoChunks(segments: string[], maxChars: number): string[]
       continue;
     }
 
+    // Keep an overlong segment intact so phrases like "Authorised Firm" are never cut mid-way.
     if (piece.length > maxChars) {
       if (current) {
         chunks.push(current);
         current = "";
       }
-      chunks.push(...hardSplitAtWords(piece, maxChars));
+      chunks.push(piece);
       continue;
     }
 
@@ -154,7 +138,7 @@ function mergeSegmentsIntoChunks(segments: string[], maxChars: number): string[]
   return chunks.length ? chunks : [""];
 }
 
-/** Break long legal paragraphs into page-sized chunks so text flows instead of jumping whole. */
+/** Break long legal paragraphs at sentence / clause boundaries only — never mid-phrase. */
 function splitParagraphForPagination(text: string, charsPerLine: number, maxLines: number): string[] {
   const trimmed = text.trim();
   if (!trimmed) {
@@ -168,21 +152,16 @@ function splitParagraphForPagination(text: string, charsPerLine: number, maxLine
 
   const semicolonParts = trimmed.split(/(?<=;)\s+/);
   if (semicolonParts.length > 1) {
-    const chunks = mergeSegmentsIntoChunks(semicolonParts, maxChars);
-    if (chunks.every((chunk) => chunk.length <= maxChars)) {
-      return chunks;
-    }
+    return mergeSegmentsIntoChunks(semicolonParts, maxChars);
   }
 
   const sentenceParts = trimmed.split(/(?<=[.!?])\s+/);
   if (sentenceParts.length > 1) {
-    const chunks = mergeSegmentsIntoChunks(sentenceParts, maxChars);
-    if (chunks.every((chunk) => chunk.length <= maxChars)) {
-      return chunks;
-    }
+    return mergeSegmentsIntoChunks(sentenceParts, maxChars);
   }
 
-  return hardSplitAtWords(trimmed, maxChars);
+  // Single long sentence: keep whole so continuous wording is not visually broken.
+  return [trimmed];
 }
 
 function Header({ data }: { data: AgreementData }) {
@@ -331,7 +310,7 @@ function createBlocks(data: AgreementData): PreviewBlock[] {
         estimate: 16 + estimateParagraphHeight(filled, 70),
         node: (
           <ul style={{ margin: "0 0 8px", paddingLeft: 22, lineHeight: 1.7 }}>
-            <li style={{ marginBottom: 4, textAlign: "justify" }}>{filled}</li>
+            <li style={{ marginBottom: 4, textAlign: "left" }}>{filled}</li>
           </ul>
         ),
       });
@@ -510,7 +489,7 @@ function appendSectionBlocks(
               }}
             >
               <span style={{ fontWeight: 600 }}>{pIndex === 0 ? `${sub.label}.` : ""}</span>
-              <span style={{ textAlign: "justify" }}>{para}</span>
+              <span style={{ textAlign: "left" }}>{para}</span>
             </div>
           ),
         });

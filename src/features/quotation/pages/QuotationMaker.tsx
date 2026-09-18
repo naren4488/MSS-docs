@@ -12,6 +12,7 @@ import {
   type QuotationTemplateId,
 } from "../lib/quotation-templates";
 import { switchQuotationLanguage } from "../lib/quotation-defaults";
+import { capacityFileLabel, documentDownloadName, phaseFileLabel, plantDocumentName } from "@/lib/document-filename";
 import type { QuotationData, QuotationLanguage } from "../types/quotation";
 
 export function QuotationMaker() {
@@ -47,9 +48,13 @@ export function QuotationMaker() {
 
   async function handleSaveAsPdf() {
     const previousTitle = document.title;
-    const clientName = data.customerName.trim();
-    const pdfName = clientName ? `${clientName} - MSS Quotation` : "MSS Quotation";
-    document.title = pdfName;
+    const capacity = capacityFileLabel(data.capacity);
+    const phase = data.kind === "offgrid" ? "" : phaseFileLabel(data.phase);
+    const kindLabel = data.kind === "offgrid" ? "Off-Grid" : "";
+    document.title = documentDownloadName(
+      data.customerName,
+      plantDocumentName([capacity, phase, kindLabel], "Quotation"),
+    );
 
     const restoreTitle = () => {
       document.title = previousTitle;

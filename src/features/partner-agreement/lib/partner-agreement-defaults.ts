@@ -18,15 +18,9 @@ export const PARTNER_TEMPLATES: { id: PartnerDealType; label: string; descriptio
     description:
       "Partner brings projects; MSE accepts each project on a fixed-rate basis and completes on-site execution work — procurement, transport, installation and commissioning (3kW–10kW). Partner keeps the surplus realised from the customer as margin.",
   },
-  {
-    id: "profit-share",
-    label: "Profit-Share Partnership",
-    description:
-      "Partner brings projects; MSE accepts each project on a profit-sharing basis and completes on-site execution work — procurement, transport, installation and commissioning. The net profit of each completed project is shared between the Parties in an agreed ratio.",
-  },
 ];
 
-const PARTNER_DEAL_IDS: PartnerDealType[] = ["fixed-rate", "profit-share"];
+const PARTNER_DEAL_IDS: PartnerDealType[] = ["fixed-rate"];
 
 export function isPartnerDealType(value: string | null): value is PartnerDealType {
   return value !== null && (PARTNER_DEAL_IDS as string[]).includes(value);
@@ -113,32 +107,12 @@ const baseVariableFields: PartnerVariableField[] = [
   { key: "arbitrationVenue", label: "Arbitration Venue", helper: "e.g. Jaipur" },
 ];
 
-const profitShareVariableFields: PartnerVariableField[] = [
-  ...baseVariableFields,
-  { key: "mssShare", label: "MSE Profit Share", helper: "e.g. 50%" },
-  { key: "partnerShare", label: "Partner Profit Share", helper: "e.g. 50%" },
-  {
-    key: "profitBasis",
-    label: "Definition of Net Profit",
-    helper: "How profit is computed for each project",
-    multiline: true,
-  },
-];
-
 const baseVariableDefaults: Record<string, string> = {
   region: "Jaipur Discom (JVVNL) area, Rajasthan",
   scheme: "PM Surya Ghar: Muft Bijli Yojana",
   discom: "JVVNL",
   oAndMYears: "5",
   arbitrationVenue: "Jaipur",
-};
-
-const profitShareVariableDefaults: Record<string, string> = {
-  ...baseVariableDefaults,
-  mssShare: "50%",
-  partnerShare: "50%",
-  profitBasis:
-    "the amount remaining from the total amount realised for the project after deducting all material, installation, DISCOM / net-metering, scheme facilitation, applicable taxes and other direct project costs",
 };
 
 // =====================================================================
@@ -151,16 +125,12 @@ const introTemplateEn =
 const preambleEn =
   "NOW, THEREFORE, in consideration of the mutual promises set forth below, {{company.name}} and the Partner agree as follows:";
 
-function recitalsEn(dealType: PartnerDealType): string[] {
-  const common = [
+function recitalsEn(_dealType: PartnerDealType): string[] {
+  return [
     "{{company.name}} is a firm engaged in on-site execution work for rooftop solar projects, including material procurement, transport, installation and commissioning.",
-    "The Partner is engaged in sourcing solar rooftop customers, sites and projects and wishes to assign such projects to {{company.name}} on either a fixed-rate or profit-sharing basis, with MSE completing the agreed on-site execution work comprising material procurement, transport, installation and commissioning.",
+    "The Partner is engaged in sourcing solar rooftop customers, sites and projects and wishes to assign such projects to {{company.name}} on a fixed-rate basis, with MSE completing the agreed on-site execution work comprising material procurement, transport, installation and commissioning.",
+    "The Parties wish to record a fixed-rate commercial arrangement under which {{company.name}} executes the Partner's Projects at the agreed per-system rates set out herein, the Partner retaining the surplus realised from the customer as its margin.",
   ];
-  const dealRecital =
-    dealType === "fixed-rate"
-      ? "The Parties wish to record a fixed-rate commercial arrangement under which {{company.name}} executes the Partner's Projects at the agreed per-system rates set out herein, the Partner retaining the surplus realised from the customer as its margin."
-      : "The Parties wish to record a profit-sharing commercial arrangement under which {{company.name}} executes the Partner's Projects and the net profit of each completed Project is shared between the Parties in the agreed ratio.";
-  return [...common, dealRecital];
 }
 
 function createPartnerSectionsEn(): PartnerSection[] {
@@ -169,7 +139,7 @@ function createPartnerSectionsEn(): PartnerSection[] {
       clause({
         number: "1",
         content:
-          'Under this Agreement, the Partner shall source, refer and bring solar rooftop projects, sites and customers (each a "Project") to {{company.name}} ("MSE"), and MSE shall accept each such Project on the fixed-rate or profit-sharing basis recorded in this Agreement and complete the agreed execution work comprising material procurement, transport, installation and commissioning.',
+          'Under this Agreement, the Partner shall source, refer and bring solar rooftop projects, sites and customers (each a "Project") to {{company.name}} ("MSE"), and MSE shall accept each such Project on the fixed-rate basis recorded in this Agreement and complete the agreed execution work comprising material procurement, transport, installation and commissioning.',
         subPoints: [
           {
             label: "a",
@@ -189,7 +159,7 @@ function createPartnerSectionsEn(): PartnerSection[] {
           {
             label: "d",
             text:
-              "The commercial basis of this Agreement — whether on a fixed-rate basis or a profit-sharing basis — is recorded in the Commercial Terms section below, and the Partner's entitlement shall be calculated and released strictly in accordance with those terms and the payment-flow provisions of this Agreement.",
+              "The commercial basis of this Agreement is the fixed-rate schedule recorded in the Commercial Terms section below, and the Partner's entitlement shall be calculated and released strictly in accordance with those terms and the payment-flow provisions of this Agreement.",
           },
         ],
       }),
@@ -284,7 +254,7 @@ function createPartnerSectionsEn(): PartnerSection[] {
           {
             label: "f",
             text:
-              "Non-GST Partners — margin payment: Where the Partner does not hold a valid GST registration or has not provided a GST number under this Agreement, the Partner shall not retain margin or profit share for later settlement through invoicing. Instead, before MSE commences procurement of material for a Project, the Partner shall pay the estimated margin (on a fixed-rate basis) or estimated profit share (on a profit-sharing basis) to MSE, calculated from the expected customer price and the applicable rate or share under this Agreement. Upon project completion, net metering and receipt of all customer payments, MSE shall reconcile the actual margin or share due and refund any excess paid by the Partner or collect any shortfall. MSE shall not commence procurement for a Project until such estimated amount has been received from a Partner who does not have GST.",
+              "Non-GST Partners — margin payment: Where the Partner does not hold a valid GST registration or has not provided a GST number under this Agreement, the Partner shall not retain margin for later settlement through invoicing. Instead, before MSE commences procurement of material for a Project, the Partner shall pay the estimated margin (on the fixed-rate basis) to MSE, calculated from the expected customer price and the applicable rate under this Agreement. Upon project completion, net metering and receipt of all customer payments, MSE shall reconcile the actual margin due and refund any excess paid by the Partner or collect any shortfall. MSE shall not commence procurement for a Project until such estimated amount has been received from a Partner who does not have GST.",
           },
         ],
       }),
@@ -334,16 +304,12 @@ function createPartnerSectionsEn(): PartnerSection[] {
   ];
 }
 
-function dealHeadingEn(dealType: PartnerDealType): string {
-  return dealType === "fixed-rate"
-    ? "Commercial Terms — Fixed Rate Schedule"
-    : "Commercial Terms — Profit Share Arrangement";
+function dealHeadingEn(_dealType: PartnerDealType): string {
+  return "Commercial Terms — Fixed Rate Schedule";
 }
 
-function dealIntroEn(dealType: PartnerDealType): string {
-  return dealType === "fixed-rate"
-    ? "For each Project accepted under this Agreement on a fixed-rate basis, MSE shall charge and retain the fixed per-system rate set out in the schedule below for completing the agreed execution work (material procurement, transport, installation and commissioning). The amount realised from the customer over and above the applicable rate shall belong to the Partner as the Partner's margin, released in accordance with the payment-flow provisions of this Agreement. The applicable rate depends on the system capacity and phase:"
-    : 'For each Project executed under this Agreement on a profit-sharing basis, the net profit of the Project shall be computed upon completion of the Project and shared between the Parties. "Net profit" means {{var.profitBasis}}. The net profit so computed shall be shared in the ratio of {{var.mssShare}} to MSE and {{var.partnerShare}} to the Partner. The Partner\'s share shall be released in accordance with the payment-flow provisions of this Agreement, that is, after net metering and receipt of the final payment for the Project.';
+function dealIntroEn(_dealType: PartnerDealType): string {
+  return "For each Project accepted under this Agreement on a fixed-rate basis, MSE shall charge and retain the fixed per-system rate set out in the schedule below for completing the agreed execution work (material procurement, transport, installation and commissioning). The amount realised from the customer over and above the applicable rate shall belong to the Partner as the Partner's margin, released in accordance with the payment-flow provisions of this Agreement. The applicable rate depends on the system capacity and phase:";
 }
 
 const rateNoteEn =
@@ -365,16 +331,12 @@ const introTemplateHi =
 const preambleHi =
   "अतः, यहाँ उल्लिखित पारस्परिक वचनों के प्रतिफल में, {{company.name}} एवं साझेदार निम्नलिखित शर्तों पर सहमत होते हैं:";
 
-function recitalsHi(dealType: PartnerDealType): string[] {
-  const common = [
+function recitalsHi(_dealType: PartnerDealType): string[] {
+  return [
     "{{company.name}} सौर रूफटॉप परियोजनाओं के स्थल-स्तरीय निष्पादन कार्य में संलग्न एक फर्म है, जिसमें सामग्री खरीद, परिवहन, स्थापना एवं कमीशनिंग सम्मिलित है।",
-    "साझेदार सौर रूफटॉप ग्राहकों, साइटों एवं परियोजनाओं को जुटाने के कार्य में संलग्न है तथा ऐसी परियोजनाएँ निश्चित-दर अथवा लाभ-साझाकरण आधार पर {{company.name}} को सौंपना चाहता है, जिसमें MSE सहमत स्थल-स्तरीय निष्पादन कार्य — सामग्री खरीद, परिवहन, स्थापना एवं कमीशनिंग — पूर्ण करेगा।",
+    "साझेदार सौर रूफटॉप ग्राहकों, साइटों एवं परियोजनाओं को जुटाने के कार्य में संलग्न है तथा ऐसी परियोजनाएँ निश्चित-दर आधार पर {{company.name}} को सौंपना चाहता है, जिसमें MSE सहमत स्थल-स्तरीय निष्पादन कार्य — सामग्री खरीद, परिवहन, स्थापना एवं कमीशनिंग — पूर्ण करेगा।",
+    "पक्षकार एक निश्चित-दर वाणिज्यिक व्यवस्था अभिलिखित करना चाहते हैं, जिसके अंतर्गत {{company.name}} साझेदार की परियोजनाओं को यहाँ निर्धारित प्रति-संयंत्र दरों पर निष्पादित करेगा, तथा साझेदार ग्राहक से प्राप्त अधिशेष राशि को अपने लाभ-अंतर के रूप में रखेगा।",
   ];
-  const dealRecital =
-    dealType === "fixed-rate"
-      ? "पक्षकार एक निश्चित-दर वाणिज्यिक व्यवस्था अभिलिखित करना चाहते हैं, जिसके अंतर्गत {{company.name}} साझेदार की परियोजनाओं को यहाँ निर्धारित प्रति-संयंत्र दरों पर निष्पादित करेगा, तथा साझेदार ग्राहक से प्राप्त अधिशेष राशि को अपने लाभ-अंतर के रूप में रखेगा।"
-      : "पक्षकार एक लाभ-साझाकरण वाणिज्यिक व्यवस्था अभिलिखित करना चाहते हैं, जिसके अंतर्गत {{company.name}} साझेदार की परियोजनाओं को निष्पादित करेगा तथा प्रत्येक पूर्ण परियोजना का शुद्ध लाभ सहमत अनुपात में पक्षकारों के मध्य साझा किया जाएगा।";
-  return [...common, dealRecital];
 }
 
 function createPartnerSectionsHi(): PartnerSection[] {
@@ -383,7 +345,7 @@ function createPartnerSectionsHi(): PartnerSection[] {
       clause({
         number: "1",
         content:
-          'इस समझौते के अंतर्गत, साझेदार सौर रूफटॉप परियोजनाएँ, साइटें एवं ग्राहक (प्रत्येक एक "परियोजना") {{company.name}} ("MSE") को जुटाकर, संदर्भित करके एवं लाकर देगा, तथा MSE प्रत्येक ऐसी परियोजना को इस समझौते में अभिलिखित निश्चित-दर अथवा लाभ-साझाकरण आधार पर स्वीकार करेगा एवं सामग्री खरीद, परिवहन, स्थापना एवं कमीशनिंग से मिलकर बने सहमत निष्पादन कार्य को पूर्ण करेगा।',
+          'इस समझौते के अंतर्गत, साझेदार सौर रूफटॉप परियोजनाएँ, साइटें एवं ग्राहक (प्रत्येक एक "परियोजना") {{company.name}} ("MSE") को जुटाकर, संदर्भित करके एवं लाकर देगा, तथा MSE प्रत्येक ऐसी परियोजना को इस समझौते में अभिलिखित निश्चित-दर आधार पर स्वीकार करेगा एवं सामग्री खरीद, परिवहन, स्थापना एवं कमीशनिंग से मिलकर बने सहमत निष्पादन कार्य को पूर्ण करेगा।',
         subPoints: [
           {
             label: "क",
@@ -403,7 +365,7 @@ function createPartnerSectionsHi(): PartnerSection[] {
           {
             label: "घ",
             text:
-              "इस समझौते का वाणिज्यिक आधार — चाहे निश्चित-दर आधार पर हो अथवा लाभ-साझाकरण आधार पर — नीचे दिए गए वाणिज्यिक शर्तें खंड में अभिलिखित है, तथा साझेदार की हकदारी की गणना एवं निर्गमन कठोरतापूर्वक उन शर्तों एवं इस समझौते के भुगतान-प्रवाह प्रावधानों के अनुसार किया जाएगा।",
+              "इस समझौते का वाणिज्यिक आधार निश्चित-दर अनुसूची है, जो नीचे दिए गए वाणिज्यिक शर्तें खंड में अभिलिखित है, तथा साझेदार की हकदारी की गणना एवं निर्गमन कठोरतापूर्वक उन शर्तों एवं इस समझौते के भुगतान-प्रवाह प्रावधानों के अनुसार किया जाएगा।",
           },
         ],
       }),
@@ -498,7 +460,7 @@ function createPartnerSectionsHi(): PartnerSection[] {
           {
             label: "च",
             text:
-              "गैर-GST साझेदार — लाभ-अंतर भुगतान: जहाँ साझेदार के पास वैध GST पंजीकरण नहीं है अथवा इस समझौते के अंतर्गत GST संख्या प्रदान नहीं की गई है, वहाँ साझेदार लाभ-अंतर अथवा लाभ हिस्से को बाद में चालान के माध्यम से निपटाने हेतु नहीं रखेगा। इसके स्थान पर, MSE द्वारा किसी परियोजना हेतु सामग्री की खरीद आरंभ करने से पूर्व, साझेदार अनुमानित लाभ-अंतर (निश्चित-दर आधार पर) अथवा अनुमानित लाभ हिस्सा (लाभ-साझाकरण आधार पर) MSE को भुगतान करेगा, जिसकी गणना अपेक्षित ग्राहक मूल्य तथा इस समझौते के अंतर्गत लागू दर अथवा हिस्से से की जाएगी। परियोजना पूर्ण होने, नेट मीटरिंग तथा ग्राहक से समस्त भुगतान प्राप्त होने के पश्चात्, MSE वास्तविक देय लाभ-अंतर अथवा हिस्से की समानता करेगा तथा साझेदार द्वारा अधिक भुगतान की गई राशि वापस करेगा अथवा कमी वसूल करेगा। GST रहित साझेदार के लिए MSE तब तक सामग्री की खरीद आरंभ नहीं करेगा जब तक ऐसी अनुमानित राशि प्राप्त न हो जाए।",
+              "गैर-GST साझेदार — लाभ-अंतर भुगतान: जहाँ साझेदार के पास वैध GST पंजीकरण नहीं है अथवा इस समझौते के अंतर्गत GST संख्या प्रदान नहीं की गई है, वहाँ साझेदार लाभ-अंतर को बाद में चालान के माध्यम से निपटाने हेतु नहीं रखेगा। इसके स्थान पर, MSE द्वारा किसी परियोजना हेतु सामग्री की खरीद आरंभ करने से पूर्व, साझेदार अनुमानित लाभ-अंतर (निश्चित-दर आधार पर) MSE को भुगतान करेगा, जिसकी गणना अपेक्षित ग्राहक मूल्य तथा इस समझौते के अंतर्गत लागू दर से की जाएगी। परियोजना पूर्ण होने, नेट मीटरिंग तथा ग्राहक से समस्त भुगतान प्राप्त होने के पश्चात्, MSE वास्तविक देय लाभ-अंतर की समानता करेगा तथा साझेदार द्वारा अधिक भुगतान की गई राशि वापस करेगा अथवा कमी वसूल करेगा। GST रहित साझेदार के लिए MSE तब तक सामग्री की खरीद आरंभ नहीं करेगा जब तक ऐसी अनुमानित राशि प्राप्त न हो जाए।",
           },
         ],
       }),
@@ -547,16 +509,12 @@ function createPartnerSectionsHi(): PartnerSection[] {
   ];
 }
 
-function dealHeadingHi(dealType: PartnerDealType): string {
-  return dealType === "fixed-rate"
-    ? "वाणिज्यिक शर्तें — निश्चित दर अनुसूची"
-    : "वाणिज्यिक शर्तें — लाभ साझाकरण व्यवस्था";
+function dealHeadingHi(_dealType: PartnerDealType): string {
+  return "वाणिज्यिक शर्तें — निश्चित दर अनुसूची";
 }
 
-function dealIntroHi(dealType: PartnerDealType): string {
-  return dealType === "fixed-rate"
-    ? "इस समझौते के अंतर्गत निश्चित-दर आधार पर स्वीकृत प्रत्येक परियोजना हेतु, MSE सहमत निष्पादन कार्य (सामग्री खरीद, परिवहन, स्थापना एवं कमीशनिंग) पूर्ण करने हेतु नीचे दी गई अनुसूची में निर्धारित निश्चित प्रति-संयंत्र दर वसूल करेगा एवं रखेगा। लागू दर से अधिक ग्राहक से प्राप्त राशि साझेदार के लाभ-अंतर के रूप में साझेदार की होगी, जो इस समझौते के भुगतान-प्रवाह प्रावधानों के अनुसार निर्गत की जाएगी। लागू दर संयंत्र की क्षमता एवं फेज़ पर निर्भर करती है:"
-    : 'इस समझौते के अंतर्गत लाभ-साझाकरण आधार पर निष्पादित प्रत्येक परियोजना हेतु, परियोजना का शुद्ध लाभ परियोजना के पूर्ण होने पर परिकलित किया जाएगा एवं पक्षकारों के मध्य साझा किया जाएगा। "शुद्ध लाभ" से तात्पर्य {{var.profitBasis}} से है। इस प्रकार परिकलित शुद्ध लाभ {{var.mssShare}} MSE को एवं {{var.partnerShare}} साझेदार को के अनुपात में साझा किया जाएगा। साझेदार का हिस्सा इस समझौते के भुगतान-प्रवाह प्रावधानों के अनुसार, अर्थात् नेट मीटरिंग एवं परियोजना के अंतिम भुगतान की प्राप्ति के पश्चात्, निर्गत किया जाएगा।';
+function dealIntroHi(_dealType: PartnerDealType): string {
+  return "इस समझौते के अंतर्गत निश्चित-दर आधार पर स्वीकृत प्रत्येक परियोजना हेतु, MSE सहमत निष्पादन कार्य (सामग्री खरीद, परिवहन, स्थापना एवं कमीशनिंग) पूर्ण करने हेतु नीचे दी गई अनुसूची में निर्धारित निश्चित प्रति-संयंत्र दर वसूल करेगा एवं रखेगा। लागू दर से अधिक ग्राहक से प्राप्त राशि साझेदार के लाभ-अंतर के रूप में साझेदार की होगी, जो इस समझौते के भुगतान-प्रवाह प्रावधानों के अनुसार निर्गत की जाएगी। लागू दर संयंत्र की क्षमता एवं फेज़ पर निर्भर करती है:";
 }
 
 const rateNoteHi =
@@ -570,19 +528,17 @@ const closingHi =
 
 const titleEn: Record<PartnerDealType, string> = {
   "fixed-rate": "PARTNERSHIP AGREEMENT — FIXED RATE BASIS",
-  "profit-share": "PARTNERSHIP AGREEMENT — PROFIT SHARE BASIS",
 };
 
 const titleHi: Record<PartnerDealType, string> = {
   "fixed-rate": "साझेदारी समझौता — निश्चित दर आधार",
-  "profit-share": "साझेदारी समझौता — लाभ साझाकरण आधार",
 };
 
 // =====================================================================
 // Builders
 // =====================================================================
 
-export const HINDI_SUPPORTED_DEALS: PartnerDealType[] = ["fixed-rate", "profit-share"];
+export const HINDI_SUPPORTED_DEALS: PartnerDealType[] = ["fixed-rate"];
 
 export function isHindiSupported(_dealType: PartnerDealType): boolean {
   return true;
@@ -593,12 +549,11 @@ export function createDefaultPartnerAgreementData(
   language: PartnerAgreementLanguage = "en",
 ): PartnerAgreementData {
   const isHindi = language === "hi";
-  const isProfitShare = dealType === "profit-share";
 
   return {
-    dealType,
+    dealType: "fixed-rate",
     language: isHindi ? "hi" : "en",
-    title: isHindi ? titleHi[dealType] : titleEn[dealType],
+    title: isHindi ? titleHi["fixed-rate"] : titleEn["fixed-rate"],
     effectiveDate: today,
     company: defaultCompany(),
     party: {
@@ -612,16 +567,16 @@ export function createDefaultPartnerAgreementData(
       aadhaar: "",
       gst: "",
     },
-    variableFields: isProfitShare ? profitShareVariableFields : baseVariableFields,
-    variables: { ...(isProfitShare ? profitShareVariableDefaults : baseVariableDefaults) },
+    variableFields: baseVariableFields,
+    variables: { ...baseVariableDefaults },
     introTemplate: isHindi ? introTemplateHi : introTemplateEn,
     recitals: isHindi ? recitalsHi(dealType) : recitalsEn(dealType),
     preambleAfterRecitals: isHindi ? preambleHi : preambleEn,
     sections: isHindi ? createPartnerSectionsHi() : createPartnerSectionsEn(),
     dealHeading: isHindi ? dealHeadingHi(dealType) : dealHeadingEn(dealType),
     dealIntro: isHindi ? dealIntroHi(dealType) : dealIntroEn(dealType),
-    rateCards: isProfitShare ? [] : defaultRateCards(),
-    rateNote: isProfitShare ? "" : isHindi ? rateNoteHi : rateNoteEn,
+    rateCards: defaultRateCards(),
+    rateNote: isHindi ? rateNoteHi : rateNoteEn,
     closingParagraph: isHindi ? closingHi : closingEn,
     governingLawParagraph: isHindi ? governingLawHi : governingLawEn,
     partyIsIndividual: false,

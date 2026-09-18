@@ -2,9 +2,10 @@ import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { FeatureNavigation } from "@/components/FeatureNavigation";
 import { AllOfferLetters, OfferLetterMaker } from "@/features/offer-letter";
 import { AgreementMaker, AllAgreements } from "@/features/agreement";
-import { AllPartnerAgreements, PartnerAgreementMaker } from "@/features/partner-agreement";
+import { PartnerAgreementMaker } from "@/features/partner-agreement";
 import { AllQuotations, QuotationMaker } from "@/features/quotation";
 import { AllHandovers, HandoverMaker } from "@/features/handover";
+import { AllReceipts, ReceiptMaker } from "@/features/receipt";
 import { AllCompanyProfiles, CompanyProfileMaker } from "@/features/company-profile";
 import { AllEmployeeDirectories, EmployeeDirectoryMaker } from "@/features/employee-directory";
 import { MssSitesPage } from "@/features/mss-sites";
@@ -17,6 +18,7 @@ export default function App() {
     (location.pathname.startsWith("/partner-agreement") && location.pathname !== "/partner-agreements") ||
     (location.pathname.startsWith("/quotation") && location.pathname !== "/quotations") ||
     (location.pathname.startsWith("/handover") && location.pathname !== "/handovers") ||
+    (location.pathname.startsWith("/receipt") && location.pathname !== "/receipts") ||
     (location.pathname.startsWith("/company-profile") && location.pathname !== "/company-profiles") ||
     (location.pathname.startsWith("/employee-directory") && location.pathname !== "/employees");
 
@@ -33,12 +35,14 @@ export default function App() {
         <Route path="/agreements" element={<AllAgreements />} />
         <Route path="/partner-agreement" element={<PartnerAgreementMaker />} />
         <Route path="/partner-agreement/:id" element={<PartnerAgreementMaker />} />
-        <Route path="/partner-agreements" element={<AllPartnerAgreements />} />
+        <Route path="/partner-agreements" element={<Navigate replace to="/agreements" />} />
         <Route path="/quotation" element={<QuotationMaker />} />
         <Route path="/quotation/:id" element={<Navigate replace to="/quotations" />} />
         <Route path="/quotations" element={<AllQuotations />} />
         <Route path="/handover" element={<HandoverMaker />} />
         <Route path="/handovers" element={<AllHandovers />} />
+        <Route path="/receipt" element={<ReceiptMaker />} />
+        <Route path="/receipts" element={<AllReceipts />} />
         <Route path="/company-profile" element={<CompanyProfileMaker />} />
         <Route path="/company-profile/:id" element={<CompanyProfileMaker />} />
         <Route path="/company-profiles" element={<AllCompanyProfiles />} />

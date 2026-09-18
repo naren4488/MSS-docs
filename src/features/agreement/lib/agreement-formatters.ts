@@ -25,6 +25,7 @@ export function buildPlaceholderScope(data: AgreementData) {
     party: data.party as unknown as Record<string, unknown>,
     var: data.variables as unknown as Record<string, unknown>,
     vendorChargePerWatt: data.vendorChargePerWatt,
+    referralCommissionAmount: data.referralCommissionAmount,
     title: data.title,
     effectiveDate: data.effectiveDate,
     effectiveDateFormatted: data.effectiveDate ? formatDate(data.effectiveDate) : "",

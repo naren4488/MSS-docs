@@ -21,6 +21,7 @@ import {
   type IParagraphOptions,
   type IRunOptions,
 } from "docx";
+import { documentDownloadName } from "@/lib/document-filename";
 import type { AnnexureProjectReference, CompanyProfileData, EmpanelmentAnnexure } from "../types/company-profile";
 import { filledValue, formatDate } from "./company-profile-formatters";
 
@@ -444,5 +445,5 @@ export async function downloadAnnexureDocx(data: CompanyProfileData) {
   const logoPng = await loadLogoPng(data.logoUrl);
   const document = buildDocument(data, logoPng);
   const blob = await Packer.toBlob(document);
-  triggerDownload(blob, "MSS-Letterhead-Annexure.docx");
+  triggerDownload(blob, `${documentDownloadName("", "Empanelment Annexure")}.docx`);
 }

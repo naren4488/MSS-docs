@@ -5,6 +5,7 @@ import { CompanyProfileEditor } from "../components/CompanyProfileEditor";
 import { CompanyProfilePreview } from "../components/CompanyProfilePreview";
 import { SaveCompanyProfileDialog } from "../components/SaveCompanyProfileDialog";
 import { createDefaultCompanyProfileData, isAnnexureFirm, isCompanyFirm, isLetterheadFirm, normalizeCompanyProfileData } from "../lib/company-profile-defaults";
+import { documentDownloadName } from "@/lib/document-filename";
 import { downloadAnnexureDocx } from "../lib/download-annexure-docx";
 import {
   clearCompanyProfileDraft,
@@ -14,6 +15,12 @@ import {
   saveCompanyProfileRecord,
 } from "../lib/company-profile-storage";
 import type { CompanyFirm, CompanyProfileData } from "../types/company-profile";
+
+function companyDocumentName(data: CompanyProfileData): string {
+  if (isAnnexureFirm(data.firm)) return documentDownloadName("", "Empanelment Annexure");
+  if (isLetterheadFirm(data.firm)) return documentDownloadName("", "Letterhead");
+  return documentDownloadName(data.legalName, "Company Details");
+}
 
 function cloneData(data: CompanyProfileData) {
   return JSON.parse(JSON.stringify(data)) as CompanyProfileData;
@@ -72,9 +79,20 @@ export function CompanyProfileMaker() {
   );
 
   async function handleSaveAsPdf() {
-    await document.fonts.ready;
-    await new Promise((resolve) => window.setTimeout(resolve, 150));
-    window.print();
+    const previousTitle = document.title;
+    document.title = companyDocumentName(data);
+    const restoreTitle = () => {
+      document.title = previousTitle;
+      window.removeEventListener("afterprint", restoreTitle);
+    };
+    window.addEventListener("afterprint", restoreTitle);
+    try {
+      await document.fonts.ready;
+      await new Promise((resolve) => window.setTimeout(resolve, 150));
+      window.print();
+    } catch {
+      restoreTitle();
+    }
   }
 
   async function handleSaveAsDocx() {

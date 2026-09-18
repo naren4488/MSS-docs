@@ -4,8 +4,27 @@ import { MssSitesTablePreview, type MssSitesViewMode } from "../components/MssSi
 import { fetchMssSitesTable } from "../lib/fetch-mss-sites";
 import { prepareMssSitesPrint } from "../lib/prepare-mss-sites-print";
 import { prepareMssSitesAnalyticsPrint } from "../lib/prepare-mss-sites-analytics-print";
+import { documentDownloadName } from "@/lib/document-filename";
 import type { ProjectsScope } from "../lib/projects-config";
 import type { MssSitesTable } from "../types/mss-sites";
+
+function projectsDocumentName(scope: ProjectsScope, suffix = ""): string {
+  const scopeName =
+    scope === "shripal"
+      ? "Shripal Sites"
+      : scope === "satyanarayan"
+        ? "Satyanarayan Sites"
+        : scope === "rjgreen"
+          ? "RJ Green Sites"
+          : scope === "ajay"
+            ? "Ajay Sites"
+            : scope === "sales"
+              ? "Sales Team Sites"
+              : scope === "partner"
+                ? "Partner Projects"
+                : "Our Projects";
+  return documentDownloadName("", suffix ? `${scopeName} ${suffix}` : scopeName);
+}
 
 export function MssSitesPage() {
   const [table, setTable] = useState<MssSitesTable | null>(null);
@@ -36,9 +55,12 @@ export function MssSitesPage() {
   async function handlePrint() {
     await document.fonts.ready;
     await new Promise((resolve) => window.setTimeout(resolve, 150));
+    const previousTitle = document.title;
+    document.title = projectsDocumentName(scope);
     const cleanupPrint = prepareMssSitesPrint({ includeMoreColumn: includeMoreColumnInPdf });
     const cleanup = () => {
       cleanupPrint();
+      document.title = previousTitle;
       window.removeEventListener("afterprint", cleanup);
     };
     window.addEventListener("afterprint", cleanup);
@@ -49,20 +71,7 @@ export function MssSitesPage() {
     await document.fonts.ready;
     await new Promise((resolve) => window.setTimeout(resolve, 200));
     const previousTitle = document.title;
-    document.title =
-      scope === "shripal"
-        ? "Shripal sites — Analytics"
-        : scope === "satyanarayan"
-          ? "Satyanarayan sites — Analytics"
-          : scope === "rjgreen"
-            ? "RJ Green sites — Analytics"
-            : scope === "ajay"
-              ? "Ajay sites — Analytics"
-              : scope === "sales"
-                ? "Sales team sites — Analytics"
-                : scope === "partner"
-                  ? "Partner projects — Analytics"
-                  : "Our projects — Analytics";
+    document.title = projectsDocumentName(scope, "Analytics");
     const cleanupPrint = prepareMssSitesAnalyticsPrint();
     const cleanup = () => {
       cleanupPrint();

@@ -1,5 +1,6 @@
 export type AgreementTemplate =
   | "partnership"
+  | "project-referral"
   | "inc-installation-assign"
   | "inc-goodwill-execution"
   | "client-agreement";
@@ -90,6 +91,9 @@ export interface AgreementData {
   showPartyPan: boolean;
   showVendorChargePerWatt: boolean;
   vendorChargePerWatt: string;
+  /** Flat referral commission (e.g. "20,000") for project-referral deals. */
+  showReferralCommission: boolean;
+  referralCommissionAmount: string;
   showWitnesses: boolean;
   witnesses: AgreementWitness[];
   showPageNumbers: boolean;
@@ -102,4 +106,10 @@ export interface AgreementRecord {
   content: AgreementData;
   createdAt: string;
   updatedAt: string;
+  /** Hard-copy signature kept for our records (not required on the PDF). */
+  signed?: boolean;
+  /** ISO date or datetime when the hard copy was signed. */
+  signedAt?: string;
+  /** Short note, e.g. "Hard copy signed". */
+  signedNote?: string;
 }

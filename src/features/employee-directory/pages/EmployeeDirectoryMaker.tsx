@@ -12,6 +12,7 @@ import {
   saveEmployeeDirectoryDraft,
   saveEmployeeDirectoryRecord,
 } from "../lib/employee-directory-storage";
+import { documentDownloadName } from "@/lib/document-filename";
 import type { EmployeeDirectoryData } from "../types/employee-directory";
 
 function cloneData(data: EmployeeDirectoryData) {
@@ -68,9 +69,20 @@ export function EmployeeDirectoryMaker() {
   );
 
   async function handleSaveAsPdf() {
-    await document.fonts.ready;
-    await new Promise((resolve) => window.setTimeout(resolve, 150));
-    window.print();
+    const previousTitle = document.title;
+    document.title = documentDownloadName(data.companyName, "Employee Details");
+    const restoreTitle = () => {
+      document.title = previousTitle;
+      window.removeEventListener("afterprint", restoreTitle);
+    };
+    window.addEventListener("afterprint", restoreTitle);
+    try {
+      await document.fonts.ready;
+      await new Promise((resolve) => window.setTimeout(resolve, 150));
+      window.print();
+    } catch {
+      restoreTitle();
+    }
   }
 
   function handleSave(name: string) {

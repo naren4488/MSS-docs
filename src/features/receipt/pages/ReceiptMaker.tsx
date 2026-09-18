@@ -1,28 +1,19 @@
-import { useEffect, useMemo, useState } from "react";
-import { useBeforeUnload, useNavigate, useSearchParams } from "react-router-dom";
+import { useMemo, useState } from "react";
+import { useBeforeUnload, useNavigate } from "react-router-dom";
 import { MakerStickyTopbar } from "@/components/MakerStickyTopbar";
-import { HandoverEditor } from "../components/HandoverEditor";
-import { HandoverPreview } from "../components/HandoverPreview";
-import { capacityFileLabel, documentDownloadName, phaseFileLabel, plantDocumentName } from "@/lib/document-filename";
-import { createHandoverData, isHandoverKind } from "../lib/handover-defaults";
-import type { HandoverData } from "../types/handover";
+import { ReceiptEditor } from "../components/ReceiptEditor";
+import { ReceiptPreview } from "../components/ReceiptPreview";
+import { documentDownloadName } from "@/lib/document-filename";
+import { createReceiptData } from "../lib/receipt-defaults";
+import type { ReceiptData } from "../types/receipt";
 
-export function HandoverMaker() {
-  const [searchParams] = useSearchParams();
+export function ReceiptMaker() {
   const navigate = useNavigate();
-  const kindParam = searchParams.get("kind");
-  const kind = isHandoverKind(kindParam) ? kindParam : "ongrid";
-  const initialData = useMemo(() => createHandoverData(kind), [kind]);
-
-  const [data, setData] = useState<HandoverData>(initialData);
+  const initialData = useMemo(() => createReceiptData(), []);
+  const [data, setData] = useState<ReceiptData>(initialData);
   const [viewMode, setViewMode] = useState<"split" | "editor" | "preview">("split");
   const [savedSnapshot, setSavedSnapshot] = useState(JSON.stringify(initialData));
   const isDirty = JSON.stringify(data) !== savedSnapshot;
-
-  useEffect(() => {
-    setData(initialData);
-    setSavedSnapshot(JSON.stringify(initialData));
-  }, [initialData]);
 
   useBeforeUnload(
     (event) => {
@@ -36,12 +27,7 @@ export function HandoverMaker() {
 
   async function handleSaveAsPdf() {
     const previousTitle = document.title;
-    const phase = data.kind === "offgrid" ? "" : phaseFileLabel(data.phase);
-    const kindLabel = data.kind === "offgrid" ? "Off-Grid" : "";
-    document.title = documentDownloadName(
-      data.customerName,
-      plantDocumentName([capacityFileLabel(data.capacity), phase, kindLabel], "Project Handover"),
-    );
+    document.title = documentDownloadName(data.customerName, "Project Confirmation Receipt");
     const restoreTitle = () => {
       document.title = previousTitle;
       window.removeEventListener("afterprint", restoreTitle);
@@ -58,12 +44,14 @@ export function HandoverMaker() {
 
   function handleBack() {
     if (isDirty && !window.confirm("You have unsaved changes. Go back anyway?")) return;
-    navigate("/handovers");
+    navigate("/receipts");
   }
 
   function handleReset() {
-    if (!window.confirm("Reset this handover to the template? Your edits will be lost.")) return;
-    setData(createHandoverData(data.kind));
+    if (!window.confirm("Reset this receipt? Your edits will be lost.")) return;
+    const next = createReceiptData();
+    setData(next);
+    setSavedSnapshot(JSON.stringify(next));
   }
 
   return (
@@ -82,12 +70,12 @@ export function HandoverMaker() {
           <section className="content-card editor-shell no-print">
             <div className="panel-header">
               <div>
-                <p className="eyebrow">{data.kind === "offgrid" ? "Off-grid" : "Grid-connected"}</p>
-                <h2>Handover details</h2>
+                <p className="eyebrow">OCR</p>
+                <h2>Project confirmation receipt</h2>
               </div>
-              <p className="muted-text">Fill the client and plant. The letter, care notes and terms are already written — edit only what this site needs.</p>
+              <p className="muted-text">Fill the client, the plant, and the payment. Amount in words is written on the PDF.</p>
             </div>
-            <HandoverEditor data={data} onChange={setData} />
+            <ReceiptEditor data={data} onChange={setData} />
           </section>
         ) : null}
 
@@ -95,12 +83,12 @@ export function HandoverMaker() {
           <div className="panel-header no-print">
             <div>
               <p className="eyebrow">Preview</p>
-              <h2>Page-by-page document</h2>
+              <h2>Receipt</h2>
             </div>
             <p className="muted-text">Save as PDF uses your browser — same layout as below.</p>
           </div>
           <div className="preview-a4-viewport">
-            <HandoverPreview data={data} />
+            <ReceiptPreview data={data} />
           </div>
         </section>
       </div>

@@ -11,6 +11,7 @@ import {
   normalizePartnerAgreementData,
   switchPartnerAgreementLanguage,
 } from "../lib/partner-agreement-defaults";
+import { documentDownloadName } from "@/lib/document-filename";
 import {
   getPartnerAgreement,
   getPartnerAgreementDraft,
@@ -81,16 +82,27 @@ export function PartnerAgreementMaker() {
   );
 
   async function handleSaveAsPdf() {
-    await document.fonts.ready;
-    await new Promise((resolve) => window.setTimeout(resolve, 150));
-    window.print();
+    const previousTitle = document.title;
+    document.title = documentDownloadName(data.party.entityName, "Fixed Rate Partnership Agreement");
+    const restoreTitle = () => {
+      document.title = previousTitle;
+      window.removeEventListener("afterprint", restoreTitle);
+    };
+    window.addEventListener("afterprint", restoreTitle);
+    try {
+      await document.fonts.ready;
+      await new Promise((resolve) => window.setTimeout(resolve, 150));
+      window.print();
+    } catch {
+      restoreTitle();
+    }
   }
 
   function handleBack() {
     if (isDirty && !window.confirm("You have unsaved changes. Go back to all partner agreements anyway?")) {
       return;
     }
-    navigate("/partner-agreements");
+    navigate("/agreements");
   }
 
   function handleReset() {
@@ -115,7 +127,7 @@ export function PartnerAgreementMaker() {
   }
 
   if (shouldRedirectToList) {
-    return <Navigate replace to="/partner-agreements" />;
+    return <Navigate replace to="/agreements" />;
   }
 
   return (
