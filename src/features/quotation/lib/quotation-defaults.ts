@@ -28,7 +28,7 @@ function defaultCompany(): AgreementCompany {
   return {
     name: "Mahi Solar Solution Private Limited",
     logoUrl: MSS_LOGO_URL,
-    address: "Plot No. 44, Jai Bhawani Vihar Vistar, Radha Vihar, Govindpura, Jaipur, Rajasthan – 302044",
+    address: "Plot No. 44, Jai Bhawani Vihar Vistar, Radha Vihar, Govindpura, Jaipur, Rajasthan – 302012",
     phone: "+91 9928413501",
     email: "mahisolarsolution@gmail.com",
     website: "mahisolarsolution.com",
@@ -287,9 +287,11 @@ export function applyCommercialCapacityToMaterials(
 export const OFFGRID_MODULE_WP = 590;
 export const OFFGRID_PRICE_PER_KW = 100_000;
 export const OFFGRID_BATTERY_AH = 220;
+export const OFFGRID_DEFAULT_INVERTER_KW = "5.1";
 
 export function offgridPanelCount(kw: number): number {
-  return Math.max(1, Math.ceil((kw * 1000) / OFFGRID_MODULE_WP));
+  // 3 kW kit uses 5 × 590 Wp (~2.95 kW); round keeps that sizing for the base package.
+  return Math.max(1, Math.round((kw * 1000) / OFFGRID_MODULE_WP));
 }
 
 /**
@@ -304,6 +306,10 @@ export function offgridProjectAmount(capacity: string): string {
   const kw = parseCapacityKw(capacity);
   if (!kw) {
     return "";
+  }
+  // Base 3 kW off-grid package is ₹2,90,000; other sizes scale from ₹1,00,000 / kW.
+  if (kw === 3) {
+    return "290000";
   }
   return String(Math.round(kw * OFFGRID_PRICE_PER_KW));
 }
@@ -326,8 +332,8 @@ function offgridModuleMake(language: QuotationLanguage): string {
 
 function offgridBatteryMake(language: QuotationLanguage): string {
   return language === "hi"
-    ? "नॉन-लिथियम ट्यूबुलर · Microtek / समकक्ष"
-    : "Non-lithium tubular · Microtek / equivalent";
+    ? "Luminous नॉन-लिथियम ट्यूबुलर · वारंटी कंपनी के अनुसार"
+    : "Luminous non-lithium tubular with warranty as per company";
 }
 
 function offgridBatteryQty(count: number, language: QuotationLanguage): string {
@@ -348,9 +354,9 @@ export function offgridBatteryOffering(capacity: string, language: QuotationLang
   const kw = parseCapacityKw(capacity) ?? 3;
   const count = offgridBatteryCount(kw);
   if (language === "hi") {
-    return `${count} × 12V ${OFFGRID_BATTERY_AH} Ah नॉन-लिथियम ट्यूबुलर`;
+    return `${count} × 12V ${OFFGRID_BATTERY_AH} Ah Luminous नॉन-लिथियम ट्यूबुलर`;
   }
-  return `${count} × 12V ${OFFGRID_BATTERY_AH} Ah non-lithium tubular`;
+  return `${count} × 12V ${OFFGRID_BATTERY_AH} Ah Luminous non-lithium tubular`;
 }
 
 export function syncOffgridOfferToCapacity(
@@ -368,13 +374,13 @@ export function syncOffgridOfferToCapacity(
 }
 
 function defaultOffgridMaterialItems(language: QuotationLanguage): QuotationMaterialItem[] {
-  const inverterMake = offgridInverterMake("3", language);
+  const inverterMake = offgridInverterMake(OFFGRID_DEFAULT_INVERTER_KW, language);
   const batteryMake = offgridBatteryMake(language);
   const moduleMake = offgridModuleMake(language);
 
   if (language === "hi") {
     return [
-      material("सोलर पीवी मॉड्यूल", "6 पैनल", `${OFFGRID_MODULE_WP} Wp`, moduleMake),
+      material("सोलर पीवी मॉड्यूल", "5 पैनल", `${OFFGRID_MODULE_WP} Wp`, moduleMake),
       material("सोलर इनवर्टर", "1", offgridInverterUnit(language), inverterMake),
       material("माउंटिंग स्ट्रक्चर (GI अपोलो)", "आवश्यकतानुसार", "", "लेग 75×75, रैफ्टर 60×40, पर्लिन 40×40"),
       material("DC केबल", "60 तक", "मी.", "4 वर्ग मिमी कॉपर वायर, पॉलीकैब केबल"),
@@ -385,7 +391,7 @@ function defaultOffgridMaterialItems(language: QuotationLanguage): QuotationMate
   }
 
   return [
-    material("Solar PV Modules", "6 Panel", `${OFFGRID_MODULE_WP} Wp`, moduleMake),
+    material("Solar PV Modules", "5 Panel", `${OFFGRID_MODULE_WP} Wp`, moduleMake),
     material("Solar Inverter", "1", offgridInverterUnit(language), inverterMake),
     material("Mounting Structure (GI Apollo)", "As per Requirement", "", "Leg 75×75, Rafter 60×40, Purline 40×40"),
     material("DC Cable", "Upto 60", "Mtr", "4 sq mm Copper Wire, Polycab cable"),
@@ -411,7 +417,7 @@ export function applyOffgridCapacityToMaterials(
       return {
         ...item,
         unit: offgridInverterUnit(language),
-        make: offgridInverterMake(formatKwLabel(kw), language),
+        make: offgridInverterMake(OFFGRID_DEFAULT_INVERTER_KW, language),
       };
     }
     if (kw && isBatteryBankDescription(item.description)) {

@@ -1,6 +1,6 @@
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties, ReactNode } from "react";
-import { CompanyLogo, LETTERHEAD_LOGO_WRAP } from "@/components/CompanyLogo";
+import { CompanyLogo, getLetterheadLogoSize, getLetterheadLogoWrap } from "@/components/CompanyLogo";
 import {
   FIRST_PAGE_CAPACITY,
   FOLLOWING_PAGE_CAPACITY,
@@ -91,11 +91,17 @@ function EmployeeSection({ employee, index }: { employee: Employee; index: numbe
 }
 
 function Header({ data }: { data: EmployeeDirectoryData }) {
+  const logoSize = getLetterheadLogoSize(data.companyLogoUrl);
   return (
     <div style={{ textAlign: "center", borderBottom: `3px solid ${NAVY}`, paddingBottom: 14, marginBottom: 8 }}>
       {data.companyLogoUrl ? (
-        <div style={LETTERHEAD_LOGO_WRAP}>
-          <CompanyLogo alt="Company logo" src={data.companyLogoUrl} />
+        <div style={getLetterheadLogoWrap(data.companyLogoUrl)}>
+          <CompanyLogo
+            alt="Company logo"
+            src={data.companyLogoUrl}
+            maxHeight={logoSize.maxHeight}
+            maxWidth={logoSize.maxWidth}
+          />
         </div>
       ) : null}
       <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: 1, color: NAVY, textTransform: "uppercase" }}>

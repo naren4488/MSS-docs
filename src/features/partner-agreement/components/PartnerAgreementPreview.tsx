@@ -1,6 +1,6 @@
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties, ReactNode } from "react";
-import { CompanyLogo, LETTERHEAD_LOGO_WRAP } from "@/components/CompanyLogo";
+import { CompanyLogo, getLetterheadLogoSize, getLetterheadLogoWrap } from "@/components/CompanyLogo";
 import {
   FIRST_PAGE_CAPACITY,
   FOLLOWING_PAGE_CAPACITY,
@@ -20,6 +20,14 @@ const LABELS: Record<
     governingLaw: string;
     witnesses: string;
     rateHeaders: { capacity: string; phase: string; price: string };
+    clientHeaders: {
+      sno: string;
+      name: string;
+      capacity: string;
+      kNo: string;
+      dealWithUs: string;
+      workStatus: string;
+    };
     pageOf: (current: number, total: number) => string;
   }
 > = {
@@ -28,6 +36,14 @@ const LABELS: Record<
     governingLaw: "Governing Law & Dispute Resolution",
     witnesses: "Witnesses:",
     rateHeaders: { capacity: "System Capacity", phase: "Phase", price: "Rate (₹)" },
+    clientHeaders: {
+      sno: "#",
+      name: "Client Name",
+      capacity: "kW",
+      kNo: "K.NO",
+      dealWithUs: "Deal with Us",
+      workStatus: "Work Status",
+    },
     pageOf: (current, total) => `Page ${current} of ${total}`,
   },
   hi: {
@@ -35,6 +51,14 @@ const LABELS: Record<
     governingLaw: "शासी विधि एवं विवाद समाधान",
     witnesses: "साक्षी:",
     rateHeaders: { capacity: "संयंत्र क्षमता", phase: "फेज़", price: "दर (₹)" },
+    clientHeaders: {
+      sno: "#",
+      name: "ग्राहक नाम",
+      capacity: "kW",
+      kNo: "K.NO",
+      dealWithUs: "हमारे साथ डील",
+      workStatus: "कार्य स्थिति",
+    },
     pageOf: (current, total) => `पृष्ठ ${current} / ${total}`,
   },
 };
@@ -89,8 +113,13 @@ function Header({ data }: { data: PartnerAgreementData }) {
       }}
     >
       {data.company.logoUrl ? (
-        <div style={LETTERHEAD_LOGO_WRAP}>
-          <CompanyLogo alt="Company logo" src={data.company.logoUrl} />
+        <div style={getLetterheadLogoWrap(data.company.logoUrl)}>
+          <CompanyLogo
+            alt="Company logo"
+            src={data.company.logoUrl}
+            maxHeight={getLetterheadLogoSize(data.company.logoUrl).maxHeight}
+            maxWidth={getLetterheadLogoSize(data.company.logoUrl).maxWidth}
+          />
         </div>
       ) : null}
       <div style={{ fontSize: 22, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase" }}>
@@ -220,6 +249,73 @@ function RateTable({ data }: { data: PartnerAgreementData }) {
   );
 }
 
+function ClientTable({
+  rows,
+  language,
+}: {
+  rows: PartnerAgreementData["clientRows"];
+  language: PartnerAgreementData["language"];
+}) {
+  const headers = LABELS[language].clientHeaders;
+  const cellStyle: CSSProperties = {
+    border: "1px solid #c7ced9",
+    padding: "6px 8px",
+    fontSize: 10.5,
+    textAlign: "left",
+    verticalAlign: "top",
+  };
+  const headerCellStyle: CSSProperties = {
+    ...cellStyle,
+    background: "#152036",
+    color: "#ffffff",
+    fontWeight: 700,
+    letterSpacing: 0.3,
+  };
+
+  return (
+    <table
+      style={{
+        width: "100%",
+        borderCollapse: "collapse",
+        margin: "4px 0 12px",
+        tableLayout: "fixed",
+      }}
+    >
+      <thead>
+        <tr>
+          <th style={{ ...headerCellStyle, width: "5%" }}>{headers.sno}</th>
+          <th style={{ ...headerCellStyle, width: "28%" }}>{headers.name}</th>
+          <th style={{ ...headerCellStyle, width: "10%" }}>{headers.capacity}</th>
+          <th style={{ ...headerCellStyle, width: "18%" }}>{headers.kNo}</th>
+          <th style={{ ...headerCellStyle, width: "16%", textAlign: "right" }}>{headers.dealWithUs}</th>
+          <th style={{ ...headerCellStyle, width: "23%" }}>{headers.workStatus}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((row, index) => (
+          <tr key={row.id}>
+            <td style={cellStyle}>{index + 1}</td>
+            <td style={{ ...cellStyle, fontWeight: 600 }}>
+              {row.name || "—"}
+              {row.remark?.trim() ? (
+                <div style={{ marginTop: 4, fontWeight: 500, fontSize: 9.5, color: "#4b5563", lineHeight: 1.45 }}>
+                  {row.remark.trim()}
+                </div>
+              ) : null}
+            </td>
+            <td style={cellStyle}>{row.capacity || "—"}</td>
+            <td style={{ ...cellStyle, fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", fontSize: 10 }}>
+              {row.kNo || "—"}
+            </td>
+            <td style={{ ...cellStyle, textAlign: "right", fontWeight: 600 }}>{formatRate(row.dealWithUs)}</td>
+            <td style={cellStyle}>{row.workStatus || "—"}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
 function createBlocks(data: PartnerAgreementData): PreviewBlock[] {
   const blocks: PreviewBlock[] = [];
 
@@ -330,6 +426,8 @@ function createBlocks(data: PartnerAgreementData): PreviewBlock[] {
       node: <WitnessBlock data={data} />,
     });
   }
+
+  appendClientScheduleBlocks(blocks, data);
 
   return blocks;
 }
@@ -462,6 +560,77 @@ function appendDealBlocks(blocks: PreviewBlock[], data: PartnerAgreementData) {
         node: <p style={{ ...paragraphStyle, fontSize: 11, color: "#374151" }}>{note}</p>,
       });
     }
+  }
+}
+
+function appendClientScheduleBlocks(blocks: PreviewBlock[], data: PartnerAgreementData) {
+  const hasLogged = data.showClientSchedule && data.clientRows.length > 0;
+  const hasOther = data.showClientSchedule && data.otherClientRows.length > 0;
+  if (!hasLogged && !hasOther) return;
+
+  if (hasLogged) {
+    const heading = fillTemplate(data.clientScheduleHeading, data);
+    if (heading.trim()) {
+      blocks.push({
+        key: "client-schedule-heading",
+        estimate: 30,
+        keepWithNext: true,
+        node: <h3 style={sectionHeadingStyle}>{heading}</h3>,
+      });
+    }
+
+    const introText = fillTemplate(data.clientScheduleIntro, data);
+    if (introText.trim()) {
+      blocks.push({
+        key: "client-schedule-intro",
+        estimate: 18 + estimateParagraphHeight(introText, 78),
+        keepWithNext: true,
+        node: <p style={paragraphStyle}>{introText}</p>,
+      });
+    }
+
+    blocks.push({
+      key: "client-schedule-table",
+      estimate: 36 + data.clientRows.length * 26,
+      node: <ClientTable rows={data.clientRows} language={data.language} />,
+    });
+  }
+
+  if (hasOther) {
+    const heading = fillTemplate(data.otherClientScheduleHeading, data);
+    if (heading.trim()) {
+      blocks.push({
+        key: "other-client-schedule-heading",
+        estimate: 30,
+        keepWithNext: true,
+        node: <h3 style={sectionHeadingStyle}>{heading}</h3>,
+      });
+    }
+
+    const introText = fillTemplate(data.otherClientScheduleIntro, data);
+    if (introText.trim()) {
+      blocks.push({
+        key: "other-client-schedule-intro",
+        estimate: 16 + estimateParagraphHeight(introText, 78),
+        keepWithNext: true,
+        node: <p style={paragraphStyle}>{introText}</p>,
+      });
+    }
+
+    blocks.push({
+      key: "other-client-schedule-table",
+      estimate: 36 + data.otherClientRows.length * 26,
+      node: <ClientTable rows={data.otherClientRows} language={data.language} />,
+    });
+  }
+
+  if (data.clientScheduleNote.trim()) {
+    const note = fillTemplate(data.clientScheduleNote, data);
+    blocks.push({
+      key: "client-schedule-note",
+      estimate: 14 + estimateParagraphHeight(note, 80),
+      node: <p style={{ ...paragraphStyle, fontSize: 11, color: "#374151" }}>{note}</p>,
+    });
   }
 }
 

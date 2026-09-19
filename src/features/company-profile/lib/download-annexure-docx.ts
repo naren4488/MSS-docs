@@ -23,12 +23,13 @@ import {
 } from "docx";
 import { documentDownloadName } from "@/lib/document-filename";
 import type { AnnexureProjectReference, CompanyProfileData, EmpanelmentAnnexure } from "../types/company-profile";
+import { isMseLogoUrl } from "@/components/CompanyLogo";
 import { filledValue, formatDate } from "./company-profile-formatters";
+import { getLetterheadVendorLine, isMseFirm } from "./company-profile-defaults";
 
 const NAVY_HEX = "14306B";
 const GOLD_HEX = "E8A317";
 const LABEL_FILL = "F4F7FB";
-const VENDOR_LINE = "JVVNL & Government Registered Solar Vendor";
 
 function joinParts(parts: Array<string | undefined>) {
   return parts
@@ -243,8 +244,8 @@ async function loadLogoPng(logoUrl: string): Promise<Uint8Array | undefined> {
       img.src = url;
     });
     const canvas = document.createElement("canvas");
-    const width = 520;
-    const cropBottom = 0.14;
+    const width = isMseLogoUrl(url) ? 280 : 520;
+    const cropBottom = isMseLogoUrl(url) ? 0 : 0.14;
     const sourceHeight = image.naturalHeight * (1 - cropBottom);
     const height = Math.max(80, Math.round((sourceHeight / Math.max(image.naturalWidth, 1)) * width));
     canvas.width = width;
@@ -271,17 +272,20 @@ function letterheadChildren(data: CompanyProfileData, logoPng?: Uint8Array) {
     data.pan ? `PAN: ${data.pan}` : "",
     data.cin ? `CIN: ${data.cin}` : "",
   ]);
+  const vendorLine = getLetterheadVendorLine(data.firm);
+  const compact = isMseFirm(data.firm);
   const children: Array<Paragraph | Table> = [];
   if (logoPng) {
+    const logoDims = compact ? { width: 95, height: 72 } : { width: 170, height: 108 };
     children.push(
       new Paragraph({
         alignment: AlignmentType.CENTER,
-        spacing: { after: 40, before: 0 },
+        spacing: { after: compact ? 20 : 40, before: 0 },
         children: [
           new ImageRun({
             type: "png",
             data: logoPng,
-            transformation: { width: 170, height: 108 },
+            transformation: logoDims,
             altText: { title: "Logo", description: filledValue(data.legalName), name: "Logo" },
           }),
         ],
@@ -291,20 +295,20 @@ function letterheadChildren(data: CompanyProfileData, logoPng?: Uint8Array) {
   children.push(
     new Paragraph({
       alignment: AlignmentType.CENTER,
-      spacing: { after: 40 },
-      children: [run(filledValue(data.legalName), { bold: true, size: 32, color: NAVY_HEX, allCaps: true })],
+      spacing: { after: compact ? 16 : 40 },
+      children: [run(filledValue(data.legalName), { bold: true, size: compact ? 28 : 32, color: NAVY_HEX, allCaps: true })],
     }),
     new Paragraph({
       alignment: AlignmentType.CENTER,
-      spacing: { after: 40 },
-      children: [run(VENDOR_LINE, { bold: true, size: 18, color: "1F4E79" })],
+      spacing: { after: compact ? 16 : 40 },
+      children: [run(vendorLine, { bold: true, size: 18, color: "1F4E79" })],
     }),
   );
   if (data.address.trim()) {
     children.push(
       new Paragraph({
         alignment: AlignmentType.CENTER,
-        spacing: { after: 20 },
+        spacing: { after: compact ? 10 : 20 },
         children: [run(data.address, { size: 18, color: "374151" })],
       }),
     );
@@ -313,7 +317,7 @@ function letterheadChildren(data: CompanyProfileData, logoPng?: Uint8Array) {
     children.push(
       new Paragraph({
         alignment: AlignmentType.CENTER,
-        spacing: { after: 20 },
+        spacing: { after: compact ? 10 : 20 },
         children: [run(contactLine, { size: 18, color: "374151" })],
       }),
     );
@@ -398,8 +402,8 @@ function buildDocument(data: CompanyProfileData, logoPng?: Uint8Array) {
   ];
 
   return new Document({
-    creator: data.legalName || "Mahi Solar Solution",
-    title: "MSS Empanelment Annexure",
+    creator: data.legalName || (isMseFirm(data.firm) ? "Mahi Solar Energy" : "Mahi Solar Solution"),
+    title: isMseFirm(data.firm) ? "MSE Empanelment Annexure" : "MSS Empanelment Annexure",
     sections: [
       {
         properties: {
@@ -445,5 +449,6 @@ export async function downloadAnnexureDocx(data: CompanyProfileData) {
   const logoPng = await loadLogoPng(data.logoUrl);
   const document = buildDocument(data, logoPng);
   const blob = await Packer.toBlob(document);
-  triggerDownload(blob, `${documentDownloadName("", "Empanelment Annexure")}.docx`);
+  const brand = isMseFirm(data.firm) ? "MSE" : "MSS";
+  triggerDownload(blob, `${documentDownloadName("", "Empanelment Annexure", brand)}.docx`);
 }

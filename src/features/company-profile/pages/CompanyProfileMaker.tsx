@@ -1,25 +1,23 @@
 import { useEffect, useMemo, useState } from "react";
-import { Navigate, useBeforeUnload, useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { Navigate, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { MakerStickyTopbar } from "@/components/MakerStickyTopbar";
 import { CompanyProfileEditor } from "../components/CompanyProfileEditor";
 import { CompanyProfilePreview } from "../components/CompanyProfilePreview";
-import { SaveCompanyProfileDialog } from "../components/SaveCompanyProfileDialog";
-import { createDefaultCompanyProfileData, isAnnexureFirm, isCompanyFirm, isLetterheadFirm, normalizeCompanyProfileData } from "../lib/company-profile-defaults";
+import { createDefaultCompanyProfileData, isAnnexureFirm, isCompanyFirm, isLetterheadFirm, isMseFirm, normalizeCompanyProfileData } from "../lib/company-profile-defaults";
 import { documentDownloadName } from "@/lib/document-filename";
 import { downloadAnnexureDocx } from "../lib/download-annexure-docx";
 import {
-  clearCompanyProfileDraft,
   getCompanyProfile,
   getCompanyProfileDraft,
   saveCompanyProfileDraft,
-  saveCompanyProfileRecord,
 } from "../lib/company-profile-storage";
 import type { CompanyFirm, CompanyProfileData } from "../types/company-profile";
 
 function companyDocumentName(data: CompanyProfileData): string {
-  if (isAnnexureFirm(data.firm)) return documentDownloadName("", "Empanelment Annexure");
-  if (isLetterheadFirm(data.firm)) return documentDownloadName("", "Letterhead");
-  return documentDownloadName(data.legalName, "Company Details");
+  const brand = isMseFirm(data.firm) ? "MSE" : "MSS";
+  if (isAnnexureFirm(data.firm)) return documentDownloadName("", "Empanelment Annexure", brand);
+  if (isLetterheadFirm(data.firm)) return documentDownloadName("", "Letterhead", brand);
+  return documentDownloadName(data.legalName, "Company Details", brand);
 }
 
 function cloneData(data: CompanyProfileData) {
@@ -49,14 +47,10 @@ export function CompanyProfileMaker() {
 
   const [data, setData] = useState<CompanyProfileData>(initialData);
   const [viewMode, setViewMode] = useState<"split" | "editor" | "preview">("split");
-  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
-  const [savedSnapshot, setSavedSnapshot] = useState(JSON.stringify(initialData));
   const [docxBusy, setDocxBusy] = useState(false);
-  const isDirty = JSON.stringify(data) !== savedSnapshot;
 
   useEffect(() => {
     setData(initialData);
-    setSavedSnapshot(JSON.stringify(initialData));
   }, [initialData]);
 
   useEffect(() => {
@@ -67,16 +61,6 @@ export function CompanyProfileMaker() {
     }, 400);
     return () => window.clearTimeout(timer);
   }, [data, record]);
-
-  useBeforeUnload(
-    (event) => {
-      if (isDirty) {
-        event.preventDefault();
-        event.returnValue = "";
-      }
-    },
-    { capture: true },
-  );
 
   async function handleSaveAsPdf() {
     const previousTitle = document.title;
@@ -110,25 +94,12 @@ export function CompanyProfileMaker() {
     }
   }
 
-  function handleSave(name: string) {
-    const saved = saveCompanyProfileRecord({ id: record?.id, name, content: data });
-    clearCompanyProfileDraft();
-    setSavedSnapshot(JSON.stringify(data));
-    setSaveDialogOpen(false);
-    if (!record) {
-      navigate(`/company-profile/${saved.id}`, { replace: true });
-    }
-  }
-
   function handleBack() {
-    if (isDirty && !window.confirm("You have unsaved changes. Go back to all company details anyway?")) {
-      return;
-    }
     navigate("/company-profiles");
   }
 
   function handleReset() {
-    if (!window.confirm("Reset the form to default values? Any unsaved edits will be lost.")) {
+    if (!window.confirm("Reset the form to default values? Any edits will be lost.")) {
       return;
     }
     setData(createDefaultCompanyProfileData(explicitFirm ?? data.firm));
@@ -136,11 +107,7 @@ export function CompanyProfileMaker() {
 
   const letterheadOnly = isLetterheadFirm(data.firm);
   const annexureDoc = isAnnexureFirm(data.firm);
-  const defaultSaveName = annexureDoc
-    ? record?.name || "MSS Empanelment Annexure"
-    : letterheadOnly
-      ? record?.name || "MSS Letterhead"
-      : data.legalName || record?.name || "Company Details";
+  const brandShort = isMseFirm(data.firm) ? "MSE" : "MSS";
 
   if (shouldRedirectToList) {
     return <Navigate replace to="/company-profiles" />;
@@ -149,14 +116,13 @@ export function CompanyProfileMaker() {
   return (
     <div className="page-shell page-shell--maker page-shell--maker-agreement">
       <MakerStickyTopbar
-        isDirty={isDirty}
+        isDirty={false}
         viewMode={viewMode}
         onViewModeChange={setViewMode}
         onBack={handleBack}
         onReset={handleReset}
         onSaveAsPdf={() => void handleSaveAsPdf()}
         onSaveAsDocx={annexureDoc ? () => void handleSaveAsDocx() : undefined}
-        onSave={() => setSaveDialogOpen(true)}
       />
 
       <div className={`layout-grid ${viewMode === "editor" ? "editor-only-grid" : viewMode === "preview" ? "preview-only-grid" : ""}`}>
@@ -165,11 +131,11 @@ export function CompanyProfileMaker() {
             <div className="panel-header">
               <div>
                 <p className="eyebrow">Editor</p>
-                <h2>{annexureDoc ? "Empanelment Annexure" : letterheadOnly ? "MSS Letterhead" : "Company Details"}</h2>
+                <h2>{annexureDoc ? "Empanelment Annexure" : letterheadOnly ? `${brandShort} Letterhead` : "Company Details"}</h2>
               </div>
               <p className="muted-text">
                 {annexureDoc
-                  ? "Experience certificate, project references and bureau consent printed on MSS letterhead."
+                  ? `Experience certificate, project references and bureau consent printed on ${brandShort} letterhead.`
                   : letterheadOnly
                     ? "Edit the header and footer. Leave the body blank to print stationery, or type a letter."
                     : "Fill in the firm's contact, statutory and bank details."}
@@ -202,13 +168,6 @@ export function CompanyProfileMaker() {
           </div>
         </section>
       </div>
-
-      <SaveCompanyProfileDialog
-        defaultName={defaultSaveName}
-        open={saveDialogOpen}
-        onClose={() => setSaveDialogOpen(false)}
-        onSave={handleSave}
-      />
     </div>
   );
 }

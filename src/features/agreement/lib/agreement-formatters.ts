@@ -60,3 +60,22 @@ export function joinNonEmpty(values: (string | undefined)[], sep: string) {
 export function placeholderOr(value: string) {
   return filledValue(value);
 }
+
+/** Format a rupee amount stored as digits (e.g. "170000" → "₹1,70,000"). */
+export function formatRate(price: string): string {
+  const trimmed = (price ?? "").trim();
+  if (!trimmed) {
+    return "—";
+  }
+
+  const numeric = Number(trimmed.replace(/[,\s₹]/g, ""));
+  if (Number.isFinite(numeric) && numeric > 0 && /^[₹]?[\d,\s]+$/.test(trimmed)) {
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+      maximumFractionDigits: 0,
+    }).format(numeric);
+  }
+
+  return trimmed;
+}

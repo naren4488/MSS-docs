@@ -240,7 +240,7 @@ export const QUOTATION_LABELS: Record<
     ],
     offgridPriceIncludedItems: [
       "Waaree Topcon Bifacial modules, GI Apollo structure, Microtek off-grid inverter",
-      "DC cables, connection kit, 5 × 12V 220 Ah non-lithium tubular batteries",
+      "DC cables, connection kit, 5 × 12V 220 Ah Luminous non-lithium tubular batteries",
       "Installation, testing, commissioning and freight",
     ],
     discomCharges: "DISCOM / statutory charges",
@@ -389,7 +389,7 @@ export const QUOTATION_LABELS: Record<
     ],
     offgridPriceIncludedItems: [
       "Waaree Topcon Bifacial मॉड्यूल, GI अपोलो स्ट्रक्चर, Microtek ऑफ-ग्रिड इनवर्टर",
-      "DC केबल, कनेक्शन किट, 5 × 12V 220 Ah नॉन-लिथियम ट्यूबुलर बैटरी",
+      "DC केबल, कनेक्शन किट, 5 × 12V 220 Ah Luminous नॉन-लिथियम ट्यूबुलर बैटरी",
       "इंस्टॉलेशन, परीक्षण, कमीशनिंग व भाड़ा",
     ],
     discomCharges: "DISCOM / वैधानिक शुल्क",

@@ -10,8 +10,8 @@ import {
   PAGE_TOP_BOTTOM_PADDING,
   PAGE_WIDTH,
 } from "../constants/sheet-layout";
-import type { AgreementData, AgreementLanguage, AgreementSection } from "../types/agreement";
-import { fillTemplate, filledValue } from "../lib/agreement-formatters";
+import type { AgreementClientRow, AgreementData, AgreementLanguage, AgreementRateCard, AgreementSection } from "../types/agreement";
+import { fillTemplate, filledValue, formatRate } from "../lib/agreement-formatters";
 import { getPartnershipVendorChargeContent } from "../lib/agreement-defaults";
 
 const LABELS: Record<AgreementLanguage, {
@@ -19,18 +19,38 @@ const LABELS: Record<AgreementLanguage, {
   governingLaw: string;
   witnesses: string;
   pageOf: (current: number, total: number) => string;
+  rateHeaders: { capacity: string; phase: string; price: string };
+  clientHeaders: { sno: string; name: string; capacity: string; kNo: string; dealWithUs: string; workStatus: string };
 }> = {
   en: {
     whereas: "WHEREAS:",
     governingLaw: "Governing Law & Dispute Resolution",
     witnesses: "Witnesses:",
     pageOf: (current, total) => `Page ${current} of ${total}`,
+    rateHeaders: { capacity: "Capacity", phase: "Phase", price: "MSS Rate (₹)" },
+    clientHeaders: {
+      sno: "S.No",
+      name: "Client Name",
+      capacity: "kW",
+      kNo: "K.NO",
+      dealWithUs: "Deal with us",
+      workStatus: "Work status",
+    },
   },
   hi: {
     whereas: "जबकि:",
     governingLaw: "शासी विधि एवं विवाद समाधान",
     witnesses: "साक्षी:",
     pageOf: (current, total) => `पृष्ठ ${current} / ${total}`,
+    rateHeaders: { capacity: "क्षमता", phase: "फेज़", price: "MSS दर (₹)" },
+    clientHeaders: {
+      sno: "क्र.",
+      name: "ग्राहक नाम",
+      capacity: "kW",
+      kNo: "K.NO",
+      dealWithUs: "हमसे डील",
+      workStatus: "कार्य स्थिति",
+    },
   },
 };
 
@@ -249,12 +269,26 @@ function Page({
   );
 }
 
+function renderInlineBold(text: string, keyPrefix: string): ReactNode[] {
+  return text.split(/(\*\*[^*]+\*\*)/g).map((part, index) => {
+    const bold = part.match(/^\*\*([^*]+)\*\*$/);
+    if (bold) {
+      return (
+        <strong key={`${keyPrefix}-b-${index}`} style={{ fontWeight: 700 }}>
+          {bold[1]}
+        </strong>
+      );
+    }
+    return <span key={`${keyPrefix}-t-${index}`}>{part}</span>;
+  });
+}
+
 function renderMultiline(text: string, baseKey: string) {
   return text.split(/\n\n+/).map((paragraph, index) => (
     <p key={`${baseKey}-p-${index}`} style={paragraphStyle}>
       {paragraph.split("\n").map((line, lineIndex, all) => (
         <span key={`${baseKey}-line-${lineIndex}`}>
-          {line}
+          {renderInlineBold(line, `${baseKey}-line-${lineIndex}`)}
           {lineIndex < all.length - 1 ? <br /> : null}
         </span>
       ))}
@@ -333,6 +367,10 @@ function createBlocks(data: AgreementData): PreviewBlock[] {
     }
   });
 
+  if (data.template === "fixed-rate") {
+    appendDealBlocks(blocks, data);
+  }
+
   if (data.governingLawParagraph.trim()) {
     const filled = fillTemplate(data.governingLawParagraph, data);
     blocks.push({
@@ -372,6 +410,10 @@ function createBlocks(data: AgreementData): PreviewBlock[] {
     });
   }
 
+  if (data.template === "fixed-rate") {
+    appendClientScheduleBlocks(blocks, data);
+  }
+
   return blocks;
 }
 
@@ -390,6 +432,228 @@ function appendVendorChargeBlocks(blocks: PreviewBlock[], data: AgreementData) {
     estimate: 18 + estimateParagraphHeight(filled, 78),
     node: <p style={paragraphStyle}>{highlightVendorChargePhrase(filled, data.language)}</p>,
   });
+}
+
+function RateTable({ rateCards, language }: { rateCards: AgreementRateCard[]; language: AgreementLanguage }) {
+  const headers = LABELS[language].rateHeaders;
+  const cellStyle: CSSProperties = {
+    border: "1px solid #c7ced9",
+    padding: "7px 10px",
+    fontSize: 11.5,
+    textAlign: "left",
+  };
+  const headerCellStyle: CSSProperties = {
+    ...cellStyle,
+    background: "#152036",
+    color: "#ffffff",
+    fontWeight: 700,
+    letterSpacing: 0.4,
+  };
+
+  return (
+    <table
+      style={{
+        width: "100%",
+        borderCollapse: "collapse",
+        margin: "4px 0 12px",
+        tableLayout: "fixed",
+      }}
+    >
+      <thead>
+        <tr>
+          <th style={{ ...headerCellStyle, width: "40%" }}>{headers.capacity}</th>
+          <th style={{ ...headerCellStyle, width: "30%" }}>{headers.phase}</th>
+          <th style={{ ...headerCellStyle, width: "30%", textAlign: "right" }}>{headers.price}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {rateCards.map((card) => (
+          <tr key={card.id}>
+            <td style={cellStyle}>{card.capacity || "—"}</td>
+            <td style={cellStyle}>{card.phase || "—"}</td>
+            <td style={{ ...cellStyle, textAlign: "right", fontWeight: 600 }}>{formatRate(card.price)}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
+function ClientTable({ rows, language }: { rows: AgreementClientRow[]; language: AgreementLanguage }) {
+  const headers = LABELS[language].clientHeaders;
+  const cellStyle: CSSProperties = {
+    border: "1px solid #c7ced9",
+    padding: "6px 8px",
+    fontSize: 10.5,
+    textAlign: "left",
+    verticalAlign: "top",
+  };
+  const headerCellStyle: CSSProperties = {
+    ...cellStyle,
+    background: "#152036",
+    color: "#ffffff",
+    fontWeight: 700,
+    letterSpacing: 0.3,
+  };
+
+  return (
+    <table
+      style={{
+        width: "100%",
+        borderCollapse: "collapse",
+        margin: "4px 0 12px",
+        tableLayout: "fixed",
+      }}
+    >
+      <thead>
+        <tr>
+          <th style={{ ...headerCellStyle, width: "5%" }}>{headers.sno}</th>
+          <th style={{ ...headerCellStyle, width: "28%" }}>{headers.name}</th>
+          <th style={{ ...headerCellStyle, width: "10%" }}>{headers.capacity}</th>
+          <th style={{ ...headerCellStyle, width: "18%" }}>{headers.kNo}</th>
+          <th style={{ ...headerCellStyle, width: "16%", textAlign: "right" }}>{headers.dealWithUs}</th>
+          <th style={{ ...headerCellStyle, width: "23%" }}>{headers.workStatus}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((row, index) => (
+          <tr key={row.id}>
+            <td style={cellStyle}>{index + 1}</td>
+            <td style={{ ...cellStyle, fontWeight: 600 }}>
+              {row.name || "—"}
+              {row.remark?.trim() ? (
+                <div style={{ marginTop: 4, fontWeight: 500, fontSize: 9.5, color: "#4b5563", lineHeight: 1.45 }}>
+                  {row.remark.trim()}
+                </div>
+              ) : null}
+            </td>
+            <td style={cellStyle}>{row.capacity || "—"}</td>
+            <td style={{ ...cellStyle, fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", fontSize: 10 }}>
+              {row.kNo || "—"}
+            </td>
+            <td style={{ ...cellStyle, textAlign: "right", fontWeight: 600 }}>{formatRate(row.dealWithUs)}</td>
+            <td style={cellStyle}>{row.workStatus || "—"}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
+function appendDealBlocks(blocks: PreviewBlock[], data: AgreementData) {
+  const dealNumber = data.sections.length + 1;
+  const heading = fillTemplate(data.dealHeading, data);
+
+  if (heading.trim()) {
+    blocks.push({
+      key: "deal-heading",
+      estimate: 30,
+      keepWithNext: true,
+      node: (
+        <h3 style={sectionHeadingStyle}>
+          {dealNumber}. {heading}
+        </h3>
+      ),
+    });
+  }
+
+  const introText = fillTemplate(data.dealIntro, data);
+  if (introText.trim()) {
+    blocks.push({
+      key: "deal-intro",
+      estimate: 18 + estimateParagraphHeight(introText, 78),
+      keepWithNext: data.rateCards.length > 0,
+      node: <p style={paragraphStyle}>{introText}</p>,
+    });
+  }
+
+  if (data.rateCards.length > 0) {
+    blocks.push({
+      key: "deal-rate-table",
+      estimate: 40 + data.rateCards.length * 30,
+      node: <RateTable rateCards={data.rateCards} language={data.language} />,
+    });
+
+    if (data.rateNote.trim()) {
+      const note = fillTemplate(data.rateNote, data);
+      blocks.push({
+        key: "deal-rate-note",
+        estimate: 14 + estimateParagraphHeight(note, 80),
+        node: <p style={{ ...paragraphStyle, fontSize: 11, color: "#374151" }}>{note}</p>,
+      });
+    }
+  }
+}
+
+function appendClientScheduleBlocks(blocks: PreviewBlock[], data: AgreementData) {
+  const hasLogged = data.showClientSchedule && data.clientRows.length > 0;
+  const hasOther = data.showClientSchedule && data.otherClientRows.length > 0;
+  if (!hasLogged && !hasOther) return;
+
+  if (hasLogged) {
+    const heading = fillTemplate(data.clientScheduleHeading, data);
+    if (heading.trim()) {
+      blocks.push({
+        key: "client-schedule-heading",
+        estimate: 30,
+        keepWithNext: true,
+        node: <h3 style={sectionHeadingStyle}>{heading}</h3>,
+      });
+    }
+
+    const introText = fillTemplate(data.clientScheduleIntro, data);
+    if (introText.trim()) {
+      blocks.push({
+        key: "client-schedule-intro",
+        estimate: 18 + estimateParagraphHeight(introText, 78),
+        keepWithNext: true,
+        node: <p style={paragraphStyle}>{introText}</p>,
+      });
+    }
+
+    blocks.push({
+      key: "client-schedule-table",
+      estimate: 36 + data.clientRows.length * 26,
+      node: <ClientTable rows={data.clientRows} language={data.language} />,
+    });
+  }
+
+  if (hasOther) {
+    const heading = fillTemplate(data.otherClientScheduleHeading, data);
+    if (heading.trim()) {
+      blocks.push({
+        key: "other-client-schedule-heading",
+        estimate: 30,
+        keepWithNext: true,
+        node: <h3 style={sectionHeadingStyle}>{heading}</h3>,
+      });
+    }
+
+    const introText = fillTemplate(data.otherClientScheduleIntro, data);
+    if (introText.trim()) {
+      blocks.push({
+        key: "other-client-schedule-intro",
+        estimate: 16 + estimateParagraphHeight(introText, 78),
+        keepWithNext: true,
+        node: <p style={paragraphStyle}>{introText}</p>,
+      });
+    }
+
+    blocks.push({
+      key: "other-client-schedule-table",
+      estimate: 36 + data.otherClientRows.length * 26,
+      node: <ClientTable rows={data.otherClientRows} language={data.language} />,
+    });
+  }
+
+  if (data.clientScheduleNote.trim()) {
+    const note = fillTemplate(data.clientScheduleNote, data);
+    blocks.push({
+      key: "client-schedule-note",
+      estimate: 14 + estimateParagraphHeight(note, 80),
+      node: <p style={{ ...paragraphStyle, fontSize: 11, color: "#374151" }}>{note}</p>,
+    });
+  }
 }
 
 function appendSectionBlocks(
@@ -525,7 +789,7 @@ function SignatureBlock({ data }: { data: AgreementData }) {
               <p style={{ margin: 0, fontSize: 11 }}>Aadhaar No.: {data.party.aadhaar}</p>
             ) : null}
             {data.showPartyPan && data.party.pan?.trim() ? (
-              <p style={{ margin: "2px 0 0", fontSize: 11 }}>PAN: {data.party.pan}</p>
+              <p style={{ margin: "2px 0 0", fontSize: 11, fontWeight: 700 }}>PAN: {data.party.pan}</p>
             ) : null}
           </>
         ) : (
@@ -542,7 +806,7 @@ function SignatureBlock({ data }: { data: AgreementData }) {
               <p style={{ margin: "2px 0 0", fontSize: 11 }}>Aadhaar No.: {data.party.aadhaar}</p>
             ) : null}
             {data.showPartyPan && data.party.pan?.trim() ? (
-              <p style={{ margin: "2px 0 0", fontSize: 11 }}>PAN: {data.party.pan}</p>
+              <p style={{ margin: "2px 0 0", fontSize: 11, fontWeight: 700 }}>PAN: {data.party.pan}</p>
             ) : null}
           </>
         )}

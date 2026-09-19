@@ -1,0 +1,612 @@
+import {
+  BLOCK_H,
+  BLOCK_W,
+  BLOCK_XS,
+  CIRCLE_DIA_FT,
+  CYLINDER_HEIGHT_LABEL,
+  FROM_EAST,
+  FROM_NORTH,
+  FROM_SOUTH,
+  FROM_WEST,
+  GAP_12,
+  JAIPUR_SHADOWS,
+  PANEL_LONG,
+  PANEL_SHORT,
+  ROOF_H,
+  ROOF_W,
+  ROW_GAP,
+  ROW_YS,
+  SITE_PAD,
+  WALKWAY,
+  WALKWAY_MARGIN,
+  WALKWAY_PATH,
+  formatMm,
+  formatPanelCapacityKw,
+  type HemanthSiteLayout,
+} from "../lib/build-hemanth-layout";
+
+type Props = {
+  layout: HemanthSiteLayout;
+  idPrefix: string;
+  ariaLabel?: string;
+};
+
+export function HemanthSiteDiagramSvg({ layout, idPrefix, ariaLabel }: Props) {
+  const pad = SITE_PAD;
+  const ox = pad;
+  const oy = pad;
+  const fs = Math.max(ROOF_W, ROOF_H) * 0.016;
+  const fsDim = fs * 0.78;
+  const fsBlock = fs * 0.7;
+  const tick = fs * 0.28;
+  const halo = fsDim * 0.22;
+  /** Extra canvas beyond SITE_PAD so compass / dim / row labels are not clipped. */
+  const labelRoom = Math.max(ROOF_W, ROOF_H) * 0.06;
+  const viewX = -labelRoom;
+  const viewY = -labelRoom * 0.4;
+  const svgW = ROOF_W + pad * 2 + labelRoom * 2;
+  const svgH = ROOF_H + pad * 2 + labelRoom * 0.85;
+  const row1Cy = oy + ROW_YS[0] + BLOCK_H / 2;
+  const {
+    midRoofX,
+    walkHalf,
+    walk1PathD,
+    walk2PathD,
+    northNsWalkX,
+    northNsWalkY,
+    northNsWalkH,
+    nsWalkY,
+    nsWalkH,
+    southNsWalkX,
+    southNsWalkY,
+    southNsWalkH,
+    cylinderR,
+    cylinders,
+    roofPanels,
+    rowStats,
+  } = layout;
+  const roofClipId = `${idPrefix}-roof-clip`;
+  const portraitPatternId = `${idPrefix}-panel-cells-portrait`;
+  const landscapePatternId = `${idPrefix}-panel-cells-landscape`;
+  const panelCount = roofPanels.length;
+
+  return (
+    <svg
+      className="site-diagram-svg site-diagram-svg--fill"
+      viewBox={`${viewX} ${viewY} ${svgW} ${svgH}`}
+      preserveAspectRatio="xMidYMid meet"
+      role="img"
+      aria-label={
+        ariaLabel ??
+        `Rooftop ${formatMm(ROOF_W)} by ${formatMm(ROOF_H)} with ${panelCount} panels and four ${CIRCLE_DIA_FT} ft by ${CYLINDER_HEIGHT_LABEL} cylinders`
+      }
+    >
+      <text
+        className="site-diagram-compass-label"
+        x={ox + ROOF_W / 2}
+        y={oy - pad * 0.72}
+        textAnchor="middle"
+        fontSize={fs * 1.5}
+      >
+        N
+      </text>
+      <text
+        className="site-diagram-compass-label"
+        x={ox + ROOF_W / 2}
+        y={oy + ROOF_H + pad * 0.78}
+        textAnchor="middle"
+        fontSize={fs * 1.5}
+      >
+        S
+      </text>
+      <text
+        className="site-diagram-compass-label"
+        x={ox - pad * 0.88}
+        y={oy + ROOF_H / 2}
+        textAnchor="middle"
+        dominantBaseline="middle"
+        fontSize={fs * 1.5}
+      >
+        W
+      </text>
+      <text
+        className="site-diagram-row-summary"
+        x={ox}
+        y={oy - pad * 0.42}
+        textAnchor="start"
+        fontSize={fsDim * 0.85}
+        stroke="#ffffff"
+        strokeWidth={halo}
+        paintOrder="stroke"
+      >
+        {formatPanelCapacityKw(panelCount)} · {rowStats.length} rows · {panelCount} panels
+      </text>
+      {rowStats.map((row, index) => (
+        <text
+          key={`${idPrefix}-row-stat-${index}`}
+          className="site-diagram-row-stat"
+          x={ox - pad * 0.18}
+          y={row.y + row.h / 2}
+          textAnchor="end"
+          dominantBaseline="middle"
+          fontSize={fsDim * 0.72}
+          stroke="#ffffff"
+          strokeWidth={halo * 0.85}
+          paintOrder="stroke"
+        >
+          {index + 1} · {row.count}
+        </text>
+      ))}
+      <text
+        className="site-diagram-compass-label"
+        x={ox + ROOF_W + pad * 0.88}
+        y={oy + ROOF_H * 0.14}
+        textAnchor="middle"
+        dominantBaseline="middle"
+        fontSize={fs * 1.5}
+      >
+        E
+      </text>
+
+      <defs>
+        <clipPath id={roofClipId}>
+          <rect x={ox} y={oy} width={ROOF_W} height={ROOF_H} />
+        </clipPath>
+        <pattern
+          id={portraitPatternId}
+          width={PANEL_SHORT / 6}
+          height={PANEL_LONG / 12}
+          patternUnits="userSpaceOnUse"
+        >
+          <rect
+            className="site-diagram-panel-cell"
+            x={(PANEL_SHORT / 6) * 0.08}
+            y={(PANEL_LONG / 12) * 0.08}
+            width={(PANEL_SHORT / 6) * 0.84}
+            height={(PANEL_LONG / 12) * 0.84}
+          />
+        </pattern>
+        <pattern
+          id={landscapePatternId}
+          width={PANEL_LONG / 12}
+          height={PANEL_SHORT / 6}
+          patternUnits="userSpaceOnUse"
+        >
+          <rect
+            className="site-diagram-panel-cell"
+            x={(PANEL_LONG / 12) * 0.08}
+            y={(PANEL_SHORT / 6) * 0.08}
+            width={(PANEL_LONG / 12) * 0.84}
+            height={(PANEL_SHORT / 6) * 0.84}
+          />
+        </pattern>
+      </defs>
+
+      <rect className="site-diagram-roof" x={ox} y={oy} width={ROOF_W} height={ROOF_H} />
+
+      <g clipPath={`url(#${roofClipId})`}>
+        <rect
+          className="site-diagram-walkway-margin"
+          x={northNsWalkX - walkHalf}
+          y={northNsWalkY}
+          width={WALKWAY_MARGIN}
+          height={northNsWalkH}
+        />
+        <rect
+          className="site-diagram-walkway-margin"
+          x={northNsWalkX + walkHalf - WALKWAY_MARGIN}
+          y={northNsWalkY}
+          width={WALKWAY_MARGIN}
+          height={northNsWalkH}
+        />
+        <rect
+          className="site-diagram-walkway-path"
+          x={northNsWalkX - WALKWAY_PATH / 2}
+          y={northNsWalkY}
+          width={WALKWAY_PATH}
+          height={northNsWalkH}
+        />
+        <rect
+          className="site-diagram-walkway-margin"
+          x={midRoofX - walkHalf}
+          y={nsWalkY}
+          width={WALKWAY_MARGIN}
+          height={nsWalkH}
+        />
+        <rect
+          className="site-diagram-walkway-margin"
+          x={midRoofX + walkHalf - WALKWAY_MARGIN}
+          y={nsWalkY}
+          width={WALKWAY_MARGIN}
+          height={nsWalkH}
+        />
+        <rect
+          className="site-diagram-walkway-path"
+          x={midRoofX - WALKWAY_PATH / 2}
+          y={nsWalkY}
+          width={WALKWAY_PATH}
+          height={nsWalkH}
+        />
+        <rect
+          className="site-diagram-walkway-margin"
+          x={southNsWalkX - walkHalf}
+          y={southNsWalkY}
+          width={WALKWAY_MARGIN}
+          height={southNsWalkH}
+        />
+        <rect
+          className="site-diagram-walkway-margin"
+          x={southNsWalkX + walkHalf - WALKWAY_MARGIN}
+          y={southNsWalkY}
+          width={WALKWAY_MARGIN}
+          height={southNsWalkH}
+        />
+        <rect
+          className="site-diagram-walkway-path"
+          x={southNsWalkX - WALKWAY_PATH / 2}
+          y={southNsWalkY}
+          width={WALKWAY_PATH}
+          height={southNsWalkH}
+        />
+        <path
+          className="site-diagram-walkway-stroke-margin"
+          d={walk1PathD}
+          fill="none"
+          strokeWidth={WALKWAY}
+          strokeLinecap="square"
+          strokeLinejoin="miter"
+        />
+        <path
+          className="site-diagram-walkway-stroke-path"
+          d={walk1PathD}
+          fill="none"
+          strokeWidth={WALKWAY_PATH}
+          strokeLinecap="square"
+          strokeLinejoin="miter"
+        />
+        <path
+          className="site-diagram-walkway-stroke-margin"
+          d={walk2PathD}
+          fill="none"
+          strokeWidth={WALKWAY}
+          strokeLinecap="square"
+          strokeLinejoin="miter"
+        />
+        <path
+          className="site-diagram-walkway-stroke-path"
+          d={walk2PathD}
+          fill="none"
+          strokeWidth={WALKWAY_PATH}
+          strokeLinecap="square"
+          strokeLinejoin="miter"
+        />
+      </g>
+
+      <text
+        className="site-diagram-area-label"
+        x={ox + ROOF_W / 2}
+        y={oy - pad * 0.22}
+        textAnchor="middle"
+        fontSize={fsDim}
+        stroke="#ffffff"
+        strokeWidth={halo}
+        paintOrder="stroke"
+      >
+        Rooftop · {formatMm(ROOF_W)} × {formatMm(ROOF_H)}
+      </text>
+
+      <DimensionH
+        x1={ox}
+        x2={ox + ROOF_W}
+        y={oy + ROOF_H + pad * 0.18}
+        label={formatMm(ROOF_W)}
+        fontSize={fsDim}
+        tick={tick}
+        halo={halo}
+        labelSide="below"
+      />
+      <DimensionV
+        x={ox + ROOF_W + pad * 0.28}
+        y1={oy}
+        y2={oy + ROOF_H}
+        label={formatMm(ROOF_H)}
+        fontSize={fsDim}
+        tick={tick}
+        halo={halo}
+        labelSide="end"
+      />
+
+      <g clipPath={`url(#${roofClipId})`}>
+        {roofPanels.map((panel, index) => (
+          <SolarPanel
+            key={`${idPrefix}-panel-${index}`}
+            x={panel.x}
+            y={panel.y}
+            width={panel.w}
+            height={panel.h}
+            portraitPatternId={portraitPatternId}
+            landscapePatternId={landscapePatternId}
+          />
+        ))}
+      </g>
+
+      {cylinders.map((block) => (
+        <g key={`${idPrefix}-block-${block.n}`}>
+          <rect className="site-diagram-inner" x={block.x} y={block.y} width={BLOCK_W} height={BLOCK_H} />
+          {block.n === 1 ? (
+            <>
+              <DimensionH
+                x1={block.x}
+                x2={block.x + BLOCK_W}
+                y={block.y - tick * 2.2}
+                label={formatMm(BLOCK_W)}
+                fontSize={fsBlock * 0.85}
+                tick={tick * 0.85}
+                halo={halo}
+                labelSide="above"
+              />
+              <DimensionV
+                x={block.x - tick * 2.2}
+                y1={block.y}
+                y2={block.y + BLOCK_H}
+                label={formatMm(BLOCK_H)}
+                fontSize={fsBlock * 0.85}
+                tick={tick * 0.85}
+                halo={halo}
+                labelSide="start"
+              />
+            </>
+          ) : null}
+        </g>
+      ))}
+
+      <g className="site-diagram-shadows" clipPath={`url(#${roofClipId})`}>
+        {cylinders.map((block) =>
+          JAIPUR_SHADOWS.map((cast) => (
+            <CylinderShadow
+              key={`${idPrefix}-shadow-${block.n}-${cast.hour}`}
+              cx={block.cx}
+              cy={block.cy}
+              r={cylinderR}
+              dx={cast.dx}
+              dy={cast.dy}
+            />
+          )),
+        )}
+      </g>
+
+      {cylinders.map((block) => (
+        <circle
+          key={`${idPrefix}-cylinder-${block.n}`}
+          className="site-diagram-circle"
+          cx={block.cx}
+          cy={block.cy}
+          r={cylinderR}
+        />
+      ))}
+
+      <DimensionV
+        x={ox + FROM_WEST * 0.35}
+        y1={oy}
+        y2={oy + FROM_NORTH}
+        label={formatMm(FROM_NORTH)}
+        fontSize={fsDim}
+        tick={tick}
+        halo={halo}
+        labelSide="end"
+      />
+      <DimensionV
+        x={ox + FROM_WEST * 0.35}
+        y1={oy + ROOF_H - FROM_SOUTH}
+        y2={oy + ROOF_H}
+        label={formatMm(FROM_SOUTH)}
+        fontSize={fsDim}
+        tick={tick}
+        halo={halo}
+        labelSide="end"
+      />
+      <DimensionV
+        x={midRoofX}
+        y1={oy + FROM_NORTH + BLOCK_H}
+        y2={oy + FROM_NORTH + BLOCK_H + ROW_GAP}
+        label={formatMm(ROW_GAP)}
+        fontSize={fsDim}
+        tick={tick}
+        halo={halo}
+        labelSide="end"
+      />
+      <DimensionH
+        x1={ox}
+        x2={ox + FROM_WEST}
+        y={row1Cy}
+        label={formatMm(FROM_WEST)}
+        fontSize={fsDim}
+        tick={tick}
+        halo={halo}
+        labelSide="above"
+      />
+      <DimensionH
+        x1={ox + BLOCK_XS[0] + BLOCK_W}
+        x2={ox + BLOCK_XS[1]}
+        y={row1Cy}
+        label={formatMm(GAP_12)}
+        fontSize={fsDim}
+        tick={tick}
+        halo={halo}
+        labelSide="above"
+      />
+      <DimensionH
+        x1={ox + ROOF_W - FROM_EAST}
+        x2={ox + ROOF_W}
+        y={row1Cy}
+        label={formatMm(FROM_EAST)}
+        fontSize={fsDim}
+        tick={tick}
+        halo={halo}
+        labelSide="above"
+      />
+      <DimensionH
+        x1={ox + BLOCK_XS[0] + BLOCK_W}
+        x2={ox + BLOCK_XS[1]}
+        y={oy + ROW_YS[1] + BLOCK_H / 2}
+        label={formatMm(GAP_12)}
+        fontSize={fsDim}
+        tick={tick}
+        halo={halo}
+        labelSide="above"
+      />
+    </svg>
+  );
+}
+
+function SolarPanel({
+  x,
+  y,
+  width,
+  height,
+  portraitPatternId,
+  landscapePatternId,
+}: {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  portraitPatternId: string;
+  landscapePatternId: string;
+}) {
+  const frame = Math.min(width, height) * 0.04;
+  const landscape = width > height;
+  return (
+    <g className="site-diagram-panel">
+      <rect className="site-diagram-panel-frame" x={x} y={y} width={width} height={height} />
+      <g transform={`translate(${x + frame} ${y + frame})`}>
+        <rect
+          width={width - frame * 2}
+          height={height - frame * 2}
+          fill={landscape ? `url(#${landscapePatternId})` : `url(#${portraitPatternId})`}
+        />
+      </g>
+    </g>
+  );
+}
+
+function CylinderShadow({
+  cx,
+  cy,
+  r,
+  dx,
+  dy,
+}: {
+  cx: number;
+  cy: number;
+  r: number;
+  dx: number;
+  dy: number;
+}) {
+  const length = Math.hypot(dx, dy);
+  if (length < 0.5) {
+    return <circle cx={cx} cy={cy} r={r} />;
+  }
+  const ux = dx / length;
+  const uy = dy / length;
+  const px = -uy * r;
+  const py = ux * r;
+  return (
+    <g>
+      <circle cx={cx} cy={cy} r={r} />
+      <circle cx={cx + dx} cy={cy + dy} r={r} />
+      <polygon
+        points={`${cx + px},${cy + py} ${cx + dx + px},${cy + dy + py} ${cx + dx - px},${cy + dy - py} ${cx - px},${cy - py}`}
+      />
+    </g>
+  );
+}
+
+function DimensionH({
+  x1,
+  x2,
+  y,
+  label,
+  fontSize,
+  tick,
+  halo = 0,
+  labelSide = "above",
+}: {
+  x1: number;
+  x2: number;
+  y: number;
+  label: string;
+  fontSize: number;
+  tick: number;
+  halo?: number;
+  labelSide?: "above" | "below";
+}) {
+  if (x2 - x1 < 1) return null;
+  const mid = (x1 + x2) / 2;
+  const labelY = labelSide === "above" ? y - tick * 2.4 - fontSize * 0.15 : y + tick * 2.4 + fontSize * 0.75;
+  return (
+    <g className="site-diagram-dim">
+      <line x1={x1} y1={y - tick} x2={x1} y2={y + tick} />
+      <line x1={x2} y1={y - tick} x2={x2} y2={y + tick} />
+      <line x1={x1} y1={y} x2={x2} y2={y} />
+      {label ? (
+        <text
+          x={mid}
+          y={labelY}
+          textAnchor="middle"
+          fontSize={fontSize}
+          stroke="#ffffff"
+          strokeWidth={halo}
+          paintOrder="stroke"
+        >
+          {label}
+        </text>
+      ) : null}
+    </g>
+  );
+}
+
+function DimensionV({
+  x,
+  y1,
+  y2,
+  label,
+  fontSize,
+  tick,
+  halo = 0,
+  labelSide = "end",
+}: {
+  x: number;
+  y1: number;
+  y2: number;
+  label: string;
+  fontSize: number;
+  tick: number;
+  halo?: number;
+  labelSide?: "start" | "end";
+}) {
+  if (y2 - y1 < 1) return null;
+  const mid = (y1 + y2) / 2;
+  const labelX = labelSide === "start" ? x - tick * 3.2 - fontSize * 0.15 : x + tick * 3.2 + fontSize * 0.15;
+  return (
+    <g className="site-diagram-dim">
+      <line x1={x - tick} y1={y1} x2={x + tick} y2={y1} />
+      <line x1={x - tick} y1={y2} x2={x + tick} y2={y2} />
+      <line x1={x} y1={y1} x2={x} y2={y2} />
+      {label ? (
+        <text
+          x={labelX}
+          y={mid}
+          textAnchor={labelSide === "start" ? "end" : "start"}
+          dominantBaseline="middle"
+          fontSize={fontSize}
+          stroke="#ffffff"
+          strokeWidth={halo}
+          paintOrder="stroke"
+        >
+          {label}
+        </text>
+      ) : null}
+    </g>
+  );
+}

@@ -5,6 +5,7 @@ function createRjGreenSolarEnergyAgreementData() {
   const base = createDefaultAgreementData("partnership", "en");
   return {
     ...base,
+    effectiveDate: "2026-09-18",
     company: {
       ...base.company,
       website: "mahisolarsolution.com",
@@ -34,6 +35,9 @@ export const rjGreenSolarEnergyAgreement: AgreementRecord = {
   id: "vendor-agreement-rj-green-solar-energy-001",
   name: "RJ Green Solar Energy — Vendor Code Agreement",
   createdAt: "2026-07-22T00:00:00Z",
-  updatedAt: "2026-07-22T00:00:00Z",
+  updatedAt: "2026-09-18T00:00:00Z",
+  signed: true,
+  signedAt: "2026-09-18",
+  signedNote: "Hard copy signed",
   content: createRjGreenSolarEnergyAgreementData(),
 };

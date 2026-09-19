@@ -35,6 +35,21 @@ export interface PartnerRateCard {
   price: string;
 }
 
+/** A client / site previously logged under the vendor code (annexure on last pages). */
+export interface PartnerClientRow {
+  id: string;
+  name: string;
+  /** System size, e.g. "3 kW". */
+  capacity: string;
+  /** Consumer / K.NO from the project register. */
+  kNo: string;
+  /** Deal with us (MSE / MSS) for that project, usually a rupee amount. */
+  dealWithUs: string;
+  workStatus: string;
+  /** Optional note under the client name (e.g. first-site rate exception). */
+  remark: string;
+}
+
 export interface PartnerAgreementData {
   dealType: PartnerDealType;
   language: PartnerAgreementLanguage;
@@ -59,6 +74,18 @@ export interface PartnerAgreementData {
   dealIntro: string;
   rateCards: PartnerRateCard[];
   rateNote: string;
+
+  /** Optional last-page annexure of clients logged under the vendor code. */
+  showClientSchedule: boolean;
+  clientScheduleHeading: string;
+  clientScheduleIntro: string;
+  clientRows: PartnerClientRow[];
+  clientScheduleNote: string;
+
+  /** Separate block for sites not fully logged (e.g. structure-only). */
+  otherClientScheduleHeading: string;
+  otherClientScheduleIntro: string;
+  otherClientRows: PartnerClientRow[];
 
   closingParagraph: string;
   governingLawParagraph: string;

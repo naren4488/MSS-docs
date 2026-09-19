@@ -25,7 +25,7 @@ export function AllCompanyProfiles() {
             <p className="eyebrow">Create New</p>
             <h2 style={{ margin: "4px 0 0" }}>Pick a document</h2>
             <p className="muted-text" style={{ marginTop: 8, marginBottom: 0 }}>
-              Choose a firm details sheet, MSS letterhead, or the empanelment annexure. Saved documents appear further down.
+              Choose a firm details sheet, MSS/MSE letterhead, or an empanelment annexure. Saved documents appear further down.
             </p>
           </div>
           <p className="muted-text">Each option pre-fills Mahi Solar Solution or Mahi Solar Energy details.</p>

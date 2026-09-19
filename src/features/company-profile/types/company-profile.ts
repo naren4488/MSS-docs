@@ -1,4 +1,10 @@
-export type CompanyFirm = "mahi-solar-solution" | "mahi-solar-energy" | "mss-letterhead" | "mss-empanelment-annexure";
+export type CompanyFirm =
+  | "mahi-solar-solution"
+  | "mahi-solar-energy"
+  | "mss-letterhead"
+  | "mss-empanelment-annexure"
+  | "mse-letterhead"
+  | "mse-empanelment-annexure";
 
 export interface AnnexureProjectReference {
   details: string;

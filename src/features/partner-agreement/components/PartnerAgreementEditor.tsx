@@ -285,6 +285,217 @@ export function PartnerAgreementEditor({ data, onChange }: PartnerAgreementEdito
         </div>
       </AccordionSection>
 
+      <AccordionSection
+        title="Vendor-Code Client Annexure"
+        helper="Optional last-page schedule of clients already logged under the vendor code."
+        defaultOpen={data.showClientSchedule}
+      >
+        <div className="toggle-row" style={{ marginBottom: 12 }}>
+          <span>Show client annexure on last pages</span>
+          <button
+            className={`toggle ${data.showClientSchedule ? "on" : ""}`}
+            type="button"
+            onClick={() => update("showClientSchedule", !data.showClientSchedule)}
+          >
+            <span className="toggle-thumb" />
+          </button>
+        </div>
+        {data.showClientSchedule ? (
+          <>
+            <div className="field full-span">
+              <label>Annexure Heading</label>
+              <input
+                value={data.clientScheduleHeading}
+                onChange={(event) => update("clientScheduleHeading", event.target.value)}
+              />
+            </div>
+            <div style={{ height: 14 }} />
+            <div className="field full-span">
+              <label>Annexure Intro</label>
+              <textarea
+                rows={4}
+                value={data.clientScheduleIntro}
+                onChange={(event) => update("clientScheduleIntro", event.target.value)}
+              />
+            </div>
+            <div style={{ height: 16 }} />
+            <label style={{ display: "block", fontWeight: 600, marginBottom: 8 }}>
+              Clients ({data.clientRows.length})
+            </label>
+            <div className="stack">
+              {data.clientRows.map((row, index) => (
+                <div
+                  key={row.id}
+                  className="list-item-row"
+                  style={{ gridTemplateColumns: "32px 1.5fr 0.7fr 1.1fr 0.9fr 1.2fr auto", gap: 8 }}
+                >
+                  <span style={{ fontWeight: 700, color: "#65748b" }}>{index + 1}.</span>
+                  <input
+                    aria-label={`Client ${index + 1} name`}
+                    value={row.name}
+                    placeholder="Client name"
+                    onChange={(event) => {
+                      const next = data.clientRows.map((item, itemIndex) =>
+                        itemIndex === index ? { ...item, name: event.target.value } : item,
+                      );
+                      update("clientRows", next);
+                    }}
+                  />
+                  <input
+                    aria-label={`Client ${index + 1} capacity`}
+                    value={row.capacity}
+                    placeholder="kW"
+                    onChange={(event) => {
+                      const next = data.clientRows.map((item, itemIndex) =>
+                        itemIndex === index ? { ...item, capacity: event.target.value } : item,
+                      );
+                      update("clientRows", next);
+                    }}
+                  />
+                  <input
+                    aria-label={`Client ${index + 1} K.NO`}
+                    value={row.kNo}
+                    placeholder="K.NO"
+                    onChange={(event) => {
+                      const next = data.clientRows.map((item, itemIndex) =>
+                        itemIndex === index ? { ...item, kNo: event.target.value } : item,
+                      );
+                      update("clientRows", next);
+                    }}
+                  />
+                  <input
+                    aria-label={`Client ${index + 1} deal with us`}
+                    value={row.dealWithUs}
+                    placeholder="Deal with us"
+                    onChange={(event) => {
+                      const next = data.clientRows.map((item, itemIndex) =>
+                        itemIndex === index ? { ...item, dealWithUs: event.target.value } : item,
+                      );
+                      update("clientRows", next);
+                    }}
+                  />
+                  <input
+                    aria-label={`Client ${index + 1} work status`}
+                    value={row.workStatus}
+                    placeholder="Work status"
+                    onChange={(event) => {
+                      const next = data.clientRows.map((item, itemIndex) =>
+                        itemIndex === index ? { ...item, workStatus: event.target.value } : item,
+                      );
+                      update("clientRows", next);
+                    }}
+                  />
+                  <button
+                    className="icon-button"
+                    type="button"
+                    aria-label={`Remove client ${index + 1}`}
+                    onClick={() => update("clientRows", data.clientRows.filter((_, itemIndex) => itemIndex !== index))}
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              ))}
+              {/* Remark row under each client when present — editable as a full-width field below the grid for simplicity */}
+              {data.clientRows.some((row) => row.remark.trim()) ? (
+                <div className="stack" style={{ marginTop: 8 }}>
+                  {data.clientRows.map((row, index) =>
+                    row.remark.trim() ? (
+                      <div className="field full-span" key={`${row.id}-remark`}>
+                        <label>Remark — {row.name || `Client ${index + 1}`}</label>
+                        <textarea
+                          rows={2}
+                          value={row.remark}
+                          onChange={(event) => {
+                            const next = data.clientRows.map((item, itemIndex) =>
+                              itemIndex === index ? { ...item, remark: event.target.value } : item,
+                            );
+                            update("clientRows", next);
+                          }}
+                        />
+                      </div>
+                    ) : null,
+                  )}
+                </div>
+              ) : null}
+              <button
+                className="ghost-button"
+                type="button"
+                onClick={() =>
+                  update("clientRows", [
+                    ...data.clientRows,
+                    {
+                      id: crypto.randomUUID(),
+                      name: "",
+                      capacity: "",
+                      kNo: "",
+                      dealWithUs: "",
+                      workStatus: "",
+                      remark: "",
+                    },
+                  ])
+                }
+              >
+                <Plus size={16} />
+                Add client
+              </button>
+            </div>
+            {data.otherClientRows.length > 0 ? (
+              <>
+                <div style={{ height: 18 }} />
+                <label style={{ display: "block", fontWeight: 600, marginBottom: 8 }}>
+                  Other sites — not fully logged ({data.otherClientRows.length})
+                </label>
+                <div className="field full-span">
+                  <label>Other-sites heading</label>
+                  <input
+                    value={data.otherClientScheduleHeading}
+                    onChange={(event) => update("otherClientScheduleHeading", event.target.value)}
+                  />
+                </div>
+                <div style={{ height: 10 }} />
+                <div className="field full-span">
+                  <label>Other-sites intro</label>
+                  <textarea
+                    rows={3}
+                    value={data.otherClientScheduleIntro}
+                    onChange={(event) => update("otherClientScheduleIntro", event.target.value)}
+                  />
+                </div>
+                <div className="stack" style={{ marginTop: 10 }}>
+                  {data.otherClientRows.map((row, index) => (
+                    <div key={row.id} className="field full-span">
+                      <label>
+                        {row.name || `Other site ${index + 1}`} — {row.workStatus || "status"} · deal {row.dealWithUs || "—"}
+                      </label>
+                      <textarea
+                        rows={2}
+                        value={row.remark}
+                        placeholder="Remark"
+                        onChange={(event) => {
+                          const next = data.otherClientRows.map((item, itemIndex) =>
+                            itemIndex === index ? { ...item, remark: event.target.value } : item,
+                          );
+                          update("otherClientRows", next);
+                        }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </>
+            ) : null}
+            <div style={{ height: 14 }} />
+            <div className="field full-span">
+              <label>Note Below the Client Table (optional)</label>
+              <textarea
+                rows={3}
+                value={data.clientScheduleNote}
+                onChange={(event) => update("clientScheduleNote", event.target.value)}
+              />
+            </div>
+          </>
+        ) : null}
+      </AccordionSection>
+
       <AccordionSection title="Closing & Dispute Resolution">
         <div className="field full-span">
           <label>Closing Paragraph</label>

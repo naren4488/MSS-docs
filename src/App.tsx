@@ -8,6 +8,8 @@ import { AllHandovers, HandoverMaker } from "@/features/handover";
 import { AllReceipts, ReceiptMaker } from "@/features/receipt";
 import { AllCompanyProfiles, CompanyProfileMaker } from "@/features/company-profile";
 import { AllEmployeeDirectories, EmployeeDirectoryMaker } from "@/features/employee-directory";
+import { SiteDiagramListPage, SiteDiagramProjectPage } from "@/features/site-diagram";
+import { EnquiriesPage } from "@/features/enquiries";
 import { MssSitesPage } from "@/features/mss-sites";
 
 export default function App() {
@@ -51,6 +53,9 @@ export default function App() {
         <Route path="/employees" element={<AllEmployeeDirectories />} />
         <Route path="/mss-sites" element={<Navigate replace to="/projects" />} />
         <Route path="/projects" element={<MssSitesPage />} />
+        <Route path="/enquiries" element={<EnquiriesPage />} />
+        <Route path="/site-diagram" element={<SiteDiagramListPage />} />
+        <Route path="/site-diagram/:projectId" element={<SiteDiagramProjectPage />} />
       </Routes>
     </div>
   );

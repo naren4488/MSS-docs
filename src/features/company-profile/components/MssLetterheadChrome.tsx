@@ -1,8 +1,9 @@
 import type { ReactNode } from "react";
-import { CompanyLogo, LETTERHEAD_LOGO_WRAP } from "@/components/CompanyLogo";
+import { CompanyLogo, getLetterheadLogoSize, getLetterheadLogoWrap } from "@/components/CompanyLogo";
 import { PAGE_HEIGHT, PAGE_SIDE_PADDING, PAGE_WIDTH } from "../constants/sheet-layout";
 import type { CompanyProfileData } from "../types/company-profile";
 import { filledValue } from "../lib/company-profile-formatters";
+import { getLetterheadVendorLine, isMseFirm } from "../lib/company-profile-defaults";
 
 export const NAVY = "#14306b";
 export const NAVY2 = "#1f4aa0";
@@ -24,22 +25,59 @@ export function LetterheadHeader({ data }: { data: CompanyProfileData }) {
     data.pan ? `PAN: ${data.pan}` : "",
     data.cin ? `CIN: ${data.cin}` : "",
   ]);
+  const vendorLine = getLetterheadVendorLine(data.firm);
+  const compact = isMseFirm(data.firm);
+  const logoSize = getLetterheadLogoSize(data.logoUrl);
 
   return (
     <div style={{ background: "#ffffff" }}>
-      <div style={{ textAlign: "center", padding: "22px 56px 14px" }}>
+      <div style={{ textAlign: "center", padding: compact ? "12px 56px 8px" : "22px 56px 14px" }}>
         {data.logoUrl ? (
-          <div style={LETTERHEAD_LOGO_WRAP}>
-            <CompanyLogo alt={`${filledValue(data.legalName)} logo`} src={data.logoUrl} />
+          <div style={getLetterheadLogoWrap(data.logoUrl)}>
+            <CompanyLogo
+              alt={`${filledValue(data.legalName)} logo`}
+              src={data.logoUrl}
+              maxHeight={logoSize.maxHeight}
+              maxWidth={logoSize.maxWidth}
+            />
           </div>
         ) : null}
-        <div style={{ fontSize: 20, fontWeight: 800, letterSpacing: 1.2, color: NAVY, textTransform: "uppercase", lineHeight: 1.15 }}>
+        <div
+          style={{
+            fontSize: compact ? 17 : 20,
+            fontWeight: 800,
+            letterSpacing: 1.2,
+            color: NAVY,
+            textTransform: "uppercase",
+            lineHeight: 1.1,
+            marginTop: compact ? 2 : 0,
+          }}
+        >
           {filledValue(data.legalName)}
         </div>
-        <div style={{ fontSize: 10.5, marginTop: 5, fontWeight: 600, color: "#1f4e79", letterSpacing: 0.2 }}>{MSS_VENDOR_LINE}</div>
-        {data.address.trim() ? <div style={{ fontSize: 10, marginTop: 8, color: "#374151", lineHeight: 1.45 }}>{data.address}</div> : null}
-        {contactLine ? <div style={{ fontSize: 10, marginTop: 4, color: "#374151" }}>{contactLine}</div> : null}
-        {statutoryLine ? <div style={{ fontSize: 9.5, marginTop: 4, color: "#4b5563" }}>{statutoryLine}</div> : null}
+        <div
+          style={{
+            fontSize: compact ? 10 : 10.5,
+            marginTop: compact ? 2 : 5,
+            fontWeight: 600,
+            color: "#1f4e79",
+            letterSpacing: 0.2,
+            lineHeight: 1.2,
+          }}
+        >
+          {vendorLine}
+        </div>
+        {data.address.trim() ? (
+          <div style={{ fontSize: 10, marginTop: compact ? 3 : 8, color: "#374151", lineHeight: 1.3 }}>
+            {data.address}
+          </div>
+        ) : null}
+        {contactLine ? (
+          <div style={{ fontSize: 10, marginTop: compact ? 2 : 4, color: "#374151", lineHeight: 1.3 }}>{contactLine}</div>
+        ) : null}
+        {statutoryLine ? (
+          <div style={{ fontSize: 9.5, marginTop: compact ? 2 : 4, color: "#4b5563", lineHeight: 1.3 }}>{statutoryLine}</div>
+        ) : null}
       </div>
       <div style={{ height: 4, background: NAVY }} />
       <div style={{ height: 3, background: GOLD }} />

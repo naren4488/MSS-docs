@@ -5,6 +5,7 @@ import { ImageUploader } from "@/features/offer-letter/components/ImageUploader"
 import { BulletListEditor } from "@/features/offer-letter/components/BulletListEditor";
 import { getAgreementTemplateLabel } from "../lib/agreement-defaults";
 import type { AgreementCompany, AgreementData, AgreementSection, AgreementWitness } from "../types/agreement";
+import { PartnerRateCardEditor } from "@/features/partner-agreement/components/PartnerRateCardEditor";
 import { PartyEditor } from "./PartyEditor";
 import { SectionEditor } from "./ClauseListEditor";
 
@@ -285,6 +286,142 @@ export function AgreementEditor({ data, onChange }: AgreementEditorProps) {
                 />
               </div>
             </div>
+          ) : null}
+        </AccordionSection>
+      ) : null}
+
+      {data.template === "fixed-rate" ? (
+        <AccordionSection
+          title="Fixed Rate Schedule"
+          helper="Per-system rates MSS charges for end-to-end execution. Partner keeps the surplus as commission."
+          defaultOpen
+        >
+          <div className="field full-span">
+            <label>Deal heading</label>
+            <input value={data.dealHeading} onChange={(event) => update("dealHeading", event.target.value)} />
+          </div>
+          <div style={{ height: 10 }} />
+          <div className="field full-span">
+            <label>Deal intro</label>
+            <textarea rows={4} value={data.dealIntro} onChange={(event) => update("dealIntro", event.target.value)} />
+          </div>
+          <div style={{ height: 12 }} />
+          <PartnerRateCardEditor rateCards={data.rateCards} onChange={(next) => update("rateCards", next)} />
+          <div style={{ height: 10 }} />
+          <div className="field full-span">
+            <label>Rate note</label>
+            <textarea rows={3} value={data.rateNote} onChange={(event) => update("rateNote", event.target.value)} />
+          </div>
+        </AccordionSection>
+      ) : null}
+
+      {data.template === "fixed-rate" ? (
+        <AccordionSection
+          title="Client Annexure"
+          helper="Logged vendor-code clients and any structure-only / not-fully-logged sites."
+        >
+          <div className="toggle-row" style={{ marginBottom: 12 }}>
+            <span>Show client annexure on agreement</span>
+            <button
+              className={`toggle ${data.showClientSchedule ? "on" : ""}`}
+              type="button"
+              onClick={() => update("showClientSchedule", !data.showClientSchedule)}
+            >
+              <span className="toggle-thumb" />
+            </button>
+          </div>
+          {data.showClientSchedule ? (
+            <>
+              <div className="field full-span">
+                <label>Logged clients heading</label>
+                <input
+                  value={data.clientScheduleHeading}
+                  onChange={(event) => update("clientScheduleHeading", event.target.value)}
+                />
+              </div>
+              <div style={{ height: 10 }} />
+              <div className="field full-span">
+                <label>Logged clients intro</label>
+                <textarea
+                  rows={3}
+                  value={data.clientScheduleIntro}
+                  onChange={(event) => update("clientScheduleIntro", event.target.value)}
+                />
+              </div>
+              <p className="muted-text" style={{ margin: "12px 0 8px" }}>
+                {data.clientRows.length} logged client{data.clientRows.length === 1 ? "" : "s"} · remarks editable below
+              </p>
+              <div className="stack">
+                {data.clientRows.map((row, index) => (
+                  <div className="field full-span" key={row.id}>
+                    <label>
+                      Remark — {row.name || `Client ${index + 1}`} ({row.capacity || "kW"} · deal {row.dealWithUs || "—"})
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={row.remark}
+                      placeholder="Optional remark under client name"
+                      onChange={(event) => {
+                        const next = data.clientRows.map((item, itemIndex) =>
+                          itemIndex === index ? { ...item, remark: event.target.value } : item,
+                        );
+                        update("clientRows", next);
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
+              {data.otherClientRows.length > 0 ? (
+                <>
+                  <div style={{ height: 14 }} />
+                  <div className="field full-span">
+                    <label>Other-sites heading</label>
+                    <input
+                      value={data.otherClientScheduleHeading}
+                      onChange={(event) => update("otherClientScheduleHeading", event.target.value)}
+                    />
+                  </div>
+                  <div style={{ height: 10 }} />
+                  <div className="field full-span">
+                    <label>Other-sites intro</label>
+                    <textarea
+                      rows={2}
+                      value={data.otherClientScheduleIntro}
+                      onChange={(event) => update("otherClientScheduleIntro", event.target.value)}
+                    />
+                  </div>
+                  <div className="stack" style={{ marginTop: 10 }}>
+                    {data.otherClientRows.map((row, index) => (
+                      <div className="field full-span" key={row.id}>
+                        <label>
+                          {row.name || `Other site ${index + 1}`} — {row.workStatus || "status"} · deal{" "}
+                          {row.dealWithUs || "—"}
+                        </label>
+                        <textarea
+                          rows={2}
+                          value={row.remark}
+                          onChange={(event) => {
+                            const next = data.otherClientRows.map((item, itemIndex) =>
+                              itemIndex === index ? { ...item, remark: event.target.value } : item,
+                            );
+                            update("otherClientRows", next);
+                          }}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </>
+              ) : null}
+              <div style={{ height: 10 }} />
+              <div className="field full-span">
+                <label>Annexure note</label>
+                <textarea
+                  rows={2}
+                  value={data.clientScheduleNote}
+                  onChange={(event) => update("clientScheduleNote", event.target.value)}
+                />
+              </div>
+            </>
           ) : null}
         </AccordionSection>
       ) : null}

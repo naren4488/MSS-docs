@@ -113,14 +113,14 @@ function OffgridCard({ template }: { template: QuotationTemplateMeta }) {
         </div>
         <div className="quotation-package-card-sub">
           <p className="quotation-package-card-phase">
-            Standalone plant · starts at {template.capacity} · ₹1,00,000 / kW
+            Standalone plant · {template.capacity} · ₹{Number(template.projectAmount).toLocaleString("en-IN")}
           </p>
         </div>
       </div>
 
       <p className="quotation-package-card-copy">
-        Same MSS layout with off-grid defaults: 6 × Waaree 590 Wp Topcon Bifacial, Microtek 3 kW off-grid PCU, 5 × 12V
-        220 Ah non-lithium tubular. No phase, earthing, LA, AC cable, AC/DC DB, solar meter, or subsidy.
+        Devandra Ji · 5 × Waaree 590 Wp Topcon Bifacial, Microtek 5.1 kW off-grid PCU, 5 × Luminous 12V 220 Ah
+        tubular. No phase, earthing, LA, AC cable, AC/DC DB, solar meter, or subsidy.
       </p>
 
       <div className="quotation-package-card-meta">
@@ -150,7 +150,7 @@ export function AllQuotations() {
           <h1>Packages</h1>
           <p>
             PM SURYA GHAR residential packages include MNRE ₹78,000 + state ₹17,000. Commercial and off-grid quotes
-            have no subsidy. Off-grid is ₹1,00,000 per kW. <strong>New Quotation</strong> opens the 3 KW single-phase
+            have no subsidy. Off-grid 3 kW package is ₹2,90,000. <strong>New Quotation</strong> opens the 3 KW single-phase
             package.
           </p>
         </div>
@@ -201,7 +201,7 @@ export function AllQuotations() {
         <header className="quotation-package-section-header">
           <BatteryCharging size={18} aria-hidden />
           <h2>Off-grid</h2>
-          <p className="muted-text">₹1,00,000 / kW · no subsidy</p>
+          <p className="muted-text">₹2,90,000 · 3 kW · no subsidy</p>
         </header>
         <div className="quotation-package-grid">
           {offgrid.map((template) => (

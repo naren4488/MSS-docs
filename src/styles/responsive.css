@@ -29,7 +29,7 @@
   }
 
   .sticky-topbar,
-  .maker-toolbar,
+  .maker-toolbar:not(.site-diagram-toolbar),
   .panel-header {
     flex-direction: column;
     align-items: stretch;

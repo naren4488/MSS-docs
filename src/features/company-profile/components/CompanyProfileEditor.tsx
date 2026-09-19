@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { ImageUploader } from "@/features/offer-letter/components/ImageUploader";
-import { getCompanyFirmLabel, isAnnexureFirm, isLetterheadFirm, usesLetterheadChrome } from "../lib/company-profile-defaults";
+import { getCompanyFirmLabel, isAnnexureFirm, isLetterheadFirm, isMseFirm, usesLetterheadChrome } from "../lib/company-profile-defaults";
 import type { CompanyProfileData, EmpanelmentAnnexure } from "../types/company-profile";
 
 interface CompanyProfileEditorProps {
@@ -82,6 +82,7 @@ export function CompanyProfileEditor({ data, onChange }: CompanyProfileEditorPro
   const letterheadOnly = isLetterheadFirm(data.firm);
   const annexureDoc = isAnnexureFirm(data.firm);
   const letterheadChrome = usesLetterheadChrome(data.firm);
+  const brandShort = isMseFirm(data.firm) ? "MSE" : "MSS";
 
   function updateAnnexure<K extends keyof EmpanelmentAnnexure>(key: K, value: EmpanelmentAnnexure[K]) {
     onChange({ ...data, annexure: { ...data.annexure, [key]: value } });
@@ -228,7 +229,7 @@ export function CompanyProfileEditor({ data, onChange }: CompanyProfileEditorPro
 
       {annexureDoc ? (
         <>
-          <AccordionSection title="Annexure 1 — Experience Details" defaultOpen helper="Printed on MSS letterhead. Company name, phone and email come from the sections above.">
+          <AccordionSection title="Annexure 1 — Experience Details" defaultOpen helper={`Printed on ${brandShort} letterhead. Company name, phone and email come from the sections above.`}>
             <div className="field-grid">
               <div className="field">
                 <label>Constitution</label>

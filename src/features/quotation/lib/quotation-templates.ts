@@ -195,15 +195,16 @@ export const QUOTATION_TEMPLATES: readonly QuotationTemplateMeta[] = [
     id: "offgrid",
     kind: "offgrid",
     label: "Off-grid",
-    description: "₹3,00,000 · no subsidy · 6 × Waaree 590 Wp Topcon Bifacial · Microtek 3 kW · 5 × 220 Ah non-lithium",
+    description:
+      "Devandra Ji · ₹2,90,000 · no subsidy · 5 × Waaree 590 Wp · Microtek 5.1 kW · 5 × Luminous 220 Ah",
     capacity: "3 KW",
     phase: "1PH",
-    projectAmount: "300000",
+    projectAmount: "290000",
     centralSubsidy: "",
     stateSubsidy: "",
-    panels: 6,
+    panels: 5,
     wp: 590,
-    inverterKw: "3",
+    inverterKw: "5.1",
     batteries: 5,
   },
 ] as const;
@@ -317,6 +318,12 @@ export function createQuotationFromTemplate(
     stateSubsidy,
     subsidyNote: includeSubsidy ? subsidyNoteForLanguage(language) : "",
     showSubsidySection: includeSubsidy,
+    ...(offgrid
+      ? {
+          customerName: "Devandra Ji",
+          customerPhone: "9131311167",
+        }
+      : {}),
     generation: {
       unitRate: "8",
     },

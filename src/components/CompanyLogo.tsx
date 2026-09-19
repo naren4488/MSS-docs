@@ -23,6 +23,11 @@ function prepareSvg(raw: string) {
   return svg;
 }
 
+export function isMseLogoUrl(src?: string) {
+  const url = (src ?? "").toLowerCase();
+  return url.includes("mahi_solar_energy") || url.includes("mse-logo");
+}
+
 /** Clip SVG padding so the company name sits close under the mark — same as MSS letterhead. */
 export const LETTERHEAD_LOGO_WRAP: CSSProperties = {
   display: "flex",
@@ -31,6 +36,21 @@ export const LETTERHEAD_LOGO_WRAP: CSSProperties = {
   overflow: "hidden",
   marginBottom: 2,
 };
+
+/** Full MSE mark — no crop (logo already includes the firm name at the bottom). */
+export const MSE_LETTERHEAD_LOGO_WRAP: CSSProperties = {
+  display: "flex",
+  justifyContent: "center",
+  marginBottom: 2,
+};
+
+export function getLetterheadLogoWrap(logoUrl?: string): CSSProperties {
+  return isMseLogoUrl(logoUrl) ? MSE_LETTERHEAD_LOGO_WRAP : LETTERHEAD_LOGO_WRAP;
+}
+
+export function getLetterheadLogoSize(logoUrl?: string): { maxHeight: number; maxWidth: number } {
+  return isMseLogoUrl(logoUrl) ? { maxHeight: 52, maxWidth: 120 } : { maxHeight: 96, maxWidth: 260 };
+}
 
 interface CompanyLogoProps {
   src?: string;

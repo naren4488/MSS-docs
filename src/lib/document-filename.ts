@@ -9,12 +9,13 @@ function isShouting(value: string): boolean {
   return letters.length >= 4 && letters === letters.toUpperCase();
 }
 
-/** `{subject} - MSS {document}`. Omits the subject when it is empty. */
-export function documentDownloadName(subject: string, documentName: string): string {
+/** `{subject} - {brand} {document}`. Omits the subject when it is empty. Brand defaults to MSS. */
+export function documentDownloadName(subject: string, documentName: string, brand = "MSS"): string {
   const who = readableName(subject);
   const what = readableName(documentName) || "Document";
-  if (!who) return `MSS ${what}`;
-  return `${who} - MSS ${what}`;
+  const prefix = collapse(brand) || "MSS";
+  if (!who) return `${prefix} ${what}`;
+  return `${who} - ${prefix} ${what}`;
 }
 
 export function readableName(value: string): string {

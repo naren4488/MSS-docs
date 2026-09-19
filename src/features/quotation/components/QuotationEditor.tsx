@@ -126,7 +126,7 @@ export function QuotationEditor({ data, onChange }: QuotationEditorProps) {
         title="Customer Details"
         helper={
           offgrid
-            ? "Customer, site address and plant capacity. Panel qty, Microtek PCU kW, battery count and ₹1,00,000/kW price update from the plant kW."
+            ? "Customer, site address and plant capacity. Panel qty, Microtek PCU kW, battery count and project amount update from the plant kW (₹2,90,000 for 3 kW)."
             : commercial
               ? "Customer, site address, plant capacity and commercial site facts. Panel qty and inverter kW update from the plant kW."
               : "Customer, site address, plant capacity and phase."
@@ -247,7 +247,7 @@ export function QuotationEditor({ data, onChange }: QuotationEditorProps) {
         title="Material Description"
         helper={
           offgrid
-            ? "Off-grid BOM: 6 × Waaree 590 Wp Topcon Bifacial, Microtek 3 kW PCU, DC cable, 5 × 220 Ah non-lithium tubular. No earthing, LA, AC cable, AC/DC DB, or solar meter. Solar Plant Capacity on the PDF follows the Solar PV Modules row. Drag items to reorder."
+            ? "Off-grid BOM: 5 × Waaree 590 Wp Topcon Bifacial, Microtek 5.1 kW PCU, DC cable, 5 × Luminous 220 Ah tubular. No earthing, LA, AC cable, AC/DC DB, or solar meter. Solar Plant Capacity on the PDF follows the Solar PV Modules row. Drag items to reorder."
             : commercial
               ? "Commercial BOM: cables as per site, ESE LA, HT generation meter, ACDB panel, cable tray / walkway / MCS. Solar Plant Capacity on the PDF follows the Solar PV Modules row. Drag items to reorder."
               : "Bill of materials. Solar Plant Capacity on the PDF follows the Solar PV Modules row. Drag items to reorder."
@@ -275,7 +275,7 @@ export function QuotationEditor({ data, onChange }: QuotationEditorProps) {
         title="Commercial Offer"
         helper={
           offgrid
-            ? "Solar Plant Capacity on the PDF is filled from Solar PV Modules (qty, wattage and make). Plant kW sets the project amount at ₹1,00,000 per kW. Customer Net Payable and the turnkey price box follow that amount."
+            ? "Solar Plant Capacity on the PDF is filled from Solar PV Modules (qty, wattage and make). Plant kW sets the project amount (₹2,90,000 for 3 kW). Customer Net Payable and the turnkey price box follow that amount."
             : commercial
               ? "Solar Plant Capacity on the PDF is filled from Solar PV Modules (qty, wattage and make). Project amount fills Customer Net Payable and the turnkey EPC price box. DISCOM charges stay extra as actual."
               : data.showSubsidySection

@@ -3,7 +3,7 @@ import type { Employee, EmployeeDirectoryData } from "../types/employee-director
 
 export const MSE_EMPLOYEE_DIRECTORY_ID = "a1b2c3d4-e5f6-4789-a012-mseemployees";
 
-const MSE_ADDRESS = "Plot No. 44, Jai Bhawani Vihar Vistar, Radha Vihar, Govindpura, Jaipur, Rajasthan – 302044";
+const MSE_ADDRESS = "Plot No. 44, Jai Bhawani Vihar Vistar, Radha Vihar, Govindpura, Jaipur, Rajasthan – 302012";
 
 function uuid() {
   return crypto.randomUUID();
@@ -98,6 +98,9 @@ export function normalizeEmployeeDirectoryData(input?: Partial<EmployeeDirectory
     showPageNumbers: input?.showPageNumbers ?? defaults.showPageNumbers,
   };
 
+  if (merged.companyLogoUrl === "/assets/mse-logo.png") {
+    merged.companyLogoUrl = MSE_LOGO_URL;
+  }
   if (merged.companyName.trim().toUpperCase() === "MAHI SOLAR ENERGY" && !merged.companyLogoUrl.trim()) {
     merged.companyLogoUrl = MSE_LOGO_URL;
   }

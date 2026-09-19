@@ -17,9 +17,19 @@ export const COMPANY_FIRMS: { id: CompanyFirm; label: string; description: strin
     description: "Printable letterhead for Mahi Solar Solution Private Limited — header and footer only, blank page for letters.",
   },
   {
+    id: "mse-letterhead",
+    label: "MSE Letterhead",
+    description: "Printable letterhead for Mahi Solar Energy — header and footer only, blank page for letters.",
+  },
+  {
     id: "mss-empanelment-annexure",
     label: "MSS Empanelment Annexure",
     description: "Partner empanelment annexure (experience, project references and bureau consent) on MSS letterhead.",
+  },
+  {
+    id: "mse-empanelment-annexure",
+    label: "MSE Empanelment Annexure",
+    description: "Partner empanelment annexure (experience, project references and bureau consent) on MSE letterhead.",
   },
 ];
 
@@ -27,7 +37,9 @@ const COMPANY_FIRM_IDS: CompanyFirm[] = [
   "mahi-solar-solution",
   "mahi-solar-energy",
   "mss-letterhead",
+  "mse-letterhead",
   "mss-empanelment-annexure",
+  "mse-empanelment-annexure",
 ];
 
 export function isCompanyFirm(value: string | null): value is CompanyFirm {
@@ -35,15 +47,25 @@ export function isCompanyFirm(value: string | null): value is CompanyFirm {
 }
 
 export function isLetterheadFirm(firm: CompanyFirm): boolean {
-  return firm === "mss-letterhead";
+  return firm === "mss-letterhead" || firm === "mse-letterhead";
 }
 
 export function isAnnexureFirm(firm: CompanyFirm): boolean {
-  return firm === "mss-empanelment-annexure";
+  return firm === "mss-empanelment-annexure" || firm === "mse-empanelment-annexure";
 }
 
 export function usesLetterheadChrome(firm: CompanyFirm): boolean {
-  return firm === "mss-letterhead" || firm === "mss-empanelment-annexure";
+  return isLetterheadFirm(firm) || isAnnexureFirm(firm);
+}
+
+export function isMseFirm(firm: CompanyFirm): boolean {
+  return firm === "mahi-solar-energy" || firm === "mse-letterhead" || firm === "mse-empanelment-annexure";
+}
+
+export function getLetterheadVendorLine(firm: CompanyFirm): string {
+  return isMseFirm(firm)
+    ? "Rooftop Solar Design, Procurement & Installation"
+    : "JVVNL & Government Registered Solar Vendor";
 }
 
 export function getCompanyFirmLabel(firm: CompanyFirm): string {
@@ -51,16 +73,36 @@ export function getCompanyFirmLabel(firm: CompanyFirm): string {
 }
 
 // Shared between the two firms (same premises, same proprietor/contact line).
-const SHARED_ADDRESS = "Plot No. 44, Jai Bhawani Vihar Vistar, Radha Vihar, Govindpura, Jaipur, Rajasthan – 302044";
+const SHARED_ADDRESS = "Plot No. 44, Jai Bhawani Vihar Vistar, Radha Vihar, Govindpura, Jaipur, Rajasthan – 302012";
 const SHARED_PHONE = "+91 9928413501";
 const SHARED_ALT_PHONE = "";
 const SHARED_TAGLINE = "Powering Homes with Clean & Sustainable Energy";
 
 export const MSS_LOGO_URL = "/assets/Mahi2.svg";
-export const MSE_LOGO_URL = "/assets/mse-logo.png";
+export const MSE_LOGO_URL = "/assets/Mahi_Solar_Energy_logo.svg";
 
 function emptyReference(): AnnexureProjectReference {
   return { details: "", address: "", contactName: "", mobile: "" };
+}
+
+/** MSE GST registration: December 2024 — used for “years at current office”. */
+const MSE_GST_SINCE = new Date(2024, 11, 1);
+
+function yearsSinceMseGst(asOf: Date = new Date()): string {
+  const months =
+    (asOf.getFullYear() - MSE_GST_SINCE.getFullYear()) * 12 + (asOf.getMonth() - MSE_GST_SINCE.getMonth());
+  const totalMonths = Math.max(0, months);
+  const years = Math.floor(totalMonths / 12);
+  const remMonths = totalMonths % 12;
+  if (years === 0) {
+    return remMonths <= 1 ? "1 month" : `${remMonths} months`;
+  }
+  if (remMonths === 0) {
+    return years === 1 ? "1 year" : `${years} years`;
+  }
+  const yearPart = years === 1 ? "1 year" : `${years} years`;
+  const monthPart = remMonths === 1 ? "1 month" : `${remMonths} months`;
+  return `${yearPart} ${monthPart}`;
 }
 
 export function createDefaultAnnexure(overrides: Partial<EmpanelmentAnnexure> = {}): EmpanelmentAnnexure {
@@ -130,16 +172,19 @@ export function createDefaultCompanyProfileData(firm: CompanyFirm = "mahi-solar-
     showPageNumbers: false,
   };
 
+  const mse: CompanyProfileData = {
+    ...base,
+    logoUrl: MSE_LOGO_URL,
+    legalName: "MAHI SOLAR ENERGY",
+    email: "mahisolarenergy77@gmail.com",
+    website: "mahisolarenergy.com",
+    gst: "08GPEPK1479A1ZZ",
+    contactTitle: "Proprietor",
+    ...MSE_BANK_DETAILS,
+  };
+
   if (firm === "mahi-solar-energy") {
-    return {
-      ...base,
-      logoUrl: MSE_LOGO_URL,
-      legalName: "MAHI SOLAR ENERGY",
-      email: "mahisolarenergy77@gmail.com",
-      gst: "08GPEPK1479A1ZZ",
-      contactTitle: "Proprietor",
-      ...MSE_BANK_DETAILS,
-    };
+    return mse;
   }
 
   const mss: CompanyProfileData = {
@@ -154,9 +199,10 @@ export function createDefaultCompanyProfileData(firm: CompanyFirm = "mahi-solar-
     contactTitle: "Director",
   };
 
-  if (firm === "mss-letterhead") {
+  if (firm === "mss-letterhead" || firm === "mse-letterhead") {
+    const source = firm === "mse-letterhead" ? mse : mss;
     return {
-      ...mss,
+      ...source,
       title: "",
       tagline: "",
       showContact: false,
@@ -194,6 +240,48 @@ export function createDefaultCompanyProfileData(firm: CompanyFirm = "mahi-solar-
     };
   }
 
+  if (firm === "mse-empanelment-annexure") {
+    return {
+      ...mse,
+      title: "",
+      tagline: "",
+      showContact: false,
+      showStatutory: false,
+      showBank: false,
+      showContactPerson: false,
+      showNotes: false,
+      showLetterhead: true,
+      annexure: createDefaultAnnexure({
+        constitution: "Proprietorship",
+        proprietors: "Mahendra Kumawat",
+        officeAddress: SHARED_ADDRESS,
+        registeredAddress: SHARED_ADDRESS,
+        contactPerson: "Mahendra Kumawat",
+        yearsCurrentBusiness: "3",
+        infrastructure: "Rooftop solar design, procurement, installation and commissioning.",
+        employeeCount: "25",
+        yearsAtOffice: yearsSinceMseGst(),
+        attachProfile: "Available on request",
+        references: [
+          {
+            details: "99 kW",
+            address: "Sarna Dungar Jaipur",
+            contactName: "Mukesh Manwani",
+            mobile: "8005627761",
+          },
+          {
+            details: "15 kW",
+            address: "Jhothwara Jaipur",
+            contactName: "Kajodmal Yadav",
+            mobile: "7568580192",
+          },
+        ],
+        signatoryName: "Mahendra Kumawat",
+        signatoryTitle: "Proprietor",
+      }),
+    };
+  }
+
   return mss;
 }
 
@@ -209,19 +297,27 @@ export function normalizeCompanyProfileData(input?: Partial<CompanyProfileData> 
   if (merged.logoUrl === "/assets/mss-logo.png") {
     merged.logoUrl = MSS_LOGO_URL;
   }
-  if (firm === "mahi-solar-energy" && !merged.logoUrl.trim()) {
+  if (merged.logoUrl === "/assets/mse-logo.png") {
     merged.logoUrl = MSE_LOGO_URL;
   }
-  if (firm === "mahi-solar-energy") {
+  if (isMseFirm(firm) && !merged.logoUrl.trim()) {
+    merged.logoUrl = MSE_LOGO_URL;
+  }
+  if (isMseFirm(firm) && (!merged.website.trim() || merged.website === "mahisolarsolution.com")) {
+    merged.website = "mahisolarenergy.com";
+  }
+  if (isMseFirm(firm)) {
     for (const key of Object.keys(MSE_BANK_DETAILS) as (keyof typeof MSE_BANK_DETAILS)[]) {
       if (!merged[key].trim()) {
         merged[key] = MSE_BANK_DETAILS[key];
       }
     }
   }
-  if (firm === "mss-letterhead" || firm === "mss-empanelment-annexure") {
+  if (usesLetterheadChrome(firm)) {
     merged.tagline = "";
   }
+  const fixPincode = (value: string) => value.replaceAll("302044", "302012");
+  merged.address = fixPincode(merged.address);
   const annexureDefaults = defaults.annexure;
   merged.annexure = {
     ...annexureDefaults,
@@ -231,5 +327,7 @@ export function normalizeCompanyProfileData(input?: Partial<CompanyProfileData> 
         ? input.annexure.references.map((row) => ({ ...emptyReference(), ...row }))
         : annexureDefaults.references,
   };
+  merged.annexure.officeAddress = fixPincode(merged.annexure.officeAddress);
+  merged.annexure.registeredAddress = fixPincode(merged.annexure.registeredAddress);
   return merged;
 }

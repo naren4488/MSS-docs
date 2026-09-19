@@ -199,7 +199,7 @@ export function createDefaultOfferLetterData(template: OfferLetterTemplate = "di
     company: {
       name: "Mahi Solar Solution Private Limited",
       logoUrl: MSS_LOGO_URL,
-      address: "Plot No. 44, Jai Bhawani Vihar Vistar, Radha Vihar, Govindpura, Jaipur, Rajasthan – 302044",
+      address: "Plot No. 44, Jai Bhawani Vihar Vistar, Radha Vihar, Govindpura, Jaipur, Rajasthan – 302012",
       phone: "+91 9928413501",
       email: "mahisolarsolution@gmail.com",
       website: "mahisolarsolution.com",

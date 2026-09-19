@@ -66,10 +66,10 @@ function defaultCompany(): PartnerCompany {
   return {
     name: "MAHI SOLAR ENERGY",
     logoUrl: MSE_LOGO_URL,
-    address: "Plot No. 44, Jai Bhawani Vihar Vistar, Radha Vihar, Govindpura, Jaipur, Rajasthan – 302044",
+    address: "Plot No. 44, Jai Bhawani Vihar Vistar, Radha Vihar, Govindpura, Jaipur, Rajasthan – 302012",
     phone: "+91 9928413501",
     email: "mahisolarenergy77@gmail.com",
-    website: "mahisolarsolution.com",
+    website: "mahisolarenergy.com",
     cin: "",
     gst: "08GPEPK1479A1ZZ",
     representativeName: "Mahendra Kumawat",
@@ -273,9 +273,16 @@ function createPartnerSectionsEn(): PartnerSection[] {
           "Each Party shall keep confidential all customer data, pricing, portal credentials and business information disclosed by the other in connection with this Agreement, and shall not use it except for performance of this Agreement. Neither Party shall circumvent the other in respect of any Project, customer or opportunity introduced under this Agreement, whether during the term or for a reasonable period thereafter.",
       }),
     ]),
-    section("Term & Termination", [
+    section("Non-Solicitation of Employees", [
       clause({
         number: "7",
+        content:
+          "During the term of this Agreement and for three (3) years thereafter, the Partner (including as a sub-vendor) shall not, without MSE's prior written permission, employ, engage, hire, solicit or take into service any person who is or was an employee, worker or consultant of MSE. Correspondingly, no person who has worked with MSE shall join or accept employment or engagement with the Partner during the same period without MSE's prior written permission. This restriction applies whether the engagement is as employee, contractor, partner, retainer or in any other capacity.",
+      }),
+    ]),
+    section("Term & Termination", [
+      clause({
+        number: "8",
         content: "The term and termination of this Agreement shall be governed as follows:",
         subPoints: [
           {
@@ -296,7 +303,7 @@ function createPartnerSectionsEn(): PartnerSection[] {
           {
             label: "d",
             text:
-              "Survival & effects: Termination shall not affect Projects already in execution, the Partner's entitlement already accrued, or obligations relating to operation & maintenance, back-to-back warranty, confidentiality and customer service for Projects already executed, all of which shall survive. Any amount payable to the Partner on termination is subject to MSE's right of set-off against losses and claims under this Agreement.",
+              "Survival & effects: Termination shall not affect Projects already in execution, the Partner's entitlement already accrued, or obligations relating to operation & maintenance, back-to-back warranty, confidentiality, non-solicitation of employees and customer service for Projects already executed, all of which shall survive. Any amount payable to the Partner on termination is subject to MSE's right of set-off against losses and claims under this Agreement.",
           },
         ],
       }),
@@ -479,9 +486,16 @@ function createPartnerSectionsHi(): PartnerSection[] {
           "प्रत्येक पक्ष इस समझौते के संबंध में दूसरे द्वारा प्रकट की गई समस्त ग्राहक जानकारी, मूल्य निर्धारण, पोर्टल क्रेडेंशियल एवं व्यावसायिक जानकारी को गोपनीय रखेगा, तथा इस समझौते के निष्पादन के अतिरिक्त उसका उपयोग नहीं करेगा। कोई भी पक्ष इस समझौते के अंतर्गत प्रस्तुत किसी परियोजना, ग्राहक अथवा अवसर के संबंध में दूसरे को दरकिनार नहीं करेगा, चाहे अवधि के दौरान हो अथवा उसके पश्चात् उचित अवधि तक।",
       }),
     ]),
-    section("अवधि एवं समाप्ति", [
+    section("कर्मचारियों की गैर-नियुक्ति", [
       clause({
         number: "7",
+        content:
+          "इस समझौते की अवधि में एवं उसके पश्चात् तीन (3) वर्षों तक, साझेदार (उप-विक्रेता के रूप में सहित) MSE की पूर्व लिखित अनुमति के बिना किसी ऐसे व्यक्ति को नियोजित, संलग्न, नियुक्त, आमंत्रित अथवा सेवा में नहीं लेगा जो MSE का वर्तमान अथवा पूर्व कर्मचारी, श्रमिक अथवा सलाहकार है अथवा रहा हो। तदनुसार, कोई भी व्यक्ति जिसने MSE के साथ कार्य किया हो, उसी अवधि में MSE की पूर्व लिखित अनुमति के बिना साझेदार में शामिल नहीं होगा अथवा नियुक्ति/संलग्नता स्वीकार नहीं करेगा। यह प्रतिबंध कर्मचारी, ठेकेदार, साझेदार, रिटेनर अथवा किसी अन्य रूप में संलग्नता पर लागू होगा।",
+      }),
+    ]),
+    section("अवधि एवं समाप्ति", [
+      clause({
+        number: "8",
         content: "इस समझौते की अवधि एवं समाप्ति निम्नानुसार शासित होगी:",
         subPoints: [
           {
@@ -501,7 +515,7 @@ function createPartnerSectionsHi(): PartnerSection[] {
           {
             label: "घ",
             text:
-              "उत्तरजीविता एवं प्रभाव: समाप्ति से पहले से निष्पादनाधीन परियोजनाएँ, पहले से अर्जित साझेदार की हकदारी, अथवा पहले से निष्पादित परियोजनाओं के संबंध में संचालन व रखरखाव, बैक-टू-बैक वारंटी, गोपनीयता एवं ग्राहक सेवा से संबंधित दायित्व प्रभावित नहीं होंगे, जो सभी प्रवृत्त रहेंगे। समाप्ति पर साझेदार को देय कोई भी राशि इस समझौते के अंतर्गत हानियों एवं दावों के विरुद्ध MSE के समायोजन के अधिकार के अधीन होगी।",
+              "उत्तरजीविता एवं प्रभाव: समाप्ति से पहले से निष्पादनाधीन परियोजनाएँ, पहले से अर्जित साझेदार की हकदारी, अथवा पहले से निष्पादित परियोजनाओं के संबंध में संचालन व रखरखाव, बैक-टू-बैक वारंटी, गोपनीयता, कर्मचारियों की गैर-नियुक्ति एवं ग्राहक सेवा से संबंधित दायित्व प्रभावित नहीं होंगे, जो सभी प्रवृत्त रहेंगे। समाप्ति पर साझेदार को देय कोई भी राशि इस समझौते के अंतर्गत हानियों एवं दावों के विरुद्ध MSE के समायोजन के अधिकार के अधीन होगी।",
           },
         ],
       }),
@@ -577,6 +591,20 @@ export function createDefaultPartnerAgreementData(
     dealIntro: isHindi ? dealIntroHi(dealType) : dealIntroEn(dealType),
     rateCards: defaultRateCards(),
     rateNote: isHindi ? rateNoteHi : rateNoteEn,
+    showClientSchedule: false,
+    clientScheduleHeading: isHindi
+      ? "परिशिष्ट — विक्रेता कोड के अंतर्गत लॉग किए गए ग्राहक"
+      : "Annexure — Clients Logged under Vendor Code",
+    clientScheduleIntro: isHindi
+      ? "नीचे उन ग्राहकों / साइटों की सूची है जिन्हें साझेदार ने इस समझौते की प्रभावी तिथि से पहले विक्रेता कोड के अंतर्गत लॉग / दर्ज किया था। ये परियोजनाएँ अभिलेख हेतु सूचीबद्ध हैं तथा इस समझौते के लागू उत्तरजीवी दायित्वों के अधीन रहेंगी।"
+      : "The following clients / sites were logged or enrolled by the Partner under the Vendor Code before the Effective Date of this Agreement. They are listed for record and remain subject to the surviving obligations of this Agreement where applicable.",
+    clientRows: [],
+    clientScheduleNote: "",
+    otherClientScheduleHeading: isHindi
+      ? "अन्य साइटें (पूर्ण लॉगिन नहीं)"
+      : "Other sites (not fully logged in)",
+    otherClientScheduleIntro: "",
+    otherClientRows: [],
     closingParagraph: isHindi ? closingHi : closingEn,
     governingLawParagraph: isHindi ? governingLawHi : governingLawEn,
     partyIsIndividual: false,
@@ -609,6 +637,14 @@ export function switchPartnerAgreementLanguage(
     party: { ...fresh.party, ...data.party, partyLabel: fresh.party.partyLabel },
     variables: { ...fresh.variables, ...data.variables },
     rateCards: data.rateCards.length ? data.rateCards : fresh.rateCards,
+    showClientSchedule: data.showClientSchedule,
+    clientScheduleHeading: fresh.clientScheduleHeading,
+    clientScheduleIntro: fresh.clientScheduleIntro,
+    clientRows: data.clientRows,
+    clientScheduleNote: data.clientScheduleNote,
+    otherClientScheduleHeading: fresh.otherClientScheduleHeading,
+    otherClientScheduleIntro: data.otherClientScheduleIntro,
+    otherClientRows: data.otherClientRows,
     witnesses: data.witnesses.length ? data.witnesses : fresh.witnesses,
     partyIsIndividual: data.partyIsIndividual,
     showWitnesses: data.showWitnesses,
@@ -625,6 +661,9 @@ export function normalizePartnerAgreementData(
   const language: PartnerAgreementLanguage = input?.language === "hi" ? "hi" : "en";
   const defaults = createDefaultPartnerAgreementData(dealType, language);
   const company = { ...defaults.company, ...input?.company };
+  if (company.logoUrl === "/assets/mse-logo.png") {
+    company.logoUrl = MSE_LOGO_URL;
+  }
   if (company.name.trim().toUpperCase() === "MAHI SOLAR ENERGY" && !company.logoUrl.trim()) {
     company.logoUrl = MSE_LOGO_URL;
   }
@@ -641,6 +680,30 @@ export function normalizePartnerAgreementData(
     recitals: input?.recitals ?? defaults.recitals,
     sections: input?.sections ?? defaults.sections,
     rateCards: input?.rateCards ?? defaults.rateCards,
+    showClientSchedule: input?.showClientSchedule ?? defaults.showClientSchedule,
+    clientScheduleHeading: input?.clientScheduleHeading ?? defaults.clientScheduleHeading,
+    clientScheduleIntro: input?.clientScheduleIntro ?? defaults.clientScheduleIntro,
+    clientRows: (input?.clientRows ?? defaults.clientRows).map((row) => ({
+      id: row.id || crypto.randomUUID(),
+      name: row.name ?? "",
+      capacity: row.capacity ?? "",
+      kNo: row.kNo ?? "",
+      dealWithUs: row.dealWithUs ?? "",
+      workStatus: row.workStatus ?? "",
+      remark: row.remark ?? "",
+    })),
+    clientScheduleNote: input?.clientScheduleNote ?? defaults.clientScheduleNote,
+    otherClientScheduleHeading: input?.otherClientScheduleHeading ?? defaults.otherClientScheduleHeading,
+    otherClientScheduleIntro: input?.otherClientScheduleIntro ?? defaults.otherClientScheduleIntro,
+    otherClientRows: (input?.otherClientRows ?? defaults.otherClientRows).map((row) => ({
+      id: row.id || crypto.randomUUID(),
+      name: row.name ?? "",
+      capacity: row.capacity ?? "",
+      kNo: row.kNo ?? "",
+      dealWithUs: row.dealWithUs ?? "",
+      workStatus: row.workStatus ?? "",
+      remark: row.remark ?? "",
+    })),
     witnesses: input?.witnesses ?? defaults.witnesses,
   };
 }

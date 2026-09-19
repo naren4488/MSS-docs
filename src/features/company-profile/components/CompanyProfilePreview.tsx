@@ -1,5 +1,5 @@
 import type { CSSProperties, ReactNode } from "react";
-import { CompanyLogo, LETTERHEAD_LOGO_WRAP } from "@/components/CompanyLogo";
+import { CompanyLogo, getLetterheadLogoSize, getLetterheadLogoWrap } from "@/components/CompanyLogo";
 import { PAGE_HEIGHT, PAGE_SIDE_PADDING, PAGE_TOP_BOTTOM_PADDING, PAGE_WIDTH } from "../constants/sheet-layout";
 import { isAnnexureFirm, isLetterheadFirm } from "../lib/company-profile-defaults";
 import type { CompanyProfileData } from "../types/company-profile";
@@ -49,11 +49,17 @@ function InfoSection({ title, rows, show = true }: { title: string; rows: Row[];
 }
 
 function DetailsHeader({ data }: { data: CompanyProfileData }) {
+  const logoSize = getLetterheadLogoSize(data.logoUrl);
   return (
     <div style={{ textAlign: "center", borderBottom: `3px solid ${NAVY}`, paddingBottom: 16, marginBottom: 4 }}>
       {data.logoUrl ? (
-        <div style={LETTERHEAD_LOGO_WRAP}>
-          <CompanyLogo alt={`${filledValue(data.legalName)} logo`} src={data.logoUrl} />
+        <div style={getLetterheadLogoWrap(data.logoUrl)}>
+          <CompanyLogo
+            alt={`${filledValue(data.legalName)} logo`}
+            src={data.logoUrl}
+            maxHeight={logoSize.maxHeight}
+            maxWidth={logoSize.maxWidth}
+          />
         </div>
       ) : null}
       <div style={{ fontSize: 24, fontWeight: 800, letterSpacing: 1, color: NAVY, textTransform: "uppercase" }}>

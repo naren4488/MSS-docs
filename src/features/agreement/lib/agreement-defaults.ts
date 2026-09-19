@@ -2,13 +2,30 @@ import { MSS_LOGO_URL } from "@/features/company-profile/lib/company-profile-def
 import type {
   AgreementClause,
   AgreementClauseSubPoint,
+  AgreementClientRow,
   AgreementCompany,
   AgreementData,
   AgreementLanguage,
+  AgreementRateCard,
   AgreementSection,
   AgreementTemplate,
   AgreementVariableField,
 } from "../types/agreement";
+import {
+  createDefaultFixedRateCards,
+  createEmptyFixedRateFields,
+  createFixedRateSections,
+  fixedRateClosing,
+  fixedRateDealHeading,
+  fixedRateDealIntro,
+  fixedRateGoverningLaw,
+  fixedRateIntroTemplate,
+  fixedRatePreamble,
+  fixedRateRateNote,
+  fixedRateRecitals,
+  fixedRateVariableDefaults,
+  fixedRateVariableFields,
+} from "./fixed-rate-defaults";
 
 export const AGREEMENT_TEMPLATES: { id: AgreementTemplate; label: string; description: string }[] = [
   {
@@ -22,6 +39,12 @@ export const AGREEMENT_TEMPLATES: { id: AgreementTemplate; label: string; descri
     label: "Project Referral — Fixed Commission",
     description:
       "Referrer brings the client/project; MSS does all work end-to-end. Referrer receives a fixed commission (e.g. ₹20,000) from the deal amount.",
+  },
+  {
+    id: "fixed-rate",
+    label: "Project Referral — Fixed Rate Schedule",
+    description:
+      "Partner brings projects and collects payment; MSS executes end-to-end at an agreed per-system fixed rate. Partner keeps the surplus as commission / margin.",
   },
   {
     id: "inc-installation-assign",
@@ -46,6 +69,7 @@ export const AGREEMENT_TEMPLATES: { id: AgreementTemplate; label: string; descri
 const AGREEMENT_TEMPLATE_IDS: AgreementTemplate[] = [
   "partnership",
   "project-referral",
+  "fixed-rate",
   "inc-installation-assign",
   "inc-goodwill-execution",
   "client-agreement",
@@ -95,7 +119,7 @@ function defaultCompany(): AgreementCompany {
   return {
     name: "Mahi Solar Solution Private Limited",
     logoUrl: MSS_LOGO_URL,
-    address: "Plot No. 44, Jai Bhawani Vihar Vistar, Radha Vihar, Govindpura, Jaipur, Rajasthan – 302044",
+    address: "Plot No. 44, Jai Bhawani Vihar Vistar, Radha Vihar, Govindpura, Jaipur, Rajasthan – 302012",
     phone: "+91 9928413501",
     email: "mahisolarsolution@gmail.com",
     website: "mahisolarsolution.com",
@@ -307,6 +331,12 @@ function createPartnershipSections(): AgreementSection[] {
       }),
       clause({
         number: "7",
+        title: "Non-Solicitation of Employees",
+        content:
+          "During the term of this Agreement and for three (3) years thereafter, Authorised Firm (including as a sub-vendor, contractor or associate) shall not, without {{company.name}}'s prior written permission, employ, engage, hire, solicit or take into service any person who is or was an employee, worker or consultant of {{company.name}}. Correspondingly, no person who has worked with {{company.name}} shall join or accept employment or engagement with Authorised Firm during the same period without {{company.name}}'s prior written permission. This restriction applies whether the engagement is as employee, contractor, partner, retainer or in any other capacity.",
+      }),
+      clause({
+        number: "8",
         title: "Term & Termination",
         content: "The term and termination of this Agreement shall be governed as follows:",
         subPoints: [
@@ -328,7 +358,7 @@ function createPartnershipSections(): AgreementSection[] {
           {
             label: "d",
             text:
-              "Survival: The provisions of this Agreement that by their nature are intended to survive termination shall survive, including without limitation confidentiality, indemnification, back-to-back warranty, operation & maintenance commitments to customers whose projects have already been executed, customer-service obligations for existing customers, and {{company.name}}'s right of set-off.",
+              "Survival: The provisions of this Agreement that by their nature are intended to survive termination shall survive, including without limitation confidentiality, non-solicitation of employees, indemnification, back-to-back warranty, operation & maintenance commitments to customers whose projects have already been executed, customer-service obligations for existing customers, and {{company.name}}'s right of set-off.",
           },
           {
             label: "e",
@@ -568,6 +598,12 @@ function createPartnershipSectionsHi(): AgreementSection[] {
       }),
       clause({
         number: "7",
+        title: "कर्मचारियों की गैर-नियुक्ति",
+        content:
+          "इस समझौते की अवधि में एवं उसके पश्चात् तीन (3) वर्षों तक, अधिकृत फर्म (उप-विक्रेता, ठेकेदार अथवा सहयोगी के रूप में सहित) {{company.name}} की पूर्व लिखित अनुमति के बिना किसी ऐसे व्यक्ति को नियोजित, संलग्न, नियुक्त, आमंत्रित अथवा सेवा में नहीं लेगा जो {{company.name}} का वर्तमान अथवा पूर्व कर्मचारी, श्रमिक अथवा सलाहकार है अथवा रहा हो। तदनुसार, कोई भी व्यक्ति जिसने {{company.name}} के साथ कार्य किया हो, उसी अवधि में {{company.name}} की पूर्व लिखित अनुमति के बिना अधिकृत फर्म में शामिल नहीं होगा अथवा नियुक्ति/संलग्नता स्वीकार नहीं करेगा। यह प्रतिबंध कर्मचारी, ठेकेदार, साझेदार, रिटेनर अथवा किसी अन्य रूप में संलग्नता पर लागू होगा।",
+      }),
+      clause({
+        number: "8",
         title: "अवधि एवं समाप्ति",
         content: "इस समझौते की अवधि एवं समाप्ति निम्नानुसार शासित होगी:",
         subPoints: [
@@ -588,7 +624,7 @@ function createPartnershipSectionsHi(): AgreementSection[] {
           {
             label: "घ",
             text:
-              "उत्तरजीविता: इस समझौते के वे प्रावधान जो स्वभाव से समाप्ति के पश्चात् प्रवृत्त रहने का अभिप्रेत हैं, प्रवृत्त रहेंगे, जिसमें सीमा के बिना गोपनीयता, क्षतिपूर्ति, बैक-टू-बैक वारंटी, पूर्व में निष्पादित परियोजनाओं के ग्राहकों के प्रति संचालन व रखरखाव प्रतिबद्धताएँ, मौजूदा ग्राहकों के प्रति ग्राहक-सेवा दायित्व एवं {{company.name}} का समायोजन का अधिकार सम्मिलित हैं।",
+              "उत्तरजीविता: इस समझौते के वे प्रावधान जो स्वभाव से समाप्ति के पश्चात् प्रवृत्त रहने का अभिप्रेत हैं, प्रवृत्त रहेंगे, जिसमें सीमा के बिना गोपनीयता, कर्मचारियों की गैर-नियुक्ति, क्षतिपूर्ति, बैक-टू-बैक वारंटी, पूर्व में निष्पादित परियोजनाओं के ग्राहकों के प्रति संचालन व रखरखाव प्रतिबद्धताएँ, मौजूदा ग्राहकों के प्रति ग्राहक-सेवा दायित्व एवं {{company.name}} का समायोजन का अधिकार सम्मिलित हैं।",
           },
           {
             label: "ङ",
@@ -734,6 +770,12 @@ function createProjectReferralSections(): AgreementSection[] {
       }),
       clause({
         number: "6",
+        title: "Non-Solicitation of Employees",
+        content:
+          "During the term of this Agreement and for three (3) years thereafter, Referrer shall not, without {{company.name}}'s prior written permission, employ, engage, hire, solicit or take into service any person who is or was an employee, worker or consultant of {{company.name}}. Correspondingly, no person who has worked with {{company.name}} shall join or accept employment or engagement with Referrer during the same period without {{company.name}}'s prior written permission. This restriction applies whether the engagement is as employee, contractor, partner, retainer or in any other capacity.",
+      }),
+      clause({
+        number: "7",
         title: "Term & Termination",
         content: "The term and termination of this Agreement shall be governed as follows:",
         subPoints: [
@@ -755,7 +797,7 @@ function createProjectReferralSections(): AgreementSection[] {
           {
             label: "d",
             text:
-              "Termination does not affect commission already earned on Referred Projects accepted before termination, subject to Clause 3, or confidentiality obligations, which shall survive.",
+              "Termination does not affect commission already earned on Referred Projects accepted before termination, subject to Clause 3, or confidentiality and non-solicitation of employees obligations, which shall survive.",
           },
         ],
       }),
@@ -887,18 +929,25 @@ function createIncInstallationAssignSections(): AgreementSection[] {
           "Customer data, portal credentials, serial numbers, site coordinates, pricing, and any information shared by {{company.name}} shall be treated as confidential. Contractor shall return or destroy such information upon request or termination.",
       }),
     ]),
-    section("Limitation of Liability", [
+    section("Non-Solicitation of Employees", [
       clause({
         number: "6",
+        content:
+          "During the term of this Agreement and for three (3) years thereafter, Contractor (including as a sub-vendor) shall not, without {{company.name}}'s prior written permission, employ, engage, hire, solicit or take into service any person who is or was an employee, worker or consultant of {{company.name}}. Correspondingly, no person who has worked with {{company.name}} shall join or accept employment or engagement with Contractor during the same period without {{company.name}}'s prior written permission. This restriction applies whether the engagement is as employee, contractor, partner, retainer or in any other capacity.",
+      }),
+    ]),
+    section("Limitation of Liability", [
+      clause({
+        number: "7",
         content:
           "IN NO EVENT SHALL {{company.name}} BE LIABLE FOR INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES. {{company.name}}'S TOTAL LIABILITY FOR ANY ASSIGNED PROJECT SHALL NOT EXCEED THE FEES ACTUALLY PAID BY {{company.name}} TO CONTRACTOR FOR THAT PROJECT.",
       }),
     ]),
     section("Term & Termination", [
       clause({
-        number: "7",
+        number: "8",
         content:
-          "This Agreement is effective from the Effective Date until terminated by either Party on written notice. Upon termination, Contractor shall immediately stop work on Assigned Projects and return confidential information and unused materials belonging to {{company.name}}.",
+          "This Agreement is effective from the Effective Date until terminated by either Party on written notice. Upon termination, Contractor shall immediately stop work on Assigned Projects and return confidential information and unused materials belonging to {{company.name}}. Confidentiality and non-solicitation of employees shall survive termination.",
       }),
     ]),
   ];
@@ -998,9 +1047,16 @@ function createIncGoodwillSections(): AgreementSection[] {
           "{{company.name}}'s liability under this goodwill arrangement shall be limited to re-performance of defective workmanship or refund of amounts actually received from Beneficiary specifically for the project, to the extent permitted by law.",
       }),
     ]),
-    section("Suspension & Termination", [
+    section("Non-Solicitation of Employees", [
       clause({
         number: "7",
+        content:
+          "During the term of this Agreement and for three (3) years thereafter, Beneficiary shall not, without {{company.name}}'s prior written permission, employ, engage, hire, solicit or take into service any person who is or was an employee, worker or consultant of {{company.name}}. Correspondingly, no person who has worked with {{company.name}} shall join or accept employment or engagement with Beneficiary during the same period without {{company.name}}'s prior written permission.",
+      }),
+    ]),
+    section("Suspension & Termination", [
+      clause({
+        number: "8",
         content:
           "{{company.name}} may suspend or terminate this arrangement if Beneficiary fails to cooperate, provides false information, obstructs site access, or defaults on any agreed payment (if applicable), after reasonable notice where practicable.",
       }),
@@ -1237,9 +1293,17 @@ function createClientAgreementSections(): AgreementSection[] {
         ],
       }),
     ]),
-    section("Term & Termination", [
+    section("Non-Solicitation of Employees", [
       clause({
         number: "8",
+        title: "No Hiring of Company Personnel",
+        content:
+          "During the term of this Agreement and for three (3) years thereafter, Client shall not, without {{company.name}}'s prior written permission, employ, engage, hire, solicit or take into service any person who is or was an employee, worker or consultant of {{company.name}}. Correspondingly, no person who has worked with {{company.name}} shall join or accept employment or engagement with Client during the same period without {{company.name}}'s prior written permission.",
+      }),
+    ]),
+    section("Term & Termination", [
+      clause({
+        number: "9",
         title: "Termination By Installer",
         content: "Installer can terminate if:",
         subPoints: [
@@ -1253,7 +1317,7 @@ function createClientAgreementSections(): AgreementSection[] {
     ]),
     section("Content Creation & Media Rights", [
       clause({
-        number: "9",
+        number: "10",
         title: "Video Shoot, Photography & Content Creation Rights",
         content: "{{company.name}} is permitted to conduct video shoots, photography, and any form of content creation at the project site during installation and thereafter for advertising, marketing, and promotional purposes.",
         subPoints: [
@@ -1267,7 +1331,7 @@ function createClientAgreementSections(): AgreementSection[] {
     ]),
     section("Dispute Resolution", [
       clause({
-        number: "10",
+        number: "11",
         title: "Governing Law & Dispute Resolution",
         content: "Dispute resolution process:",
         subPoints: [
@@ -1341,6 +1405,59 @@ export function createDefaultAgreementData(
       vendorChargePerWatt: "",
       showReferralCommission: false,
       referralCommissionAmount: "",
+      ...createEmptyFixedRateFields(),
+      showWitnesses: true,
+      witnesses: baseWitnesses,
+      showPageNumbers: true,
+      showLetterhead: true,
+    };
+  }
+
+  if (template === "fixed-rate") {
+    return {
+      template: "fixed-rate",
+      language: "en",
+      title: "PARTNERSHIP AGREEMENT — FIXED RATE BASIS",
+      effectiveDate: today,
+      company: defaultCompany(),
+      party: {
+        entityName: "",
+        partyLabel: "Partner",
+        address: "",
+        representativeName: "",
+        representativeTitle: "",
+        consumerNumber: "",
+        discom: "JVVNL",
+        aadhaar: "",
+        gst: "",
+        pan: "",
+      },
+      variableFields: fixedRateVariableFields,
+      variables: { ...fixedRateVariableDefaults },
+      introTemplate: fixedRateIntroTemplate,
+      recitals: fixedRateRecitals,
+      preambleAfterRecitals: fixedRatePreamble,
+      sections: createFixedRateSections(),
+      closingParagraph: fixedRateClosing,
+      governingLawParagraph: fixedRateGoverningLaw,
+      partyIsIndividual: true,
+      showPartyPan: true,
+      showVendorChargePerWatt: false,
+      vendorChargePerWatt: "",
+      showReferralCommission: false,
+      referralCommissionAmount: "",
+      dealHeading: fixedRateDealHeading,
+      dealIntro: fixedRateDealIntro,
+      rateCards: createDefaultFixedRateCards(),
+      rateNote: fixedRateRateNote,
+      showClientSchedule: false,
+      clientScheduleHeading: "Annexure — Clients Logged under Vendor Code",
+      clientScheduleIntro: "",
+      clientRows: [],
+      clientScheduleNote: "",
+      otherClientScheduleHeading: "Other sites — not fully logged in",
+      otherClientScheduleIntro: "",
+      otherClientRows: [],
       showWitnesses: true,
       witnesses: baseWitnesses,
       showPageNumbers: true,
@@ -1381,6 +1498,7 @@ export function createDefaultAgreementData(
       vendorChargePerWatt: "",
       showReferralCommission: true,
       referralCommissionAmount: "20,000",
+      ...createEmptyFixedRateFields(),
       showWitnesses: true,
       witnesses: baseWitnesses,
       showPageNumbers: true,
@@ -1421,6 +1539,7 @@ export function createDefaultAgreementData(
       vendorChargePerWatt: "",
       showReferralCommission: false,
       referralCommissionAmount: "",
+      ...createEmptyFixedRateFields(),
       showWitnesses: true,
       witnesses: baseWitnesses,
       showPageNumbers: true,
@@ -1461,6 +1580,7 @@ export function createDefaultAgreementData(
       vendorChargePerWatt: "",
       showReferralCommission: false,
       referralCommissionAmount: "",
+      ...createEmptyFixedRateFields(),
       showWitnesses: true,
       witnesses: baseWitnesses,
       showPageNumbers: true,
@@ -1501,6 +1621,7 @@ export function createDefaultAgreementData(
     vendorChargePerWatt: "",
     showReferralCommission: false,
     referralCommissionAmount: "",
+    ...createEmptyFixedRateFields(),
     showWitnesses: true,
     witnesses: baseWitnesses,
     showPageNumbers: true,
@@ -1535,6 +1656,18 @@ export function switchAgreementLanguage(
     vendorChargePerWatt: data.vendorChargePerWatt,
     showReferralCommission: data.showReferralCommission,
     referralCommissionAmount: data.referralCommissionAmount,
+    dealHeading: data.dealHeading,
+    dealIntro: data.dealIntro,
+    rateCards: data.rateCards.length ? data.rateCards : fresh.rateCards,
+    rateNote: data.rateNote,
+    showClientSchedule: data.showClientSchedule,
+    clientScheduleHeading: data.clientScheduleHeading,
+    clientScheduleIntro: data.clientScheduleIntro,
+    clientRows: data.clientRows,
+    clientScheduleNote: data.clientScheduleNote,
+    otherClientScheduleHeading: data.otherClientScheduleHeading,
+    otherClientScheduleIntro: data.otherClientScheduleIntro,
+    otherClientRows: data.otherClientRows,
     showWitnesses: data.showWitnesses,
     showPageNumbers: data.showPageNumbers,
     showLetterhead: data.showLetterhead,
@@ -1564,6 +1697,34 @@ export function normalizeAgreementData(input?: Partial<AgreementData> | null): A
     vendorChargePerWatt: input?.vendorChargePerWatt ?? defaults.vendorChargePerWatt,
     showReferralCommission: input?.showReferralCommission ?? defaults.showReferralCommission,
     referralCommissionAmount: input?.referralCommissionAmount ?? defaults.referralCommissionAmount,
+    dealHeading: input?.dealHeading ?? defaults.dealHeading,
+    dealIntro: input?.dealIntro ?? defaults.dealIntro,
+    rateCards: input?.rateCards ?? defaults.rateCards,
+    rateNote: input?.rateNote ?? defaults.rateNote,
+    showClientSchedule: input?.showClientSchedule ?? defaults.showClientSchedule,
+    clientScheduleHeading: input?.clientScheduleHeading ?? defaults.clientScheduleHeading,
+    clientScheduleIntro: input?.clientScheduleIntro ?? defaults.clientScheduleIntro,
+    clientRows: (input?.clientRows ?? defaults.clientRows).map((row) => ({
+      id: row.id || crypto.randomUUID(),
+      name: row.name ?? "",
+      capacity: row.capacity ?? "",
+      kNo: row.kNo ?? "",
+      dealWithUs: row.dealWithUs ?? "",
+      workStatus: row.workStatus ?? "",
+      remark: row.remark ?? "",
+    })),
+    clientScheduleNote: input?.clientScheduleNote ?? defaults.clientScheduleNote,
+    otherClientScheduleHeading: input?.otherClientScheduleHeading ?? defaults.otherClientScheduleHeading,
+    otherClientScheduleIntro: input?.otherClientScheduleIntro ?? defaults.otherClientScheduleIntro,
+    otherClientRows: (input?.otherClientRows ?? defaults.otherClientRows).map((row) => ({
+      id: row.id || crypto.randomUUID(),
+      name: row.name ?? "",
+      capacity: row.capacity ?? "",
+      kNo: row.kNo ?? "",
+      dealWithUs: row.dealWithUs ?? "",
+      workStatus: row.workStatus ?? "",
+      remark: row.remark ?? "",
+    })),
     showPartyPan: input?.showPartyPan ?? defaults.showPartyPan,
   };
 }

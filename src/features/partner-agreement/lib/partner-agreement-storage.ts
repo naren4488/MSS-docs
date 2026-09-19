@@ -1,5 +1,6 @@
 import type { PartnerAgreementData, PartnerAgreementRecord } from "../types/partner-agreement";
 
+/** MSE partner agreements are optional blanks — Satyanarayan now lives under MSS `/agreement` (fixed-rate). */
 function readRecords() {
   return [] as PartnerAgreementRecord[];
 }
