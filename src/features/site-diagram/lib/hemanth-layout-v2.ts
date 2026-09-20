@@ -160,6 +160,6 @@ export function buildHemanthLayoutV2FromV1(v1: HemanthSiteLayout = HEMANTH_LAYOU
 export const HEMANTH_LAYOUT_V2 = buildHemanthLayoutV2FromV1();
 
 export const HEMANTH_V2_META = {
-  label: "v2",
-  detail: "walk 1 after row 1 · aligned south N–S walk",
+  label: "Dense layout",
+  detail: "locked · walk 1 after row 1 · aligned south N–S walk",
 } as const;

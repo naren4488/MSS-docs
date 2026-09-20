@@ -92,15 +92,15 @@ export function HemanthTanwaniDiagramPage() {
           title={HEMANTH_V1_META.label}
           status="locked"
           layout={HEMANTH_LAYOUT_V1}
-          idPrefix="hemanth-v1"
-          note="locked N–S reference"
+          idPrefix="hemanth-baseline"
+          note={HEMANTH_V1_META.detail}
         />
         <Pane
           title={HEMANTH_V2_META.label}
-          status="editable"
+          status="locked"
           layout={HEMANTH_LAYOUT_V2}
-          idPrefix="hemanth-v2"
-          note="walk 1 after row 1 · south N–S walk aligned"
+          idPrefix="hemanth-dense"
+          note={HEMANTH_V2_META.detail}
         />
       </div>
     </div>

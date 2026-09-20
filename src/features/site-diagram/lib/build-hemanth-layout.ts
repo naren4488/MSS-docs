@@ -472,5 +472,5 @@ export function createHemanthLayout() {
   return buildHemanthLayout(SITE_PAD, SITE_PAD);
 }
 
-/** Frozen algorithm twin of the locked v1 snapshot — prefer the JSON for display. */
+/** Frozen algorithm twin of the locked baseline snapshot — prefer the JSON for display. */
 export const WORKING_HEMANTH_LAYOUT = createHemanthLayout();

@@ -24,8 +24,8 @@ export const SITE_DIAGRAM_PROJECTS: SiteDiagramProject[] = [
     capacityKw: 90,
     capacityLabel: "90 kW",
     location: "Jaipur",
-    status: "draft",
-    summary: "v1 locked · v2 walk-after-row-1",
+    status: "ready",
+    summary: "Baseline + dense rooftop layouts (both locked)",
   },
 ];
 
