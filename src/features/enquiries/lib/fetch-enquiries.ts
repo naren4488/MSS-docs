@@ -4,6 +4,7 @@ import {
   enquiriesSheetCsvUrl,
   type EnquiryColumn,
 } from "./enquiries-config";
+import { filterRowsWithEnquiryIdentity } from "./enquiries-columns";
 import type { EnquiriesTable } from "../types/enquiries";
 
 /** Minimal RFC-style CSV parse (handles quotes and newlines in fields). */
@@ -86,7 +87,10 @@ function parseEnquiriesCsv(text: string): { headers: EnquiryColumn[]; rows: stri
     throw new Error(`Sheet "${ENQUIRIES_SHEET_TAB}" has no Client name column`);
   }
 
-  const rows = matrix.slice(1).map((cells) => keepIndices.map((index) => (cells[index] ?? "").trim()));
+  const rows = filterRowsWithEnquiryIdentity(
+    headers,
+    matrix.slice(1).map((cells) => keepIndices.map((index) => (cells[index] ?? "").trim())),
+  );
 
   return { headers, rows };
 }

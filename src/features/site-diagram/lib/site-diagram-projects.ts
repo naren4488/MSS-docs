@@ -25,7 +25,7 @@ export const SITE_DIAGRAM_PROJECTS: SiteDiagramProject[] = [
     capacityLabel: "90 kW",
     location: "Jaipur",
     status: "draft",
-    summary: "Max panel pack · 4 exhausts",
+    summary: "v1 locked · v2 walk-after-row-1",
   },
 ];
 

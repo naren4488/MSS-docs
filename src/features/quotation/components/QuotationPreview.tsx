@@ -175,7 +175,7 @@ function SummaryBox({ data }: { data: QuotationData }) {
   if (commercial || data.sanctionLoad.trim()) {
     extraRows.push({ label: L.sanctionLoad, value: filledValue(data.sanctionLoad) });
   }
-  if (commercial || data.shadowFreeArea.trim()) {
+  if (data.shadowFreeArea.trim()) {
     extraRows.push({ label: L.shadowFreeArea, value: filledValue(data.shadowFreeArea) });
   }
   if (commercial || data.connectionType.trim()) {
@@ -827,7 +827,7 @@ function createBlocks(data: QuotationData): PreviewBlock[] {
   const commercial = isCommercialQuotation(data);
   const extraSummaryRows =
     (commercial || data.sanctionLoad.trim() ? 1 : 0) +
-    (commercial || data.shadowFreeArea.trim() ? 1 : 0) +
+    (data.shadowFreeArea.trim() ? 1 : 0) +
     (commercial || data.connectionType.trim() ? 1 : 0) +
     (commercial || data.roofType.trim() ? 1 : 0);
   blocks.push({

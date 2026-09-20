@@ -259,12 +259,16 @@ export function applyCommercialCapacityToMaterials(
   capacity: string,
   phase: QuotationPhase,
   language: QuotationLanguage,
+  options?: { panels?: number },
 ): QuotationMaterialItem[] {
   const kw = parseCapacityKw(capacity);
   const sized = items.map((item) => {
     if (kw && isSolarPvModulesDescription(item.description)) {
       const wp = commercialModuleWp(item);
-      const panels = Math.max(1, Math.round((kw * 1000) / wp));
+      const panels =
+        options?.panels != null && options.panels > 0
+          ? options.panels
+          : Math.max(1, Math.round((kw * 1000) / wp));
       return { ...item, qty: panelQtyLabel(panels, language), unit: `${wp} Wp` };
     }
     if (kw && isSolarInverterDescription(item.description)) {
@@ -307,9 +311,9 @@ export function offgridProjectAmount(capacity: string): string {
   if (!kw) {
     return "";
   }
-  // Base 3 kW off-grid package is ₹2,90,000; other sizes scale from ₹1,00,000 / kW.
+  // Base 3 kW off-grid package is ₹2,60,000; other sizes scale from ₹1,00,000 / kW.
   if (kw === 3) {
-    return "290000";
+    return "260000";
   }
   return String(Math.round(kw * OFFGRID_PRICE_PER_KW));
 }

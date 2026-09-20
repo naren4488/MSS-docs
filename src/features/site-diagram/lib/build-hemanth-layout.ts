@@ -175,13 +175,7 @@ function buildStraightWalk(ox: number, walkHalf: number, channelY: number) {
  *   row1 + row2 N–S → straight EW walk1 → 3× N–S south band → straight EW walk2 → 2× N–S at south wall.
  *   Split N–S walks: north (rows 1–2), mid (rows 3–5), south stub (last two rows).
  */
-export type HemanthLayoutVariant = "working" | "v2";
-
-export function buildHemanthLayout(
-  ox: number,
-  oy: number,
-  variant: HemanthLayoutVariant = "working",
-): HemanthSiteLayout {
+export function buildHemanthLayout(ox: number, oy: number): HemanthSiteLayout {
   const walkHalf = WALKWAY / 2;
   const cylinderR = CIRCLE_DIA / 2;
   const cylinders: CylinderBlock[] = ROW_YS.flatMap((yMm, rowIndex) =>
@@ -198,24 +192,13 @@ export function buildHemanthLayout(
     }),
   );
 
-  /**
-   * working: mid N–S walk just west of the 6th panel from the east wall;
-   *         same walk continues to the north wall through row 1.
-   * v2: prior mid walk (≈14190); north segment stays at 14700 for row 2.
-   */
-  let nsWalkMidX: number;
-  let northNsWalkMidX: number;
-  if (variant === "v2") {
-    nsWalkMidX = ox + 11_990;
-    northNsWalkMidX = ox + 12_500;
-  } else {
-    const southBandEastKeep = 6;
-    const southBandEastUsed =
-      southBandEastKeep * PANEL_SHORT + Math.max(0, southBandEastKeep - 1) * PANEL_GAP;
-    const southBandEastStart = ox + ROOF_W - southBandEastUsed;
-    nsWalkMidX = southBandEastStart - PANEL_GAP - walkHalf;
-    northNsWalkMidX = nsWalkMidX;
-  }
+  /** Mid N–S walk just west of the 6th panel from the east wall (through north wall). */
+  const southBandEastKeep = 6;
+  const southBandEastUsed =
+    southBandEastKeep * PANEL_SHORT + Math.max(0, southBandEastKeep - 1) * PANEL_GAP;
+  const southBandEastStart = ox + ROOF_W - southBandEastUsed;
+  const nsWalkMidX = southBandEastStart - PANEL_GAP - walkHalf;
+  const northNsWalkMidX = nsWalkMidX;
 
   const row1Y = oy;
   /** Second N–S line immediately after row 1; walk 1 sits below it as a straight E–W. */
@@ -255,10 +238,7 @@ export function buildHemanthLayout(
     (i) => walk2.walkTop - (i + 1) * (PANEL_LONG + PANEL_GAP),
   );
 
-  /**
-   * Split N–S walk: north segment (rows 1–2) + mid segment (rows 3–5).
-   * Working uses the same X to the north wall; v2 keeps north at 14700.
-   */
+  /** Split N–S walk: north segment (rows 1–2) + mid segment (rows 3–5). */
   const northNsWalkX = northNsWalkMidX;
   const northNsWalkY = oy;
   const northNsWalkH = walk1.walkBot - oy;
@@ -425,9 +405,8 @@ export function buildHemanthLayout(
     return panels.sort((a, b) => a.x - b.x);
   };
 
-  /** Row 1 — working aligns gap to mid walk (6-from-east) up to north wall; v2 keeps 11+12. */
-  const row1Panels =
-    variant === "working" ? packNsRowEastKeep(row1Y, 6, 5) : packFullNsRow(row1Y);
+  /** Row 1 — mid walk (6-from-east) continues to the north wall. */
+  const row1Panels = packNsRowEastKeep(row1Y, 6, 5);
   const roofPanels: PanelPlacement[] = [
     ...row1Panels,
     ...packInRanges(row2Y, PANEL_SHORT, PANEL_LONG, fullWidth),
@@ -435,43 +414,23 @@ export function buildHemanthLayout(
 
   /** Three N–S rows above walk2 (obstacle-aware); then wall rows. */
   const southBandPanels = southBandYs.map((y) => packInRanges(y, PANEL_SHORT, PANEL_LONG, fullWidth));
-  if (variant === "working") {
-    /**
-     * Rows 3–4 (southBand [2] and [1]): ~1170 mm west of walk — squeeze in one
-     * more N–S panel (5 mm into the walk corridor).
-     */
-    const walkLeft = nsWalkMidX - walkHalf;
-    for (const bandIndex of [1, 2]) {
-      const y = southBandYs[bandIndex];
-      const panels = southBandPanels[bandIndex];
-      const west = panels
-        .filter((p) => p.x + p.w <= walkLeft + 0.5)
-        .sort((a, b) => a.x - b.x);
-      if (west.length === 0) continue;
-      const last = west[west.length - 1];
-      const extraX = last.x + last.w + PANEL_GAP;
-      if (extraX + PANEL_SHORT <= walkLeft + 5.01) {
-        panels.push({ x: extraX, y, w: PANEL_SHORT, h: PANEL_LONG });
-        panels.sort((a, b) => a.x - b.x);
-      }
-    }
-  } else if (variant === "v2") {
-    /**
-     * v2 row 5: drop the 8th panel, then add one in the east-of-walk gap if it fits.
-     */
-    if (southBandPanels[0].length >= 8) {
-      southBandPanels[0].splice(7, 1);
-    }
-    const row5Y = southBandYs[0];
-    const row5 = southBandPanels[0];
-    const walkRight = nsWalkMidX + walkHalf;
-    const eastPanels = row5.filter((p) => p.x >= walkRight - 0.5).sort((a, b) => a.x - b.x);
-    if (eastPanels.length > 0) {
-      const extraX = eastPanels[0].x - PANEL_GAP - PANEL_SHORT;
-      if (extraX + 0.01 >= walkRight) {
-        row5.push({ x: extraX, y: row5Y, w: PANEL_SHORT, h: PANEL_LONG });
-        row5.sort((a, b) => a.x - b.x);
-      }
+  /**
+   * Rows 3–4 (southBand [2] and [1]): ~1170 mm west of walk — squeeze in one
+   * more N–S panel (5 mm into the walk corridor).
+   */
+  const walkLeft = nsWalkMidX - walkHalf;
+  for (const bandIndex of [1, 2]) {
+    const y = southBandYs[bandIndex];
+    const panels = southBandPanels[bandIndex];
+    const west = panels
+      .filter((p) => p.x + p.w <= walkLeft + 0.5)
+      .sort((a, b) => a.x - b.x);
+    if (west.length === 0) continue;
+    const last = west[west.length - 1];
+    const extraX = last.x + last.w + PANEL_GAP;
+    if (extraX + PANEL_SHORT <= walkLeft + 5.01) {
+      panels.push({ x: extraX, y, w: PANEL_SHORT, h: PANEL_LONG });
+      panels.sort((a, b) => a.x - b.x);
     }
   }
   for (const panels of southBandPanels) {
@@ -509,9 +468,9 @@ export function buildHemanthLayout(
   };
 }
 
-export function createHemanthLayout(variant: HemanthLayoutVariant = "working") {
-  return buildHemanthLayout(SITE_PAD, SITE_PAD, variant);
+export function createHemanthLayout() {
+  return buildHemanthLayout(SITE_PAD, SITE_PAD);
 }
 
-/** Current working: mid walk west of 6th-from-east panel on rows 3–5. */
-export const WORKING_HEMANTH_LAYOUT = createHemanthLayout("working");
+/** Frozen algorithm twin of the locked v1 snapshot — prefer the JSON for display. */
+export const WORKING_HEMANTH_LAYOUT = createHemanthLayout();

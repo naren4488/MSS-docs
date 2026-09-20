@@ -3220,60 +3220,112 @@
 .enquiries-status-legend {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 8px;
   margin-top: 10px;
 }
 
-.enquiries-status-swatch {
+.enquiries-status-badge {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 11px;
-  font-weight: 600;
+  max-width: 100%;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.35;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.enquiries-status-badge--converted {
+  color: #166534;
+  background: #ecfdf3;
+  border-color: #bbf7d0;
+}
+
+.enquiries-status-badge--progress {
+  color: #1d4ed8;
+  background: #eff6ff;
+  border-color: #bfdbfe;
+}
+
+.enquiries-status-badge--new {
+  color: #6d28d9;
+  background: #f5f3ff;
+  border-color: #ddd6fe;
+}
+
+.enquiries-status-badge--lost {
+  color: #b91c1c;
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+.enquiries-status-badge--unknown {
   color: #475569;
-  padding: 4px 8px;
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+.enquiries-visit-badge {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  padding: 3px 9px;
   border-radius: 999px;
-  border: 1px solid rgba(15, 23, 42, 0.08);
+  border: 1px solid transparent;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.35;
+  white-space: nowrap;
+  vertical-align: middle;
+  text-transform: capitalize;
 }
 
-.enquiries-status-swatch::before {
-  content: "";
-  width: 10px;
-  height: 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(15, 23, 42, 0.12);
+.enquiries-visit-badge--completed {
+  color: #166534;
+  background: #ecfdf3;
+  border-color: #bbf7d0;
 }
 
-.enquiries-status-swatch--converted {
-  background: #bbf7d0;
+.enquiries-visit-badge--scheduled {
+  color: #1d4ed8;
+  background: #eff6ff;
+  border-color: #bfdbfe;
 }
 
-.enquiries-status-swatch--converted::before {
-  background: #22c55e;
+.enquiries-visit-badge--pending {
+  color: #b45309;
+  background: #fffbeb;
+  border-color: #fde68a;
 }
 
-.enquiries-status-swatch--progress {
-  background: #bfdbfe;
+.enquiries-visit-badge--cancelled {
+  color: #b91c1c;
+  background: #fef2f2;
+  border-color: #fecaca;
 }
 
-.enquiries-status-swatch--progress::before {
-  background: #3b82f6;
+.enquiries-visit-badge--unknown {
+  color: #475569;
+  background: #f8fafc;
+  border-color: #e2e8f0;
 }
 
-.enquiries-status-swatch--new {
-  background: #ddd6fe;
+.enquiries-row {
+  background: #ffffff;
 }
 
-.enquiries-status-swatch--new::before {
-  background: #8b5cf6;
+.enquiries-row--alt {
+  background: #f8fafc;
 }
 
-.enquiries-status-swatch--lost {
-  background: #fecaca;
-}
-
-.enquiries-status-swatch--lost::before {
-  background: #ef4444;
+.enquiries-row:hover {
+  background: #f1f5f9;
 }
 
 .enquiries-row-check {
@@ -3283,22 +3335,164 @@
 }
 
 .enquiries-row--selected {
+  background: #eff6ff !important;
   outline: 1px solid rgba(37, 99, 235, 0.35);
   outline-offset: -1px;
+}
+
+.enquiries-notes-list {
+  margin: 0;
+  padding-left: 1.1em;
+  list-style: disc;
+}
+
+.enquiries-notes-list li {
+  margin: 0 0 2px;
+  padding: 0;
+  line-height: 1.4;
+}
+
+.enquiries-notes-list li:last-child {
+  margin-bottom: 0;
+}
+
+.enquiries-contact-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  line-height: 1.35;
+}
+
+.enquiries-meta-empty {
+  color: #94a3b8;
+}
+
+.enquiries-meta-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+  min-width: 118px;
+  max-width: 168px;
+  padding: 6px 8px 6px 9px;
+  border-radius: 8px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-left-width: 3px;
+  line-height: 1.3;
+}
+
+.enquiries-meta-card--enquiry {
+  border-left-color: #94a3b8;
+}
+
+.enquiries-meta-card--converted {
+  border-left-color: #22c55e;
+  background: #f0fdf4;
+  border-color: #dcfce7;
+}
+
+.enquiries-meta-card--progress {
+  border-left-color: #3b82f6;
+  background: #f8fbff;
+  border-color: #dbeafe;
+}
+
+.enquiries-meta-card--new {
+  border-left-color: #8b5cf6;
+  background: #faf8ff;
+  border-color: #ede9fe;
+}
+
+.enquiries-meta-card--lost {
+  border-left-color: #ef4444;
+  background: #fff8f8;
+  border-color: #fee2e2;
+}
+
+.enquiries-meta-card--unknown {
+  border-left-color: #94a3b8;
+}
+
+.enquiries-meta-card--visit {
+  border-left-color: #14306b;
+  background: #f7f9fc;
+  border-color: #dbe3f0;
+}
+
+.enquiries-meta-card--followup {
+  border-left-color: #b45309;
+  background: #fffbeb;
+  border-color: #fde68a;
+}
+
+.enquiries-meta-card--plant {
+  border-left-color: #0f766e;
+  background: #f0fdfa;
+  border-color: #ccfbf1;
+}
+
+.enquiries-phase-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  border-radius: 999px;
+  border: 1px solid #99f6e4;
+  background: #ffffff;
+  color: #0f766e;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.enquiries-meta-date,
+.enquiries-meta-person {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 5px;
+  min-width: 0;
+}
+
+.enquiries-meta-date {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: 0.01em;
+}
+
+.enquiries-meta-date svg,
+.enquiries-meta-person svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: #64748b;
+}
+
+.enquiries-meta-person {
+  font-size: 9.5px;
+  font-weight: 500;
+  color: #334155;
+}
+
+.enquiries-meta-person span {
+  overflow-wrap: anywhere;
+}
+
+.enquiries-meta-card .enquiries-status-badge {
+  padding: 2px 7px;
+  font-size: 9px;
 }
 
 .enquiries-export-row {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  padding: 4px 8px;
+  width: 28px;
+  height: 28px;
+  padding: 0;
   border: 1px solid rgba(15, 23, 42, 0.12);
   border-radius: 8px;
   background: #fff;
   color: #14306b;
-  font-size: 10px;
-  font-weight: 600;
   cursor: pointer;
 }
 

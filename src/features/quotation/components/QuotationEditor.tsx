@@ -126,7 +126,7 @@ export function QuotationEditor({ data, onChange }: QuotationEditorProps) {
         title="Customer Details"
         helper={
           offgrid
-            ? "Customer, site address and plant capacity. Panel qty, Microtek PCU kW, battery count and project amount update from the plant kW (₹2,90,000 for 3 kW)."
+            ? "Customer, site address and plant capacity. Panel qty, Microtek PCU kW, battery count and project amount update from the plant kW (₹2,60,000 for 3 kW)."
             : commercial
               ? "Customer, site address, plant capacity and commercial site facts. Panel qty and inverter kW update from the plant kW."
               : "Customer, site address, plant capacity and phase."
@@ -275,7 +275,7 @@ export function QuotationEditor({ data, onChange }: QuotationEditorProps) {
         title="Commercial Offer"
         helper={
           offgrid
-            ? "Solar Plant Capacity on the PDF is filled from Solar PV Modules (qty, wattage and make). Plant kW sets the project amount (₹2,90,000 for 3 kW). Customer Net Payable and the turnkey price box follow that amount."
+            ? "Solar Plant Capacity on the PDF is filled from Solar PV Modules (qty, wattage and make). Plant kW sets the project amount (₹2,60,000 for 3 kW). Customer Net Payable and the turnkey price box follow that amount."
             : commercial
               ? "Solar Plant Capacity on the PDF is filled from Solar PV Modules (qty, wattage and make). Project amount fills Customer Net Payable and the turnkey EPC price box. DISCOM charges stay extra as actual."
               : data.showSubsidySection

@@ -55,17 +55,14 @@ export type EnquiryColumn = (typeof ENQUIRY_COLUMNS)[number];
 export const ENQUIRY_VISIBLE_COLUMNS: readonly EnquiryColumn[] = [
   "S No",
   "Enquiry date",
-  "Enquiry status",
   "Client name",
   "Contact",
   "Location",
-  "Source type",
   "Lead assigned",
   "kW",
-  "Phase",
   "Visit status",
-  "Deal done",
-  "Documents",
+  "Visit date",
+  "Follow up date",
   "Notes",
 ];
 
@@ -73,15 +70,14 @@ export const ENQUIRY_VISIBLE_COLUMNS: readonly EnquiryColumn[] = [
 export const ENQUIRY_MORE_COLUMNS: readonly EnquiryColumn[] = [
   "Geo location",
   "Email",
+  "Source type",
   "Source name",
   "Source id",
   "Estimate price",
-  "Visit date",
   "Visit time",
-  "Who visited",
-  "Follow up date",
-  "Follow up person",
+  "Deal done",
   "Final amount",
+  "Documents",
   "Document date",
   "Pending",
 ];

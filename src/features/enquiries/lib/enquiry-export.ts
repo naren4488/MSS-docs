@@ -70,12 +70,27 @@ export function enquiryRowStableId(headers: readonly string[], row: string[]): s
   ].join("|");
 }
 
-/** Row backgrounds by enquiry status (tinted enough to read at a glance). */
-export function enquiryStatusRowBackground(status: string): string {
+export type EnquiryStatusTone = "converted" | "progress" | "lost" | "new" | "unknown";
+
+/** Maps sheet status text to a compact badge tone (used in the table, not full-row fills). */
+export function enquiryStatusTone(status: string): EnquiryStatusTone {
   const key = status.trim().toLowerCase();
-  if (key === "converted") return "#bbf7d0";
-  if (key === "in progress") return "#bfdbfe";
-  if (key === "lost") return "#fecaca";
-  if (key === "new") return "#ddd6fe";
-  return "#ffffff";
+  if (key === "converted") return "converted";
+  if (key === "in progress") return "progress";
+  if (key === "lost") return "lost";
+  if (key === "new") return "new";
+  return "unknown";
+}
+
+export type VisitStatusTone = "completed" | "scheduled" | "pending" | "cancelled" | "unknown";
+
+/** Maps visit status text to a badge tone. */
+export function visitStatusTone(status: string): VisitStatusTone {
+  const key = status.trim().toLowerCase();
+  if (!key) return "unknown";
+  if (/(complete|done|visited|finished)/.test(key)) return "completed";
+  if (/(cancel|no.?show|dropped)/.test(key)) return "cancelled";
+  if (/(schedul|booked|confirm|planned)/.test(key)) return "scheduled";
+  if (/(not.?schedul|pending|to.?do|await|open)/.test(key)) return "pending";
+  return "unknown";
 }

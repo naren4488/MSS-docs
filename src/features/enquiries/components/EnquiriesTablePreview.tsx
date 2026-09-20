@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Check, Copy, RotateCcw } from "lucide-react";
+import { CalendarDays, Check, Copy, RotateCcw, UserRound, Zap } from "lucide-react";
 import { ProjectRowMoreCell } from "@/features/mss-sites/components/ProjectRowMoreCell";
 import { ClientNameSearch } from "@/features/mss-sites/components/ClientNameSearch";
 import { ProjectsMultiselectFilter } from "@/features/mss-sites/components/ProjectsMultiselectFilter";
@@ -16,9 +16,11 @@ import {
 } from "../lib/enquiries-columns";
 import {
   enquiryRowStableId,
-  enquiryStatusRowBackground,
+  enquiryStatusTone,
   formatEnquiriesExportText,
   formatEnquiryExportText,
+  formatKwLabel,
+  visitStatusTone,
 } from "../lib/enquiry-export";
 import type { EnquiryFilterColumn } from "../lib/enquiries-config";
 import type { EnquiriesTable } from "../types/enquiries";
@@ -63,6 +65,151 @@ async function copyText(text: string) {
   await navigator.clipboard.writeText(text);
 }
 
+function notesLines(raw: string): string[] {
+  return raw
+    .split(/\r\n|\r|\n/)
+    .map((line) => line.replace(/^[\s•\-–—*]+/, "").trim())
+    .filter(Boolean);
+}
+
+/** Prefer sheet newlines; also split multiple numbers jammed on one line. */
+function contactLines(raw: string): string[] {
+  const fromNewlines = raw
+    .split(/\r\n|\r|\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+  if (fromNewlines.length > 1) return fromNewlines;
+
+  const single = fromNewlines[0] ?? raw.trim();
+  if (!single) return [];
+
+  const parts = single
+    .split(/[,;/|]+|\s{2,}|\s+(?=\d{8,}\b)/)
+    .map((part) => part.trim())
+    .filter(Boolean);
+  return parts.length > 1 ? parts : [single];
+}
+
+function NotesCell({ value }: { value: string }) {
+  const lines = notesLines(value);
+  if (lines.length === 0) return <>{"—"}</>;
+  if (lines.length === 1) return <>{lines[0]}</>;
+  return (
+    <ul className="enquiries-notes-list">
+      {lines.map((line, index) => (
+        <li key={`${index}-${line.slice(0, 24)}`}>{line}</li>
+      ))}
+    </ul>
+  );
+}
+
+function ContactCell({ value }: { value: string }) {
+  const lines = contactLines(value);
+  if (lines.length === 0) return <>{"—"}</>;
+  if (lines.length === 1) return <>{lines[0]}</>;
+  return (
+    <div className="enquiries-contact-stack">
+      {lines.map((line, index) => (
+        <span key={`${index}-${line}`}>{line}</span>
+      ))}
+    </div>
+  );
+}
+
+function VisitInfoCell({
+  date,
+  who,
+  variant,
+}: {
+  date: string;
+  who: string;
+  variant: "visit" | "followup";
+}) {
+  const dateText = date.trim();
+  const whoText = who.trim();
+  if (!dateText && !whoText) {
+    return <span className="enquiries-meta-empty">—</span>;
+  }
+  return (
+    <div className={`enquiries-meta-card enquiries-meta-card--${variant}`}>
+      {dateText ? (
+        <div className="enquiries-meta-date">
+          <CalendarDays size={11} aria-hidden />
+          <span>{dateText}</span>
+        </div>
+      ) : null}
+      {whoText ? (
+        <div className="enquiries-meta-person">
+          <UserRound size={11} aria-hidden />
+          <span>{whoText}</span>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function EnquiryInfoCell({
+  date,
+  status,
+  statusTone,
+}: {
+  date: string;
+  status: string;
+  statusTone: ReturnType<typeof enquiryStatusTone>;
+}) {
+  const dateText = date.trim();
+  const statusText = status.trim();
+  if (!dateText && !statusText) {
+    return <span className="enquiries-meta-empty">—</span>;
+  }
+  return (
+    <div className={`enquiries-meta-card enquiries-meta-card--enquiry enquiries-meta-card--${statusTone}`}>
+      {dateText ? (
+        <div className="enquiries-meta-date">
+          <CalendarDays size={11} aria-hidden />
+          <span>{dateText}</span>
+        </div>
+      ) : null}
+      {statusText ? (
+        <span className={`enquiries-status-badge enquiries-status-badge--${statusTone}`}>{statusText}</span>
+      ) : null}
+    </div>
+  );
+}
+
+function formatPhaseLabel(phase: string): string {
+  const trimmed = phase.trim();
+  if (!trimmed) return "";
+  if (/ph/i.test(trimmed)) return trimmed.replace(/\s+/g, "").toUpperCase();
+  return `${trimmed} PH`;
+}
+
+function PlantSizeCell({ kw, phase }: { kw: string; phase: string }) {
+  const kwText = formatKwLabel(kw);
+  const phaseText = formatPhaseLabel(phase);
+  if (!kwText && !phaseText) {
+    return <span className="enquiries-meta-empty">—</span>;
+  }
+  return (
+    <div className="enquiries-meta-card enquiries-meta-card--plant">
+      {kwText ? (
+        <div className="enquiries-meta-date">
+          <Zap size={11} aria-hidden />
+          <span>{kwText}</span>
+        </div>
+      ) : null}
+      {phaseText ? <span className="enquiries-phase-badge">{phaseText}</span> : null}
+    </div>
+  );
+}
+
+function VisitStatusBadge({ value }: { value: string }) {
+  const text = value.trim();
+  if (!text) return <span className="enquiries-meta-empty">—</span>;
+  const tone = visitStatusTone(text);
+  return <span className={`enquiries-visit-badge enquiries-visit-badge--${tone}`}>{text}</span>;
+}
+
 export function EnquiriesTablePreview({ table }: EnquiriesTablePreviewProps) {
   const [clientNameQuery, setClientNameQuery] = useState("");
   const [filterSets, setFilterSets] = useState(() => createDefaultFilterSets(table));
@@ -89,6 +236,9 @@ export function EnquiriesTablePreview({ table }: EnquiriesTablePreviewProps) {
 
   const visibleIndices = useMemo(() => visibleColumnIndices(table.headers), [table.headers]);
   const statusIndex = columnIndex(table.headers, "Enquiry status");
+  const whoVisitedIndex = columnIndex(table.headers, "Who visited");
+  const followUpPersonIndex = columnIndex(table.headers, "Follow up person");
+  const phaseIndex = columnIndex(table.headers, "Phase");
 
   const filteredIds = useMemo(
     () => filteredRows.map((row) => enquiryRowStableId(table.headers, row)),
@@ -195,10 +345,10 @@ export function EnquiriesTablePreview({ table }: EnquiriesTablePreviewProps) {
             </div>
           </div>
           <div className="enquiries-status-legend" aria-label="Enquiry status colours">
-            <span className="enquiries-status-swatch enquiries-status-swatch--converted">Converted</span>
-            <span className="enquiries-status-swatch enquiries-status-swatch--progress">In Progress</span>
-            <span className="enquiries-status-swatch enquiries-status-swatch--new">New</span>
-            <span className="enquiries-status-swatch enquiries-status-swatch--lost">Lost</span>
+            <span className="enquiries-status-badge enquiries-status-badge--converted">Converted</span>
+            <span className="enquiries-status-badge enquiries-status-badge--progress">In Progress</span>
+            <span className="enquiries-status-badge enquiries-status-badge--new">New</span>
+            <span className="enquiries-status-badge enquiries-status-badge--lost">Lost</span>
           </div>
         </div>
 
@@ -241,25 +391,55 @@ export function EnquiriesTablePreview({ table }: EnquiriesTablePreviewProps) {
                     aria-label="Select all visible enquiries"
                   />
                 </th>
-                {visibleIndices.map((index) => (
-                  <th key={table.headers[index]} style={thStyle}>
-                    {table.headers[index]}
-                  </th>
-                ))}
+                {visibleIndices.map((index) => {
+                  const header = table.headers[index];
+                  const isContact = header === "Contact";
+                  const isVisit = header === "Visit date";
+                  const isFollowUp = header === "Follow up date";
+                  const isEnquiry = header === "Enquiry date";
+                  const isPlant = header === "kW";
+                  const pairedHeader = isEnquiry
+                    ? "Enquiry"
+                    : isVisit
+                      ? "Visit"
+                      : isFollowUp
+                        ? "Follow up"
+                        : isPlant
+                          ? "Plant"
+                          : header;
+                  return (
+                    <th
+                      key={header}
+                      style={{
+                        ...thStyle,
+                        ...(isContact ? { width: 96, maxWidth: 96 } : null),
+                        ...(isVisit || isFollowUp || isEnquiry || isPlant ? { minWidth: 110 } : null),
+                      }}
+                    >
+                      {pairedHeader}
+                    </th>
+                  );
+                })}
                 <th style={{ ...thStyle, textAlign: "center", width: 56 }}>More</th>
-                <th style={{ ...thStyle, textAlign: "center", width: 72 }}>Export</th>
+                <th style={{ ...thStyle, textAlign: "center", width: 44 }}>Export</th>
               </tr>
             </thead>
             <tbody>
               {filteredRows.map((row, rowIndex) => {
                 const id = enquiryRowStableId(table.headers, row);
                 const status = statusIndex >= 0 ? row[statusIndex] ?? "" : "";
+                const statusTone = enquiryStatusTone(status);
                 const selected = selectedIds.has(id);
                 return (
                   <tr
                     key={`${id}-${rowIndex}`}
-                    className={selected ? "enquiries-row--selected" : undefined}
-                    style={{ background: enquiryStatusRowBackground(status) }}
+                    className={[
+                      "enquiries-row",
+                      rowIndex % 2 === 1 ? "enquiries-row--alt" : "",
+                      selected ? "enquiries-row--selected" : "",
+                    ]
+                      .filter(Boolean)
+                      .join(" ")}
                   >
                     <td style={{ ...tdStyle, textAlign: "center", width: 36, verticalAlign: "middle" }}>
                       <input
@@ -274,35 +454,61 @@ export function EnquiriesTablePreview({ table }: EnquiriesTablePreviewProps) {
                       const header = table.headers[index];
                       const isNotes = header === "Notes";
                       const isKw = header === "kW";
+                      const isContact = header === "Contact";
+                      const isVisit = header === "Visit date";
+                      const isFollowUp = header === "Follow up date";
+                      const isEnquiry = header === "Enquiry date";
+                      const isVisitStatus = header === "Visit status";
                       const raw = row[index]?.trim() ?? "";
-                      // Keep kW strings like "3+5" as-is; never replace with an em dash.
-                      const display = isKw ? raw : raw || "—";
+                      const whoVisited =
+                        whoVisitedIndex >= 0 ? row[whoVisitedIndex]?.trim() ?? "" : "";
+                      const followUpPerson =
+                        followUpPersonIndex >= 0 ? row[followUpPersonIndex]?.trim() ?? "" : "";
+                      const phase =
+                        phaseIndex >= 0 ? row[phaseIndex]?.trim() ?? "" : "";
+                      const display = raw || "—";
                       return (
                         <td
                           key={header}
                           style={{
                             ...tdStyle,
                             textAlign: header === "S No" ? "center" : "left",
-                            whiteSpace: isNotes ? "pre-wrap" : undefined,
-                            maxWidth: isNotes ? 220 : undefined,
+                            maxWidth: isNotes ? 240 : isContact ? 96 : undefined,
+                            width: isContact ? 96 : undefined,
                           }}
                         >
-                          {display}
+                          {isEnquiry ? (
+                            <EnquiryInfoCell date={raw} status={status} statusTone={statusTone} />
+                          ) : isKw ? (
+                            <PlantSizeCell kw={raw} phase={phase} />
+                          ) : isVisitStatus ? (
+                            <VisitStatusBadge value={raw} />
+                          ) : isNotes ? (
+                            <NotesCell value={raw} />
+                          ) : isContact ? (
+                            <ContactCell value={raw} />
+                          ) : isVisit ? (
+                            <VisitInfoCell date={raw} who={whoVisited} variant="visit" />
+                          ) : isFollowUp ? (
+                            <VisitInfoCell date={raw} who={followUpPerson} variant="followup" />
+                          ) : (
+                            display
+                          )}
                         </td>
                       );
                     })}
                     <td style={{ ...tdStyle, textAlign: "center", width: 56, verticalAlign: "middle" }}>
                       <ProjectRowMoreCell fields={moreFieldsForRow(table.headers, row)} />
                     </td>
-                    <td style={{ ...tdStyle, textAlign: "center", width: 72, verticalAlign: "middle" }}>
+                    <td style={{ ...tdStyle, textAlign: "center", width: 44, verticalAlign: "middle" }}>
                       <button
                         type="button"
                         className="enquiries-export-row"
-                        title="Copy enquiry details"
+                        title={copiedId === id ? "Copied" : "Copy enquiry details"}
+                        aria-label={copiedId === id ? "Copied" : "Copy enquiry details"}
                         onClick={() => void exportOne(row, id)}
                       >
                         {copiedId === id ? <Check size={14} /> : <Copy size={14} />}
-                        <span>{copiedId === id ? "Copied" : "Copy"}</span>
                       </button>
                     </td>
                   </tr>

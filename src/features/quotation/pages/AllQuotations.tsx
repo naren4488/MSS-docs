@@ -150,7 +150,7 @@ export function AllQuotations() {
           <h1>Packages</h1>
           <p>
             PM SURYA GHAR residential packages include MNRE ₹78,000 + state ₹17,000. Commercial and off-grid quotes
-            have no subsidy. Off-grid 3 kW package is ₹2,90,000. <strong>New Quotation</strong> opens the 3 KW single-phase
+            have no subsidy. Off-grid 3 kW package is ₹2,60,000. <strong>New Quotation</strong> opens the 3 KW single-phase
             package.
           </p>
         </div>
@@ -201,7 +201,7 @@ export function AllQuotations() {
         <header className="quotation-package-section-header">
           <BatteryCharging size={18} aria-hidden />
           <h2>Off-grid</h2>
-          <p className="muted-text">₹2,90,000 · 3 kW · no subsidy</p>
+          <p className="muted-text">₹2,60,000 · 3 kW · no subsidy</p>
         </header>
         <div className="quotation-package-grid">
           {offgrid.map((template) => (

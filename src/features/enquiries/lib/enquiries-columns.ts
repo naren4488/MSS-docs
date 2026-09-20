@@ -11,6 +11,19 @@ export function columnIndex(headers: readonly string[], column: EnquiryColumn): 
   return headers.indexOf(column);
 }
 
+/** Keep a row only if at least one of client name, contact, or location is filled. */
+export function rowHasEnquiryIdentity(headers: readonly string[], row: string[]): boolean {
+  for (const column of ["Client name", "Contact", "Location"] as const) {
+    const index = columnIndex(headers, column);
+    if (index >= 0 && (row[index] ?? "").trim()) return true;
+  }
+  return false;
+}
+
+export function filterRowsWithEnquiryIdentity(headers: readonly string[], rows: string[][]): string[][] {
+  return rows.filter((row) => rowHasEnquiryIdentity(headers, row));
+}
+
 export function withSequentialSerialNumbers(headers: readonly string[], rows: string[][]): string[][] {
   const sNo = columnIndex(headers, "S No");
   if (sNo < 0) return rows;

@@ -25,6 +25,7 @@ export type QuotationTemplateId =
   | "8kw-3ph"
   | "10kw-3ph"
   | "commercial"
+  | "commercial-15kw"
   | "commercial-30kw"
   | "offgrid";
 
@@ -177,6 +178,21 @@ export const QUOTATION_TEMPLATES: readonly QuotationTemplateMeta[] = [
     inverterKw: "10",
   },
   {
+    id: "commercial-15kw",
+    kind: "commercial",
+    label: "15 KW · 3PH",
+    description: "₹6,00,000 · 26 × 590W Waaree Topcon · HT three phase · no subsidy",
+    capacity: "15 KW",
+    phase: "3PH",
+    projectAmount: "600000",
+    centralSubsidy: "",
+    stateSubsidy: "",
+    panels: 26,
+    wp: 590,
+    inverterKw: "15",
+    moduleBrand: "Waaree Topcon Bifacial",
+  },
+  {
     id: "commercial-30kw",
     kind: "commercial",
     label: "30 KW · 3PH",
@@ -196,10 +212,10 @@ export const QUOTATION_TEMPLATES: readonly QuotationTemplateMeta[] = [
     kind: "offgrid",
     label: "Off-grid",
     description:
-      "Devandra Ji · ₹2,90,000 · no subsidy · 5 × Waaree 590 Wp · Microtek 5.1 kW · 5 × Luminous 220 Ah",
+      "Devandra Ji · ₹2,60,000 · no subsidy · 5 × Waaree 590 Wp · Microtek 5.1 kW · 5 × Luminous 220 Ah",
     capacity: "3 KW",
     phase: "1PH",
-    projectAmount: "290000",
+    projectAmount: "260000",
     centralSubsidy: "",
     stateSubsidy: "",
     panels: 5,
@@ -336,6 +352,7 @@ export function createQuotationFromTemplate(
             template.capacity,
             template.phase,
             language,
+            { panels: template.panels },
           )
         : applyTemplateSizing(base.materialItems, template, language),
     commercialOffer: stripSyncedCommercialRows(base.commercialOffer),
