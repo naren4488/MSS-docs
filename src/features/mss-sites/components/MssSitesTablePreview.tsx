@@ -3,12 +3,14 @@ import { RotateCcw } from "lucide-react";
 import {
   computeVisibleColumnTotals,
   filterRowsByClientName,
+  filterRowsByFileIssues,
   filterRowsByNonzeroDues,
   filterRowsByProjectsScope,
   filterRowsByProjectTypes,
   filterRowsByVendors,
   filterRowsByWorkStatuses,
   getDefaultSelectedWorkStatuses,
+  getFileIssuesFromRows,
   getHiddenProjectFields,
   getProjectTypesFromRows,
   getVendorsFromRows,
@@ -121,11 +123,13 @@ export function MssSitesTablePreview({ table, viewMode, scope }: MssSitesTablePr
   const projectTypes = useMemo(() => getProjectTypesFromRows(scopedRows), [scopedRows]);
   const vendors = useMemo(() => getVendorsFromRows(scopedRows), [scopedRows]);
   const workStatuses = useMemo(() => getWorkStatusesFromRows(scopedRows), [scopedRows]);
+  const fileIssues = useMemo(() => getFileIssuesFromRows(scopedRows), [scopedRows]);
   const [selectedProjectTypes, setSelectedProjectTypes] = useState<Set<string>>(() => new Set(projectTypes));
   const [selectedVendors, setSelectedVendors] = useState<Set<string>>(() => new Set(vendors));
   const [selectedWorkStatuses, setSelectedWorkStatuses] = useState<Set<string>>(() =>
     getDefaultSelectedWorkStatuses(workStatuses),
   );
+  const [selectedFileIssues, setSelectedFileIssues] = useState<Set<string>>(() => new Set(fileIssues));
   const [selectedNonzeroDues, setSelectedNonzeroDues] = useState<Set<string>>(() => new Set());
   const [clientNameQuery, setClientNameQuery] = useState("");
 
@@ -146,6 +150,10 @@ export function MssSitesTablePreview({ table, viewMode, scope }: MssSitesTablePr
   }, [workStatuses]);
 
   useEffect(() => {
+    setSelectedFileIssues(new Set(fileIssues));
+  }, [fileIssues]);
+
+  useEffect(() => {
     setSelectedNonzeroDues(new Set());
     setClientNameQuery("");
   }, [scope]);
@@ -154,12 +162,14 @@ export function MssSitesTablePreview({ table, viewMode, scope }: MssSitesTablePr
     const byVendor = filterRowsByVendors(scopedRows, selectedVendors);
     const byType = filterRowsByProjectTypes(byVendor, selectedProjectTypes);
     const byStatus = filterRowsByWorkStatuses(byType, selectedWorkStatuses);
-    const byDues = filterRowsByNonzeroDues(byStatus, selectedNonzeroDues, scope);
+    const byFileIssue = filterRowsByFileIssues(byStatus, selectedFileIssues);
+    const byDues = filterRowsByNonzeroDues(byFileIssue, selectedNonzeroDues, scope);
     const byName = filterRowsByClientName(byDues, clientNameQuery);
     return withSequentialSerialNumbers(byName);
   }, [
     clientNameQuery,
     scopedRows,
+    selectedFileIssues,
     selectedNonzeroDues,
     selectedProjectTypes,
     selectedVendors,
@@ -168,11 +178,14 @@ export function MssSitesTablePreview({ table, viewMode, scope }: MssSitesTablePr
   ]);
 
   const workStatusAtDefault = workStatusSelectionMatchesDefault(selectedWorkStatuses, workStatuses);
+  const fileIssueAtDefault =
+    selectedFileIssues.size === fileIssues.length && fileIssues.every((value) => selectedFileIssues.has(value));
 
   const isFiltered =
     (selectedProjectTypes.size > 0 && selectedProjectTypes.size < projectTypes.length) ||
     (selectedVendors.size > 0 && selectedVendors.size < vendors.length) ||
     !workStatusAtDefault ||
+    !fileIssueAtDefault ||
     selectedNonzeroDues.size > 0 ||
     clientNameQuery.trim().length > 0;
 
@@ -185,9 +198,10 @@ export function MssSitesTablePreview({ table, viewMode, scope }: MssSitesTablePr
     setSelectedProjectTypes(new Set(projectTypes));
     setSelectedVendors(new Set(vendors));
     setSelectedWorkStatuses(getDefaultSelectedWorkStatuses(workStatuses));
+    setSelectedFileIssues(new Set(fileIssues));
     setSelectedNonzeroDues(new Set());
     setClientNameQuery("");
-  }, [projectTypes, vendors, workStatuses]);
+  }, [fileIssues, projectTypes, vendors, workStatuses]);
 
   const applySheetTabShortcut = useCallback(
     (shortcut: ProjectSheetTabShortcut) => {
@@ -205,6 +219,7 @@ export function MssSitesTablePreview({ table, viewMode, scope }: MssSitesTablePr
   const vendorFilterActive = selectedVendors.size > 0 && selectedVendors.size < vendors.length;
   const partnerFilterActive = selectedProjectTypes.size > 0 && selectedProjectTypes.size < projectTypes.length;
   const statusFilterActive = !workStatusAtDefault;
+  const fileIssueFilterActive = !fileIssueAtDefault;
   const duesFilterActive = selectedNonzeroDues.size > 0;
   const searchActive = clientNameQuery.trim().length > 0;
 
@@ -308,6 +323,15 @@ export function MssSitesTablePreview({ table, viewMode, scope }: MssSitesTablePr
             allSummaryLabel="All statuses"
             emptyOptionsLabel="No statuses"
             isActive={statusFilterActive}
+          />
+          <ProjectsMultiselectFilter
+            label="File issue"
+            options={fileIssues}
+            selected={selectedFileIssues}
+            onChange={setSelectedFileIssues}
+            allSummaryLabel="All file issues"
+            emptyOptionsLabel="No file issues"
+            isActive={fileIssueFilterActive}
           />
           <ProjectsMultiselectFilter
             label="Dues"

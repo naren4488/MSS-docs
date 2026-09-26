@@ -788,7 +788,7 @@ function SignatureBlock({ data }: { data: AgreementData }) {
             {data.party.aadhaar?.trim() ? (
               <p style={{ margin: 0, fontSize: 11 }}>Aadhaar No.: {data.party.aadhaar}</p>
             ) : null}
-            {data.showPartyPan && data.party.pan?.trim() ? (
+            {data.party.pan?.trim() ? (
               <p style={{ margin: "2px 0 0", fontSize: 11, fontWeight: 700 }}>PAN: {data.party.pan}</p>
             ) : null}
           </>
@@ -805,7 +805,7 @@ function SignatureBlock({ data }: { data: AgreementData }) {
             {data.party.aadhaar?.trim() ? (
               <p style={{ margin: "2px 0 0", fontSize: 11 }}>Aadhaar No.: {data.party.aadhaar}</p>
             ) : null}
-            {data.showPartyPan && data.party.pan?.trim() ? (
+            {data.party.pan?.trim() ? (
               <p style={{ margin: "2px 0 0", fontSize: 11, fontWeight: 700 }}>PAN: {data.party.pan}</p>
             ) : null}
           </>

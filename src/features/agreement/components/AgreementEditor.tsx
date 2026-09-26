@@ -191,7 +191,7 @@ export function AgreementEditor({ data, onChange }: AgreementEditorProps) {
           party={data.party}
           showApplicantFields={showApplicantFields}
           individual={data.partyIsIndividual}
-          showPan={data.showPartyPan}
+          showPan={data.showPartyPan || Boolean(data.party.pan?.trim())}
           onChange={(party) => update("party", party)}
         />
       </AccordionSection>

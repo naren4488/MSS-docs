@@ -5,6 +5,7 @@ function createSolarWorldEnergyAgreementData() {
   const base = createDefaultAgreementData("partnership", "en");
   return {
     ...base,
+    effectiveDate: "2026-09-26",
     company: {
       ...base.company,
       website: "mahisolarsolution.com",
@@ -33,6 +34,9 @@ export const solarWorldEnergyAgreement: AgreementRecord = {
   id: "vendor-agreement-solar-world-energy-001",
   name: "Solar World Energy — Vendor Code Agreement",
   createdAt: "2026-07-18T00:00:00Z",
-  updatedAt: "2026-07-18T00:00:00Z",
+  updatedAt: "2026-09-26T00:00:00Z",
+  signed: true,
+  signedAt: "2026-09-26",
+  signedNote: "Hard copy signed",
   content: createSolarWorldEnergyAgreementData(),
 };

@@ -115,7 +115,7 @@ function agreementCardFields(content: AgreementData): CardField[] {
   }
 
   if (party.gst?.trim()) fields.push({ label: "GST", value: party.gst.trim(), mono: true });
-  if (content.showPartyPan && party.pan?.trim()) fields.push({ label: "PAN", value: party.pan.trim(), mono: true });
+  if (party.pan?.trim()) fields.push({ label: "PAN", value: party.pan.trim(), mono: true });
   if (party.aadhaar?.trim()) fields.push({ label: "Aadhaar", value: party.aadhaar.trim(), mono: true });
 
   return fields;

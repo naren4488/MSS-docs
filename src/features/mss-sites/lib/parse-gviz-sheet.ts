@@ -57,6 +57,12 @@ export function canonicalizeSheetHeader(label: string): string {
   if (upper === "CASH TO MSS" || upper === "CASH TO US") {
     return upper === "CASH TO US" ? "CASH TO US" : "CASH TO MSS";
   }
+  if (upper === "FILE ISSUE") {
+    return "File Issue";
+  }
+  if (upper === "BANK" || upper === "BANK NAME") {
+    return "BANK";
+  }
   if (upper.startsWith("SIGNATURE")) {
     return "UPDATE";
   }

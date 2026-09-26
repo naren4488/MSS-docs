@@ -14,6 +14,7 @@ export const PROJECT_TABLE_HEADERS = [
   "NAME",
   "KW",
   "PH",
+  "BANK",
   "LOCATION",
   "DISCOM",
   "K.NO",
@@ -26,6 +27,7 @@ export const PROJECT_TABLE_HEADERS = [
   "Partner commission",
   "LOAN",
   "Cash",
+  "File Issue",
   "File login",
   "SUBSIDY",
   "BANK FILE/CASH",
@@ -58,11 +60,13 @@ export const SHRIPAL_VISIBLE_PARTNER_COLUMNS = new Set<string>(["Payment with pa
 export const HIDDEN_PROJECT_COLUMNS = new Set<string>([
   "NO",
   "UPDATE",
+  "BANK",
   "DISCOM",
   "K.NO",
   "MOBILE",
   "GMAIL",
   "GPS / LINK",
+  "File Issue",
   "File login",
   "SUBSIDY",
   "BANK FILE/CASH",
@@ -117,6 +121,10 @@ export const WORK_STATUS_COLUMN = "WORK STATUS";
 
 export const WORK_STATUS_COLUMN_INDEX = PROJECT_TABLE_HEADERS.indexOf(WORK_STATUS_COLUMN);
 
+export const FILE_ISSUE_COLUMN = "File Issue";
+
+export const FILE_ISSUE_COLUMN_INDEX = PROJECT_TABLE_HEADERS.indexOf(FILE_ISSUE_COLUMN);
+
 export const TOTAL_DUE_TO_MSS_COLUMN = "Total Due to MSS";
 
 export const TOTAL_DUE_TO_MSS_COLUMN_INDEX = PROJECT_TABLE_HEADERS.indexOf(TOTAL_DUE_TO_MSS_COLUMN);
@@ -160,12 +168,19 @@ export function getCashDueFilterColumnIndex(scope: ProjectsScope): number {
 
 export const EMPTY_WORK_STATUS_LABEL = "Not set";
 
+export const EMPTY_FILE_ISSUE_LABEL = "Not set";
+
 /** Sheet value kept unselected in the Work status filter by default. */
 const PROJECT_ON_HOLD_WORK_STATUS = "project on hold";
 
 export function normalizeWorkStatus(value: string): string {
   const trimmed = value.trim();
   return trimmed.length > 0 ? trimmed : EMPTY_WORK_STATUS_LABEL;
+}
+
+export function normalizeFileIssue(value: string): string {
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : EMPTY_FILE_ISSUE_LABEL;
 }
 
 export function isProjectOnHoldWorkStatus(value: string): boolean {
@@ -209,6 +224,25 @@ export function filterRowsByWorkStatuses(
 
   return rows
     .filter((row) => selectedWorkStatuses.has(normalizeWorkStatus(row[WORK_STATUS_COLUMN_INDEX] ?? "")))
+    .map((row) => [...row]);
+}
+
+export function getFileIssuesFromRows(rows: readonly (readonly string[])[]): string[] {
+  return [...new Set(rows.map((row) => normalizeFileIssue(row[FILE_ISSUE_COLUMN_INDEX] ?? "")))].sort((a, b) =>
+    a.localeCompare(b),
+  );
+}
+
+export function filterRowsByFileIssues(
+  rows: readonly (readonly string[])[],
+  selectedFileIssues: ReadonlySet<string>,
+): string[][] {
+  if (selectedFileIssues.size === 0) {
+    return [];
+  }
+
+  return rows
+    .filter((row) => selectedFileIssues.has(normalizeFileIssue(row[FILE_ISSUE_COLUMN_INDEX] ?? "")))
     .map((row) => [...row]);
 }
 
@@ -494,6 +528,7 @@ export function mapSheetRowToProjectRow(
     sheetCell(headers, row, ["NAME", "Client", "CLIENT", "SITE NAME"]),
     sheetCell(headers, row, "KW"),
     sheetCell(headers, row, "PH"),
+    sheetCell(headers, row, "BANK"),
     sheetCell(headers, row, ["LOCATION", "Location"], 0),
     sheetCell(headers, row, "DISCOM"),
     sheetCell(headers, row, ["K.NO", "K. NO"]),
@@ -509,6 +544,7 @@ export function mapSheetRowToProjectRow(
     ),
     sheetCell(headers, row, "LOAN"),
     sheetCell(headers, row, ["Cash", "CASH"]),
+    sheetCell(headers, row, ["File Issue", "file Issue", "FILE ISSUE"]),
     sheetCell(headers, row, ["File login", "File Login"]),
     sheetCell(headers, row, "SUBSIDY"),
     sheetCell(headers, row, ["BANK FILE/CASH", "Bank file / Cash"]),
