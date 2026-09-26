@@ -378,7 +378,7 @@ const partnershipClosing =
   "By signing below, the Parties agree that this Agreement constitutes the entire agreement between the Parties and shall only be modified by a written instrument executed by an authorized officer of both Parties.";
 
 const partnershipIntroTemplate =
-  "THIS AGREEMENT (the \"Agreement\") is made as of {{effectiveDateFormatted}} (the \"Effective Date\") by and between {{company.name}} with a principal place of business at {{company.address}}.\n\nAnd the business named {{party.entityName}} (\"Authorised Firm\") with a principal place of business located at {{party.address}}.";
+  "THIS AGREEMENT (the \"Agreement\") is made as of {{effectiveDateFormatted}} (the \"Effective Date\") by and between {{company.name}} with a principal place of business at {{company.address}}.\n\nAnd the business named {{party.entityName}} (\"Authorised Firm\") with a principal place of business located at {{party.addressWithPan}}.";
 
 const partnershipRecitals = [
   "{{company.name}} promotes, markets and sells certain solar energy solutions (the \"Services\");",
@@ -408,7 +408,7 @@ export function getPartnershipVendorChargeContent(data: AgreementData): { headin
 const partnershipTitleHi = "विक्रेता कोड प्राधिकरण समझौता";
 
 const partnershipIntroTemplateHi =
-  "यह समझौता (\"समझौता\") {{effectiveDateFormatted}} (\"प्रभावी तिथि\") को {{company.name}}, जिसका मुख्य कार्यस्थल {{company.address}} पर है, एवं {{party.entityName}} (\"अधिकृत फर्म\"), जिसका मुख्य कार्यस्थल {{party.address}} पर है, के मध्य निष्पादित किया गया है।";
+  "यह समझौता (\"समझौता\") {{effectiveDateFormatted}} (\"प्रभावी तिथि\") को {{company.name}}, जिसका मुख्य कार्यस्थल {{company.address}} पर है, एवं {{party.entityName}} (\"अधिकृत फर्म\"), जिसका मुख्य कार्यस्थल {{party.addressWithPan}} पर है, के मध्य निष्पादित किया गया है।";
 
 const partnershipRecitalsHi = [
   "{{company.name}} कतिपय सौर ऊर्जा समाधानों (इसके पश्चात् \"सेवाएँ\") का प्रचार, विपणन एवं विक्रय करता है;",
@@ -812,7 +812,7 @@ const referralClosing =
   "By signing below, the Parties agree that this Agreement constitutes the entire agreement between them on project referral and commission, and may be modified only by a written instrument signed by both Parties.";
 
 const referralIntroTemplate =
-  "THIS AGREEMENT (the \"Agreement\") is made as of {{effectiveDateFormatted}} (the \"Effective Date\") by and between {{company.name}} with a principal place of business at {{company.address}}.\n\nAnd {{party.entityName}} (\"Referrer\") with address at {{party.address}}.";
+  "THIS AGREEMENT (the \"Agreement\") is made as of {{effectiveDateFormatted}} (the \"Effective Date\") by and between {{company.name}} with a principal place of business at {{company.address}}.\n\nAnd {{party.entityName}} (\"Referrer\") with address at {{party.addressWithPan}}.";
 
 const referralRecitals = [
   "{{company.name}} designs, supplies, installs and commissions rooftop solar projects under {{var.scheme}} and related programmes.",
@@ -960,7 +960,7 @@ const incAssignClosing =
   "By signing below, the Parties confirm that this Agreement constitutes the entire understanding between them regarding INC installation assignments and may be amended only in writing signed by both Parties.";
 
 const incAssignIntroTemplate =
-  "THIS INSTALLATION ASSIGNMENT AGREEMENT (the \"Agreement\") is made as of {{effectiveDateFormatted}} (the \"Effective Date\") between {{company.name}}, having its principal place of business at {{company.address}} (\"Company\"), and {{party.entityName}}, having its principal place of business at {{party.address}} (\"Contractor\").";
+  "THIS INSTALLATION ASSIGNMENT AGREEMENT (the \"Agreement\") is made as of {{effectiveDateFormatted}} (the \"Effective Date\") between {{company.name}}, having its principal place of business at {{company.address}} (\"Company\"), and {{party.entityName}}, having its principal place of business at {{party.addressWithPan}} (\"Contractor\").";
 
 const incAssignRecitals = [
   "{{company.name}} undertakes rooftop solar installation projects under {{var.scheme}} and related programmes.",
@@ -1071,7 +1071,7 @@ const incGoodwillClosing =
   "By signing below, the Parties acknowledge that they have read and understood this goodwill project execution arrangement.";
 
 const incGoodwillIntroTemplate =
-  "THIS GOODWILL PROJECT EXECUTION AGREEMENT is executed on {{effectiveDateFormatted}} for a rooftop solar project under {{var.scheme}}.\n\nBETWEEN: {{party.entityName}}, Consumer No. {{party.consumerNumber}} ({{party.discom}}), residing at {{party.address}} (\"Beneficiary\").\n\nAND: {{company.name}}, having office at {{company.address}} (\"Company\").";
+  "THIS GOODWILL PROJECT EXECUTION AGREEMENT is executed on {{effectiveDateFormatted}} for a rooftop solar project under {{var.scheme}}.\n\nBETWEEN: {{party.entityName}}, Consumer No. {{party.consumerNumber}} ({{party.discom}}), residing at {{party.addressWithPan}} (\"Beneficiary\").\n\nAND: {{company.name}}, having office at {{company.address}} (\"Company\").";
 
 const incGoodwillRecitals = [
   "Beneficiary intends to install a rooftop solar system under {{var.scheme}} of {{var.ministry}}.",
@@ -1352,7 +1352,7 @@ const clientAgreementClosing =
   "By signing below, Client acknowledges reading and understanding this entire agreement and agrees to comply with all payment, material, and site condition terms. No changes are permitted without written approval and advance payment.";
 
 const clientAgreementIntroTemplate =
-  "THIS SOLAR SYSTEM INSTALLATION & SERVICE AGREEMENT (the \"Agreement\") is made as of {{effectiveDateFormatted}} (the \"Effective Date\") between {{company.name}} with a principal place of business at {{company.address}}, and {{party.entityName}} with a residential address at {{party.address}}.";
+  "THIS SOLAR SYSTEM INSTALLATION & SERVICE AGREEMENT (the \"Agreement\") is made as of {{effectiveDateFormatted}} (the \"Effective Date\") between {{company.name}} with a principal place of business at {{company.address}}, and {{party.entityName}} with a residential address at {{party.addressWithPan}}.";
 
 const clientAgreementRecitals = [
   "{{company.name}} is engaged in the business of designing, installing, and commissioning solar energy systems.",

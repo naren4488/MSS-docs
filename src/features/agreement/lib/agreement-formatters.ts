@@ -19,10 +19,27 @@ function readPath(scope: Record<string, unknown>, path: string): string {
   return cursor == null ? "" : String(cursor);
 }
 
+export function partyAddressWithPan(
+  party: Pick<AgreementParty, "address" | "pan">,
+  language: AgreementData["language"] = "en",
+): string {
+  const address = party.address?.trim() ?? "";
+  const pan = party.pan?.trim() ?? "";
+  if (!pan) {
+    return address;
+  }
+  const label = language === "hi" ? "पैन" : "PAN";
+  const clause = `(**${label}: ${pan}**)`;
+  return address ? `${address} ${clause}` : clause;
+}
+
 export function buildPlaceholderScope(data: AgreementData) {
   return {
     company: data.company as unknown as Record<string, unknown>,
-    party: data.party as unknown as Record<string, unknown>,
+    party: {
+      ...(data.party as unknown as Record<string, unknown>),
+      addressWithPan: partyAddressWithPan(data.party, data.language),
+    },
     var: data.variables as unknown as Record<string, unknown>,
     vendorChargePerWatt: data.vendorChargePerWatt,
     referralCommissionAmount: data.referralCommissionAmount,
@@ -38,9 +55,20 @@ export function fillTemplate(input: string, data: AgreementData): string {
   }
 
   const scope = buildPlaceholderScope(data);
+  const templateAlreadyHasPan =
+    /\{\{\s*party\.pan\s*\}\}/.test(input) || /\{\{\s*party\.addressWithPan\s*\}\}/.test(input);
 
   return input.replace(PLACEHOLDER_PATTERN, (_match, path: string) => {
-    const value = readPath(scope, path).trim();
+    let value = readPath(scope, path).trim();
+
+    // Legacy intros only used {{party.address}} — append PAN when filled.
+    if (path === "party.address" && !templateAlreadyHasPan) {
+      const pan = readPath(scope, "party.pan").trim();
+      if (pan) {
+        value = partyAddressWithPan({ address: value, pan }, data.language);
+      }
+    }
+
     return value || "___________";
   });
 }

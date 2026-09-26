@@ -14,7 +14,7 @@ function createShriPalKumawatAgreementData() {
     showReferralCommission: true,
     referralCommissionAmount: "20,000",
     introTemplate:
-      'THIS AGREEMENT (the "Agreement") is made as of {{effectiveDateFormatted}} (the "Effective Date") by and between {{company.name}} with a principal place of business at {{company.address}}.\n\nAnd {{party.entityName}} ("Referrer") with address at {{party.address}} (**PAN: {{party.pan}}**).',
+      'THIS AGREEMENT (the "Agreement") is made as of {{effectiveDateFormatted}} (the "Effective Date") by and between {{company.name}} with a principal place of business at {{company.address}}.\n\nAnd {{party.entityName}} ("Referrer") with address at {{party.addressWithPan}}.',
     party: {
       ...base.party,
       entityName: "Shri Pal Kumawat",

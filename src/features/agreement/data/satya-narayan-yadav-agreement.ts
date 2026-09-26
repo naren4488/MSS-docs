@@ -96,7 +96,7 @@ function createSatyaNarayanYadavAgreementData() {
     partyIsIndividual: true,
     showPartyPan: true,
     introTemplate:
-      'THIS PARTNERSHIP AGREEMENT (the "Agreement") is made as of {{effectiveDateFormatted}} (the "Effective Date") by and between {{company.name}}, having its principal place of business at {{company.address}} ("MSS").\n\nAnd {{party.entityName}} ("Partner"), having its principal place of business at {{party.address}} (**PAN: {{party.pan}}**).',
+      'THIS PARTNERSHIP AGREEMENT (the "Agreement") is made as of {{effectiveDateFormatted}} (the "Effective Date") by and between {{company.name}}, having its principal place of business at {{company.address}} ("MSS").\n\nAnd {{party.entityName}} ("Partner"), having its principal place of business at {{party.addressWithPan}}.',
     party: {
       ...base.party,
       entityName: "Satya Narayan Yadav",

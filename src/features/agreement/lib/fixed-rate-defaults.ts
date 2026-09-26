@@ -102,7 +102,7 @@ export const fixedRateVariableDefaults: Record<string, string> = {
 };
 
 export const fixedRateIntroTemplate =
-  'THIS PARTNERSHIP AGREEMENT (the "Agreement") is made as of {{effectiveDateFormatted}} (the "Effective Date") by and between {{company.name}}, having its principal place of business at {{company.address}} ("MSS").\n\nAnd {{party.entityName}} ("Partner"), having its principal place of business at {{party.address}}.';
+  'THIS PARTNERSHIP AGREEMENT (the "Agreement") is made as of {{effectiveDateFormatted}} (the "Effective Date") by and between {{company.name}}, having its principal place of business at {{company.address}} ("MSS").\n\nAnd {{party.entityName}} ("Partner"), having its principal place of business at {{party.addressWithPan}}.';
 
 export const fixedRatePreamble =
   "NOW, THEREFORE, in consideration of the mutual promises set forth below, {{company.name}} and the Partner agree as follows:";
