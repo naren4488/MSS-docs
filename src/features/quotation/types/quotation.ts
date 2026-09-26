@@ -5,6 +5,7 @@ export type { AgreementCompany as QuotationCompany };
 
 export type QuotationLanguage = "en" | "hi";
 export type QuotationPhase = "1PH" | "3PH";
+export type QuotationStructureBrand = "Apollo" | "Tata";
 export type QuotationKind = "residential" | "commercial" | "offgrid";
 
 export interface QuotationMaterialItem {
@@ -58,6 +59,8 @@ export interface QuotationData {
   customerEmail: string;
   capacity: string;
   phase: QuotationPhase;
+  /** GI mounting structure brand — drives leg size in the BOM. */
+  structureBrand: QuotationStructureBrand;
   address: string;
   proposalDate: string;
   /** Commercial summary extras — shown when filled. */

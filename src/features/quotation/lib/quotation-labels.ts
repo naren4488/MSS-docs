@@ -456,6 +456,11 @@ export function isSolarInverterDescription(description: string) {
   return value.includes("inverter") || description.includes("इनवर्टर");
 }
 
+export function isMountingStructureDescription(description: string) {
+  const value = description.toLowerCase();
+  return value.includes("mounting structure") || description.includes("माउंटिंग स्ट्रक्चर");
+}
+
 export function isBatteryBankDescription(description: string) {
   const value = description.toLowerCase();
   return value.includes("battery bank") || description.includes("बैटरी बैंक");

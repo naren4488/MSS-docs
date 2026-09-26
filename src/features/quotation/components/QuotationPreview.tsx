@@ -659,7 +659,22 @@ function TurnkeyEpcPriceBox({ data }: { data: QuotationData }) {
   const offgrid = isOffgridQuotation(data);
   const projectDisplay = formatInrGrouped(data.projectAmount) || filledValue(data.projectAmount);
   const discomNote = data.discomChargesNote.trim() || filledValue("");
-  const includedItems = offgrid ? L.offgridPriceIncludedItems : L.priceIncludedItems;
+  const structureName =
+    data.structureBrand === "Tata"
+      ? data.language === "hi"
+        ? "GI टाटा"
+        : "GI Tata"
+      : data.language === "hi"
+        ? "GI अपोलो"
+        : "GI Apollo";
+  const includedItems = offgrid
+    ? L.offgridPriceIncludedItems.map((item, index) =>
+        index === 0
+          ? item
+              .replace(/GI Apollo|GI अपोलो|GI Tata|GI टाटा/g, structureName)
+          : item,
+      )
+    : L.priceIncludedItems;
 
   return (
     <div style={{ border: `2px solid ${NAVY}`, borderRadius: 12, padding: "16px 20px", background: "#f4f7fb", marginTop: 12, marginBottom: 12 }}>

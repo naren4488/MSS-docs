@@ -7,6 +7,7 @@ import type {
   QuotationLanguage,
   QuotationMaterialItem,
   QuotationPhase,
+  QuotationStructureBrand,
   QuotationTermItem,
 } from "../types/quotation";
 import { stripSyncedCommercialRows } from "./quotation-formatters";
@@ -14,6 +15,7 @@ import {
   isAcCableDescription,
   isAcDbDcDbDescription,
   isBatteryBankDescription,
+  isMountingStructureDescription,
   isSolarInverterDescription,
   isSolarPvModulesDescription,
 } from "./quotation-labels";
@@ -78,6 +80,45 @@ export function formatCapacityWithPhase(capacity: string, phase: QuotationPhase)
   return stripped ? `${stripped} ${phase}` : phase;
 }
 
+export function mountingStructureDescription(
+  brand: QuotationStructureBrand,
+  language: QuotationLanguage,
+): string {
+  if (language === "hi") {
+    return brand === "Tata" ? "माउंटिंग स्ट्रक्चर (GI टाटा)" : "माउंटिंग स्ट्रक्चर (GI अपोलो)";
+  }
+  return brand === "Tata" ? "Mounting Structure (GI Tata)" : "Mounting Structure (GI Apollo)";
+}
+
+export function mountingStructureMake(
+  brand: QuotationStructureBrand,
+  language: QuotationLanguage,
+): string {
+  if (brand === "Tata") {
+    return language === "hi"
+      ? "लेग 72×72, रैफ्टर 60×40, पर्लिन 40×40"
+      : "Leg 72×72, Rafter 60×40, Purline 40×40";
+  }
+  return language === "hi"
+    ? "लेग 75×75, रैफ्टर 60×40, पर्लिन 40×40"
+    : "Leg 75×75, Rafter 60×40, Purline 40×40";
+}
+
+export function applyStructureBrandToMaterials(
+  items: QuotationMaterialItem[],
+  brand: QuotationStructureBrand,
+  language: QuotationLanguage,
+): QuotationMaterialItem[] {
+  return items.map((item) => {
+    if (!isMountingStructureDescription(item.description)) return item;
+    return {
+      ...item,
+      description: mountingStructureDescription(brand, language),
+      make: mountingStructureMake(brand, language),
+    };
+  });
+}
+
 export function applyPhaseToMaterialItems(
   items: QuotationMaterialItem[],
   phase: QuotationPhase,
@@ -97,12 +138,24 @@ export function applyPhaseToMaterialItems(
   });
 }
 
-function defaultMaterialItems(language: QuotationLanguage, phase: QuotationPhase = "1PH"): QuotationMaterialItem[] {
+function defaultMaterialItems(
+  language: QuotationLanguage,
+  phase: QuotationPhase = "1PH",
+  brand: QuotationStructureBrand = "Apollo",
+): QuotationMaterialItem[] {
+  const structureQty = language === "hi" ? "आवश्यकतानुसार" : "As per Requirement";
+  const structure = material(
+    mountingStructureDescription(brand, language),
+    structureQty,
+    "",
+    mountingStructureMake(brand, language),
+  );
+
   if (language === "hi") {
     return [
       material("सोलर पीवी मॉड्यूल", "6 पैनल", "550 Wp", "अदानी टॉपकॉन बाइफेशियल · 30 वर्ष वारंटी"),
       material("सोलर इनवर्टर", "1", inverterUnit(phase, language), "3.6 किलोवाट POLYCAB इनवर्टर · 10 वर्ष वारंटी"),
-      material("माउंटिंग स्ट्रक्चर (GI अपोलो)", "आवश्यकतानुसार", "", "लेग 75×75, रैफ्टर 60×40, पर्लिन 40×40"),
+      structure,
       material("AC केबल", "50 तक", "मी.", acCableMake(phase, language)),
       material("DC केबल", "60 तक", "मी.", "4 वर्ग मिमी कॉपर वायर, पॉलीकैब केबल"),
       material("लाइटनिंग अरेस्टर किट", "1 नं.", "1 नं.", "1 मी., कॉपर बाउंड"),
@@ -117,7 +170,7 @@ function defaultMaterialItems(language: QuotationLanguage, phase: QuotationPhase
   return [
     material("Solar PV Modules", "6 Panel", "550 Wp", "Adani Topcon Bifacial with 30 Year Warranty"),
     material("Solar Inverter", "1", inverterUnit(phase, language), "3.6 KW POLYCAB Inverter with 10 Year Warranty"),
-    material("Mounting Structure (GI Apollo)", "As per Requirement", "", "Leg 75×75, Rafter 60×40, Purline 40×40"),
+    structure,
     material("AC Cable", "Upto 50", "Mtr", acCableMake(phase, language)),
     material("DC Cable", "Upto 60", "Mtr", "4 sq mm Copper Wire, Polycab cable"),
     material("Lightning Arrestor Kit", "1 No", "1 No", "1 M, Copper bound"),
@@ -195,15 +248,26 @@ export function commercialPanelConfigOffering(capacity: string, language: Quotat
   return `${panels} x ${COMMERCIAL_MODULE_WP}W Adani Topcon Bifacial Panels (${totalKw} KW Total)`;
 }
 
-function defaultCommercialMaterialItems(language: QuotationLanguage, phase: QuotationPhase): QuotationMaterialItem[] {
+function defaultCommercialMaterialItems(
+  language: QuotationLanguage,
+  phase: QuotationPhase,
+  brand: QuotationStructureBrand = "Apollo",
+): QuotationMaterialItem[] {
   const site = asPerSite(language);
   const acMake = commercialAcCableMake(phase, language);
+  const structureQty = language === "hi" ? "आवश्यकतानुसार" : "As per Requirement";
+  const structure = material(
+    mountingStructureDescription(brand, language),
+    structureQty,
+    "",
+    mountingStructureMake(brand, language),
+  );
 
   if (language === "hi") {
     return [
       material("सोलर पीवी मॉड्यूल", "18 पैनल", `${COMMERCIAL_MODULE_WP} Wp`, "अदानी टॉपकॉन बाइफेशियल · 30 वर्ष वारंटी"),
       material("सोलर इनवर्टर", "1", inverterUnit(phase, language), commercialInverterMake("10", language)),
-      material("माउंटिंग स्ट्रक्चर (GI अपोलो)", "आवश्यकतानुसार", "", "लेग 75×75, रैफ्टर 60×40, पर्लिन 40×40"),
+      structure,
       material("AC केबल", site, "मी.", acMake),
       material("DC केबल", site, "मी.", "4 वर्ग मिमी कॉपर, 1 kV UV रेज़िस्टेंट, पॉलीकैब केबल"),
       material("केबल एक्सेसरीज़", site, "नं.", "Cu व Al लग्स, ग्लैंड, HDPE कंड्यूट, फेरुलिंग, UV केबल टाई"),
@@ -228,7 +292,7 @@ function defaultCommercialMaterialItems(language: QuotationLanguage, phase: Quot
   return [
     material("Solar PV Modules", "18 Panel", `${COMMERCIAL_MODULE_WP} Wp`, "Adani Topcon Bifacial with 30 Year Warranty"),
     material("Solar Inverter", "1", inverterUnit(phase, language), commercialInverterMake("10", language)),
-    material("Mounting Structure (GI Apollo)", "As per Requirement", "", "Leg 75×75, Rafter 60×40, Purline 40×40"),
+    structure,
     material("AC Cable", site, "Mtr", acMake),
     material("DC Cable", site, "Mtr", "4 sq mm Copper Wire, 1 kV grade UV resistant, Polycab cable"),
     material("Cable Accessories", site, "Nos", "Cu & Al lugs, gland, HDPE conduit, ferruling, UV protected cable tie"),
@@ -377,16 +441,26 @@ export function syncOffgridOfferToCapacity(
   });
 }
 
-function defaultOffgridMaterialItems(language: QuotationLanguage): QuotationMaterialItem[] {
+function defaultOffgridMaterialItems(
+  language: QuotationLanguage,
+  brand: QuotationStructureBrand = "Apollo",
+): QuotationMaterialItem[] {
   const inverterMake = offgridInverterMake(OFFGRID_DEFAULT_INVERTER_KW, language);
   const batteryMake = offgridBatteryMake(language);
   const moduleMake = offgridModuleMake(language);
+  const structureQty = language === "hi" ? "आवश्यकतानुसार" : "As per Requirement";
+  const structure = material(
+    mountingStructureDescription(brand, language),
+    structureQty,
+    "",
+    mountingStructureMake(brand, language),
+  );
 
   if (language === "hi") {
     return [
       material("सोलर पीवी मॉड्यूल", "5 पैनल", `${OFFGRID_MODULE_WP} Wp`, moduleMake),
       material("सोलर इनवर्टर", "1", offgridInverterUnit(language), inverterMake),
-      material("माउंटिंग स्ट्रक्चर (GI अपोलो)", "आवश्यकतानुसार", "", "लेग 75×75, रैफ्टर 60×40, पर्लिन 40×40"),
+      structure,
       material("DC केबल", "60 तक", "मी.", "4 वर्ग मिमी कॉपर वायर, पॉलीकैब केबल"),
       material("कनेक्शन किट", "आवश्यकतानुसार", "—", "कनेक्टिंग केबल (4 वर्ग मिमी — पॉलीकैब), MC4, जम्पर"),
       material("ट्यूबुलर बैटरी बैंक", offgridBatteryQty(5, language), `12V ${OFFGRID_BATTERY_AH} Ah`, batteryMake),
@@ -397,7 +471,7 @@ function defaultOffgridMaterialItems(language: QuotationLanguage): QuotationMate
   return [
     material("Solar PV Modules", "5 Panel", `${OFFGRID_MODULE_WP} Wp`, moduleMake),
     material("Solar Inverter", "1", offgridInverterUnit(language), inverterMake),
-    material("Mounting Structure (GI Apollo)", "As per Requirement", "", "Leg 75×75, Rafter 60×40, Purline 40×40"),
+    structure,
     material("DC Cable", "Upto 60", "Mtr", "4 sq mm Copper Wire, Polycab cable"),
     material("Connection Kit", "As per Requirement", "—", "Connecting cable (4 sq mm — Polycab), MC4, jumper"),
     material("Tubular Battery Bank", offgridBatteryQty(5, language), `12V ${OFFGRID_BATTERY_AH} Ah`, batteryMake),
@@ -1011,6 +1085,7 @@ export function createDefaultQuotationData(
     customerEmail: "",
     capacity,
     phase,
+    structureBrand: "Apollo",
     address: "Jaipur",
     proposalDate: today,
     sanctionLoad: "",
@@ -1106,6 +1181,7 @@ export function switchQuotationLanguage(data: QuotationData, language: Quotation
     customerEmail: data.customerEmail,
     capacity: stripPhaseFromCapacity(data.capacity) || fresh.capacity,
     phase: data.phase,
+    structureBrand: data.structureBrand === "Tata" ? "Tata" : "Apollo",
     address: data.address,
     proposalDate: data.proposalDate,
     sanctionLoad: data.sanctionLoad,
@@ -1113,11 +1189,15 @@ export function switchQuotationLanguage(data: QuotationData, language: Quotation
     connectionType: data.connectionType === previous.connectionType ? fresh.connectionType : data.connectionType,
     roofType: data.roofType === previous.roofType ? fresh.roofType : data.roofType,
     company: { ...fresh.company, ...data.company },
-    materialItems: offgrid
-      ? applyOffgridCapacityToMaterials(fresh.materialItems, data.capacity, data.phase, language)
-      : commercial
-        ? applyCommercialCapacityToMaterials(fresh.materialItems, data.capacity, data.phase, language)
-        : applyPhaseToMaterialItems(fresh.materialItems, data.phase, language),
+    materialItems: applyStructureBrandToMaterials(
+      offgrid
+        ? applyOffgridCapacityToMaterials(fresh.materialItems, data.capacity, data.phase, language)
+        : commercial
+          ? applyCommercialCapacityToMaterials(fresh.materialItems, data.capacity, data.phase, language)
+          : applyPhaseToMaterialItems(fresh.materialItems, data.phase, language),
+      data.structureBrand === "Tata" ? "Tata" : "Apollo",
+      language,
+    ),
     commercialOffer: offgrid
       ? stripSyncedCommercialRows(syncOffgridOfferToCapacity(fresh.commercialOffer, data.capacity, language))
       : stripSyncedCommercialRows(fresh.commercialOffer),
@@ -1166,11 +1246,13 @@ export function normalizeQuotationData(input?: Partial<QuotationData> | null): Q
   const commercial = !offgrid && isCommercialQuotation(input ?? {});
   const defaults = createDefaultQuotationData(language, { includeSubsidy: !commercial && !offgrid, commercial, offgrid });
   const phase: QuotationPhase = input?.phase === "3PH" ? "3PH" : "1PH";
+  const structureBrand: QuotationStructureBrand = input?.structureBrand === "Tata" ? "Tata" : "Apollo";
   return {
     ...defaults,
     ...input,
     language,
     phase,
+    structureBrand,
     capacity: stripPhaseFromCapacity(input?.capacity ?? defaults.capacity) || defaults.capacity,
     customerEmail: input?.customerEmail ?? defaults.customerEmail,
     sanctionLoad: input?.sanctionLoad ?? defaults.sanctionLoad,

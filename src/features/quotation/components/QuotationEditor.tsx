@@ -4,10 +4,19 @@ import { ChevronDown } from "lucide-react";
 import { ImageUploader } from "@/features/offer-letter/components/ImageUploader";
 import { BulletListEditor } from "@/features/offer-letter/components/BulletListEditor";
 import type { AgreementCompany } from "@/features/agreement/types/agreement";
-import type { QuotationData, QuotationGeneration, QuotationPhase } from "../types/quotation";
+import type { QuotationData, QuotationGeneration, QuotationPhase, QuotationStructureBrand } from "../types/quotation";
 import { CommercialOfferEditor, MaterialItemEditor, TermItemEditor } from "./QuotationRowEditors";
 import { stripSyncedCommercialRows, computeEffectivePayable, formatInrGrouped } from "../lib/quotation-formatters";
-import { applyCommercialCapacityToMaterials, applyOffgridCapacityToMaterials, applyPhaseToMaterialItems, isCommercialQuotation, isOffgridQuotation, offgridProjectAmount, syncOffgridOfferToCapacity } from "../lib/quotation-defaults";
+import {
+  applyCommercialCapacityToMaterials,
+  applyOffgridCapacityToMaterials,
+  applyPhaseToMaterialItems,
+  applyStructureBrandToMaterials,
+  isCommercialQuotation,
+  isOffgridQuotation,
+  offgridProjectAmount,
+  syncOffgridOfferToCapacity,
+} from "../lib/quotation-defaults";
 
 interface QuotationEditorProps {
   data: QuotationData;
@@ -200,6 +209,23 @@ export function QuotationEditor({ data, onChange }: QuotationEditorProps) {
               </select>
             </div>
           )}
+          <div className="field">
+            <label>Structure</label>
+            <select
+              value={data.structureBrand === "Tata" ? "Tata" : "Apollo"}
+              onChange={(event) => {
+                const structureBrand = event.target.value as QuotationStructureBrand;
+                onChange({
+                  ...data,
+                  structureBrand,
+                  materialItems: applyStructureBrandToMaterials(data.materialItems, structureBrand, data.language),
+                });
+              }}
+            >
+              <option value="Apollo">Apollo · Leg 75×75</option>
+              <option value="Tata">Tata · Leg 72×72</option>
+            </select>
+          </div>
           <div className="field full-span">
             <label>Address</label>
             <textarea rows={2} value={data.address} onChange={(event) => update("address", event.target.value)} />
