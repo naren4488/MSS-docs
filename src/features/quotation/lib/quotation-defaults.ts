@@ -7,7 +7,10 @@ import type {
   QuotationLanguage,
   QuotationMaterialItem,
   QuotationPhase,
+  QuotationAcCableBrand,
+  QuotationEarthingWireOption,
   QuotationStructureBrand,
+  QuotationSubsidyScope,
   QuotationTermItem,
 } from "../types/quotation";
 import { stripSyncedCommercialRows } from "./quotation-formatters";
@@ -15,6 +18,7 @@ import {
   isAcCableDescription,
   isAcDbDcDbDescription,
   isBatteryBankDescription,
+  isEarthingWireDescription,
   isMountingStructureDescription,
   isSolarInverterDescription,
   isSolarPvModulesDescription,
@@ -45,15 +49,25 @@ function material(description: string, qty: string, unit: string, make: string):
   return { id: uuid(), description, qty, unit, make };
 }
 
-export function acCableMake(phase: QuotationPhase, language: QuotationLanguage): string {
+export function acCableMake(
+  phase: QuotationPhase,
+  language: QuotationLanguage,
+  brand: QuotationAcCableBrand = "Ramsons",
+): string {
+  const name =
+    brand === "Polycab"
+      ? language === "hi"
+        ? "पॉलीकैब"
+        : "Polycab"
+      : "Ramsons";
   if (language === "hi") {
     return phase === "3PH"
-      ? "Ramsons 4 कोर 10 मिमी एल्युमिनियम आर्मर्ड केबल (3PH) · JVVNL अनुमोदित"
-      : "Ramsons 2 कोर 10 मिमी एल्युमिनियम आर्मर्ड केबल (1PH) · JVVNL अनुमोदित";
+      ? `${name} 4 कोर 10 वर्ग मिमी एल्युमिनियम आर्मर्ड केबल (3PH) · JVVNL अनुमोदित`
+      : `${name} 2 कोर 10 वर्ग मिमी एल्युमिनियम आर्मर्ड केबल (1PH) · JVVNL अनुमोदित`;
   }
   return phase === "3PH"
-    ? "Ramsons 4 Core 10 mm Aluminium Armoured Cable (3PH), JVVNL approved"
-    : "Ramsons 2 Core 10 mm Aluminium Armoured Cable (1PH), JVVNL approved";
+    ? `${name} 4 Core 10 sq mm Aluminium Armoured Cable (3PH), JVVNL approved`
+    : `${name} 2 Core 10 sq mm Aluminium Armoured Cable (1PH), JVVNL approved`;
 }
 
 export function inverterUnit(phase: QuotationPhase, language: QuotationLanguage): string {
@@ -119,14 +133,83 @@ export function applyStructureBrandToMaterials(
   });
 }
 
+export function applyAcCableBrandToMaterials(
+  items: QuotationMaterialItem[],
+  brand: QuotationAcCableBrand,
+  phase: QuotationPhase,
+  language: QuotationLanguage,
+  options?: { commercial?: boolean; capacity?: string },
+): QuotationMaterialItem[] {
+  const kw = options?.capacity != null ? parseCapacityKw(options.capacity) : null;
+  return items.map((item) => {
+    if (!isAcCableDescription(item.description)) return item;
+    const make = options?.commercial
+      ? commercialAcCableMake(phase, language, kw, brand)
+      : acCableMake(phase, language, brand);
+    return { ...item, make };
+  });
+}
+
+export function resolveEarthingWireOption(
+  value?: QuotationEarthingWireOption | string | null,
+): QuotationEarthingWireOption {
+  if (value === "Polycab25" || value === "Indo6" || value === "Ramsons16" || value === "IndoOrRamsons") {
+    return value;
+  }
+  return "IndoOrRamsons";
+}
+
+export function earthingWireMake(
+  option: QuotationEarthingWireOption,
+  language: QuotationLanguage,
+): string {
+  if (language === "hi") {
+    switch (option) {
+      case "Polycab25":
+        return "2.5 वर्ग मिमी कॉपर वायर (पॉलीकैब)";
+      case "Indo6":
+        return "6 वर्ग मिमी कॉपर क्लैड वायर (Indo)";
+      case "Ramsons16":
+        return "16 वर्ग मिमी एल्युमिनियम वायर (Ramsons)";
+      case "IndoOrRamsons":
+      default:
+        return "6 वर्ग मिमी कॉपर क्लैड वायर (Indo) या 16 वर्ग मिमी एल्युमिनियम वायर (Ramsons)";
+    }
+  }
+  switch (option) {
+    case "Polycab25":
+      return "2.5 sq mm copper wire (Polycab)";
+    case "Indo6":
+      return "6 sq mm copper clad wire (Indo)";
+    case "Ramsons16":
+      return "16 sq mm aluminium wire (Ramsons)";
+    case "IndoOrRamsons":
+    default:
+      return "6 sq mm copper clad wire (Indo) or 16 sq mm aluminium wire (Ramsons)";
+  }
+}
+
+export function applyEarthingWireToMaterials(
+  items: QuotationMaterialItem[],
+  option: QuotationEarthingWireOption,
+  language: QuotationLanguage,
+): QuotationMaterialItem[] {
+  const make = earthingWireMake(option, language);
+  return items.map((item) => {
+    if (!isEarthingWireDescription(item.description)) return item;
+    return { ...item, make };
+  });
+}
+
 export function applyPhaseToMaterialItems(
   items: QuotationMaterialItem[],
   phase: QuotationPhase,
   language: QuotationLanguage,
+  acCableBrand: QuotationAcCableBrand = "Ramsons",
 ): QuotationMaterialItem[] {
   return items.map((item) => {
     if (isAcCableDescription(item.description)) {
-      return { ...item, make: acCableMake(phase, language) };
+      return { ...item, make: acCableMake(phase, language, acCableBrand) };
     }
     if (isSolarInverterDescription(item.description)) {
       return { ...item, unit: inverterUnit(phase, language) };
@@ -142,6 +225,8 @@ function defaultMaterialItems(
   language: QuotationLanguage,
   phase: QuotationPhase = "1PH",
   brand: QuotationStructureBrand = "Apollo",
+  acCableBrand: QuotationAcCableBrand = "Ramsons",
+  earthingWire: QuotationEarthingWireOption = "IndoOrRamsons",
 ): QuotationMaterialItem[] {
   const structureQty = language === "hi" ? "आवश्यकतानुसार" : "As per Requirement";
   const structure = material(
@@ -150,17 +235,18 @@ function defaultMaterialItems(
     "",
     mountingStructureMake(brand, language),
   );
+  const earthingMake = earthingWireMake(earthingWire, language);
 
   if (language === "hi") {
     return [
       material("सोलर पीवी मॉड्यूल", "6 पैनल", "550 Wp", "अदानी टॉपकॉन बाइफेशियल · 30 वर्ष वारंटी"),
       material("सोलर इनवर्टर", "1", inverterUnit(phase, language), "3.6 किलोवाट POLYCAB इनवर्टर · 10 वर्ष वारंटी"),
       structure,
-      material("AC केबल", "50 तक", "मी.", acCableMake(phase, language)),
+      material("AC केबल", "50 तक", "मी.", acCableMake(phase, language, acCableBrand)),
       material("DC केबल", "60 तक", "मी.", "4 वर्ग मिमी कॉपर वायर, पॉलीकैब केबल"),
       material("लाइटनिंग अरेस्टर किट", "1 नं.", "1 नं.", "1 मी., कॉपर बाउंड"),
       material("अर्थिंग किट", "3 सेट", "सेट", "3 कॉपर बाउंड रॉड व अर्थिंग केमिकल बैग"),
-      material("अर्थिंग वायर", "100 तक", "मी.", "6 वर्ग मिमी कॉपर क्लैड वायर (Indo) या 16 वर्ग मिमी एल्युमिनियम वायर (Ramsons)"),
+      material("अर्थिंग वायर", "100 तक", "मी.", earthingMake),
       material("ACDB / DCDB / MCB डिस्ट्रीब्यूशन बॉक्स", "1, 1 नं.", acDbDcDbUnit(phase), acDbDcDbMake(language)),
       material("सोलर व नेट मीटर", "1, 1 नं.", "", "Avon मीटर उपलब्धता अनुसार, JVVNL द्वारा टेस्टेड"),
       material("कनेक्शन किट", "आवश्यकतानुसार", "—", "कनेक्टिंग केबल (4 वर्ग मिमी — पॉलीकैब), MC4, जम्पर"),
@@ -171,11 +257,11 @@ function defaultMaterialItems(
     material("Solar PV Modules", "6 Panel", "550 Wp", "Adani Topcon Bifacial with 30 Year Warranty"),
     material("Solar Inverter", "1", inverterUnit(phase, language), "3.6 KW POLYCAB Inverter with 10 Year Warranty"),
     structure,
-    material("AC Cable", "Upto 50", "Mtr", acCableMake(phase, language)),
+    material("AC Cable", "Upto 50", "Mtr", acCableMake(phase, language, acCableBrand)),
     material("DC Cable", "Upto 60", "Mtr", "4 sq mm Copper Wire, Polycab cable"),
     material("Lightning Arrestor Kit", "1 No", "1 No", "1 M, Copper bound"),
     material("Earthing Kit", "3 Set", "Set", "3 copper bound rods and earthing chemical bag"),
-    material("Earthing Wire", "Upto 100", "Mtr", "6 sq mm copper clad wire (Indo) or 16 sq mm aluminium wire (Ramsons)"),
+    material("Earthing Wire", "Upto 100", "Mtr", earthingMake),
     material("ACDB / DCDB / MCB Distribution Box", "1, 1 No", acDbDcDbUnit(phase), acDbDcDbMake(language)),
     material("Solar & Net Meter", "1, 1 No", "", "Avon Meter as per availability, tested by JVVNL"),
     material("Connection Kit", "As per Requirement", "—", "Connecting cable (4 sq mm — Polycab), MC4, jumper"),
@@ -202,13 +288,24 @@ function formatKwLabel(kw: number): string {
   return String(Number(kw.toFixed(2))).replace(/\.0+$/, "");
 }
 
-function commercialAcCableMake(phase: QuotationPhase, language: QuotationLanguage, kw?: number | null): string {
+function commercialAcCableMake(
+  phase: QuotationPhase,
+  language: QuotationLanguage,
+  kw?: number | null,
+  brand: QuotationAcCableBrand = "Ramsons",
+): string {
   if (kw != null && kw >= 30) {
+    const name =
+      brand === "Polycab"
+        ? language === "hi"
+          ? "पॉलीकैब"
+          : "Polycab"
+        : "Ramsons";
     return language === "hi"
-      ? "पॉलीकैब 4 कोर 50 मिमी एल्युमिनियम आर्मर्ड केबल (3PH) · JVVNL अनुमोदित · इनवर्टर से LT / HT पैनल"
-      : "Polycab 4 Core 50 mm Aluminium Armoured Cable (3PH), JVVNL approved · inverter to LT / HT panel";
+      ? `${name} 4 कोर 50 वर्ग मिमी एल्युमिनियम आर्मर्ड केबल (3PH) · JVVNL अनुमोदित · इनवर्टर से LT / HT पैनल`
+      : `${name} 4 Core 50 sq mm Aluminium Armoured Cable (3PH), JVVNL approved · inverter to LT / HT panel`;
   }
-  const base = acCableMake(phase, language);
+  const base = acCableMake(phase, language, brand);
   return language === "hi" ? `${base} · इनवर्टर से LT / HT पैनल` : `${base} · inverter to LT / HT panel`;
 }
 
@@ -238,6 +335,24 @@ export function isOffgridQuotation(data: { kind?: QuotationKind }): boolean {
   return data.kind === "offgrid";
 }
 
+export function resolveSubsidyScope(value?: QuotationSubsidyScope | string | null): QuotationSubsidyScope {
+  return value === "central" ? "central" : "both";
+}
+
+export function defaultSubsidyNote(
+  language: QuotationLanguage,
+  scope: QuotationSubsidyScope = "both",
+): string {
+  if (scope === "central") {
+    return language === "hi"
+      ? "*MNRE सब्सिडी (₹78,000) नेट मीटरिंग के ~60 दिन बाद ग्राहक खाते में ट्रांसफर होती है।"
+      : "*MNRE subsidy (₹78,000) is transferred to the customer account ~60 days after net metering.";
+  }
+  return language === "hi"
+    ? "*MNRE सब्सिडी (₹78,000) नेट मीटरिंग के ~60 दिन बाद ग्राहक खाते में ट्रांसफर होती है। राज्य सब्सिडी (₹17,000) वहाँ लागू जहाँ वर्तमान में 100 यूनिट मुफ्त लाभ उपलब्ध है।"
+    : "*MNRE subsidy (₹78,000) is transferred to the customer account ~60 days after net metering. State subsidy (₹17,000) applies where 100 units free benefit is currently available.";
+}
+
 export function commercialPanelConfigOffering(capacity: string, language: QuotationLanguage): string {
   const kw = parseCapacityKw(capacity) ?? 10;
   const panels = Math.max(1, Math.round((kw * 1000) / COMMERCIAL_MODULE_WP));
@@ -252,9 +367,12 @@ function defaultCommercialMaterialItems(
   language: QuotationLanguage,
   phase: QuotationPhase,
   brand: QuotationStructureBrand = "Apollo",
+  acCableBrand: QuotationAcCableBrand = "Ramsons",
+  earthingWire: QuotationEarthingWireOption = "IndoOrRamsons",
 ): QuotationMaterialItem[] {
   const site = asPerSite(language);
-  const acMake = commercialAcCableMake(phase, language);
+  const acMake = commercialAcCableMake(phase, language, null, acCableBrand);
+  const earthingMake = earthingWireMake(earthingWire, language);
   const structureQty = language === "hi" ? "आवश्यकतानुसार" : "As per Requirement";
   const structure = material(
     mountingStructureDescription(brand, language),
@@ -278,7 +396,7 @@ function defaultCommercialMaterialItems(
         "सेट",
         "GI स्ट्रिप 25×3 वर्ग मिमी / ग्रीन वायर, GI/CU इलेक्ट्रोड 3 मी. रासायनिक अर्थिंग, अर्थ पिट चैंबर व केमिकल बैग",
       ),
-      material("अर्थिंग वायर", site, "मी.", "6 वर्ग मिमी कॉपर क्लैड वायर (Indo) या 16 वर्ग मिमी एल्युमिनियम वायर (Ramsons)"),
+      material("अर्थिंग वायर", site, "मी.", earthingMake),
       material("ACDB पैनल", "1 नं.", "", "AC SPD, AL/CU बस बार, MCCB — L&T / हैवेल्स / Elmex"),
       material("जनरेशन मीटर", "1 नं.", "", "HT एनर्जी जनरेशन मीटर — Secure, उपलब्धता अनुसार"),
       material("कनेक्शन किट", site, "—", "कनेक्टिंग केबल (4 वर्ग मिमी — पॉलीकैब), MC4, जम्पर"),
@@ -303,7 +421,7 @@ function defaultCommercialMaterialItems(
       "Set",
       "GI strip 25×3 sq mm / green wire, GI/CU electrode 3 mtr with chemical earthing, earth pit chamber and chemical bags",
     ),
-    material("Earthing Wire", site, "Mtr", "6 sq mm copper clad wire (Indo) or 16 sq mm aluminium wire (Ramsons)"),
+    material("Earthing Wire", site, "Mtr", earthingMake),
     material("ACDB Panel", "1 No", "", "AC SPDs, AL/CU bus bar, MCCBs — L&T / Havells / Elmex"),
     material("Generation Meter", "1 No", "", "HT energy generation meter — Secure, as per availability"),
     material("Connection Kit", site, "—", "Connecting cable (4 sq mm — Polycab), MC4, jumper"),
@@ -323,9 +441,10 @@ export function applyCommercialCapacityToMaterials(
   capacity: string,
   phase: QuotationPhase,
   language: QuotationLanguage,
-  options?: { panels?: number },
+  options?: { panels?: number; acCableBrand?: QuotationAcCableBrand },
 ): QuotationMaterialItem[] {
   const kw = parseCapacityKw(capacity);
+  const acCableBrand = options?.acCableBrand === "Polycab" ? "Polycab" : "Ramsons";
   const sized = items.map((item) => {
     if (kw && isSolarPvModulesDescription(item.description)) {
       const wp = commercialModuleWp(item);
@@ -344,9 +463,9 @@ export function applyCommercialCapacityToMaterials(
     }
     return item;
   });
-  return applyPhaseToMaterialItems(sized, phase, language).map((item) => {
+  return applyPhaseToMaterialItems(sized, phase, language, acCableBrand).map((item) => {
     if (isAcCableDescription(item.description)) {
-      return { ...item, make: commercialAcCableMake(phase, language, kw) };
+      return { ...item, make: commercialAcCableMake(phase, language, kw, acCableBrand) };
     }
     return item;
   });
@@ -695,6 +814,41 @@ function isWarrantyCoverageTerm(item: QuotationTermItem): boolean {
   return label === "Warranty Coverage & Limitations" || label === "वारंटी कवरेज व सीमाएँ";
 }
 
+function isInverterSupportTerm(item: QuotationTermItem): boolean {
+  const label = item.label.trim();
+  return (
+    label === "Non-Polycab Inverter Technical Support" ||
+    label === "गैर-पॉलीकैब इनवर्टर तकनीकी सहायता"
+  );
+}
+
+function inverterSupportTerm(language: QuotationLanguage): QuotationTermItem {
+  if (language === "hi") {
+    return term(
+      "गैर-पॉलीकैब इनवर्टर तकनीकी सहायता",
+      "यदि इनवर्टर पॉलीकैब नहीं है, तो किसी भी तकनीकी समस्या का समाधान केवल उस ब्रांड की कस्टमर सपोर्ट टीम कर सकती है — माही सोलर सॉल्यूशन स्वयं ऐसी समस्याओं का समाधान नहीं कर सकता। अन्य ब्रांड हमें अपने स्तर पर निदान या मरम्मत की अनुमति नहीं देते। केवल पॉलीकैब इनवर्टर पर हम तकनीकी मुद्दे स्वयं हल कर सकते हैं।",
+    );
+  }
+  return term(
+    "Non-Polycab Inverter Technical Support",
+    "If the inverter is not Polycab, any technical issue can be resolved only by that brand's customer support — Mahi Solar Solution cannot resolve such issues on its own. Other brands do not allow us to diagnose or repair these faults ourselves. Only with a Polycab inverter can we resolve technical issues on our own.",
+  );
+}
+
+/** Insert the Polycab inverter-support term if an older saved quotation is missing it. */
+function ensureInverterSupportTerm(
+  terms: QuotationTermItem[],
+  language: QuotationLanguage,
+): QuotationTermItem[] {
+  if (terms.some(isInverterSupportTerm)) return terms;
+  const item = inverterSupportTerm(language);
+  const warrantyIdx = terms.findIndex(isWarrantyCoverageTerm);
+  if (warrantyIdx >= 0) {
+    return [...terms.slice(0, warrantyIdx + 1), item, ...terms.slice(warrantyIdx + 1)];
+  }
+  return [...terms, item];
+}
+
 function isTimelineTerm(item: QuotationTermItem): boolean {
   const label = item.label.trim();
   return label === "Project Timeline & Installation Process" || label === "प्रोजेक्ट समयरेखा व इंस्टॉलेशन प्रक्रिया";
@@ -808,6 +962,7 @@ function defaultTerms(
         "वारंटी कवरेज व सीमाएँ",
         "दायित्व व वर्कमैनशिप वारंटी:\n• माही सोलर सॉल्यूशन की जिम्मेदारी सहमत सोलर सिस्टम इंस्टॉलेशन कार्यक्षेत्र तक सीमित है।\n• माउंटिंग स्ट्रक्चर व इंस्टॉलेशन पर 5 वर्ष वर्कमैनशिप वारंटी, तथा इंस्टॉलेशन तिथि से इंस्टॉलेशन संबंधी संरचनात्मक व तकनीकी मुद्दों हेतु 5 वर्ष मेंटेनेंस सहायता।\n\nवारंटी कवरेज:\n• पैनल: 30 वर्ष उत्पाद वारंटी (निर्माण दोष) + 25 वर्ष प्रदर्शन वारंटी\n• इनवर्टर: 10 वर्ष निर्माता वारंटी\n• बैटरी (यदि लागू): संबंधित निर्माता की शर्तों के अंतर्गत\n• BOS व इंस्टॉलेशन: 5 वर्ष वारंटी\n\nनिर्माता वारंटी:\n• सोलर पैनल, इनवर्टर, बैटरी व अन्य घटक केवल संबंधित निर्माता की वारंटी शर्तों के अंतर्गत कवर हैं।\n\nप्राकृतिक आपदाएँ:\n• तूफान, बाढ़, बिजली, भूकंप, आग या अन्य प्राकृतिक आपदाओं से क्षति ग्राहक की एकमात्र जिम्मेदारी।\n\nवारंटी कवर नहीं करेगी:\n• जला, भौतिक क्षतिग्रस्त, छेड़छाड़, चोरी, या अनुचित उपयोग वाले उत्पाद\n• प्राकृतिक आपदा से क्षति\n• चोरी या तोड़फोड़\n• बाहरी कारणों से आग या विद्युत क्षति\n• अनुचित मेंटेनेंस या सफाई से क्षति\n• अनधिकृत संशोधन या मरम्मत\n• उपयोगकर्ता लापरवाही या दुरुपयोग\n• छत पर प्रभाव या संरचनात्मक क्षति\n\nवारंटी दावे मूल उपकरण निर्माता की शर्तों के अधीन हैं।",
       ),
+      inverterSupportTerm("hi"),
       term(
         "सरकारी सब्सिडी निर्भरता",
         "पीएम सूर्य घर: मुफ्त बिजली योजना के अंतर्गत सरकारी सब्सिडी निम्न पर निर्भर है:\n• नवीनतम सरकारी दिशानिर्देश व योजना पात्रता\n• संबंधित सरकारी प्राधिकरण (SECI, राज्य नोडल एजेंसी) की स्वीकृति\n• आवश्यक दस्तावेज़ व DISCOM अनुमोदन समय पर जमा करना\n• लाभार्थी की पात्रता (आवासीय संपत्ति, आय सीमा आदि)\n\nसब्सिडी राशि व अनुमोदन समयरेखा माही सोलर सॉल्यूशन के नियंत्रण से बाहर है। सब्सिडी अनुमोदन में विलंब इंस्टॉलेशन कार्य को प्रभावित नहीं करेगा। सब्सिडी वितरण सरकारी प्रक्रिया पर निर्भर है।\n\nभुगतान शर्तें:\n• पात्र सरकारी सब्सिडी सीधे ग्राहक के पंजीकृत बैंक खाते में जमा होगी।\n• ग्राहक को स्वीकृत ऋण राशि को छोड़कर पूर्ण अनुबंध राशि माही सोलर सॉल्यूशन प्राइवेट लिमिटेड को चुकानी होगी।\n• सब्सिडी विक्रेता को ग्राहक भुगतान से समायोजित नहीं की जाएगी।",
@@ -899,6 +1054,7 @@ function defaultTerms(
       "Warranty Coverage & Limitations",
       "Scope of Responsibility & Workmanship Warranty:\n• Mahi Solar Solution's responsibility is limited to the agreed scope of solar system installation.\n• We provide a 5-year workmanship warranty on the mounting structure and installation, along with 5 years of maintenance support for installation-related structural and technical issues from the date of installation.\n\nWarranty Coverage:\n• Panels: 30-year product warranty (manufacturing defects) + 25-year performance warranty\n• Inverter: 10-year manufacturer warranty\n• Batteries (if applicable): Covered under respective manufacturer's warranty terms\n• BOS & Installation: 5-year warranty\n\nManufacturer's Warranty:\n• Solar panels, inverter, batteries (if applicable), and other system components are covered solely under the respective manufacturer's warranty terms and conditions.\n\nNatural Calamities:\n• Any damage caused by storms, floods, lightning, earthquakes, fire, or other natural calamities shall be the sole responsibility of the customer.\n\nWarranty WILL NOT Cover:\n• Burnt, physically damaged, tampered with, stolen (theft), or improperly used products\n• Damage due to natural disasters (floods, earthquakes, storms, lightning)\n• Theft or vandalism\n• Fire or electrical damage due to external causes\n• Damage due to improper maintenance or cleaning\n• Unauthorized modifications or repairs\n• Damage due to user negligence or misuse\n• Impact damage or structural damage to the roof\n\nWarranty claims are subject to the original equipment manufacturer's terms and conditions.",
     ),
+    inverterSupportTerm("en"),
     term(
       "Government Subsidy Dependency",
       "Government subsidy under PM Surya Ghar: Muft Bijli Yojana is subject to:\n• Latest government guidelines and scheme eligibility criteria\n• Approval by concerned government authorities (SECI, state nodal agency)\n• Timely submission of required documents and approvals from DISCOM\n• Beneficiary's eligibility status (residential property, income limits, etc.)\n\nSubsidy amount and approval timeline are beyond Mahi Solar Solution's control. Any delay in subsidy approval will not impact installation work. Subsidy disbursement timeline depends on government processing.\n\nPayment Terms:\n• Any eligible government subsidy will be credited directly to the customer's registered bank account.\n• The customer must pay the full contract amount (excluding any approved loan amount) to Mahi Solar Solution Private Limited.\n• The subsidy shall not be adjusted against the customer's payment to the seller.",
@@ -1086,6 +1242,8 @@ export function createDefaultQuotationData(
     capacity,
     phase,
     structureBrand: "Apollo",
+    acCableBrand: "Ramsons",
+    earthingWire: "IndoOrRamsons",
     address: "Jaipur",
     proposalDate: today,
     sanctionLoad: "",
@@ -1115,12 +1273,9 @@ export function createDefaultQuotationData(
     centralSubsidy: includeSubsidy ? "78000" : "",
     stateSubsidy: includeSubsidy ? "17000" : "",
     effectivePayableAmount: includeSubsidy ? "95000" : "",
-    subsidyNote: includeSubsidy
-      ? isHindi
-        ? "*MNRE सब्सिडी (₹78,000) नेट मीटरिंग के ~60 दिन बाद ग्राहक खाते में ट्रांसफर होती है। राज्य सब्सिडी (₹17,000) वहाँ लागू जहाँ वर्तमान में 100 यूनिट मुफ्त लाभ उपलब्ध है।"
-        : "*MNRE subsidy (₹78,000) is transferred to the customer account ~60 days after net metering. State subsidy (₹17,000) applies where 100 units free benefit is currently available."
-      : "",
+    subsidyNote: includeSubsidy ? defaultSubsidyNote(isHindi ? "hi" : "en", "both") : "",
     showSubsidySection: includeSubsidy,
+    subsidyScope: "both",
     showEmiSection: includeSubsidy,
     emiInfo: {
       uptoLoanAmount: "₹2,00,000",
@@ -1182,6 +1337,8 @@ export function switchQuotationLanguage(data: QuotationData, language: Quotation
     capacity: stripPhaseFromCapacity(data.capacity) || fresh.capacity,
     phase: data.phase,
     structureBrand: data.structureBrand === "Tata" ? "Tata" : "Apollo",
+    acCableBrand: data.acCableBrand === "Polycab" ? "Polycab" : "Ramsons",
+    earthingWire: resolveEarthingWireOption(data.earthingWire),
     address: data.address,
     proposalDate: data.proposalDate,
     sanctionLoad: data.sanctionLoad,
@@ -1189,13 +1346,24 @@ export function switchQuotationLanguage(data: QuotationData, language: Quotation
     connectionType: data.connectionType === previous.connectionType ? fresh.connectionType : data.connectionType,
     roofType: data.roofType === previous.roofType ? fresh.roofType : data.roofType,
     company: { ...fresh.company, ...data.company },
-    materialItems: applyStructureBrandToMaterials(
-      offgrid
-        ? applyOffgridCapacityToMaterials(fresh.materialItems, data.capacity, data.phase, language)
-        : commercial
-          ? applyCommercialCapacityToMaterials(fresh.materialItems, data.capacity, data.phase, language)
-          : applyPhaseToMaterialItems(fresh.materialItems, data.phase, language),
-      data.structureBrand === "Tata" ? "Tata" : "Apollo",
+    materialItems: applyEarthingWireToMaterials(
+      applyStructureBrandToMaterials(
+        offgrid
+          ? applyOffgridCapacityToMaterials(fresh.materialItems, data.capacity, data.phase, language)
+          : commercial
+            ? applyCommercialCapacityToMaterials(fresh.materialItems, data.capacity, data.phase, language, {
+                acCableBrand: data.acCableBrand === "Polycab" ? "Polycab" : "Ramsons",
+              })
+            : applyPhaseToMaterialItems(
+                fresh.materialItems,
+                data.phase,
+                language,
+                data.acCableBrand === "Polycab" ? "Polycab" : "Ramsons",
+              ),
+        data.structureBrand === "Tata" ? "Tata" : "Apollo",
+        language,
+      ),
+      resolveEarthingWireOption(data.earthingWire),
       language,
     ),
     commercialOffer: offgrid
@@ -1215,8 +1383,12 @@ export function switchQuotationLanguage(data: QuotationData, language: Quotation
     centralSubsidy: data.centralSubsidy,
     stateSubsidy: data.stateSubsidy,
     effectivePayableAmount: data.effectivePayableAmount,
-    subsidyNote: data.showSubsidySection === false ? data.subsidyNote : fresh.subsidyNote,
+    subsidyNote:
+      data.showSubsidySection === false
+        ? data.subsidyNote
+        : defaultSubsidyNote(language, resolveSubsidyScope(data.subsidyScope)),
     showSubsidySection: offgrid || commercial ? false : data.showSubsidySection !== false,
+    subsidyScope: resolveSubsidyScope(data.subsidyScope),
     showEmiSection: offgrid || commercial ? data.showEmiSection : data.showEmiSection,
     emiInfo: {
       uptoLoanAmount: data.emiInfo.uptoLoanAmount || fresh.emiInfo.uptoLoanAmount,
@@ -1240,6 +1412,12 @@ export function switchQuotationLanguage(data: QuotationData, language: Quotation
   };
 }
 
+function normalizeAcCableMake(make: string): string {
+  return make
+    .replace(/(\d+)\s*mm(?=\s+Aluminium)/gi, "$1 sq mm")
+    .replace(/(\d+)\s*मिमी(?=\s+एल्युमिनियम)/g, "$1 वर्ग मिमी");
+}
+
 export function normalizeQuotationData(input?: Partial<QuotationData> | null): QuotationData {
   const language: QuotationLanguage = input?.language === "hi" ? "hi" : "en";
   const offgrid = input?.kind === "offgrid";
@@ -1247,12 +1425,34 @@ export function normalizeQuotationData(input?: Partial<QuotationData> | null): Q
   const defaults = createDefaultQuotationData(language, { includeSubsidy: !commercial && !offgrid, commercial, offgrid });
   const phase: QuotationPhase = input?.phase === "3PH" ? "3PH" : "1PH";
   const structureBrand: QuotationStructureBrand = input?.structureBrand === "Tata" ? "Tata" : "Apollo";
+  const acCableBrand: QuotationAcCableBrand = input?.acCableBrand === "Polycab" ? "Polycab" : "Ramsons";
+  const subsidyScope = resolveSubsidyScope(input?.subsidyScope);
+  const materialItems = (input?.materialItems ?? defaults.materialItems).map((item) => {
+    if (!isAcCableDescription(item.description)) return item;
+    return { ...item, make: normalizeAcCableMake(item.make) };
+  });
+  const inferredEarthing = materialItems.find((item) => isEarthingWireDescription(item.description))?.make ?? "";
+  const earthingWire =
+    input?.earthingWire != null
+      ? resolveEarthingWireOption(input.earthingWire)
+      : inferredEarthing.includes("2.5") && /polycab|पॉलीकैब/i.test(inferredEarthing)
+        ? "Polycab25"
+        : /indo/i.test(inferredEarthing) && /ramsons/i.test(inferredEarthing)
+          ? "IndoOrRamsons"
+          : /indo/i.test(inferredEarthing)
+            ? "Indo6"
+            : /ramsons/i.test(inferredEarthing) && /16/.test(inferredEarthing)
+              ? "Ramsons16"
+              : "IndoOrRamsons";
   return {
     ...defaults,
     ...input,
     language,
     phase,
     structureBrand,
+    acCableBrand,
+    earthingWire,
+    subsidyScope,
     capacity: stripPhaseFromCapacity(input?.capacity ?? defaults.capacity) || defaults.capacity,
     customerEmail: input?.customerEmail ?? defaults.customerEmail,
     sanctionLoad: input?.sanctionLoad ?? defaults.sanctionLoad,
@@ -1264,7 +1464,7 @@ export function normalizeQuotationData(input?: Partial<QuotationData> | null): Q
       unitRate: input?.generation?.unitRate ?? defaults.generation.unitRate,
     },
     emiInfo: { ...defaults.emiInfo, ...input?.emiInfo },
-    materialItems: input?.materialItems ?? defaults.materialItems,
+    materialItems,
     installationWork: input?.installationWork ?? defaults.installationWork,
     assumptions: input?.assumptions ?? defaults.assumptions,
     customerScope: input?.customerScope ?? defaults.customerScope,
@@ -1272,7 +1472,7 @@ export function normalizeQuotationData(input?: Partial<QuotationData> | null): Q
     commercialOffer: stripSyncedCommercialRows(input?.commercialOffer ?? defaults.commercialOffer),
     onGridNote: input?.onGridNote ?? defaults.onGridNote,
     discomChargesNote: input?.discomChargesNote ?? defaults.discomChargesNote,
-    terms: input?.terms ?? defaults.terms,
+    terms: ensureInverterSupportTerm(input?.terms ?? defaults.terms, language),
     subsidyDocuments: input?.subsidyDocuments ?? defaults.subsidyDocuments,
     installationSteps: input?.installationSteps ?? defaults.installationSteps,
     kind: offgrid ? "offgrid" : isCommercialQuotation({ ...defaults, ...input }) ? "commercial" : "residential",

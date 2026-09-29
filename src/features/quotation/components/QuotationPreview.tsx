@@ -711,9 +711,17 @@ function EffectiveInvestmentBox({ data }: { data: QuotationData }) {
   const GREEN = "#2d7a3e";
   const LIGHT_GREEN = "#e8f5f1";
   const LINE_GREEN = "#4ade80";
-  const subsidyTotal = totalGovtSubsidy(data.centralSubsidy, data.stateSubsidy);
-  const effectivePayable = computeEffectivePayable(data.projectAmount, data.centralSubsidy, data.stateSubsidy);
+  const subsidyScope = data.subsidyScope === "central" ? "central" : "both";
+  const includeState = subsidyScope === "both";
+  const subsidyTotal = totalGovtSubsidy(data.centralSubsidy, data.stateSubsidy, subsidyScope);
+  const effectivePayable = computeEffectivePayable(
+    data.projectAmount,
+    data.centralSubsidy,
+    data.stateSubsidy,
+    subsidyScope,
+  );
   const projectDisplay = formatInrGrouped(data.projectAmount) || data.projectAmount;
+  const showSubsidyLine = Boolean(data.centralSubsidy.trim() || (includeState && data.stateSubsidy.trim()));
 
   return (
     <div style={{ border: `3px solid ${GREEN}`, borderRadius: 12, padding: "20px 24px", background: LIGHT_GREEN, marginTop: 12, marginBottom: 12 }}>
@@ -728,13 +736,13 @@ function EffectiveInvestmentBox({ data }: { data: QuotationData }) {
         </div>
       )}
 
-      {(data.centralSubsidy.trim() || data.stateSubsidy.trim()) && (
+      {showSubsidyLine && (
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", alignItems: "center", padding: "8px 0", fontSize: 12, color: GREEN, marginBottom: 8 }}>
           <span style={{ fontWeight: 600 }}>
             {L.lessSubsidy}
             <span style={{ fontSize: 11, fontWeight: 500, marginLeft: 4 }}>
               (₹ {formatInrGrouped(data.centralSubsidy) || "0"}
-              {data.stateSubsidy.trim() && ` + ₹ ${formatInrGrouped(data.stateSubsidy)}`})
+              {includeState && data.stateSubsidy.trim() ? ` + ₹ ${formatInrGrouped(data.stateSubsidy)}` : ""})
             </span>
           </span>
           <span style={{ textAlign: "right", fontWeight: 700 }}>− ₹{formatInrGrouped(String(subsidyTotal))}</span>

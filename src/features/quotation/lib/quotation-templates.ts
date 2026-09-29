@@ -4,6 +4,7 @@ import {
   applyOffgridCapacityToMaterials,
   applyPhaseToMaterialItems,
   createDefaultQuotationData,
+  defaultSubsidyNote,
   inverterUnit,
 } from "./quotation-defaults";
 import { computeEffectivePayable, stripSyncedCommercialRows } from "./quotation-formatters";
@@ -247,10 +248,11 @@ function panelQtyLabel(panels: number, language: QuotationLanguage): string {
   return language === "hi" ? `${panels} पैनल` : `${panels} Panel`;
 }
 
-function subsidyNoteForLanguage(language: QuotationLanguage): string {
-  return language === "hi"
-    ? "*MNRE सब्सिडी (₹78,000) नेट मीटरिंग के ~60 दिन बाद ग्राहक खाते में ट्रांसफर होती है। राज्य सब्सिडी (₹17,000) वहाँ लागू जहाँ वर्तमान में 100 यूनिट मुफ्त लाभ उपलब्ध है।"
-    : "*MNRE subsidy (₹78,000) is transferred to the customer account ~60 days after net metering. State subsidy (₹17,000) applies where 100 units free benefit is currently available.";
+function subsidyNoteForLanguage(
+  language: QuotationLanguage,
+  scope: "central" | "both" = "both",
+): string {
+  return defaultSubsidyNote(language, scope);
 }
 
 function applyCommercialModuleSpec(
@@ -322,7 +324,7 @@ export function createQuotationFromTemplate(
   const centralSubsidy = includeSubsidy ? template.centralSubsidy : "";
   const stateSubsidy = includeSubsidy ? template.stateSubsidy : "";
   const effectivePayable = includeSubsidy
-    ? computeEffectivePayable(projectAmount, centralSubsidy, stateSubsidy)
+    ? computeEffectivePayable(projectAmount, centralSubsidy, stateSubsidy, "both")
     : 0;
 
   return {
@@ -332,8 +334,9 @@ export function createQuotationFromTemplate(
     projectAmount,
     centralSubsidy,
     stateSubsidy,
-    subsidyNote: includeSubsidy ? subsidyNoteForLanguage(language) : "",
+    subsidyNote: includeSubsidy ? subsidyNoteForLanguage(language, "both") : "",
     showSubsidySection: includeSubsidy,
+    subsidyScope: "both",
     ...(offgrid
       ? {
           customerName: "Devandra Ji",
@@ -352,7 +355,7 @@ export function createQuotationFromTemplate(
             template.capacity,
             template.phase,
             language,
-            { panels: template.panels },
+            { panels: template.panels, acCableBrand: base.acCableBrand },
           )
         : applyTemplateSizing(base.materialItems, template, language),
     commercialOffer: stripSyncedCommercialRows(base.commercialOffer),

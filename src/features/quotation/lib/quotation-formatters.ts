@@ -5,6 +5,7 @@ import type {
   QuotationKind,
   QuotationLanguage,
   QuotationMaterialItem,
+  QuotationSubsidyScope,
 } from "../types/quotation";
 import { isSolarPvModulesDescription, quotationLabels } from "./quotation-labels";
 
@@ -222,12 +223,22 @@ export function solarPlantCapacityOffering(
     : `${head} (${kw} KW, On-grid solar system)`;
 }
 
-export function totalGovtSubsidy(centralSubsidy: string, stateSubsidy: string) {
-  return parseNum(centralSubsidy) + parseNum(stateSubsidy);
+export function totalGovtSubsidy(
+  centralSubsidy: string,
+  stateSubsidy: string,
+  scope: QuotationSubsidyScope | string = "both",
+) {
+  const includeState = scope !== "central";
+  return parseNum(centralSubsidy) + (includeState ? parseNum(stateSubsidy) : 0);
 }
 
-export function computeEffectivePayable(projectAmount: string, centralSubsidy: string, stateSubsidy: string) {
-  return parseNum(projectAmount) - totalGovtSubsidy(centralSubsidy, stateSubsidy);
+export function computeEffectivePayable(
+  projectAmount: string,
+  centralSubsidy: string,
+  stateSubsidy: string,
+  scope: QuotationSubsidyScope | string = "both",
+) {
+  return parseNum(projectAmount) - totalGovtSubsidy(centralSubsidy, stateSubsidy, scope);
 }
 
 export function commercialRowsForPreview(data: QuotationData): QuotationCommercialRow[] {

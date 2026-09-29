@@ -6,6 +6,11 @@ export type { AgreementCompany as QuotationCompany };
 export type QuotationLanguage = "en" | "hi";
 export type QuotationPhase = "1PH" | "3PH";
 export type QuotationStructureBrand = "Apollo" | "Tata";
+export type QuotationAcCableBrand = "Ramsons" | "Polycab";
+/** Earthing wire BOM option — single make or Indo/Ramsons either-or. */
+export type QuotationEarthingWireOption = "Polycab25" | "Indo6" | "Ramsons16" | "IndoOrRamsons";
+/** Residential subsidy: MNRE only, or MNRE + state. */
+export type QuotationSubsidyScope = "central" | "both";
 export type QuotationKind = "residential" | "commercial" | "offgrid";
 
 export interface QuotationMaterialItem {
@@ -61,6 +66,10 @@ export interface QuotationData {
   phase: QuotationPhase;
   /** GI mounting structure brand — drives leg size in the BOM. */
   structureBrand: QuotationStructureBrand;
+  /** AC armoured cable brand — Ramsons or Polycab in the BOM. */
+  acCableBrand: QuotationAcCableBrand;
+  /** Earthing wire make shown in the BOM. */
+  earthingWire: QuotationEarthingWireOption;
   address: string;
   proposalDate: string;
   /** Commercial summary extras — shown when filled. */
@@ -101,6 +110,8 @@ export interface QuotationData {
   subsidyNote: string;
   /** When false, Effective Investment and subsidy documents are hidden on the PDF. */
   showSubsidySection: boolean;
+  /** Central (MNRE) only, or central + state — drives Effective payable. */
+  subsidyScope: QuotationSubsidyScope;
 
   netMeteringNote: string;
   loadExtensionNote: string;

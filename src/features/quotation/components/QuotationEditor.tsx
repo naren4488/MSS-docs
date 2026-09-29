@@ -4,17 +4,29 @@ import { ChevronDown } from "lucide-react";
 import { ImageUploader } from "@/features/offer-letter/components/ImageUploader";
 import { BulletListEditor } from "@/features/offer-letter/components/BulletListEditor";
 import type { AgreementCompany } from "@/features/agreement/types/agreement";
-import type { QuotationData, QuotationGeneration, QuotationPhase, QuotationStructureBrand } from "../types/quotation";
+import type {
+  QuotationData,
+  QuotationGeneration,
+  QuotationPhase,
+  QuotationAcCableBrand,
+  QuotationEarthingWireOption,
+  QuotationStructureBrand,
+  QuotationSubsidyScope,
+} from "../types/quotation";
 import { CommercialOfferEditor, MaterialItemEditor, TermItemEditor } from "./QuotationRowEditors";
 import { stripSyncedCommercialRows, computeEffectivePayable, formatInrGrouped } from "../lib/quotation-formatters";
 import {
+  applyAcCableBrandToMaterials,
   applyCommercialCapacityToMaterials,
+  applyEarthingWireToMaterials,
   applyOffgridCapacityToMaterials,
   applyPhaseToMaterialItems,
   applyStructureBrandToMaterials,
+  defaultSubsidyNote,
   isCommercialQuotation,
   isOffgridQuotation,
   offgridProjectAmount,
+  resolveEarthingWireOption,
   syncOffgridOfferToCapacity,
 } from "../lib/quotation-defaults";
 
@@ -71,7 +83,9 @@ export function QuotationEditor({ data, onChange }: QuotationEditorProps) {
 
   function applyCommercialSizing(capacity: string, phase: QuotationPhase) {
     return {
-      materialItems: applyCommercialCapacityToMaterials(data.materialItems, capacity, phase, data.language),
+      materialItems: applyCommercialCapacityToMaterials(data.materialItems, capacity, phase, data.language, {
+        acCableBrand: data.acCableBrand === "Polycab" ? "Polycab" : "Ramsons",
+      }),
     };
   }
 
@@ -200,7 +214,14 @@ export function QuotationEditor({ data, onChange }: QuotationEditorProps) {
                     phase,
                     ...(commercial
                       ? applyCommercialSizing(data.capacity, phase)
-                      : { materialItems: applyPhaseToMaterialItems(data.materialItems, phase, data.language) }),
+                      : {
+                          materialItems: applyPhaseToMaterialItems(
+                            data.materialItems,
+                            phase,
+                            data.language,
+                            data.acCableBrand === "Polycab" ? "Polycab" : "Ramsons",
+                          ),
+                        }),
                   });
                 }}
               >
@@ -226,6 +247,78 @@ export function QuotationEditor({ data, onChange }: QuotationEditorProps) {
               <option value="Tata">Tata · Leg 72×72</option>
             </select>
           </div>
+          {offgrid ? null : (
+            <div className="field">
+              <label>AC Cable</label>
+              <select
+                value={data.acCableBrand === "Polycab" ? "Polycab" : "Ramsons"}
+                onChange={(event) => {
+                  const acCableBrand = event.target.value as QuotationAcCableBrand;
+                  onChange({
+                    ...data,
+                    acCableBrand,
+                    materialItems: applyAcCableBrandToMaterials(
+                      data.materialItems,
+                      acCableBrand,
+                      data.phase,
+                      data.language,
+                      commercial ? { commercial: true, capacity: data.capacity } : undefined,
+                    ),
+                  });
+                }}
+              >
+                <option value="Ramsons">Ramsons · Al armoured</option>
+                <option value="Polycab">Polycab · Al armoured</option>
+              </select>
+            </div>
+          )}
+          {commercial || offgrid ? null : (
+            <div className="field">
+              <label>Subsidy</label>
+              <select
+                value={data.subsidyScope === "central" ? "central" : "both"}
+                onChange={(event) => {
+                  const subsidyScope = event.target.value as QuotationSubsidyScope;
+                  const effectivePayableAmount = String(
+                    Math.max(
+                      0,
+                      computeEffectivePayable(data.projectAmount, data.centralSubsidy, data.stateSubsidy, subsidyScope),
+                    ),
+                  );
+                  onChange({
+                    ...data,
+                    subsidyScope,
+                    effectivePayableAmount,
+                    subsidyNote: defaultSubsidyNote(data.language, subsidyScope),
+                  });
+                }}
+              >
+                <option value="central">Central only (MNRE)</option>
+                <option value="both">Central + State</option>
+              </select>
+            </div>
+          )}
+          {offgrid ? null : (
+            <div className="field full-span">
+              <label>Earthing Wire</label>
+              <select
+                value={resolveEarthingWireOption(data.earthingWire)}
+                onChange={(event) => {
+                  const earthingWire = event.target.value as QuotationEarthingWireOption;
+                  onChange({
+                    ...data,
+                    earthingWire,
+                    materialItems: applyEarthingWireToMaterials(data.materialItems, earthingWire, data.language),
+                  });
+                }}
+              >
+                <option value="Polycab25">2.5 sq mm copper (Polycab)</option>
+                <option value="Indo6">6 sq mm copper clad (Indo)</option>
+                <option value="Ramsons16">16 sq mm aluminium (Ramsons)</option>
+                <option value="IndoOrRamsons">6 sq mm Indo or 16 sq mm Ramsons</option>
+              </select>
+            </div>
+          )}
           <div className="field full-span">
             <label>Address</label>
             <textarea rows={2} value={data.address} onChange={(event) => update("address", event.target.value)} />
@@ -313,7 +406,28 @@ export function QuotationEditor({ data, onChange }: QuotationEditorProps) {
         <div className="field-grid" style={{ marginBottom: 12 }}>
           <div className="field full-span">
             <label>Project Amount (incl. GST) (₹)</label>
-            <input value={data.projectAmount} placeholder="e.g. 1,80,000" onChange={(event) => update("projectAmount", event.target.value)} />
+            <input
+              value={data.projectAmount}
+              placeholder="e.g. 1,80,000"
+              onChange={(event) => {
+                const projectAmount = event.target.value;
+                onChange({
+                  ...data,
+                  projectAmount,
+                  effectivePayableAmount: String(
+                    Math.max(
+                      0,
+                      computeEffectivePayable(
+                        projectAmount,
+                        data.centralSubsidy,
+                        data.stateSubsidy,
+                        data.subsidyScope === "central" ? "central" : "both",
+                      ),
+                    ),
+                  ),
+                });
+              }}
+            />
           </div>
         </div>
         <CommercialOfferEditor
@@ -441,17 +555,64 @@ export function QuotationEditor({ data, onChange }: QuotationEditorProps) {
         <div className="field-grid">
           <div className="field">
             <label>Central Subsidy (₹)</label>
-            <input value={data.centralSubsidy} placeholder="e.g. 78,000" onChange={(event) => update("centralSubsidy", event.target.value)} />
+            <input
+              value={data.centralSubsidy}
+              placeholder="e.g. 78,000"
+              onChange={(event) => {
+                const centralSubsidy = event.target.value;
+                onChange({
+                  ...data,
+                  centralSubsidy,
+                  effectivePayableAmount: String(
+                    Math.max(
+                      0,
+                      computeEffectivePayable(
+                        data.projectAmount,
+                        centralSubsidy,
+                        data.stateSubsidy,
+                        data.subsidyScope === "central" ? "central" : "both",
+                      ),
+                    ),
+                  ),
+                });
+              }}
+            />
           </div>
           <div className="field">
-            <label>State Subsidy (₹)</label>
-            <input value={data.stateSubsidy} placeholder="e.g. 17,000" onChange={(event) => update("stateSubsidy", event.target.value)} />
+            <label>State Subsidy (₹){data.subsidyScope === "central" ? " — not applied" : ""}</label>
+            <input
+              value={data.stateSubsidy}
+              placeholder="e.g. 17,000"
+              disabled={data.subsidyScope === "central"}
+              onChange={(event) => {
+                const stateSubsidy = event.target.value;
+                onChange({
+                  ...data,
+                  stateSubsidy,
+                  effectivePayableAmount: String(
+                    Math.max(
+                      0,
+                      computeEffectivePayable(data.projectAmount, data.centralSubsidy, stateSubsidy, "both"),
+                    ),
+                  ),
+                });
+              }}
+            />
           </div>
           <div className="field">
             <label>Effective Payable Amount (₹) — auto</label>
             <input
               readOnly
-              value={formatInrGrouped(String(computeEffectivePayable(data.projectAmount, data.centralSubsidy, data.stateSubsidy)))}
+              value={formatInrGrouped(
+                String(
+                  computeEffectivePayable(
+                    data.projectAmount,
+                    data.centralSubsidy,
+                    data.stateSubsidy,
+                    data.subsidyScope === "central" ? "central" : "both",
+                  ),
+                ),
+              )}
             />
           </div>
           <div className="field full-span">
