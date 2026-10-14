@@ -93,6 +93,12 @@ Money-ledger rows are seeded in `partner-mss-payments.ts` for analytics. Everest
 - Live re-read: money ledger **−₹1,78,500** (new ₹2.5L NEFT 10 Aug); Everest bills **₹73,816** (invoices 0141, 0157).
 - Hero / ledger cards: **− red** = we need to pay · **+ green** = we will receive.
 
+### 2026-10-05 — Money ledger refresh
+
+- Live re-read Sub Vendor `Ajay`: new DR **₹2,00,000** on **17 Sep 2026** → closing **+₹5,21,500** (was +₹3,21,500). Header DR **₹13,10,000**.
+- Everest Solar Bill still **₹77,781**.
+- App seeds updated: `ajay-sub-vendor-ledger.ts`, `AJAY_SUB_VENDOR_LEDGER`, `partner-mss-payments.ts`.
+
 ### 2026-09-05 — Money ledger + Everest bills refresh
 
 - Live re-read Sub Vendor `Ajay`: new DR **₹3,00,000** on **05 Sep 2026** → closing **+₹3,21,500** (was +₹21,500).

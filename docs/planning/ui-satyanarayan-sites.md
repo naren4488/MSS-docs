@@ -60,6 +60,11 @@ Seed + UI: `satyanarayan-sub-vendor-ledger.ts`, `SatyanarayanSubVendorLedger.tsx
 
 ## Decision log
 
+### 2026-10-05 — Money ledger check (no change)
+
+- Live re-read Sub Vendor `SATYANARAYAN ` (trailing space required): still **+₹1,68,342**. No new rows.
+- Note: gviz without the trailing space returns a different **VINOD JI** ledger (−₹3,232) — do not use that for this partner.
+
 ### 2026-08-28 — Money ledger refresh
 
 - Live re-read Sub Vendor `SATYANARAYAN `: three new DR advances for fuel — **20 Aug ₹1,620**, **23 Aug ₹1,500**, **26 Aug ₹1,850** → closing **+₹1,68,342** (was ₹1,63,372).

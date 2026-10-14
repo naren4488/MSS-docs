@@ -204,6 +204,12 @@ When implementing:
 
 Append dated notes here. Do not delete older entries — strike through if superseded.
 
+### 2026-10-05 — Ajay money refresh + Satyanarayan tab check
+
+- Live re-read Sub Vendor `Ajay`: new DR **₹2,00,000** on **17 Sep 2026** → closing **+₹5,21,500** (was +₹3,21,500). Header DR **₹13,10,000**. Everest bills still **₹77,781**.
+- `SATYANARAYAN ` (trailing space) still **+₹1,68,342** — no change. Bare name `SATYANARAYAN` / other probes return a separate **VINOD JI** ledger (−₹3,232); keep using the trailing-space tab for Satyanarayan seeds.
+- App seeds updated: `ajay-sub-vendor-ledger.ts`, `AJAY_SUB_VENDOR_LEDGER`, `partner-mss-payments.ts`.
+
 ### 2026-09-05 — Ajay money + Everest bills refresh
 
 - Live re-read Sub Vendor `Ajay`: new DR **₹3,00,000** on **05 Sep 2026** → closing **+₹3,21,500** (was +₹21,500). Header DR **₹11,10,000**.

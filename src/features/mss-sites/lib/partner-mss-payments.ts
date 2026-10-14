@@ -327,6 +327,12 @@ export const PARTNER_LEDGER_TRANSACTIONS: readonly PartnerLedgerTransaction[] = 
     amount: 300_000,
     date: "05-09-2026",
   },
+  {
+    projectType: "Ajay (everest)",
+    direction: "mss_to_partner",
+    amount: 200_000,
+    date: "17-09-2026",
+  },
 ];
 
 function sumByDirection(projectTypes: readonly string[], direction: PartnerLedgerDirection): number {

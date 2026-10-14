@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useState } from "react";
 import { RotateCcw } from "lucide-react";
 import {
   computeVisibleColumnTotals,
@@ -33,6 +33,16 @@ import { ProjectsSheetTabFilter } from "./ProjectsSheetTabFilter";
 import type { ProjectSheetTabShortcut, ProjectsScope } from "../lib/projects-config";
 
 export type MssSitesViewMode = "table" | "analytics";
+
+export interface MssSitesTableExcelPayload {
+  headers: string[];
+  rows: string[][];
+  visibleColumnIndices: number[];
+}
+
+export interface MssSitesTablePreviewHandle {
+  getExcelExportPayload: () => MssSitesTableExcelPayload | null;
+}
 
 interface MssSitesTablePreviewProps {
   table: MssSitesTable;
@@ -114,7 +124,8 @@ function tableColumnClassName(header: string): string {
   return classes.join(" ");
 }
 
-export function MssSitesTablePreview({ table, viewMode, scope }: MssSitesTablePreviewProps) {
+export const MssSitesTablePreview = forwardRef<MssSitesTablePreviewHandle, MssSitesTablePreviewProps>(
+  function MssSitesTablePreview({ table, viewMode, scope }, ref) {
   const scopedRows = useMemo(() => filterRowsByProjectsScope(table.rows, scope), [scope, table.rows]);
   const visibleColumnIndices = useMemo(
     () => getVisibleColumnIndices(table.headers, scope),
@@ -192,6 +203,23 @@ export function MssSitesTablePreview({ table, viewMode, scope }: MssSitesTablePr
   const columnTotals = useMemo(
     () => computeVisibleColumnTotals(table.headers, filteredRows, visibleColumnIndices),
     [filteredRows, table.headers, visibleColumnIndices],
+  );
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      getExcelExportPayload: () => {
+        if (viewMode !== "table" || filteredRows.length === 0) {
+          return null;
+        }
+        return {
+          headers: [...table.headers],
+          rows: filteredRows.map((row) => [...row]),
+          visibleColumnIndices: [...visibleColumnIndices],
+        };
+      },
+    }),
+    [filteredRows, table.headers, viewMode, visibleColumnIndices],
   );
 
   const clearAllFilters = useCallback(() => {
@@ -437,4 +465,4 @@ export function MssSitesTablePreview({ table, viewMode, scope }: MssSitesTablePr
       </div>
     </div>
   );
-}
+});

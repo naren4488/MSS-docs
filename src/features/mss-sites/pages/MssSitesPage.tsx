@@ -1,6 +1,22 @@
-import { Building2, FolderKanban, Handshake, LayoutGrid, PhoneCall, Printer, RefreshCw, Table2, UserRound } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
-import { MssSitesTablePreview, type MssSitesViewMode } from "../components/MssSitesTablePreview";
+import {
+  Building2,
+  FileSpreadsheet,
+  FolderKanban,
+  Handshake,
+  LayoutGrid,
+  PhoneCall,
+  Printer,
+  RefreshCw,
+  Table2,
+  UserRound,
+} from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  MssSitesTablePreview,
+  type MssSitesTablePreviewHandle,
+  type MssSitesViewMode,
+} from "../components/MssSitesTablePreview";
+import { downloadMssSitesExcel } from "../lib/export-mss-sites-excel";
 import { fetchMssSitesTable } from "../lib/fetch-mss-sites";
 import { prepareMssSitesPrint } from "../lib/prepare-mss-sites-print";
 import { prepareMssSitesAnalyticsPrint } from "../lib/prepare-mss-sites-analytics-print";
@@ -33,6 +49,7 @@ export function MssSitesPage() {
   const [includeMoreColumnInPdf, setIncludeMoreColumnInPdf] = useState(true);
   const [scope, setScope] = useState<ProjectsScope>("our");
   const [viewMode, setViewMode] = useState<MssSitesViewMode>("table");
+  const tablePreviewRef = useRef<MssSitesTablePreviewHandle>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -80,6 +97,21 @@ export function MssSitesPage() {
     };
     window.addEventListener("afterprint", cleanup);
     window.print();
+  }
+
+  function handleExcelDownload() {
+    const payload = tablePreviewRef.current?.getExcelExportPayload();
+    if (!payload) {
+      return;
+    }
+    downloadMssSitesExcel({
+      fileName: projectsDocumentName(scope),
+      sheetName: projectsDocumentName(scope),
+      headers: payload.headers,
+      rows: payload.rows,
+      visibleColumnIndices: payload.visibleColumnIndices,
+      includeExtraColumns: includeMoreColumnInPdf,
+    });
   }
 
   const scopeSubtitle =
@@ -133,12 +165,12 @@ export function MssSitesPage() {
           </div>
           {viewMode === "table" ? (
             <div className="mss-sites-pdf-option no-print">
-              <span className="mss-sites-pdf-option-label">Extra columns in PDF</span>
+              <span className="mss-sites-pdf-option-label">Extra columns in export</span>
               <button
                 type="button"
                 className={`toggle ${includeMoreColumnInPdf ? "on" : ""}`}
                 aria-pressed={includeMoreColumnInPdf}
-                aria-label="Include MORE, quotation, status, remark and commission columns in PDF"
+                aria-label="Include MORE, quotation, status, remark and commission columns in PDF and Excel"
                 onClick={() => setIncludeMoreColumnInPdf((current) => !current)}
               >
                 <span className="toggle-thumb" />
@@ -150,10 +182,21 @@ export function MssSitesPage() {
             Refresh
           </button>
           {viewMode === "table" ? (
-            <button className="primary-button" type="button" disabled={!table || loading} onClick={() => void handlePrint()}>
-              <Printer size={16} />
-              Save as PDF
-            </button>
+            <>
+              <button
+                className="ghost-button"
+                type="button"
+                disabled={!table || loading}
+                onClick={handleExcelDownload}
+              >
+                <FileSpreadsheet size={16} />
+                Download Excel
+              </button>
+              <button className="primary-button" type="button" disabled={!table || loading} onClick={() => void handlePrint()}>
+                <Printer size={16} />
+                Save as PDF
+              </button>
+            </>
           ) : null}
           {viewMode === "analytics" &&
           (scope === "our" ||
@@ -269,7 +312,7 @@ export function MssSitesPage() {
 
       {table && !loading ? (
         <section className="content-card mss-sites-preview-shell">
-          <MssSitesTablePreview table={table} viewMode={viewMode} scope={scope} />
+          <MssSitesTablePreview ref={tablePreviewRef} table={table} viewMode={viewMode} scope={scope} />
         </section>
       ) : null}
     </div>
