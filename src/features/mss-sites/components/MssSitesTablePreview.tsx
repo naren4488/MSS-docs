@@ -269,13 +269,8 @@ export const MssSitesTablePreview = forwardRef<MssSitesTablePreviewHandle, MssSi
             <div className="mss-sites-preview-sources no-print" aria-label="Data sources">
               {scope === "our" ? (
                 <>
-                  <span className="mss-sites-source-badge mss-sites-source-badge--mss">MSS res / comm</span>
+                  <span className="mss-sites-source-badge mss-sites-source-badge--mss">MSS New / res / CALL</span>
                   <span className="mss-sites-source-badge mss-sites-source-badge--arkshakti">Arkshakti</span>
-                </>
-              ) : scope === "sales" ? (
-                <>
-                  <span className="mss-sites-source-badge mss-sites-source-badge--mss">Sales team</span>
-                  <span className="mss-sites-source-badge mss-sites-source-badge--mss">MSS</span>
                 </>
               ) : scope === "shripal" ? (
                 <>

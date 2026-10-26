@@ -18,6 +18,7 @@ type SavedCard = {
   effectiveDate: string;
   updatedAt: string;
   signed?: boolean;
+  signingInProgress?: boolean;
   signedAt?: string;
   signedNote?: string;
   group: SavedGroupId;
@@ -186,13 +187,17 @@ function SavedCardView({ card }: { card: SavedCard }) {
             <div className="saved-card-badges">
               <span className="saved-card-badge">{card.companyBadge}</span>
               <span className="saved-card-badge">{card.badge}</span>
-              {card.signed ? <span className="saved-card-badge saved-card-badge--signed">Signed</span> : null}
+              {card.signed ? (
+                <span className="saved-card-badge saved-card-badge--signed">Signed</span>
+              ) : card.signingInProgress ? (
+                <span className="saved-card-badge saved-card-badge--signing">Sign in progress</span>
+              ) : null}
             </div>
             <h3>{card.title}</h3>
           </div>
         </div>
 
-        {card.fields.length > 0 || card.signed ? (
+        {card.fields.length > 0 || card.signed || card.signingInProgress ? (
           <dl className="saved-card-facts">
             {card.fields.map((field) => (
               <div
@@ -210,6 +215,11 @@ function SavedCardView({ card }: { card: SavedCard }) {
                   {card.signedNote?.trim() || "Hard copy signed"}
                   {card.signedAt ? ` · ${formatDate(card.signedAt)}` : ""}
                 </dd>
+              </div>
+            ) : card.signingInProgress ? (
+              <div className="saved-card-fact saved-card-fact--signing">
+                <dt>Status</dt>
+                <dd>{card.signedNote?.trim() || "Sign in progress"}</dd>
               </div>
             ) : null}
           </dl>
@@ -243,6 +253,7 @@ export function AllAgreements() {
       effectiveDate: record.content.effectiveDate,
       updatedAt: record.updatedAt,
       signed: record.signed,
+      signingInProgress: record.signingInProgress,
       signedAt: record.signedAt,
       signedNote: record.signedNote,
       group: savedGroupFor(record.content.template),

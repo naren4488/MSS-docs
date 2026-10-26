@@ -21,8 +21,8 @@ export const SHRIPAL_CASH_BANK_LEDGER = {
   title: "Cash / Bank",
   columnRange: "A–F",
   headerDr: 66_600,
-  headerCr: 204_055,
-  closingBalance: -137_455,
+  headerCr: 218_805,
+  closingBalance: -152_205,
 } as const;
 
 /** Sub Vendor Payment workbook — `Ajay` tab dual ledgers (see docs/planning/ui-ajay-sites.md). */
@@ -33,7 +33,7 @@ export const AJAY_SUB_VENDOR_LEDGER = {
       id: "money",
       title: "Money ledger",
       columnRange: "A–E",
-      headerBalance: 521_500,
+      headerBalance: 509_590,
     },
     {
       id: "everest-bills",
@@ -53,7 +53,20 @@ export const SATYANARAYAN_SUB_VENDOR_LEDGER = {
   projectType: "SATAYNARAYAN JI",
   title: "Satyanarayan money ledger",
   columnRange: "A–F",
-  headerBalance: 168_342,
+  headerBalance: 169_992,
+} as const;
+
+/**
+ * Sub Vendor Payment workbook — `BS enterprises` tab (also Satyanarayan / SATAYNARAYAN JI).
+ */
+export const SATYANARAYAN_BS_ENTERPRISES_LEDGER = {
+  sheetTab: "BS enterprises",
+  projectType: "SATAYNARAYAN JI",
+  title: "BS Enterprises",
+  columnRange: "A–F",
+  headerDr: 295_761,
+  headerCr: 125_000,
+  headerBalance: 170_761,
 } as const;
 
 export const PROJECT_VENDORS = {
@@ -62,26 +75,27 @@ export const PROJECT_VENDORS = {
 } as const;
 
 /** Top-level Projects page scopes. */
-export type ProjectsScope = "our" | "sales" | "partner" | "shripal" | "ajay" | "satyanarayan" | "rjgreen";
+export type ProjectsScope = "our" | "partner" | "shripal" | "ajay" | "satyanarayan" | "rjgreen";
 
 /**
  * Sheet tab / PROJECT TYPE values that belong on **Our projects**.
+ * Five registers: MSS New, MSS res (MSS + Ark), CALL TEAM SITE, MSS COMMERCIAL (Ark).
  */
-export const OUR_PROJECT_TYPES = ["MSS res", "MSS COMMERCIAL"] as const;
+export const OUR_PROJECT_TYPES = ["MSS New", "MSS res", "CALL TEAM SITE", "MSS COMMERCIAL"] as const;
 
 export const OUR_PROJECT_TYPE_SET = new Set<string>(OUR_PROJECT_TYPES);
 
 /**
- * MSS workbook tab `CALL TEAM SITE` — shown in the app as **Sales team sites**.
+ * MSS workbook tab `MSS New  ` (trailing spaces in the live sheet title).
+ * Exact sheet name is required for gviz.
+ */
+export const MSS_NEW_SHEET_NAME = "MSS New  ";
+
+/**
+ * MSS workbook tab `CALL TEAM SITE` — included under **Our projects**.
  * Exact sheet name is required for gviz (wrong name silently returns `MSS res`).
  */
 export const CALL_TEAM_SHEET_NAME = "CALL TEAM SITE";
-
-export const SALES_PROJECT_TYPE = "Sales team sites";
-
-export const SALES_PROJECT_TYPES = [SALES_PROJECT_TYPE] as const;
-
-export const SALES_PROJECT_TYPE_SET = new Set<string>(SALES_PROJECT_TYPES);
 
 /** Shripal has its own top-level tab (MSS + Arkshakti `SHRIPAL JI` registers). */
 export const SHRIPAL_PROJECT_TYPES = ["SHRIPAL JI"] as const;
@@ -107,13 +121,9 @@ export function isOurProjectType(projectType: string): boolean {
   return OUR_PROJECT_TYPE_SET.has(projectType.trim());
 }
 
-export function isSalesProjectType(projectType: string): boolean {
-  return SALES_PROJECT_TYPE_SET.has(projectType.trim());
-}
-
-/** Our projects + Sales team sites — hide partner-only columns; cash due = from client. */
+/** Our projects — hide partner-only columns; cash due = from client. */
 export function isOurStyleProjectsScope(scope: ProjectsScope): boolean {
-  return scope === "our" || scope === "sales";
+  return scope === "our";
 }
 
 export function isShripalProjectType(projectType: string): boolean {
@@ -147,9 +157,6 @@ export function getProjectsScopeForProjectType(projectType: string): ProjectsSco
   const trimmed = projectType.trim();
   if (isOurProjectType(trimmed)) {
     return "our";
-  }
-  if (isSalesProjectType(trimmed)) {
-    return "sales";
   }
   if (isShripalProjectType(trimmed)) {
     return "shripal";
@@ -210,13 +217,14 @@ function projectTab(
 
 /**
  * MSS workbook — loaded registers (explicit list, not workbook order).
- * `CALL TEAM SITE` is fetched by exact sheet name and shown as Sales team sites.
+ * `MSS New  ` and `CALL TEAM SITE` are fetched by exact sheet name (Our projects).
  * Excludes: summary, ALWAR SITES, PENDING SITES, POORAN JI, inc tabs, reject/cash-due dashboards.
  * "KAVITA MAM" (not "KAVITA MAAM" — wrong spelling makes gviz return MSS res).
  */
 export const PROJECT_SHEET_TABS: readonly ProjectSheetTab[] = [
+  projectTab(MSS_NEW_SHEET_NAME, { projectType: "MSS New" }),
   projectTab("MSS res"),
-  projectTab(CALL_TEAM_SHEET_NAME, { projectType: SALES_PROJECT_TYPE }),
+  projectTab(CALL_TEAM_SHEET_NAME, { projectType: "CALL TEAM SITE" }),
   projectTab("SHRIPAL JI"),
   projectTab("Rohit (RJ GREEN)"),
   projectTab("SATAYNARAYAN JI"),
@@ -276,7 +284,6 @@ function buildPartnerSheetTabShortcuts(): ProjectSheetTabShortcut[] {
   for (const tab of [...PROJECT_SHEET_TABS, ...ARKSHAKTI_SHEET_TABS]) {
     if (
       isOurProjectType(tab.projectType) ||
-      isSalesProjectType(tab.projectType) ||
       isDedicatedPartnerProjectType(tab.projectType) ||
       seen.has(tab.projectType)
     ) {
@@ -297,9 +304,23 @@ function buildPartnerSheetTabShortcuts(): ProjectSheetTabShortcut[] {
 
 const OUR_SHEET_TAB_SHORTCUTS: readonly ProjectSheetTabShortcut[] = [
   {
+    id: "our-mss-new",
+    label: "MSS New",
+    projectType: "MSS New",
+    group: "Register",
+    scope: "our",
+  },
+  {
     id: "our-mss-res",
     label: "MSS res",
     projectType: "MSS res",
+    group: "Register",
+    scope: "our",
+  },
+  {
+    id: "our-call-team",
+    label: "CALL TEAM SITE",
+    projectType: "CALL TEAM SITE",
     group: "Register",
     scope: "our",
   },
@@ -309,17 +330,6 @@ const OUR_SHEET_TAB_SHORTCUTS: readonly ProjectSheetTabShortcut[] = [
     projectType: "MSS COMMERCIAL",
     group: "Register",
     scope: "our",
-  },
-];
-
-/** Sales team sites — MSS `CALL TEAM SITE` register, labelled Sales in the app. */
-const SALES_SHEET_TAB_SHORTCUTS: readonly ProjectSheetTabShortcut[] = [
-  {
-    id: "sales",
-    label: "Sales team",
-    projectType: SALES_PROJECT_TYPE,
-    scope: "sales",
-    group: "Register",
   },
 ];
 
@@ -369,7 +379,6 @@ const RJGREEN_SHEET_TAB_SHORTCUTS: readonly ProjectSheetTabShortcut[] = [
 
 export const PROJECT_SHEET_TAB_SHORTCUTS: readonly ProjectSheetTabShortcut[] = [
   ...OUR_SHEET_TAB_SHORTCUTS,
-  ...SALES_SHEET_TAB_SHORTCUTS,
   ...SHRIPAL_SHEET_TAB_SHORTCUTS,
   ...AJAY_SHEET_TAB_SHORTCUTS,
   ...SATYANARAYAN_SHEET_TAB_SHORTCUTS,

@@ -1,9 +1,35 @@
 import { Info } from "lucide-react";
 import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { isGpsLinkFieldLabel, resolveGpsMapsUrl } from "../lib/gps-maps-url";
 
 interface ProjectRowMoreCellProps {
   fields: Array<{ label: string; value: string }>;
+}
+
+function FieldValue({ label, value }: { label: string; value: string }) {
+  if (!value) {
+    return <>—</>;
+  }
+
+  if (isGpsLinkFieldLabel(label)) {
+    const mapsUrl = resolveGpsMapsUrl(value);
+    if (mapsUrl) {
+      return (
+        <a
+          className="projects-more-maps-link"
+          href={mapsUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          title="Open in Google Maps"
+        >
+          {value}
+        </a>
+      );
+    }
+  }
+
+  return <>{value}</>;
 }
 
 const TOOLTIP_GAP = 8;
@@ -140,7 +166,9 @@ export function ProjectRowMoreCell({ fields }: ProjectRowMoreCellProps) {
               {fields.map((field) => (
                 <div key={field.label} className="projects-more-tooltip-item">
                   <dt>{field.label}</dt>
-                  <dd>{field.value || "—"}</dd>
+                  <dd>
+                    <FieldValue label={field.label} value={field.value} />
+                  </dd>
                 </div>
               ))}
             </dl>

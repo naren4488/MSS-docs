@@ -107,3 +107,28 @@ export function formatRate(price: string): string {
 
   return trimmed;
 }
+
+/** Annexure money cells — supports 0 and negative (e.g. cash adjustment). */
+export function formatAnnexureAmount(price: string): string {
+  const trimmed = (price ?? "").trim();
+  if (!trimmed) {
+    return "—";
+  }
+
+  const numeric = Number(trimmed.replace(/[,\s₹]/g, ""));
+  if (!Number.isFinite(numeric) || !/^-?[₹]?[\d,\s]+$/.test(trimmed)) {
+    return trimmed;
+  }
+
+  if (numeric === 0) {
+    return "₹0";
+  }
+
+  const absolute = new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 0,
+  }).format(Math.abs(numeric));
+
+  return numeric < 0 ? `−${absolute}` : absolute;
+}

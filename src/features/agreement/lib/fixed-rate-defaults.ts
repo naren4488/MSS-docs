@@ -54,6 +54,18 @@ export function createEmptyFixedRateFields(): Pick<
   | "otherClientScheduleHeading"
   | "otherClientScheduleIntro"
   | "otherClientRows"
+  | "showLedgerAnnexure"
+  | "ledgerAnnexureHeading"
+  | "ledgerAnnexureIntro"
+  | "ledgerBooks"
+  | "ledgerAnnexureNote"
+  | "showSettlementSummary"
+  | "settlementSummaryHeading"
+  | "settlementSummaryIntro"
+  | "settlementLines"
+  | "settlementFinalLabel"
+  | "settlementFinalAmount"
+  | "settlementSummaryNote"
 > {
   return {
     dealHeading: "",
@@ -68,6 +80,18 @@ export function createEmptyFixedRateFields(): Pick<
     otherClientScheduleHeading: "",
     otherClientScheduleIntro: "",
     otherClientRows: [],
+    showLedgerAnnexure: false,
+    ledgerAnnexureHeading: "",
+    ledgerAnnexureIntro: "",
+    ledgerBooks: [],
+    ledgerAnnexureNote: "",
+    showSettlementSummary: false,
+    settlementSummaryHeading: "",
+    settlementSummaryIntro: "",
+    settlementLines: [],
+    settlementFinalLabel: "",
+    settlementFinalAmount: "",
+    settlementSummaryNote: "",
   };
 }
 
@@ -319,9 +343,19 @@ export function mapAgreementClientRows(rows: Omit<AgreementClientRow, "id">[]): 
     id: uuid(),
     name: row.name,
     capacity: row.capacity,
+    phase: row.phase ?? "",
     kNo: row.kNo,
     dealWithUs: row.dealWithUs,
     workStatus: row.workStatus,
     remark: row.remark,
+    loanExpected: row.loanExpected ?? "",
+    cashExpected: row.cashExpected ?? "",
+    loanReceived: row.loanReceived ?? "",
+    cashReceived: row.cashReceived ?? "",
+    totalReceived: row.totalReceived ?? "",
+    loanPending: row.loanPending ?? "",
+    cashPending: row.cashPending ?? "",
+    amountToReturn: row.amountToReturn ?? "",
+    netDueToMss: row.netDueToMss ?? "",
   }));
 }

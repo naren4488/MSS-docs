@@ -619,6 +619,11 @@
   color: #15803d;
 }
 
+.saved-card-badge--signing {
+  background: rgba(217, 119, 6, 0.14);
+  color: #b45309;
+}
+
 .saved-card-body h3 {
   font-size: 1.12rem;
   line-height: 1.25;
@@ -682,6 +687,10 @@
   color: #15803d;
 }
 
+.saved-card-fact--signing dd {
+  color: #b45309;
+}
+
 .saved-card-fact-mono {
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.02em;
@@ -699,6 +708,11 @@
   background: linear-gradient(135deg, rgba(22, 163, 74, 0.1), rgba(240, 253, 244, 0.85));
 }
 
+.agreement-signed-banner--progress {
+  border-color: rgba(217, 119, 6, 0.28);
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.14), rgba(255, 251, 235, 0.9));
+}
+
 .agreement-signed-banner-pill {
   flex: 0 0 auto;
   padding: 4px 10px;
@@ -711,6 +725,10 @@
   text-transform: uppercase;
 }
 
+.agreement-signed-banner-pill--progress {
+  background: #b45309;
+}
+
 .agreement-signed-banner strong {
   display: block;
   margin: 0 0 2px;
@@ -718,11 +736,19 @@
   font-size: 14px;
 }
 
+.agreement-signed-banner--progress strong {
+  color: #92400e;
+}
+
 .agreement-signed-banner p {
   margin: 0;
   color: #3f6b4d;
   font-size: 12.5px;
   line-height: 1.4;
+}
+
+.agreement-signed-banner--progress p {
+  color: #a16207;
 }
 
 .saved-card-footer {
@@ -2594,6 +2620,18 @@
   line-height: 1.4;
   color: #111827;
   word-break: break-word;
+}
+
+.projects-more-maps-link {
+  color: #14306b;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.projects-more-maps-link:hover,
+.projects-more-maps-link:focus-visible {
+  color: #0f244f;
+  outline: none;
 }
 
 .projects-more-print {

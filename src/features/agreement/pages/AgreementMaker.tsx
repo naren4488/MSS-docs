@@ -183,6 +183,16 @@ export function AgreementMaker() {
             </p>
           </div>
         </div>
+      ) : record?.signingInProgress ? (
+        <div className="agreement-signed-banner agreement-signed-banner--progress no-print" role="status">
+          <span className="agreement-signed-banner-pill agreement-signed-banner-pill--progress">
+            Sign in progress
+          </span>
+          <div>
+            <strong>{record.signedNote?.trim() || "Sign in progress"}</strong>
+            <p>Hard copy is out for signature. This status is not printed on the PDF.</p>
+          </div>
+        </div>
       ) : null}
 
       <div

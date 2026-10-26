@@ -14,6 +14,7 @@ export const PROJECT_TABLE_HEADERS = [
   "NAME",
   "KW",
   "PH",
+  "Who's site",
   "BANK",
   "LOCATION",
   "DISCOM",
@@ -43,6 +44,19 @@ export const PROJECT_TABLE_HEADERS = [
   "Cash due to MSS",
   "Total Due to MSS",
   "TOTAL Payment recieved",
+  "Login Date",
+  "Final file Ready Or NOT",
+  "Quotation prepared",
+  "Quotation signed",
+  "Subsidy certificate downloaded",
+  "Subsidy certificate",
+  "Invoice downloaded",
+  "Invoice",
+  "Warranty card downloaded",
+  "Warranty card",
+  "Amount to us",
+  "Amount still with askshakti",
+  "Total amount",
   "REMARK",
 ] as const;
 
@@ -72,10 +86,23 @@ export const HIDDEN_PROJECT_COLUMNS = new Set<string>([
   "BANK FILE/CASH",
   "DISCOM WORK",
   "PAYMENT STATUS",
+  "Login Date",
+  "Final file Ready Or NOT",
+  "Quotation prepared",
+  "Quotation signed",
+  "Subsidy certificate downloaded",
+  "Subsidy certificate",
+  "Invoice downloaded",
+  "Invoice",
+  "Warranty card downloaded",
+  "Warranty card",
+  "Amount to us",
+  "Amount still with askshakti",
+  "Total amount",
 ]);
 
 /**
- * Hidden from the main table on Our + Sales + Shripal only — duplicates Cash due from client on those registers.
+ * Hidden from the main table on Our + Shripal only — duplicates Cash due from client on those registers.
  */
 export const OUR_SHRIPAL_HIDDEN_TABLE_COLUMNS = new Set<string>(["Cash due to MSS"]);
 
@@ -465,7 +492,11 @@ export function getHiddenProjectFields(
 }
 
 function normalizeHeaderKey(header: string) {
-  return header.trim().replace(/\s+/g, " ").toUpperCase();
+  return header
+    .trim()
+    .replace(/\s+/g, " ")
+    .replace(/[\u2018\u2019\u201C\u201D"″]/g, "'")
+    .toUpperCase();
 }
 
 function sheetCell(
@@ -528,6 +559,7 @@ export function mapSheetRowToProjectRow(
     sheetCell(headers, row, ["NAME", "Client", "CLIENT", "SITE NAME"]),
     sheetCell(headers, row, "KW"),
     sheetCell(headers, row, "PH"),
+    sheetCell(headers, row, ["Who's site", 'Who"s site']),
     sheetCell(headers, row, "BANK"),
     sheetCell(headers, row, ["LOCATION", "Location"], 0),
     sheetCell(headers, row, "DISCOM"),
@@ -551,8 +583,13 @@ export function mapSheetRowToProjectRow(
     sheetCell(headers, row, ["WORK STATUS", "Work status"]),
     sheetCell(headers, row, ["DISCOM WORK", "Discom"]),
     sheetCell(headers, row, ["PAYMENT STATUS", "Payment status"]),
-    sheetCell(headers, row, "1ST INSTALLMENT"),
-    sheetCell(headers, row, ["2ND INATALLMENT", "2ND INSTALLMENT"]),
+    sheetCell(headers, row, ["1ST INSTALLMENT", "1st Installment Amount", "1st Instal Amount"]),
+    sheetCell(headers, row, [
+      "2ND INATALLMENT",
+      "2ND INSTALLMENT",
+      "2nd Installment Amount",
+      "2nd  Install Amount",
+    ]),
     sheetCell(headers, row, ["CASH TO MSS", "CASH TO US"]),
     sheetCell(headers, row, "Payment with partner"),
     bankDue,
@@ -564,6 +601,19 @@ export function mapSheetRowToProjectRow(
       "TOTAL PAYMENT RECIVED",
       "TOTAL PAYMENT RECEIVED",
     ]),
+    sheetCell(headers, row, "Login Date"),
+    sheetCell(headers, row, ["Final file Ready Or NOT", "Final file Ready Or Not"]),
+    sheetCell(headers, row, "Quotation prepared"),
+    sheetCell(headers, row, "Quotation signed"),
+    sheetCell(headers, row, "Subsidy certificate downloaded"),
+    sheetCell(headers, row, "Subsidy certificate"),
+    sheetCell(headers, row, "Invoice downloaded"),
+    sheetCell(headers, row, "Invoice"),
+    sheetCell(headers, row, "Warranty card downloaded"),
+    sheetCell(headers, row, "Warranty card"),
+    sheetCell(headers, row, "Amount to us"),
+    sheetCell(headers, row, ["Amount still with askshakti", "Amount still with arkshakti"]),
+    sheetCell(headers, row, "Total amount"),
     sheetCell(headers, row, "REMARK"),
   ];
 }

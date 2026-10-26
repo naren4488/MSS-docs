@@ -10,8 +10,16 @@ import {
   PAGE_TOP_BOTTOM_PADDING,
   PAGE_WIDTH,
 } from "../constants/sheet-layout";
-import type { AgreementClientRow, AgreementData, AgreementLanguage, AgreementRateCard, AgreementSection } from "../types/agreement";
-import { fillTemplate, filledValue, formatRate } from "../lib/agreement-formatters";
+import type {
+  AgreementClientRow,
+  AgreementData,
+  AgreementLanguage,
+  AgreementLedgerBook,
+  AgreementRateCard,
+  AgreementSection,
+  AgreementSettlementLine,
+} from "../types/agreement";
+import { fillTemplate, filledValue, formatAnnexureAmount, formatRate } from "../lib/agreement-formatters";
 import { getPartnershipVendorChargeContent } from "../lib/agreement-defaults";
 
 const LABELS: Record<AgreementLanguage, {
@@ -20,7 +28,33 @@ const LABELS: Record<AgreementLanguage, {
   witnesses: string;
   pageOf: (current: number, total: number) => string;
   rateHeaders: { capacity: string; phase: string; price: string };
-  clientHeaders: { sno: string; name: string; capacity: string; kNo: string; dealWithUs: string; workStatus: string };
+  clientHeaders: {
+    sno: string;
+    name: string;
+    dealWithUs: string;
+    expected: string;
+    received: string;
+    pending: string;
+    workStatus: string;
+    loan: string;
+    cash: string;
+    cashToMss: string;
+    total: string;
+    toReturn: string;
+    net: string;
+    totals: string;
+  };
+  ledgerHeaders: {
+    date: string;
+    particular: string;
+    dr: string;
+    cr: string;
+    closing: string;
+    remark: string;
+    totalDr: string;
+    totalCr: string;
+    closingBalance: string;
+  };
 }> = {
   en: {
     whereas: "WHEREAS:",
@@ -30,11 +64,30 @@ const LABELS: Record<AgreementLanguage, {
     rateHeaders: { capacity: "Capacity", phase: "Phase", price: "MSS Rate (₹)" },
     clientHeaders: {
       sno: "S.No",
-      name: "Client Name",
-      capacity: "kW",
-      kNo: "K.NO",
+      name: "Client",
       dealWithUs: "Deal with us",
+      expected: "To receive (file)",
+      received: "Received so far",
+      pending: "Pending",
       workStatus: "Work status",
+      loan: "Loan",
+      cash: "Cash",
+      cashToMss: "Cash to MSS",
+      total: "Total",
+      toReturn: "To return",
+      net: "Net",
+      totals: "Totals",
+    },
+    ledgerHeaders: {
+      date: "Date",
+      particular: "Particular",
+      dr: "DR",
+      cr: "CR",
+      closing: "Closing",
+      remark: "Remark",
+      totalDr: "Total DR",
+      totalCr: "Total CR",
+      closingBalance: "Closing balance",
     },
   },
   hi: {
@@ -45,14 +98,36 @@ const LABELS: Record<AgreementLanguage, {
     rateHeaders: { capacity: "क्षमता", phase: "फेज़", price: "MSS दर (₹)" },
     clientHeaders: {
       sno: "क्र.",
-      name: "ग्राहक नाम",
-      capacity: "kW",
-      kNo: "K.NO",
+      name: "ग्राहक",
       dealWithUs: "हमसे डील",
+      expected: "प्राप्त होना (फ़ाइल)",
+      received: "अब तक प्राप्त",
+      pending: "बकाया",
       workStatus: "कार्य स्थिति",
+      loan: "लोन",
+      cash: "नकद",
+      cashToMss: "MSS को नकद",
+      total: "कुल",
+      toReturn: "वापसी योग्य",
+      net: "नेट",
+      totals: "कुल योग",
+    },
+    ledgerHeaders: {
+      date: "दिनांक",
+      particular: "विवरण",
+      dr: "DR",
+      cr: "CR",
+      closing: "शेष",
+      remark: "टिप्पणी",
+      totalDr: "कुल DR",
+      totalCr: "कुल CR",
+      closingBalance: "अंतिम शेष",
     },
   },
 };
+
+/** Rows per client-table chunk so annexure tables paginate instead of clipping into the footer. */
+const CLIENT_TABLE_ROWS_PER_CHUNK = 4;
 
 interface AgreementPreviewProps {
   data: AgreementData;
@@ -251,7 +326,19 @@ function Page({
       }}
     >
       {showHeader ? <Header data={data} /> : null}
-      <div style={{ ...pageBodyStyle, flex: 1, minHeight: 0, overflow: "hidden" }}>{children}</div>
+      <div
+        style={{
+          ...pageBodyStyle,
+          flex: 1,
+          minHeight: 0,
+          overflow: "hidden",
+          paddingBottom: data.showPageNumbers
+            ? PAGE_TOP_BOTTOM_PADDING + PAGE_NUMBER_FOOTER_HEIGHT
+            : PAGE_TOP_BOTTOM_PADDING,
+        }}
+      >
+        {children}
+      </div>
       {data.showPageNumbers ? (
         <div
           style={{
@@ -412,6 +499,8 @@ function createBlocks(data: AgreementData): PreviewBlock[] {
 
   if (data.template === "fixed-rate") {
     appendClientScheduleBlocks(blocks, data);
+    appendLedgerAnnexureBlocks(blocks, data);
+    appendSettlementSummaryBlocks(blocks, data);
   }
 
   return blocks;
@@ -479,12 +568,86 @@ function RateTable({ rateCards, language }: { rateCards: AgreementRateCard[]; la
   );
 }
 
-function ClientTable({ rows, language }: { rows: AgreementClientRow[]; language: AgreementLanguage }) {
+function MoneyStack({
+  lines,
+}: {
+  lines: { label: string; value: string; strong?: boolean; tone?: "danger" | "success" }[];
+}) {
+  return (
+    <div style={{ display: "grid", gap: 3, lineHeight: 1.35 }}>
+      {lines.map((line) => {
+        const toneColor =
+          line.tone === "danger" ? "#b91c1c" : line.tone === "success" ? "#15803d" : line.strong ? "#152036" : "#4b5563";
+        return (
+          <div
+            key={line.label}
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              gap: 8,
+              fontWeight: line.strong || line.tone ? 700 : 500,
+              color: toneColor,
+            }}
+          >
+            <span>{line.label}</span>
+            <span style={{ fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>
+              {formatAnnexureAmount(line.value)}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function parseAnnexureNumber(value: string): number {
+  const numeric = Number((value ?? "").trim().replace(/[,\s₹]/g, ""));
+  return Number.isFinite(numeric) ? numeric : 0;
+}
+
+function sumAnnexureField(rows: readonly AgreementClientRow[], key: keyof AgreementClientRow): string {
+  const total = rows.reduce((sum, row) => sum + parseAnnexureNumber(String(row[key] ?? "")), 0);
+  return String(total);
+}
+
+/** Register NET DUE TO MSS (falls back to deal − total received). */
+function clientRowNet(row: AgreementClientRow): number {
+  if (String(row.netDueToMss ?? "").trim() !== "") {
+    return parseAnnexureNumber(row.netDueToMss);
+  }
+  return parseAnnexureNumber(row.dealWithUs) - parseAnnexureNumber(row.totalReceived);
+}
+
+function chunkClientRows(rows: AgreementClientRow[], size: number): AgreementClientRow[][] {
+  if (rows.length === 0) {
+    return [];
+  }
+  const chunks: AgreementClientRow[][] = [];
+  for (let index = 0; index < rows.length; index += size) {
+    chunks.push(rows.slice(index, index + size));
+  }
+  return chunks;
+}
+
+function ClientTable({
+  rows,
+  allRows,
+  language,
+  startIndex = 0,
+  showFooter = true,
+}: {
+  rows: AgreementClientRow[];
+  /** Full annexure list — footer totals always cover every site, not only this page chunk. */
+  allRows: AgreementClientRow[];
+  language: AgreementLanguage;
+  startIndex?: number;
+  showFooter?: boolean;
+}) {
   const headers = LABELS[language].clientHeaders;
   const cellStyle: CSSProperties = {
     border: "1px solid #c7ced9",
-    padding: "6px 8px",
-    fontSize: 10.5,
+    padding: "5px 6px",
+    fontSize: 9.5,
     textAlign: "left",
     verticalAlign: "top",
   };
@@ -493,50 +656,268 @@ function ClientTable({ rows, language }: { rows: AgreementClientRow[]; language:
     background: "#152036",
     color: "#ffffff",
     fontWeight: 700,
-    letterSpacing: 0.3,
+    letterSpacing: 0.2,
+    fontSize: 9,
   };
+  const footerCellStyle: CSSProperties = {
+    ...cellStyle,
+    background: "#f3f4f6",
+    fontWeight: 700,
+  };
+
+  const totalsSource = showFooter ? allRows : rows;
+  const totalsNet = totalsSource.reduce((sum, row) => sum + clientRowNet(row), 0);
+  const totals = {
+    dealWithUs: sumAnnexureField(totalsSource, "dealWithUs"),
+    loanExpected: sumAnnexureField(totalsSource, "loanExpected"),
+    cashExpected: sumAnnexureField(totalsSource, "cashExpected"),
+    loanReceived: sumAnnexureField(totalsSource, "loanReceived"),
+    cashReceived: sumAnnexureField(totalsSource, "cashReceived"),
+    totalReceived: sumAnnexureField(totalsSource, "totalReceived"),
+    loanPending: sumAnnexureField(totalsSource, "loanPending"),
+    cashPending: sumAnnexureField(totalsSource, "cashPending"),
+    amountToReturn: sumAnnexureField(totalsSource, "amountToReturn"),
+    net: String(totalsNet),
+  };
+
+  const receivedSettlementLines = (net: number, toReturn: string) => {
+    const lines: { label: string; value: string; strong: true; tone: "danger" | "success" }[] = [];
+    const returnAmount = parseAnnexureNumber(toReturn);
+    // Over-collected vs deal → To return (red). Still short of deal → Net due (green).
+    if (returnAmount > 0) {
+      lines.push({ label: headers.toReturn, value: String(returnAmount), strong: true, tone: "danger" });
+    } else if (net < 0) {
+      lines.push({ label: headers.toReturn, value: String(Math.abs(net)), strong: true, tone: "danger" });
+    }
+    if (net > 0) {
+      lines.push({ label: headers.net, value: String(net), strong: true, tone: "success" });
+    }
+    return lines;
+  };
+
+  const totalsSettlementLines = receivedSettlementLines(totalsNet, totals.amountToReturn);
 
   return (
     <table
       style={{
         width: "100%",
         borderCollapse: "collapse",
-        margin: "4px 0 12px",
+        margin: "4px 0 10px",
         tableLayout: "fixed",
       }}
     >
       <thead>
         <tr>
-          <th style={{ ...headerCellStyle, width: "5%" }}>{headers.sno}</th>
-          <th style={{ ...headerCellStyle, width: "28%" }}>{headers.name}</th>
-          <th style={{ ...headerCellStyle, width: "10%" }}>{headers.capacity}</th>
-          <th style={{ ...headerCellStyle, width: "18%" }}>{headers.kNo}</th>
-          <th style={{ ...headerCellStyle, width: "16%", textAlign: "right" }}>{headers.dealWithUs}</th>
-          <th style={{ ...headerCellStyle, width: "23%" }}>{headers.workStatus}</th>
+          <th style={{ ...headerCellStyle, width: "4%" }}>{headers.sno}</th>
+          <th style={{ ...headerCellStyle, width: "20%" }}>{headers.name}</th>
+          <th style={{ ...headerCellStyle, width: "12%", textAlign: "right" }}>{headers.dealWithUs}</th>
+          <th style={{ ...headerCellStyle, width: "15%" }}>{headers.expected}</th>
+          <th style={{ ...headerCellStyle, width: "20%" }}>{headers.received}</th>
+          <th style={{ ...headerCellStyle, width: "15%" }}>{headers.pending}</th>
+          <th style={{ ...headerCellStyle, width: "14%" }}>{headers.workStatus}</th>
         </tr>
       </thead>
       <tbody>
-        {rows.map((row, index) => (
-          <tr key={row.id}>
-            <td style={cellStyle}>{index + 1}</td>
-            <td style={{ ...cellStyle, fontWeight: 600 }}>
-              {row.name || "—"}
-              {row.remark?.trim() ? (
-                <div style={{ marginTop: 4, fontWeight: 500, fontSize: 9.5, color: "#4b5563", lineHeight: 1.45 }}>
-                  {row.remark.trim()}
-                </div>
-              ) : null}
-            </td>
-            <td style={cellStyle}>{row.capacity || "—"}</td>
-            <td style={{ ...cellStyle, fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", fontSize: 10 }}>
-              {row.kNo || "—"}
-            </td>
-            <td style={{ ...cellStyle, textAlign: "right", fontWeight: 600 }}>{formatRate(row.dealWithUs)}</td>
-            <td style={cellStyle}>{row.workStatus || "—"}</td>
-          </tr>
-        ))}
+        {rows.map((row, index) => {
+          const metaParts = [row.capacity?.trim(), row.phase?.trim(), row.kNo?.trim() ? `K.NO ${row.kNo.trim()}` : ""]
+            .filter(Boolean)
+            .join(" · ");
+          const net = clientRowNet(row);
+          const receivedLines = [
+            { label: headers.loan, value: row.loanReceived },
+            { label: headers.cashToMss, value: row.cashReceived },
+            { label: headers.total, value: row.totalReceived, strong: true },
+            ...receivedSettlementLines(net, row.amountToReturn),
+          ];
+          return (
+            <tr key={row.id}>
+              <td style={cellStyle}>{startIndex + index + 1}</td>
+              <td style={cellStyle}>
+                <div style={{ fontWeight: 700, color: "#152036", lineHeight: 1.3 }}>{row.name || "—"}</div>
+                {metaParts ? (
+                  <div
+                    style={{
+                      marginTop: 3,
+                      fontWeight: 500,
+                      fontSize: 8.5,
+                      color: "#4b5563",
+                      lineHeight: 1.4,
+                      fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+                    }}
+                  >
+                    {metaParts}
+                  </div>
+                ) : null}
+                {row.remark?.trim() ? (
+                  <div style={{ marginTop: 4, fontWeight: 500, fontSize: 8.5, color: "#4b5563", lineHeight: 1.4 }}>
+                    {row.remark.trim()}
+                  </div>
+                ) : null}
+              </td>
+              <td style={{ ...cellStyle, textAlign: "right", fontWeight: 700 }}>
+                {formatAnnexureAmount(row.dealWithUs)}
+              </td>
+              <td style={cellStyle}>
+                <MoneyStack
+                  lines={[
+                    { label: headers.loan, value: row.loanExpected },
+                    { label: headers.cash, value: row.cashExpected },
+                  ]}
+                />
+              </td>
+              <td style={cellStyle}>
+                <MoneyStack lines={receivedLines} />
+              </td>
+              <td style={cellStyle}>
+                <MoneyStack
+                  lines={[
+                    { label: headers.loan, value: row.loanPending },
+                    { label: headers.cash, value: row.cashPending },
+                  ]}
+                />
+              </td>
+              <td style={{ ...cellStyle, fontSize: 9, lineHeight: 1.35 }}>{row.workStatus || "—"}</td>
+            </tr>
+          );
+        })}
       </tbody>
+      {showFooter ? (
+        <tfoot>
+          <tr>
+            <td style={footerCellStyle} colSpan={2}>
+              {headers.totals}
+            </td>
+            <td style={{ ...footerCellStyle, textAlign: "right" }}>{formatAnnexureAmount(totals.dealWithUs)}</td>
+            <td style={footerCellStyle}>
+              <MoneyStack
+                lines={[
+                  { label: headers.loan, value: totals.loanExpected },
+                  { label: headers.cash, value: totals.cashExpected },
+                ]}
+              />
+            </td>
+            <td style={footerCellStyle}>
+              <MoneyStack
+                lines={[
+                  { label: headers.loan, value: totals.loanReceived },
+                  { label: headers.cashToMss, value: totals.cashReceived },
+                  { label: headers.total, value: totals.totalReceived, strong: true },
+                  ...totalsSettlementLines,
+                ]}
+              />
+            </td>
+            <td style={footerCellStyle}>
+              <MoneyStack
+                lines={[
+                  { label: headers.loan, value: totals.loanPending },
+                  { label: headers.cash, value: totals.cashPending },
+                ]}
+              />
+            </td>
+            <td style={footerCellStyle} />
+          </tr>
+        </tfoot>
+      ) : null}
     </table>
+  );
+}
+
+function appendClientTableChunks(
+  blocks: PreviewBlock[],
+  keyPrefix: string,
+  rows: AgreementClientRow[],
+  language: AgreementLanguage,
+) {
+  const chunks = chunkClientRows(rows, CLIENT_TABLE_ROWS_PER_CHUNK);
+  chunks.forEach((chunk, chunkIndex) => {
+    const isLast = chunkIndex === chunks.length - 1;
+    blocks.push({
+      key: `${keyPrefix}-${chunkIndex}`,
+      estimate: 42 + chunk.length * 88 + (isLast ? 78 : 0),
+      node: (
+        <ClientTable
+          rows={chunk}
+          allRows={rows}
+          language={language}
+          startIndex={chunkIndex * CLIENT_TABLE_ROWS_PER_CHUNK}
+          showFooter={isLast}
+        />
+      ),
+    });
+  });
+}
+
+function LedgerBookTable({ book, language }: { book: AgreementLedgerBook; language: AgreementLanguage }) {
+  const headers = LABELS[language].ledgerHeaders;
+  const cellStyle: CSSProperties = {
+    border: "1px solid #c7ced9",
+    padding: "4px 6px",
+    fontSize: 9,
+    textAlign: "left",
+    verticalAlign: "top",
+  };
+  const headerCellStyle: CSSProperties = {
+    ...cellStyle,
+    background: "#152036",
+    color: "#ffffff",
+    fontWeight: 700,
+    fontSize: 8.5,
+  };
+  const numStyle: CSSProperties = { ...cellStyle, textAlign: "right", fontVariantNumeric: "tabular-nums" };
+
+  return (
+    <div style={{ margin: "0 0 14px" }}>
+      <h4 style={{ margin: "0 0 2px", fontSize: 12, color: "#152036" }}>{book.title}</h4>
+      {book.subtitle.trim() ? (
+        <p style={{ margin: "0 0 6px", fontSize: 9.5, color: "#4b5563", lineHeight: 1.4 }}>{book.subtitle}</p>
+      ) : null}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+          gap: 8,
+          marginBottom: 6,
+          fontSize: 9.5,
+        }}
+      >
+        <div>
+          <span style={{ color: "#6b7280" }}>{headers.totalDr}: </span>
+          <strong>{formatAnnexureAmount(book.totalDr)}</strong>
+        </div>
+        <div>
+          <span style={{ color: "#6b7280" }}>{headers.totalCr}: </span>
+          <strong>{formatAnnexureAmount(book.totalCr)}</strong>
+        </div>
+        <div>
+          <span style={{ color: "#6b7280" }}>{headers.closingBalance}: </span>
+          <strong>{formatAnnexureAmount(book.closingBalance)}</strong>
+        </div>
+      </div>
+      <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
+        <thead>
+          <tr>
+            <th style={{ ...headerCellStyle, width: "14%" }}>{headers.date}</th>
+            <th style={{ ...headerCellStyle, width: "28%" }}>{headers.particular}</th>
+            <th style={{ ...headerCellStyle, width: "12%", textAlign: "right" }}>{headers.dr}</th>
+            <th style={{ ...headerCellStyle, width: "12%", textAlign: "right" }}>{headers.cr}</th>
+            <th style={{ ...headerCellStyle, width: "14%", textAlign: "right" }}>{headers.closing}</th>
+            <th style={{ ...headerCellStyle, width: "20%" }}>{headers.remark}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {book.rows.map((row, index) => (
+            <tr key={`${book.id}-${index}-${row.particular}`}>
+              <td style={cellStyle}>{row.date || "—"}</td>
+              <td style={cellStyle}>{row.particular || "—"}</td>
+              <td style={numStyle}>{formatAnnexureAmount(row.dr)}</td>
+              <td style={numStyle}>{formatAnnexureAmount(row.cr)}</td>
+              <td style={{ ...numStyle, fontWeight: 700 }}>{formatAnnexureAmount(row.closingBalance)}</td>
+              <td style={cellStyle}>{row.remark || "—"}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 
@@ -611,11 +992,7 @@ function appendClientScheduleBlocks(blocks: PreviewBlock[], data: AgreementData)
       });
     }
 
-    blocks.push({
-      key: "client-schedule-table",
-      estimate: 36 + data.clientRows.length * 26,
-      node: <ClientTable rows={data.clientRows} language={data.language} />,
-    });
+    appendClientTableChunks(blocks, "client-schedule-table", data.clientRows, data.language);
   }
 
   if (hasOther) {
@@ -639,17 +1016,160 @@ function appendClientScheduleBlocks(blocks: PreviewBlock[], data: AgreementData)
       });
     }
 
-    blocks.push({
-      key: "other-client-schedule-table",
-      estimate: 36 + data.otherClientRows.length * 26,
-      node: <ClientTable rows={data.otherClientRows} language={data.language} />,
-    });
+    appendClientTableChunks(blocks, "other-client-schedule-table", data.otherClientRows, data.language);
   }
 
   if (data.clientScheduleNote.trim()) {
     const note = fillTemplate(data.clientScheduleNote, data);
     blocks.push({
       key: "client-schedule-note",
+      estimate: 14 + estimateParagraphHeight(note, 80),
+      node: <p style={{ ...paragraphStyle, fontSize: 11, color: "#374151" }}>{note}</p>,
+    });
+  }
+}
+
+function appendLedgerAnnexureBlocks(blocks: PreviewBlock[], data: AgreementData) {
+  if (!data.showLedgerAnnexure || data.ledgerBooks.length === 0) {
+    return;
+  }
+
+  const heading = fillTemplate(data.ledgerAnnexureHeading, data);
+  if (heading.trim()) {
+    blocks.push({
+      key: "ledger-annexure-heading",
+      estimate: 30,
+      keepWithNext: true,
+      node: <h3 style={sectionHeadingStyle}>{heading}</h3>,
+    });
+  }
+
+  const introText = fillTemplate(data.ledgerAnnexureIntro, data);
+  if (introText.trim()) {
+    blocks.push({
+      key: "ledger-annexure-intro",
+      estimate: 18 + estimateParagraphHeight(introText, 78),
+      keepWithNext: true,
+      node: <p style={paragraphStyle}>{introText}</p>,
+    });
+  }
+
+  for (const book of data.ledgerBooks) {
+    blocks.push({
+      key: `ledger-book-${book.id}`,
+      estimate: 70 + book.rows.length * 18,
+      node: <LedgerBookTable book={book} language={data.language} />,
+    });
+  }
+
+  if (data.ledgerAnnexureNote.trim()) {
+    const note = fillTemplate(data.ledgerAnnexureNote, data);
+    blocks.push({
+      key: "ledger-annexure-note",
+      estimate: 14 + estimateParagraphHeight(note, 80),
+      node: <p style={{ ...paragraphStyle, fontSize: 11, color: "#374151" }}>{note}</p>,
+    });
+  }
+}
+
+function SettlementSummaryBox({
+  lines,
+  finalLabel,
+  finalAmount,
+}: {
+  lines: AgreementSettlementLine[];
+  finalLabel: string;
+  finalAmount: string;
+}) {
+  const rowStyle: CSSProperties = {
+    display: "flex",
+    justifyContent: "space-between",
+    gap: 16,
+    alignItems: "baseline",
+    padding: "6px 0",
+    borderBottom: "1px solid #e5e7eb",
+    fontSize: 11,
+  };
+
+  return (
+    <div
+      style={{
+        margin: "8px 0 12px",
+        border: "1px solid #c7ced9",
+        borderRadius: 4,
+        background: "#f8fafc",
+        padding: "10px 12px",
+      }}
+    >
+      {lines.map((line) => (
+        <div key={line.id} style={rowStyle}>
+          <span style={{ color: "#374151", lineHeight: 1.4 }}>{line.label}</span>
+          <strong style={{ fontVariantNumeric: "tabular-nums", color: "#152036", whiteSpace: "nowrap" }}>
+            {formatAnnexureAmount(line.amount)}
+          </strong>
+        </div>
+      ))}
+      <div
+        style={{
+          ...rowStyle,
+          borderBottom: "none",
+          paddingTop: 10,
+          marginTop: 2,
+          fontSize: 12.5,
+          fontWeight: 700,
+        }}
+      >
+        <span style={{ color: "#152036" }}>{finalLabel}</span>
+        <span style={{ fontVariantNumeric: "tabular-nums", color: "#152036", whiteSpace: "nowrap" }}>
+          {formatAnnexureAmount(finalAmount)}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function appendSettlementSummaryBlocks(blocks: PreviewBlock[], data: AgreementData) {
+  if (!data.showSettlementSummary || data.settlementLines.length === 0 || !data.settlementFinalAmount.trim()) {
+    return;
+  }
+
+  const heading = fillTemplate(data.settlementSummaryHeading, data);
+  if (heading.trim()) {
+    blocks.push({
+      key: "settlement-summary-heading",
+      estimate: 30,
+      keepWithNext: true,
+      node: <h3 style={sectionHeadingStyle}>{heading}</h3>,
+    });
+  }
+
+  const introText = fillTemplate(data.settlementSummaryIntro, data);
+  if (introText.trim()) {
+    blocks.push({
+      key: "settlement-summary-intro",
+      estimate: 16 + estimateParagraphHeight(introText, 78),
+      keepWithNext: true,
+      node: <p style={paragraphStyle}>{introText}</p>,
+    });
+  }
+
+  blocks.push({
+    key: "settlement-summary-box",
+    estimate: 48 + data.settlementLines.length * 22,
+    keepWithNext: Boolean(data.settlementSummaryNote.trim()),
+    node: (
+      <SettlementSummaryBox
+        lines={data.settlementLines}
+        finalLabel={fillTemplate(data.settlementFinalLabel, data) || "Final amount"}
+        finalAmount={data.settlementFinalAmount}
+      />
+    ),
+  });
+
+  if (data.settlementSummaryNote.trim()) {
+    const note = fillTemplate(data.settlementSummaryNote, data);
+    blocks.push({
+      key: "settlement-summary-note",
       estimate: 14 + estimateParagraphHeight(note, 80),
       node: <p style={{ ...paragraphStyle, fontSize: 11, color: "#374151" }}>{note}</p>,
     });

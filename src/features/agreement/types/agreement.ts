@@ -22,6 +22,8 @@ export interface AgreementClientRow {
   name: string;
   /** System size, e.g. "3 kW". */
   capacity: string;
+  /** Phase, e.g. "1 Phase" / "3 Phase". Shown under the client name with kW and K.NO. */
+  phase: string;
   /** Consumer / K.NO from the project register. */
   kNo: string;
   /** Deal with us (MSS) for that project, usually a rupee amount. */
@@ -29,6 +31,57 @@ export interface AgreementClientRow {
   workStatus: string;
   /** Optional note under the client name (e.g. first-site rate exception). */
   remark: string;
+  /** Loan amount expected for the file (register LOAN). */
+  loanExpected: string;
+  /** Cash amount expected for the file (register CASH). */
+  cashExpected: string;
+  /** Loan received so far (1st + 2nd installment amounts). */
+  loanReceived: string;
+  /** Cash received by MSS so far (register CASH TO MSS). */
+  cashReceived: string;
+  /** Total payment received (register TOTAL PAYMENT RECIVED). */
+  totalReceived: string;
+  /** Loan still pending (register BANK DUE). */
+  loanPending: string;
+  /** Cash still pending (register CASH DUE FROM CLIENT). */
+  cashPending: string;
+  /**
+   * Extra amount received beyond the file deal that MSS will return
+   * (shown when netDueToMss is negative).
+   */
+  amountToReturn: string;
+  /**
+   * Register NET DUE TO MSS for the file (deal vs what MSS keeps).
+   * Negative = MSS over-collected / surplus to return.
+   */
+  netDueToMss: string;
+}
+
+/** One money-ledger book shown on a fixed-rate annexure (e.g. Satyanarayan / BS Enterprises). */
+export interface AgreementLedgerRow {
+  date: string;
+  particular: string;
+  dr: string;
+  cr: string;
+  closingBalance: string;
+  remark: string;
+}
+
+export interface AgreementLedgerBook {
+  id: string;
+  title: string;
+  subtitle: string;
+  totalDr: string;
+  totalCr: string;
+  closingBalance: string;
+  rows: AgreementLedgerRow[];
+}
+
+/** One line in the annexure settlement summary (files net + ledgers → final ask). */
+export interface AgreementSettlementLine {
+  id: string;
+  label: string;
+  amount: string;
 }
 
 export interface AgreementCompany {
@@ -137,6 +190,25 @@ export interface AgreementData {
   otherClientScheduleIntro: string;
   otherClientRows: AgreementClientRow[];
 
+  /** Optional Sub Vendor / partner money-ledger annexure (one or more books). */
+  showLedgerAnnexure: boolean;
+  ledgerAnnexureHeading: string;
+  ledgerAnnexureIntro: string;
+  ledgerBooks: AgreementLedgerBook[];
+  ledgerAnnexureNote: string;
+
+  /**
+   * Optional settlement box after the client / ledger annexures
+   * (e.g. files net + ledger closings = final amount asking).
+   */
+  showSettlementSummary: boolean;
+  settlementSummaryHeading: string;
+  settlementSummaryIntro: string;
+  settlementLines: AgreementSettlementLine[];
+  settlementFinalLabel: string;
+  settlementFinalAmount: string;
+  settlementSummaryNote: string;
+
   showWitnesses: boolean;
   witnesses: AgreementWitness[];
   showPageNumbers: boolean;
@@ -151,8 +223,10 @@ export interface AgreementRecord {
   updatedAt: string;
   /** Hard-copy signature kept for our records (not required on the PDF). */
   signed?: boolean;
+  /** Hard copy is out for signature / signing underway (not yet signed). */
+  signingInProgress?: boolean;
   /** ISO date or datetime when the hard copy was signed. */
   signedAt?: string;
-  /** Short note, e.g. "Hard copy signed". */
+  /** Short note, e.g. "Hard copy signed" or "Sign in progress". */
   signedNote?: string;
 }

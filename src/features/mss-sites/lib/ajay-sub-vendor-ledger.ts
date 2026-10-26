@@ -1,6 +1,6 @@
 /**
  * Sub Vendor Payment · `Ajay` tab — money ledger + Everest Solar Bill.
- * Source: SUB VENDOR PAYMENT sheet (live snapshot 2026-10-05).
+ * Source: SUB VENDOR PAYMENT sheet (live snapshot 2026-10-24).
  */
 
 import { AJAY_SUB_VENDOR_LEDGER } from "./projects-config";
@@ -23,7 +23,7 @@ export interface AjayEverestBillRow {
 
 export const AJAY_MONEY_LEDGER_SUMMARY = {
   totalDr: 1_310_000,
-  totalCr: 788_500,
+  totalCr: 800_410,
   closingBalance: AJAY_SUB_VENDOR_LEDGER.tables[0].headerBalance,
 } as const;
 
@@ -116,14 +116,21 @@ export const AJAY_MONEY_LEDGER_ROWS: readonly AjayMoneyLedgerRow[] = [
     dr: 300_000,
     cr: 0,
     closingBalance: 321_500,
-    remark: "",
+    remark: "EVEREST BUILD SOLAR NEFT",
   },
   {
     date: "17 Sep 2026",
     dr: 200_000,
     cr: 0,
     closingBalance: 521_500,
-    remark: "",
+    remark: "EVEREST BUILD SOLAR NEFT",
+  },
+  {
+    date: "06 Mar 2026",
+    dr: 0,
+    cr: 11_910,
+    closingBalance: 509_590,
+    remark: "dc & earthing wire",
   },
 ];
 

@@ -1,6 +1,6 @@
 /**
  * Loans Ledgers · `Shripal Ji` tab — left Cash / Bank block (columns A–F).
- * Source: Loans Ledgers sheet (live snapshot 2026-08-19). Loan EMI block (right) excluded.
+ * Source: Loans Ledgers sheet (live snapshot 2026-10-24). Loan EMI block (right) excluded.
  * See docs/planning/loans-ledgers.md.
  */
 
@@ -117,6 +117,14 @@ export const SHRIPAL_CASH_BANK_LEDGER_ROWS: readonly ShripalCashBankLedgerRow[] 
     cr: 0,
     closingBalance: -137_455,
     remark: "",
+  },
+  {
+    date: "02 Sep 2026",
+    particular: "7th EMI",
+    dr: 0,
+    cr: 14_750,
+    closingBalance: -152_205,
+    remark: "self paid by shripal ji",
   },
 ];
 
