@@ -27,6 +27,7 @@ import {
 import type { MssSitesTable } from "../types/mss-sites";
 import { ClientNameSearch } from "./ClientNameSearch";
 import { MssSitesAnalytics } from "./MssSitesAnalytics";
+import { ProjectRowCopyCell } from "./ProjectRowCopyCell";
 import { ProjectRowMoreCell } from "./ProjectRowMoreCell";
 import { ProjectsMultiselectFilter } from "./ProjectsMultiselectFilter";
 import { ProjectsSheetTabFilter } from "./ProjectsSheetTabFilter";
@@ -96,6 +97,19 @@ const moreTdStyle = {
   ...tdStyle,
   textAlign: "center" as const,
   width: 56,
+  verticalAlign: "middle" as const,
+};
+
+const copyThStyle = {
+  ...thStyle,
+  textAlign: "center" as const,
+  width: 44,
+};
+
+const copyTdStyle = {
+  ...tdStyle,
+  textAlign: "center" as const,
+  width: 44,
   verticalAlign: "middle" as const,
 };
 
@@ -399,6 +413,9 @@ export const MssSitesTablePreview = forwardRef<MssSitesTablePreviewHandle, MssSi
           <table className="mss-sites-table">
             <thead>
               <tr>
+                <th className="mss-sites-table-copy-col" style={copyThStyle} aria-label="Copy site details">
+                  <span className="mss-sites-table-copy-heading">Copy</span>
+                </th>
                 {visibleColumnIndices.map((columnIndex) => {
                   const header = table.headers[columnIndex];
                   return (
@@ -418,6 +435,9 @@ export const MssSitesTablePreview = forwardRef<MssSitesTablePreviewHandle, MssSi
             </thead>
             <tbody>
               <tr className="mss-sites-table-totals-row">
+                <td className="mss-sites-table-copy-col" style={{ ...totalsTdStyle, textAlign: "center" }}>
+                  —
+                </td>
                 {visibleColumnIndices.map((columnIndex) => {
                   const totalValue = columnTotals.get(columnIndex);
                   const header = table.headers[columnIndex];
@@ -437,6 +457,9 @@ export const MssSitesTablePreview = forwardRef<MssSitesTablePreviewHandle, MssSi
               </tr>
               {filteredRows.map((row, rowIndex) => (
                 <tr key={`row-${rowIndex}`} style={{ background: rowIndex % 2 === 0 ? "#ffffff" : "#f8fafc" }}>
+                  <td className="mss-sites-table-copy-col" style={copyTdStyle}>
+                    <ProjectRowCopyCell row={row} />
+                  </td>
                   {visibleColumnIndices.map((columnIndex) => {
                     const header = table.headers[columnIndex];
                     return (

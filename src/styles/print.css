@@ -219,6 +219,8 @@
     font-size: 18px !important;
   }
 
+  html.print-mss-sites .mss-sites-table-copy-col,
+  html.print-mss-sites .projects-row-copy-cell,
   html.print-mss-sites .projects-more-trigger,
   html.print-mss-sites .projects-more-tooltip {
     display: none !important;

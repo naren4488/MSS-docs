@@ -2542,6 +2542,61 @@
   z-index: 1;
 }
 
+.mss-sites-table-copy-heading {
+  font-size: 9px;
+  letter-spacing: 0.35px;
+}
+
+.projects-row-copy-cell {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.projects-row-copy-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: #f8fafc;
+  color: #14306b;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.projects-row-copy-trigger:hover,
+.projects-row-copy-trigger:focus-visible {
+  background: #eef2ff;
+  border-color: #14306b;
+  outline: none;
+}
+
+.projects-row-copy-trigger--copied {
+  background: #ecfdf5;
+  border-color: #059669;
+  color: #047857;
+}
+
+.projects-row-copy-error {
+  font-size: 8px;
+  line-height: 1.2;
+  color: #b91c1c;
+  white-space: nowrap;
+}
+
+.projects-row-copy-missing-list {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  color: #374151;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
 .projects-more-empty {
   color: #9ca3af;
 }
