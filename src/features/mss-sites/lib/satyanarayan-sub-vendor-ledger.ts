@@ -2,7 +2,7 @@
  * Sub Vendor Payment · Satyanarayan ledgers.
  * - `SATYANARAYAN ` tab — money ledger
  * - `BS enterprises` tab — also Satyanarayan (SATAYNARAYAN JI)
- * Source: live snapshot 2026-10-26.
+ * Source: live snapshot 2026-10-26 (re-verified same day; closings unchanged).
  */
 
 import {

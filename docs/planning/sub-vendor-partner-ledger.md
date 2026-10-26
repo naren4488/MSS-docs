@@ -204,6 +204,12 @@ When implementing:
 
 Append dated notes here. Do not delete older entries — strike through if superseded.
 
+### 2026-10-26 — Ajay money refresh; Satyanarayan / BS re-check
+
+- Live re-read Sub Vendor `Ajay`: new DR **₹4,50,000** on **25 Oct 2026** → closing **+₹9,59,590**. Header DR **₹17,60,000** · CR **₹8,00,410**. Everest bills still **₹77,781**.
+- `SATYANARAYAN ` still **+₹1,69,992**; `BS enterprises` still **+₹1,70,761** — no change.
+- App seeds updated: `ajay-sub-vendor-ledger.ts`, `AJAY_SUB_VENDOR_LEDGER`, `partner-mss-payments.ts`.
+
 ### 2026-10-05 — Ajay money refresh + Satyanarayan tab check
 
 - Live re-read Sub Vendor `Ajay`: new DR **₹2,00,000** on **17 Sep 2026** → closing **+₹5,21,500** (was +₹3,21,500). Header DR **₹13,10,000**. Everest bills still **₹77,781**.

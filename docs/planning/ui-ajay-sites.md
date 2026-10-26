@@ -93,6 +93,13 @@ Money-ledger rows are seeded in `partner-mss-payments.ts` for analytics. Everest
 - Live re-read: money ledger **−₹1,78,500** (new ₹2.5L NEFT 10 Aug); Everest bills **₹73,816** (invoices 0141, 0157).
 - Hero / ledger cards: **− red** = we need to pay · **+ green** = we will receive.
 
+### 2026-10-26 — Money ledger refresh
+
+- Live re-read Sub Vendor `Ajay`: new DR **₹4,50,000** on **25 Oct 2026** (EVEREST BUILD SOLAR NEFT) → closing **+₹9,59,590** (was +₹5,09,590 after dc/earthing CR). Header DR **₹17,60,000** · CR **₹8,00,410**.
+- Everest Solar Bill still **₹77,781**.
+- Satyanarayan / BS / Shripal Cash-Bank re-checked same day — closings unchanged.
+- App seeds updated: `ajay-sub-vendor-ledger.ts`, `AJAY_SUB_VENDOR_LEDGER`, `partner-mss-payments.ts`.
+
 ### 2026-10-05 — Money ledger refresh
 
 - Live re-read Sub Vendor `Ajay`: new DR **₹2,00,000** on **17 Sep 2026** → closing **+₹5,21,500** (was +₹3,21,500). Header DR **₹13,10,000**.

@@ -33,7 +33,7 @@ export const AJAY_SUB_VENDOR_LEDGER = {
       id: "money",
       title: "Money ledger",
       columnRange: "A–E",
-      headerBalance: 509_590,
+      headerBalance: 959_590,
     },
     {
       id: "everest-bills",

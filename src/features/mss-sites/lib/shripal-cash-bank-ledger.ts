@@ -1,6 +1,6 @@
 /**
  * Loans Ledgers · `Shripal Ji` tab — left Cash / Bank block (columns A–F).
- * Source: Loans Ledgers sheet (live snapshot 2026-10-24). Loan EMI block (right) excluded.
+ * Source: Loans Ledgers sheet (live re-verified 2026-10-26; Cash/Bank −₹1,52,205 unchanged). Loan EMI block (right) excluded.
  * See docs/planning/loans-ledgers.md.
  */
 

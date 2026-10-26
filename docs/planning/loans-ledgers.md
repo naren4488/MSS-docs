@@ -238,6 +238,10 @@ Live sheet read **2026-10-05** (gviz). Shripal + MK Home = **both ledgers**.
 
 ## Decision log
 
+### 2026-10-26 — Shripal Cash/Bank re-check
+
+- Live re-read `Shripal Ji` left block via gviz: Cash/Bank still **−₹1,52,205** (DR ₹66,600 / CR ₹2,18,805). App seed unchanged.
+
 ### 2026-10-05 — Live outstanding refresh (incl. Montu + Sanjay)
 
 - Re-read live Loans Ledgers via gviz (`tmp/live-refresh-2026-10-05`).
