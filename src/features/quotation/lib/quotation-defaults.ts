@@ -1,8 +1,9 @@
-import { MSS_LOGO_URL } from "@/features/company-profile/lib/company-profile-defaults";
+import { MSE_LOGO_URL, MSS_LOGO_URL } from "@/features/company-profile/lib/company-profile-defaults";
 import type { AgreementCompany } from "@/features/agreement/types/agreement";
 import type {
   QuotationCommercialRow,
   QuotationData,
+  QuotationIssuer,
   QuotationKind,
   QuotationLanguage,
   QuotationMaterialItem,
@@ -30,19 +31,100 @@ function uuid() {
 
 const today = new Date().toISOString().slice(0, 10);
 
-function defaultCompany(): AgreementCompany {
-  return {
+const QUOTATION_SHARED_ADDRESS =
+  "Plot No. 44, Jai Bhawani Vihar Vistar, Radha Vihar, Govindpura, Jaipur, Rajasthan – 302012";
+const QUOTATION_SHARED_PHONE = "+91 9928413501";
+
+type QuotationIssuerPreset = {
+  company: AgreementCompany;
+  bankAccountName: string;
+  bankName: string;
+  bankAccountNo: string;
+  bankIfsc: string;
+  bankGst: string;
+  repName: string;
+  repTitle: string;
+  repCompany: string;
+  repMobiles: string;
+};
+
+const MSS_ISSUER_PRESET: QuotationIssuerPreset = {
+  company: {
     name: "Mahi Solar Solution Private Limited",
     logoUrl: MSS_LOGO_URL,
-    address: "Plot No. 44, Jai Bhawani Vihar Vistar, Radha Vihar, Govindpura, Jaipur, Rajasthan – 302012",
-    phone: "+91 9928413501",
+    address: QUOTATION_SHARED_ADDRESS,
+    phone: QUOTATION_SHARED_PHONE,
     email: "mahisolarsolution@gmail.com",
     website: "mahisolarsolution.com",
     cin: "",
     gst: "08AAUCM4104G1ZD",
     representativeName: "Mahendra Kumawat",
     representativeTitle: "Director",
+  },
+  bankAccountName: "MAHI SOLAR SOLUTION PRIVATE LIMITED",
+  bankName: "AU Small Finance Bank",
+  bankAccountNo: "7740889928413501",
+  bankIfsc: "AUBL0002206",
+  bankGst: "08AAUCM4104G1ZD",
+  repName: "MAHENDRA KUMAWAT",
+  repTitle: "Director",
+  repCompany: "MAHI SOLAR SOLUTION PRIVATE LIMITED",
+  repMobiles: "9928413501",
+};
+
+const MSE_ISSUER_PRESET: QuotationIssuerPreset = {
+  company: {
+    name: "Mahi Solar Energy",
+    logoUrl: MSE_LOGO_URL,
+    address: QUOTATION_SHARED_ADDRESS,
+    phone: QUOTATION_SHARED_PHONE,
+    email: "mahisolarenergy77@gmail.com",
+    website: "mahisolarenergy.com",
+    cin: "",
+    gst: "08GPEPK1479A1ZZ",
+    representativeName: "Mahendra Kumawat",
+    representativeTitle: "Proprietor",
+  },
+  bankAccountName: "MAHI SOLAR ENERGY",
+  bankName: "AU Small Finance Bank",
+  bankAccountNo: "2021244429857480",
+  bankIfsc: "AUBL0002444",
+  bankGst: "08GPEPK1479A1ZZ",
+  repName: "MAHENDRA KUMAWAT",
+  repTitle: "Proprietor",
+  repCompany: "MAHI SOLAR ENERGY",
+  repMobiles: "9928413501",
+};
+
+export function resolveQuotationIssuer(value: string | null | undefined): QuotationIssuer {
+  return value === "mse" ? "mse" : "mss";
+}
+
+export function getQuotationIssuerPreset(issuer: QuotationIssuer): QuotationIssuerPreset {
+  return issuer === "mse" ? MSE_ISSUER_PRESET : MSS_ISSUER_PRESET;
+}
+
+/** Swap letterhead, bank and signatory to MSS or MSE while keeping the rest of the quote. */
+export function applyQuotationIssuer(data: QuotationData, issuer: QuotationIssuer): QuotationData {
+  const preset = getQuotationIssuerPreset(issuer);
+  return {
+    ...data,
+    issuer,
+    company: { ...preset.company },
+    bankAccountName: preset.bankAccountName,
+    bankName: preset.bankName,
+    bankAccountNo: preset.bankAccountNo,
+    bankIfsc: preset.bankIfsc,
+    bankGst: preset.bankGst,
+    repName: preset.repName,
+    repTitle: preset.repTitle,
+    repCompany: preset.repCompany,
+    repMobiles: preset.repMobiles,
   };
+}
+
+function defaultCompany(issuer: QuotationIssuer = "mss"): AgreementCompany {
+  return { ...getQuotationIssuerPreset(issuer).company };
 }
 
 function material(description: string, qty: string, unit: string, make: string): QuotationMaterialItem {
@@ -1211,12 +1293,14 @@ function defaultInstallationSteps(language: QuotationLanguage, offgrid = false):
 
 export function createDefaultQuotationData(
   language: QuotationLanguage = "en",
-  options?: { includeSubsidy?: boolean; commercial?: boolean; offgrid?: boolean },
+  options?: { includeSubsidy?: boolean; commercial?: boolean; offgrid?: boolean; issuer?: QuotationIssuer },
 ): QuotationData {
   const isHindi = language === "hi";
   const offgrid = options?.offgrid === true;
   const commercial = !offgrid && options?.commercial === true;
   const includeSubsidy = commercial || offgrid ? false : options?.includeSubsidy !== false;
+  const issuer = resolveQuotationIssuer(options?.issuer);
+  const issuerPreset = getQuotationIssuerPreset(issuer);
   const phase: QuotationPhase = commercial ? "3PH" : "1PH";
   const capacity = commercial ? "10 KW" : "3 KW";
   const termsVariant: "residential" | "commercial" | "offgrid" = offgrid
@@ -1233,6 +1317,7 @@ export function createDefaultQuotationData(
   return {
     language: isHindi ? "hi" : "en",
     kind: offgrid ? "offgrid" : commercial ? "commercial" : "residential",
+    issuer,
     title: isHindi ? "सोलर प्रस्ताव" : "SOLAR PROPOSAL",
     tagline: isHindi ? "स्मार्ट  |  टिकाऊ  |  किफायती" : "SMART  |  SUSTAINABLE  |  COST EFFECTIVE",
     coverImageUrl: "",
@@ -1250,7 +1335,7 @@ export function createDefaultQuotationData(
     shadowFreeArea: "",
     connectionType: commercial ? (isHindi ? "HT थ्री फेज" : "HT Three Phase") : "",
     roofType: commercial ? (isHindi ? "टिन शेड / RCC छत" : "Tin shed / RCC rooftop") : "",
-    company: defaultCompany(),
+    company: defaultCompany(issuer),
     materialItems,
     installationWork: [],
     assumptions: defaultAssumptions(language),
@@ -1303,15 +1388,15 @@ export function createDefaultQuotationData(
     discomChargesNote: commercial ? defaultDiscomChargesNote(language) : "",
     terms: defaultTerms(language, includeSubsidy, termsVariant),
     subsidyDocuments: includeSubsidy ? defaultSubsidyDocuments(language) : [],
-    bankAccountName: "MAHI SOLAR SOLUTION PRIVATE LIMITED",
-    bankName: "AU Small Finance Bank",
-    bankAccountNo: "7740889928413501",
-    bankIfsc: "AUBL0002206",
-    bankGst: "08AAUCM4104G1ZD",
-    repName: "MAHENDRA KUMAWAT",
-    repTitle: "Director",
-    repCompany: "MAHI SOLAR SOLUTION PRIVATE LIMITED",
-    repMobiles: "9928413501",
+    bankAccountName: issuerPreset.bankAccountName,
+    bankName: issuerPreset.bankName,
+    bankAccountNo: issuerPreset.bankAccountNo,
+    bankIfsc: issuerPreset.bankIfsc,
+    bankGst: issuerPreset.bankGst,
+    repName: issuerPreset.repName,
+    repTitle: issuerPreset.repTitle,
+    repCompany: issuerPreset.repCompany,
+    repMobiles: issuerPreset.repMobiles,
     showLetterhead: true,
     showPageNumbers: true,
   };
@@ -1324,12 +1409,24 @@ export function createDefaultQuotationData(
 export function switchQuotationLanguage(data: QuotationData, language: QuotationLanguage): QuotationData {
   const offgrid = isOffgridQuotation(data);
   const commercial = isCommercialQuotation(data);
-  const previous = createDefaultQuotationData(data.language, { includeSubsidy: !commercial && !offgrid, commercial, offgrid });
-  const fresh = createDefaultQuotationData(language, { includeSubsidy: !commercial && !offgrid, commercial, offgrid });
+  const issuer = resolveQuotationIssuer(data.issuer);
+  const previous = createDefaultQuotationData(data.language, {
+    includeSubsidy: !commercial && !offgrid,
+    commercial,
+    offgrid,
+    issuer,
+  });
+  const fresh = createDefaultQuotationData(language, {
+    includeSubsidy: !commercial && !offgrid,
+    commercial,
+    offgrid,
+    issuer,
+  });
 
   return {
     ...fresh,
     kind: offgrid ? "offgrid" : commercial ? "commercial" : "residential",
+    issuer,
     coverImageUrl: data.coverImageUrl,
     customerName: data.customerName,
     customerPhone: data.customerPhone,
@@ -1422,7 +1519,13 @@ export function normalizeQuotationData(input?: Partial<QuotationData> | null): Q
   const language: QuotationLanguage = input?.language === "hi" ? "hi" : "en";
   const offgrid = input?.kind === "offgrid";
   const commercial = !offgrid && isCommercialQuotation(input ?? {});
-  const defaults = createDefaultQuotationData(language, { includeSubsidy: !commercial && !offgrid, commercial, offgrid });
+  const issuer = resolveQuotationIssuer(input?.issuer);
+  const defaults = createDefaultQuotationData(language, {
+    includeSubsidy: !commercial && !offgrid,
+    commercial,
+    offgrid,
+    issuer,
+  });
   const phase: QuotationPhase = input?.phase === "3PH" ? "3PH" : "1PH";
   const structureBrand: QuotationStructureBrand = input?.structureBrand === "Tata" ? "Tata" : "Apollo";
   const acCableBrand: QuotationAcCableBrand = input?.acCableBrand === "Polycab" ? "Polycab" : "Ramsons";
@@ -1448,6 +1551,7 @@ export function normalizeQuotationData(input?: Partial<QuotationData> | null): Q
     ...defaults,
     ...input,
     language,
+    issuer,
     phase,
     structureBrand,
     acCableBrand,

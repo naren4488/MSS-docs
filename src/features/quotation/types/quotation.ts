@@ -12,6 +12,8 @@ export type QuotationEarthingWireOption = "Polycab25" | "Indo6" | "Ramsons16" | 
 /** Residential subsidy: MNRE only, or MNRE + state. */
 export type QuotationSubsidyScope = "central" | "both";
 export type QuotationKind = "residential" | "commercial" | "offgrid";
+/** Letterhead / bank / signatory identity on the quotation. */
+export type QuotationIssuer = "mss" | "mse";
 
 export interface QuotationMaterialItem {
   id: string;
@@ -53,6 +55,8 @@ export interface QuotationData {
   language: QuotationLanguage;
   /** Residential PM Surya Ghar, commercial rooftop, or off-grid. Independent of the subsidy toggle. */
   kind: QuotationKind;
+  /** MSS (Solution Pvt Ltd) or MSE (Energy) letterhead, bank and signatory. */
+  issuer: QuotationIssuer;
   title: string;
   tagline: string;
   coverImageUrl: string;

@@ -7,6 +7,7 @@ import type { AgreementCompany } from "@/features/agreement/types/agreement";
 import type {
   QuotationData,
   QuotationGeneration,
+  QuotationIssuer,
   QuotationPhase,
   QuotationAcCableBrand,
   QuotationEarthingWireOption,
@@ -21,12 +22,14 @@ import {
   applyEarthingWireToMaterials,
   applyOffgridCapacityToMaterials,
   applyPhaseToMaterialItems,
+  applyQuotationIssuer,
   applyStructureBrandToMaterials,
   defaultSubsidyNote,
   isCommercialQuotation,
   isOffgridQuotation,
   offgridProjectAmount,
   resolveEarthingWireOption,
+  resolveQuotationIssuer,
   syncOffgridOfferToCapacity,
 } from "../lib/quotation-defaults";
 
@@ -80,6 +83,7 @@ export function QuotationEditor({ data, onChange }: QuotationEditorProps) {
   const commercial = isCommercialQuotation(data);
   const offgrid = isOffgridQuotation(data);
   const sizesFromCapacity = commercial || offgrid;
+  const issuer = resolveQuotationIssuer(data.issuer);
 
   function applyCommercialSizing(capacity: string, phase: QuotationPhase) {
     return {
@@ -97,9 +101,42 @@ export function QuotationEditor({ data, onChange }: QuotationEditorProps) {
     };
   }
 
+  function setIssuer(next: QuotationIssuer) {
+    if (next === issuer) return;
+    onChange(applyQuotationIssuer(data, next));
+  }
+
   return (
     <div className="stack">
-      <AccordionSection title="Company (Letterhead)" helper="Appears in the header on page 1.">
+      <AccordionSection
+        title="Company (Letterhead)"
+        helper="Switch MSS / MSE to fill logo, GST, bank and signatory. You can still edit fields after switching."
+        defaultOpen
+      >
+        <div className="field" style={{ marginBottom: 12 }}>
+          <label>Issue as</label>
+          <div className="segmented-control" role="group" aria-label="Quotation issuer">
+            <button
+              type="button"
+              className={`segment-button ${issuer === "mss" ? "active" : ""}`}
+              onClick={() => setIssuer("mss")}
+            >
+              MSS
+            </button>
+            <button
+              type="button"
+              className={`segment-button ${issuer === "mse" ? "active" : ""}`}
+              onClick={() => setIssuer("mse")}
+            >
+              MSE
+            </button>
+          </div>
+          <p className="helper-text" style={{ marginTop: 6 }}>
+            {issuer === "mse"
+              ? "Mahi Solar Energy — proprietorship letterhead, bank and GST."
+              : "Mahi Solar Solution Pvt Ltd — company letterhead, bank and GST."}
+          </p>
+        </div>
         <ImageUploader label="Company Logo" value={data.company.logoUrl} onChange={(value) => updateCompany("logoUrl", value)} />
         <div className="field-grid">
           <div className="field full-span">
