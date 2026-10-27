@@ -244,7 +244,8 @@ async function loadLogoPng(logoUrl: string): Promise<Uint8Array | undefined> {
       img.src = url;
     });
     const canvas = document.createElement("canvas");
-    const width = isMseLogoUrl(url) ? 280 : 520;
+    // MSE is square and must not be bottom-cropped; MSS crops empty SVG padding.
+    const width = isMseLogoUrl(url) ? 360 : 520;
     const cropBottom = isMseLogoUrl(url) ? 0 : 0.14;
     const sourceHeight = image.naturalHeight * (1 - cropBottom);
     const height = Math.max(80, Math.round((sourceHeight / Math.max(image.naturalWidth, 1)) * width));
@@ -273,14 +274,15 @@ function letterheadChildren(data: CompanyProfileData, logoPng?: Uint8Array) {
     data.cin ? `CIN: ${data.cin}` : "",
   ]);
   const vendorLine = getLetterheadVendorLine(data.firm);
-  const compact = isMseFirm(data.firm);
+  const mseLogo = isMseFirm(data.firm);
   const children: Array<Paragraph | Table> = [];
   if (logoPng) {
-    const logoDims = compact ? { width: 95, height: 72 } : { width: 170, height: 108 };
+    // Square MSE mark ≈ MSS cropped mark height; MSS keeps wide mark.
+    const logoDims = mseLogo ? { width: 108, height: 108 } : { width: 170, height: 108 };
     children.push(
       new Paragraph({
         alignment: AlignmentType.CENTER,
-        spacing: { after: compact ? 20 : 40, before: 0 },
+        spacing: { after: 40, before: 0 },
         children: [
           new ImageRun({
             type: "png",
@@ -295,12 +297,12 @@ function letterheadChildren(data: CompanyProfileData, logoPng?: Uint8Array) {
   children.push(
     new Paragraph({
       alignment: AlignmentType.CENTER,
-      spacing: { after: compact ? 16 : 40 },
-      children: [run(filledValue(data.legalName), { bold: true, size: compact ? 28 : 32, color: NAVY_HEX, allCaps: true })],
+      spacing: { after: 40 },
+      children: [run(filledValue(data.legalName), { bold: true, size: 32, color: NAVY_HEX, allCaps: true })],
     }),
     new Paragraph({
       alignment: AlignmentType.CENTER,
-      spacing: { after: compact ? 16 : 40 },
+      spacing: { after: 40 },
       children: [run(vendorLine, { bold: true, size: 18, color: "1F4E79" })],
     }),
   );
@@ -308,7 +310,7 @@ function letterheadChildren(data: CompanyProfileData, logoPng?: Uint8Array) {
     children.push(
       new Paragraph({
         alignment: AlignmentType.CENTER,
-        spacing: { after: compact ? 10 : 20 },
+        spacing: { after: 20 },
         children: [run(data.address, { size: 18, color: "374151" })],
       }),
     );
@@ -317,7 +319,7 @@ function letterheadChildren(data: CompanyProfileData, logoPng?: Uint8Array) {
     children.push(
       new Paragraph({
         alignment: AlignmentType.CENTER,
-        spacing: { after: compact ? 10 : 20 },
+        spacing: { after: 20 },
         children: [run(contactLine, { size: 18, color: "374151" })],
       }),
     );

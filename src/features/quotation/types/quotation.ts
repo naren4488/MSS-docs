@@ -7,6 +7,8 @@ export type QuotationLanguage = "en" | "hi";
 export type QuotationPhase = "1PH" | "3PH";
 export type QuotationStructureBrand = "Apollo" | "Tata";
 export type QuotationAcCableBrand = "Ramsons" | "Polycab";
+/** Solar PV module brand on the BOM. */
+export type QuotationPanelBrand = "Adani" | "Waaree" | "INA";
 /** Earthing wire BOM option — single make or Indo/Ramsons either-or. */
 export type QuotationEarthingWireOption = "Polycab25" | "Indo6" | "Ramsons16" | "IndoOrRamsons";
 /** Residential subsidy: MNRE only, or MNRE + state. */
@@ -70,6 +72,8 @@ export interface QuotationData {
   phase: QuotationPhase;
   /** GI mounting structure brand — drives leg size in the BOM. */
   structureBrand: QuotationStructureBrand;
+  /** Solar PV module brand — Adani, Waaree, or INA in the BOM. */
+  panelBrand: QuotationPanelBrand;
   /** AC armoured cable brand — Ramsons or Polycab in the BOM. */
   acCableBrand: QuotationAcCableBrand;
   /** Earthing wire make shown in the BOM. */

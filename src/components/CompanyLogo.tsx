@@ -37,7 +37,10 @@ export const LETTERHEAD_LOGO_WRAP: CSSProperties = {
   marginBottom: 2,
 };
 
-/** Full MSE mark — no crop (logo already includes the firm name at the bottom). */
+/**
+ * Full MSE mark — no crop (square artwork already includes the firm name).
+ * Sized to sit near the MSS letterhead mark (~84px visible after MSS crop).
+ */
 export const MSE_LETTERHEAD_LOGO_WRAP: CSSProperties = {
   display: "flex",
   justifyContent: "center",
@@ -49,7 +52,8 @@ export function getLetterheadLogoWrap(logoUrl?: string): CSSProperties {
 }
 
 export function getLetterheadLogoSize(logoUrl?: string): { maxHeight: number; maxWidth: number } {
-  return isMseLogoUrl(logoUrl) ? { maxHeight: 52, maxWidth: 120 } : { maxHeight: 96, maxWidth: 260 };
+  // MSE is square; keep height close to MSS cropped mark so headers feel matched.
+  return isMseLogoUrl(logoUrl) ? { maxHeight: 88, maxWidth: 88 } : { maxHeight: 96, maxWidth: 260 };
 }
 
 interface CompanyLogoProps {

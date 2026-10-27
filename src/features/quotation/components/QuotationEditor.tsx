@@ -11,6 +11,7 @@ import type {
   QuotationPhase,
   QuotationAcCableBrand,
   QuotationEarthingWireOption,
+  QuotationPanelBrand,
   QuotationStructureBrand,
   QuotationSubsidyScope,
 } from "../types/quotation";
@@ -21,6 +22,7 @@ import {
   applyCommercialCapacityToMaterials,
   applyEarthingWireToMaterials,
   applyOffgridCapacityToMaterials,
+  applyPanelBrandToMaterials,
   applyPhaseToMaterialItems,
   applyQuotationIssuer,
   applyStructureBrandToMaterials,
@@ -29,6 +31,7 @@ import {
   isOffgridQuotation,
   offgridProjectAmount,
   resolveEarthingWireOption,
+  resolvePanelBrand,
   resolveQuotationIssuer,
   syncOffgridOfferToCapacity,
 } from "../lib/quotation-defaults";
@@ -282,6 +285,24 @@ export function QuotationEditor({ data, onChange }: QuotationEditorProps) {
             >
               <option value="Apollo">Apollo · Leg 75×75</option>
               <option value="Tata">Tata · Leg 72×72</option>
+            </select>
+          </div>
+          <div className="field">
+            <label>Panels</label>
+            <select
+              value={resolvePanelBrand(data.panelBrand ?? (offgrid ? "Waaree" : "Adani"))}
+              onChange={(event) => {
+                const panelBrand = event.target.value as QuotationPanelBrand;
+                onChange({
+                  ...data,
+                  panelBrand,
+                  materialItems: applyPanelBrandToMaterials(data.materialItems, panelBrand, data.language),
+                });
+              }}
+            >
+              <option value="Adani">Adani</option>
+              <option value="Waaree">Waaree</option>
+              <option value="INA">INA</option>
             </select>
           </div>
           {offgrid ? null : (

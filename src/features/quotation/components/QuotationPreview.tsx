@@ -1,6 +1,6 @@
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties, ComponentType, ReactNode } from "react";
-import { CompanyLogo, LETTERHEAD_LOGO_WRAP } from "@/components/CompanyLogo";
+import { CompanyLogo, getLetterheadLogoSize, getLetterheadLogoWrap } from "@/components/CompanyLogo";
 import {
   BadgeCheck,
   ClipboardList,
@@ -102,11 +102,17 @@ function estimateParagraphHeight(text: string, charsPerLine = 80, lineHeight = 1
 
 function Header({ data }: { data: QuotationData }) {
   const L = quotationLabels(data.language);
+  const logoSize = getLetterheadLogoSize(data.company.logoUrl);
   return (
     <div style={{ background: "#ffffff", textAlign: "center", borderBottom: "2px solid #e5e7eb", padding: "24px 0 18px" }}>
       {data.company.logoUrl ? (
-        <div style={LETTERHEAD_LOGO_WRAP}>
-          <CompanyLogo alt="Company logo" src={data.company.logoUrl} />
+        <div style={getLetterheadLogoWrap(data.company.logoUrl)}>
+          <CompanyLogo
+            alt="Company logo"
+            src={data.company.logoUrl}
+            maxHeight={logoSize.maxHeight}
+            maxWidth={logoSize.maxWidth}
+          />
         </div>
       ) : null}
       <div style={{ fontSize: 21, fontWeight: 700, letterSpacing: 1.2, textTransform: "uppercase" }}>{filledValue(data.company.name)}</div>

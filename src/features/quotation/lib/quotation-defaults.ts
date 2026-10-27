@@ -10,6 +10,7 @@ import type {
   QuotationPhase,
   QuotationAcCableBrand,
   QuotationEarthingWireOption,
+  QuotationPanelBrand,
   QuotationStructureBrand,
   QuotationSubsidyScope,
   QuotationTermItem,
@@ -215,6 +216,80 @@ export function applyStructureBrandToMaterials(
   });
 }
 
+export function resolvePanelBrand(value?: QuotationPanelBrand | string | null): QuotationPanelBrand {
+  if (value === "Waaree" || value === "Waree") return "Waaree";
+  if (value === "INA") return "INA";
+  if (value === "Adani") return "Adani";
+  return "Adani";
+}
+
+export function inferPanelBrandFromMake(make: string): QuotationPanelBrand | null {
+  const text = make.trim();
+  if (!text) return null;
+  if (/waaree|waree/i.test(text)) return "Waaree";
+  if (/\bina\b/i.test(text)) return "INA";
+  if (/adani|अदानी/i.test(text)) return "Adani";
+  return null;
+}
+
+export function panelBrandMake(brand: QuotationPanelBrand, language: QuotationLanguage): string {
+  if (language === "hi") {
+    switch (brand) {
+      case "Waaree":
+        return "Waaree Topcon Bifacial · 30 वर्ष वारंटी";
+      case "INA":
+        return "INA Topcon Bifacial · 30 वर्ष वारंटी";
+      case "Adani":
+      default:
+        return "अदानी टॉपकॉन बाइफेशियल · 30 वर्ष वारंटी";
+    }
+  }
+  switch (brand) {
+    case "Waaree":
+      return "Waaree Topcon Bifacial with 30 Year Warranty";
+    case "INA":
+      return "INA Topcon Bifacial with 30 Year Warranty";
+    case "Adani":
+    default:
+      return "Adani Topcon Bifacial with 30 Year Warranty";
+  }
+}
+
+function panelBrandLabel(brand: QuotationPanelBrand, language: QuotationLanguage): string {
+  if (language === "hi") {
+    switch (brand) {
+      case "Waaree":
+        return "Waaree Topcon Bifacial";
+      case "INA":
+        return "INA Topcon Bifacial";
+      case "Adani":
+      default:
+        return "अदानी टॉपकॉन बाइफेशियल";
+    }
+  }
+  switch (brand) {
+    case "Waaree":
+      return "Waaree Topcon Bifacial";
+    case "INA":
+      return "INA Topcon Bifacial";
+    case "Adani":
+    default:
+      return "Adani Topcon Bifacial";
+  }
+}
+
+export function applyPanelBrandToMaterials(
+  items: QuotationMaterialItem[],
+  brand: QuotationPanelBrand,
+  language: QuotationLanguage,
+): QuotationMaterialItem[] {
+  const make = panelBrandMake(brand, language);
+  return items.map((item) => {
+    if (!isSolarPvModulesDescription(item.description)) return item;
+    return { ...item, make };
+  });
+}
+
 export function applyAcCableBrandToMaterials(
   items: QuotationMaterialItem[],
   brand: QuotationAcCableBrand,
@@ -309,6 +384,7 @@ function defaultMaterialItems(
   brand: QuotationStructureBrand = "Apollo",
   acCableBrand: QuotationAcCableBrand = "Ramsons",
   earthingWire: QuotationEarthingWireOption = "IndoOrRamsons",
+  panelBrand: QuotationPanelBrand = "Adani",
 ): QuotationMaterialItem[] {
   const structureQty = language === "hi" ? "आवश्यकतानुसार" : "As per Requirement";
   const structure = material(
@@ -318,10 +394,11 @@ function defaultMaterialItems(
     mountingStructureMake(brand, language),
   );
   const earthingMake = earthingWireMake(earthingWire, language);
+  const moduleMake = panelBrandMake(panelBrand, language);
 
   if (language === "hi") {
     return [
-      material("सोलर पीवी मॉड्यूल", "6 पैनल", "550 Wp", "अदानी टॉपकॉन बाइफेशियल · 30 वर्ष वारंटी"),
+      material("सोलर पीवी मॉड्यूल", "6 पैनल", "550 Wp", moduleMake),
       material("सोलर इनवर्टर", "1", inverterUnit(phase, language), "3.6 किलोवाट POLYCAB इनवर्टर · 10 वर्ष वारंटी"),
       structure,
       material("AC केबल", "50 तक", "मी.", acCableMake(phase, language, acCableBrand)),
@@ -336,7 +413,7 @@ function defaultMaterialItems(
     ];
   }
   return [
-    material("Solar PV Modules", "6 Panel", "550 Wp", "Adani Topcon Bifacial with 30 Year Warranty"),
+    material("Solar PV Modules", "6 Panel", "550 Wp", moduleMake),
     material("Solar Inverter", "1", inverterUnit(phase, language), "3.6 KW POLYCAB Inverter with 10 Year Warranty"),
     structure,
     material("AC Cable", "Upto 50", "Mtr", acCableMake(phase, language, acCableBrand)),
@@ -435,14 +512,19 @@ export function defaultSubsidyNote(
     : "*MNRE subsidy (₹78,000) is transferred to the customer account ~60 days after net metering. State subsidy (₹17,000) applies where 100 units free benefit is currently available.";
 }
 
-export function commercialPanelConfigOffering(capacity: string, language: QuotationLanguage): string {
+export function commercialPanelConfigOffering(
+  capacity: string,
+  language: QuotationLanguage,
+  panelBrand: QuotationPanelBrand = "Adani",
+): string {
   const kw = parseCapacityKw(capacity) ?? 10;
   const panels = Math.max(1, Math.round((kw * 1000) / COMMERCIAL_MODULE_WP));
   const totalKw = formatKwLabel((panels * COMMERCIAL_MODULE_WP) / 1000);
+  const brand = panelBrandLabel(panelBrand, language);
   if (language === "hi") {
-    return `${panels} × ${COMMERCIAL_MODULE_WP}W अदानी टॉपकॉन बाइफेशियल पैनल (कुल ${totalKw} किलोवाट)`;
+    return `${panels} × ${COMMERCIAL_MODULE_WP}W ${brand} पैनल (कुल ${totalKw} किलोवाट)`;
   }
-  return `${panels} x ${COMMERCIAL_MODULE_WP}W Adani Topcon Bifacial Panels (${totalKw} KW Total)`;
+  return `${panels} x ${COMMERCIAL_MODULE_WP}W ${brand} Panels (${totalKw} KW Total)`;
 }
 
 function defaultCommercialMaterialItems(
@@ -451,10 +533,12 @@ function defaultCommercialMaterialItems(
   brand: QuotationStructureBrand = "Apollo",
   acCableBrand: QuotationAcCableBrand = "Ramsons",
   earthingWire: QuotationEarthingWireOption = "IndoOrRamsons",
+  panelBrand: QuotationPanelBrand = "Adani",
 ): QuotationMaterialItem[] {
   const site = asPerSite(language);
   const acMake = commercialAcCableMake(phase, language, null, acCableBrand);
   const earthingMake = earthingWireMake(earthingWire, language);
+  const moduleMake = panelBrandMake(panelBrand, language);
   const structureQty = language === "hi" ? "आवश्यकतानुसार" : "As per Requirement";
   const structure = material(
     mountingStructureDescription(brand, language),
@@ -465,7 +549,7 @@ function defaultCommercialMaterialItems(
 
   if (language === "hi") {
     return [
-      material("सोलर पीवी मॉड्यूल", "18 पैनल", `${COMMERCIAL_MODULE_WP} Wp`, "अदानी टॉपकॉन बाइफेशियल · 30 वर्ष वारंटी"),
+      material("सोलर पीवी मॉड्यूल", "18 पैनल", `${COMMERCIAL_MODULE_WP} Wp`, moduleMake),
       material("सोलर इनवर्टर", "1", inverterUnit(phase, language), commercialInverterMake("10", language)),
       structure,
       material("AC केबल", site, "मी.", acMake),
@@ -490,7 +574,7 @@ function defaultCommercialMaterialItems(
   }
 
   return [
-    material("Solar PV Modules", "18 Panel", `${COMMERCIAL_MODULE_WP} Wp`, "Adani Topcon Bifacial with 30 Year Warranty"),
+    material("Solar PV Modules", "18 Panel", `${COMMERCIAL_MODULE_WP} Wp`, moduleMake),
     material("Solar Inverter", "1", inverterUnit(phase, language), commercialInverterMake("10", language)),
     structure,
     material("AC Cable", site, "Mtr", acMake),
@@ -593,10 +677,11 @@ function offgridInverterMake(kw: string, language: QuotationLanguage): string {
     : `${kw} KW MICROTEK Off-Grid PCU (48V) with warranty as per company`;
 }
 
-function offgridModuleMake(language: QuotationLanguage): string {
-  return language === "hi"
-    ? "Waaree Topcon Bifacial · 30 वर्ष वारंटी"
-    : "Waaree Topcon Bifacial with 30 Year Warranty";
+function offgridModuleMake(
+  language: QuotationLanguage,
+  panelBrand: QuotationPanelBrand = "Waaree",
+): string {
+  return panelBrandMake(panelBrand, language);
 }
 
 function offgridBatteryMake(language: QuotationLanguage): string {
@@ -609,14 +694,19 @@ function offgridBatteryQty(count: number, language: QuotationLanguage): string {
   return language === "hi" ? `${count} नं.` : `${count} Nos`;
 }
 
-export function offgridPanelConfigOffering(capacity: string, language: QuotationLanguage): string {
+export function offgridPanelConfigOffering(
+  capacity: string,
+  language: QuotationLanguage,
+  panelBrand: QuotationPanelBrand = "Waaree",
+): string {
   const kw = parseCapacityKw(capacity) ?? 3;
   const panels = offgridPanelCount(kw);
   const totalKw = formatKwLabel((panels * OFFGRID_MODULE_WP) / 1000);
+  const brand = panelBrandLabel(panelBrand, language);
   if (language === "hi") {
-    return `${panels} × ${OFFGRID_MODULE_WP}W Waaree Topcon Bifacial (कुल ${totalKw} किलोवाट)`;
+    return `${panels} × ${OFFGRID_MODULE_WP}W ${brand} (कुल ${totalKw} किलोवाट)`;
   }
-  return `${panels} x ${OFFGRID_MODULE_WP}W Waaree Topcon Bifacial (${totalKw} KW Total)`;
+  return `${panels} x ${OFFGRID_MODULE_WP}W ${brand} (${totalKw} KW Total)`;
 }
 
 export function offgridBatteryOffering(capacity: string, language: QuotationLanguage): string {
@@ -645,10 +735,11 @@ export function syncOffgridOfferToCapacity(
 function defaultOffgridMaterialItems(
   language: QuotationLanguage,
   brand: QuotationStructureBrand = "Apollo",
+  panelBrand: QuotationPanelBrand = "Waaree",
 ): QuotationMaterialItem[] {
   const inverterMake = offgridInverterMake(OFFGRID_DEFAULT_INVERTER_KW, language);
   const batteryMake = offgridBatteryMake(language);
-  const moduleMake = offgridModuleMake(language);
+  const moduleMake = offgridModuleMake(language, panelBrand);
   const structureQty = language === "hi" ? "आवश्यकतानुसार" : "As per Requirement";
   const structure = material(
     mountingStructureDescription(brand, language),
@@ -1308,11 +1399,22 @@ export function createDefaultQuotationData(
     : commercial
       ? "commercial"
       : "residential";
+  const panelBrand: QuotationPanelBrand = offgrid ? "Waaree" : "Adani";
   const materialItems = offgrid
-    ? applyOffgridCapacityToMaterials(defaultOffgridMaterialItems(language), capacity, phase, language)
+    ? applyOffgridCapacityToMaterials(
+        defaultOffgridMaterialItems(language, "Apollo", panelBrand),
+        capacity,
+        phase,
+        language,
+      )
     : commercial
-      ? applyCommercialCapacityToMaterials(defaultCommercialMaterialItems(language, phase), capacity, phase, language)
-      : defaultMaterialItems(language, phase);
+      ? applyCommercialCapacityToMaterials(
+          defaultCommercialMaterialItems(language, phase, "Apollo", "Ramsons", "IndoOrRamsons", panelBrand),
+          capacity,
+          phase,
+          language,
+        )
+      : defaultMaterialItems(language, phase, "Apollo", "Ramsons", "IndoOrRamsons", panelBrand);
 
   return {
     language: isHindi ? "hi" : "en",
@@ -1327,6 +1429,7 @@ export function createDefaultQuotationData(
     capacity,
     phase,
     structureBrand: "Apollo",
+    panelBrand,
     acCableBrand: "Ramsons",
     earthingWire: "IndoOrRamsons",
     address: "Jaipur",
@@ -1434,6 +1537,7 @@ export function switchQuotationLanguage(data: QuotationData, language: Quotation
     capacity: stripPhaseFromCapacity(data.capacity) || fresh.capacity,
     phase: data.phase,
     structureBrand: data.structureBrand === "Tata" ? "Tata" : "Apollo",
+    panelBrand: resolvePanelBrand(data.panelBrand ?? (offgrid ? "Waaree" : "Adani")),
     acCableBrand: data.acCableBrand === "Polycab" ? "Polycab" : "Ramsons",
     earthingWire: resolveEarthingWireOption(data.earthingWire),
     address: data.address,
@@ -1443,24 +1547,28 @@ export function switchQuotationLanguage(data: QuotationData, language: Quotation
     connectionType: data.connectionType === previous.connectionType ? fresh.connectionType : data.connectionType,
     roofType: data.roofType === previous.roofType ? fresh.roofType : data.roofType,
     company: { ...fresh.company, ...data.company },
-    materialItems: applyEarthingWireToMaterials(
-      applyStructureBrandToMaterials(
-        offgrid
-          ? applyOffgridCapacityToMaterials(fresh.materialItems, data.capacity, data.phase, language)
-          : commercial
-            ? applyCommercialCapacityToMaterials(fresh.materialItems, data.capacity, data.phase, language, {
-                acCableBrand: data.acCableBrand === "Polycab" ? "Polycab" : "Ramsons",
-              })
-            : applyPhaseToMaterialItems(
-                fresh.materialItems,
-                data.phase,
-                language,
-                data.acCableBrand === "Polycab" ? "Polycab" : "Ramsons",
-              ),
-        data.structureBrand === "Tata" ? "Tata" : "Apollo",
+    materialItems: applyPanelBrandToMaterials(
+      applyEarthingWireToMaterials(
+        applyStructureBrandToMaterials(
+          offgrid
+            ? applyOffgridCapacityToMaterials(fresh.materialItems, data.capacity, data.phase, language)
+            : commercial
+              ? applyCommercialCapacityToMaterials(fresh.materialItems, data.capacity, data.phase, language, {
+                  acCableBrand: data.acCableBrand === "Polycab" ? "Polycab" : "Ramsons",
+                })
+              : applyPhaseToMaterialItems(
+                  fresh.materialItems,
+                  data.phase,
+                  language,
+                  data.acCableBrand === "Polycab" ? "Polycab" : "Ramsons",
+                ),
+          data.structureBrand === "Tata" ? "Tata" : "Apollo",
+          language,
+        ),
+        resolveEarthingWireOption(data.earthingWire),
         language,
       ),
-      resolveEarthingWireOption(data.earthingWire),
+      resolvePanelBrand(data.panelBrand ?? (offgrid ? "Waaree" : "Adani")),
       language,
     ),
     commercialOffer: offgrid
@@ -1547,6 +1655,12 @@ export function normalizeQuotationData(input?: Partial<QuotationData> | null): Q
             : /ramsons/i.test(inferredEarthing) && /16/.test(inferredEarthing)
               ? "Ramsons16"
               : "IndoOrRamsons";
+  const inferredPanelMake =
+    materialItems.find((item) => isSolarPvModulesDescription(item.description))?.make ?? "";
+  const panelBrand =
+    input?.panelBrand != null
+      ? resolvePanelBrand(input.panelBrand)
+      : inferPanelBrandFromMake(inferredPanelMake) ?? (offgrid ? "Waaree" : "Adani");
   return {
     ...defaults,
     ...input,
@@ -1554,6 +1668,7 @@ export function normalizeQuotationData(input?: Partial<QuotationData> | null): Q
     issuer,
     phase,
     structureBrand,
+    panelBrand,
     acCableBrand,
     earthingWire,
     subsidyScope,
