@@ -3,4 +3,6 @@ export interface EnquiriesTable {
   headers: string[];
   rows: string[][];
   fetchedAt: string;
+  /** Month sheet tab id (sep, oct, …). */
+  tabId?: string;
 }

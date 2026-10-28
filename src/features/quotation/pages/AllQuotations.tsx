@@ -1,4 +1,4 @@
-import { ArrowRight, BatteryCharging, Building2, Zap } from "lucide-react";
+import { ArrowRight, BatteryCharging, Building2, Star, Zap } from "lucide-react";
 import { Link } from "react-router-dom";
 import {
   DEFAULT_QUOTATION_TEMPLATE_ID,
@@ -12,6 +12,8 @@ function PackageCard({ template }: { template: QuotationTemplateMeta }) {
   const isDefault = template.id === DEFAULT_QUOTATION_TEMPLATE_ID;
   const net = templateNetPayable(template);
   const phaseLabel = template.phase === "3PH" ? "Three phase" : "Single phase";
+  const subsidyLabel =
+    template.subsidyScope === "central" ? "After MNRE subsidy" : "After subsidy";
 
   return (
     <Link
@@ -37,7 +39,7 @@ function PackageCard({ template }: { template: QuotationTemplateMeta }) {
           <dd>{formatTemplateInr(template.projectAmount)}</dd>
         </div>
         <div className="quotation-package-card-net">
-          <dt>After subsidy</dt>
+          <dt>{subsidyLabel}</dt>
           <dd>{formatTemplateInr(net)}</dd>
         </div>
       </dl>
@@ -45,6 +47,48 @@ function PackageCard({ template }: { template: QuotationTemplateMeta }) {
       <div className="quotation-package-card-meta">
         <span>
           {template.panels} × {template.wp}W panels
+        </span>
+        <span className="quotation-package-card-cta">
+          Open <ArrowRight size={14} aria-hidden />
+        </span>
+      </div>
+    </Link>
+  );
+}
+
+function SpecialCard({ template }: { template: QuotationTemplateMeta }) {
+  const net = templateNetPayable(template);
+  const brand = template.moduleBrand?.split(" ")[0] ?? "Adani";
+
+  return (
+    <Link className="quotation-package-card quotation-package-card--special" to={`/quotation?template=${template.id}`}>
+      <div className="quotation-package-card-top">
+        <div className="quotation-package-card-title-row">
+          <h3>{template.customerName || template.label}</h3>
+          <span className="quotation-phase-badge quotation-phase-badge--special">Special</span>
+        </div>
+        <div className="quotation-package-card-sub">
+          <p className="quotation-package-card-phase">
+            {template.capacity} · {template.phase}
+            {template.subsidyScope === "central" ? " · MNRE only" : ""}
+          </p>
+        </div>
+      </div>
+
+      <dl className="quotation-package-card-pricing">
+        <div>
+          <dt>Deal</dt>
+          <dd>{formatTemplateInr(template.projectAmount)}</dd>
+        </div>
+        <div className="quotation-package-card-net">
+          <dt>{template.subsidyScope === "central" ? "After MNRE" : "After subsidy"}</dt>
+          <dd>{formatTemplateInr(net)}</dd>
+        </div>
+      </dl>
+
+      <div className="quotation-package-card-meta">
+        <span>
+          {template.panels} × {template.wp}W {brand}
         </span>
         <span className="quotation-package-card-cta">
           Open <ArrowRight size={14} aria-hidden />
@@ -139,6 +183,7 @@ export function AllQuotations() {
   const residential = QUOTATION_TEMPLATES.filter((t) => t.kind === "residential");
   const commercial = QUOTATION_TEMPLATES.filter((t) => t.kind === "commercial");
   const offgrid = QUOTATION_TEMPLATES.filter((t) => t.kind === "offgrid");
+  const special = QUOTATION_TEMPLATES.filter((t) => t.kind === "special");
   const singlePhase = residential.filter((t) => t.phase === "1PH");
   const threePhase = residential.filter((t) => t.phase === "3PH");
 
@@ -149,9 +194,9 @@ export function AllQuotations() {
           <p className="eyebrow">Quotations</p>
           <h1>Packages</h1>
           <p>
-            PM SURYA GHAR residential packages include MNRE ₹78,000 + state ₹17,000. Commercial and off-grid quotes
-            have no subsidy. Off-grid 3 kW package is ₹2,60,000. <strong>New Quotation</strong> opens the 3 KW single-phase
-            package.
+            PM SURYA GHAR residential packages include MNRE ₹78,000 + state ₹17,000. Special quotes are saved client
+            deals. Commercial and off-grid quotes have no subsidy. Off-grid 3 kW package is ₹2,60,000.{" "}
+            <strong>New Quotation</strong> opens the 3 KW single-phase package.
           </p>
         </div>
         <Link className="primary-button" to={`/quotation?template=${DEFAULT_QUOTATION_TEMPLATE_ID}`}>
@@ -159,6 +204,21 @@ export function AllQuotations() {
           New Quotation
         </Link>
       </div>
+
+      {special.length > 0 ? (
+        <section className="quotation-package-section">
+          <header className="quotation-package-section-header">
+            <Star size={18} aria-hidden />
+            <h2>Special</h2>
+            <p className="muted-text">Saved client quotations</p>
+          </header>
+          <div className="quotation-package-grid">
+            {special.map((template) => (
+              <SpecialCard key={template.id} template={template} />
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       <section className="quotation-package-section">
         <header className="quotation-package-section-header">

@@ -1,10 +1,51 @@
-/** Sales enquiries workbook — Sep Updated tab. */
+/** Sales enquiries workbook — month tabs (Sep Updated, Oct Update, …). */
 export const ENQUIRIES_SPREADSHEET_ID = "1z5xq6xFAdxqgQkmNlTjtPtHVhwYyJUvRauxn_4spwX4";
-export const ENQUIRIES_SHEET_TAB = "sep updated";
-/** gid for "sep updated" — CSV export preserves text like "3+5" that gviz drops from number columns. */
-export const ENQUIRIES_SHEET_GID = "1899438846";
 
-export function enquiriesSheetCsvUrl(gid = ENQUIRIES_SHEET_GID) {
+export interface EnquirySheetTab {
+  id: string;
+  /** Exact Google Sheet tab title. */
+  sheetName: string;
+  /** Short label for the month chip. */
+  label: string;
+  /** Preview / page title. */
+  title: string;
+  /** gid for CSV export — preserves text like "3+5" that gviz drops from number columns. */
+  gid: string;
+}
+
+export const ENQUIRY_SHEET_TABS = [
+  {
+    id: "sep",
+    sheetName: "sep updated",
+    label: "September",
+    title: "Sep Updated · Enquiries",
+    gid: "1899438846",
+  },
+  {
+    id: "oct",
+    sheetName: "oct update",
+    label: "October",
+    title: "Oct Update · Enquiries",
+    gid: "2009415886",
+  },
+] as const satisfies readonly EnquirySheetTab[];
+
+export type EnquirySheetTabId = (typeof ENQUIRY_SHEET_TABS)[number]["id"];
+
+/** Default to the latest month tab. */
+export const DEFAULT_ENQUIRY_SHEET_TAB_ID: EnquirySheetTabId = "oct";
+
+/** @deprecated Prefer ENQUIRY_SHEET_TABS — kept for older imports. */
+export const ENQUIRIES_SHEET_TAB = ENQUIRY_SHEET_TABS[0].sheetName;
+/** @deprecated Prefer ENQUIRY_SHEET_TABS. */
+export const ENQUIRIES_SHEET_GID = ENQUIRY_SHEET_TABS[0].gid;
+
+export function getEnquirySheetTab(id?: string | null): EnquirySheetTab {
+  const match = ENQUIRY_SHEET_TABS.find((tab) => tab.id === id);
+  return match ?? ENQUIRY_SHEET_TABS.find((tab) => tab.id === DEFAULT_ENQUIRY_SHEET_TAB_ID)!;
+}
+
+export function enquiriesSheetCsvUrl(gid: string = ENQUIRIES_SHEET_GID) {
   return `https://docs.google.com/spreadsheets/d/${ENQUIRIES_SPREADSHEET_ID}/export?format=csv&gid=${gid}`;
 }
 
@@ -95,6 +136,8 @@ export type EnquiryFilterColumn = (typeof ENQUIRY_FILTER_COLUMNS)[number];
 
 const HEADER_ALIASES: Record<string, EnquiryColumn> = {
   aa: "S No",
+  no: "S No",
+  "s no": "S No",
   "enquiry date": "Enquiry date",
   "enquiry status": "Enquiry status",
   "client name": "Client name",

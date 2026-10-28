@@ -1,4 +1,11 @@
-import type { QuotationData, QuotationLanguage, QuotationMaterialItem, QuotationPhase } from "../types/quotation";
+import type {
+  QuotationData,
+  QuotationLanguage,
+  QuotationMaterialItem,
+  QuotationPhase,
+  QuotationSubsidyScope,
+  QuotationTermItem,
+} from "../types/quotation";
 import {
   applyCommercialCapacityToMaterials,
   applyOffgridCapacityToMaterials,
@@ -8,7 +15,13 @@ import {
   inverterUnit,
 } from "./quotation-defaults";
 import { computeEffectivePayable, stripSyncedCommercialRows } from "./quotation-formatters";
-import { isSolarInverterDescription, isSolarPvModulesDescription } from "./quotation-labels";
+import {
+  isAcCableDescription,
+  isDcCableDescription,
+  isMountingStructureDescription,
+  isSolarInverterDescription,
+  isSolarPvModulesDescription,
+} from "./quotation-labels";
 
 /**
  * PM SURYA GHAR package list (MSS price sheet).
@@ -16,7 +29,7 @@ import { isSolarInverterDescription, isSolarPvModulesDescription } from "./quota
  * MNRE credited to customer account ~60 days after net metering.
  * Savings assumption: ₹8 / unit.
  */
-export type QuotationTemplateKind = "residential" | "commercial" | "offgrid";
+export type QuotationTemplateKind = "residential" | "commercial" | "offgrid" | "special";
 
 export type QuotationTemplateId =
   | "3kw-1ph"
@@ -28,7 +41,8 @@ export type QuotationTemplateId =
   | "commercial"
   | "commercial-15kw"
   | "commercial-30kw"
-  | "offgrid";
+  | "offgrid"
+  | "special-ritu-choudhary";
 
 /** Default package when opening a new quotation. */
 export const DEFAULT_QUOTATION_TEMPLATE_ID: QuotationTemplateId = "3kw-1ph";
@@ -46,26 +60,36 @@ export interface QuotationTemplateMeta {
   projectAmount: string;
   /** MNRE / central subsidy transferred to customer. Empty for commercial. */
   centralSubsidy: string;
-  /** State subsidy (₹17,000). Empty for commercial. */
+  /** State subsidy (₹17,000). Empty for commercial / central-only deals. */
   stateSubsidy: string;
+  /** Central only, or central + state. Defaults to both when omitted. */
+  subsidyScope?: QuotationSubsidyScope;
   panels: number;
   wp: number;
   inverterKw: string;
-  /** Commercial / off-grid module brand shown in BOM (warranty suffix added when applied). */
+  /** Commercial / off-grid / special module brand shown in BOM (warranty suffix added when applied). */
   moduleBrand?: string;
   /** Off-grid 12V 220Ah tubular count. */
   batteries?: number;
+  /** Pre-filled client details for special / named quotes. */
+  customerName?: string;
+  customerPhone?: string;
+  customerEmail?: string;
+  address?: string;
 }
 
 function formatInr(amount: number): string {
   return new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 }).format(amount);
 }
 
-export function templateNetPayable(template: Pick<QuotationTemplateMeta, "projectAmount" | "centralSubsidy" | "stateSubsidy">): number {
+export function templateNetPayable(
+  template: Pick<QuotationTemplateMeta, "projectAmount" | "centralSubsidy" | "stateSubsidy" | "subsidyScope">,
+): number {
+  const includeState = template.subsidyScope !== "central";
   return (
     Number(template.projectAmount) -
     Number(template.centralSubsidy || 0) -
-    Number(template.stateSubsidy || 0)
+    (includeState ? Number(template.stateSubsidy || 0) : 0)
   );
 }
 
@@ -224,6 +248,27 @@ export const QUOTATION_TEMPLATES: readonly QuotationTemplateMeta[] = [
     inverterKw: "5.1",
     batteries: 5,
   },
+  {
+    id: "special-ritu-choudhary",
+    kind: "special",
+    label: "Ritu Choudhary",
+    description:
+      "₹2,30,000 · 5 KW 3PH · 8 × Adani 625W · MNRE only · no structure / AC-DC cable (client)",
+    capacity: "5 KW",
+    phase: "3PH",
+    projectAmount: "230000",
+    centralSubsidy: MNRE_SUBSIDY,
+    stateSubsidy: "",
+    subsidyScope: "central",
+    panels: 8,
+    wp: 625,
+    inverterKw: "5",
+    moduleBrand: "Adani Topcon Bifacial",
+    customerName: "RITU CHOUDHARY",
+    customerPhone: "9413337137 / +91 9079930862",
+    customerEmail: "MUKESHCHOUDHARY6111@GMAIL.COM",
+    address: "Jobner",
+  },
 ] as const;
 
 export function isQuotationTemplate(value: string | null | undefined): value is QuotationTemplateId {
@@ -311,6 +356,170 @@ function applyTemplateSizing(
   return applyPhaseToMaterialItems(sized, template.phase, language);
 }
 
+function withoutClientScopeMaterials(items: QuotationMaterialItem[]): QuotationMaterialItem[] {
+  return items.filter(
+    (item) =>
+      !isMountingStructureDescription(item.description) &&
+      !isAcCableDescription(item.description) &&
+      !isDcCableDescription(item.description),
+  );
+}
+
+function isEarthingKitDescription(description: string) {
+  const value = description.toLowerCase();
+  return value.includes("earthing kit") || description.includes("अर्थिंग किट");
+}
+
+function applyRituEarthingKit(items: QuotationMaterialItem[], language: QuotationLanguage): QuotationMaterialItem[] {
+  return items.map((item) => {
+    if (!isEarthingKitDescription(item.description)) return item;
+    return {
+      ...item,
+      qty: language === "hi" ? "3 सेट" : "3 Set",
+      unit: language === "hi" ? "सेट" : "Set",
+      make:
+        language === "hi"
+          ? "3 कॉपर बाउंड रॉड (2 मी.)"
+          : "3 copper bound rods (2 mtr)",
+    };
+  });
+}
+
+function rituClientScopeWarrantyNote(language: QuotationLanguage): string {
+  if (language === "hi") {
+    return [
+      "महत्वपूर्ण — ग्राहक स्ट्रक्चर, AC/DC केबल व वायरिंग (यह कोटेशन):",
+      "• माउंटिंग स्ट्रक्चर MSS के कार्यक्षेत्र में नहीं है और माही सोलर सॉल्यूशन द्वारा आपूर्ति नहीं की जाती। स्ट्रक्चर, उसके डिज़ाइन, मजबूती, इंस्टॉलेशन या संबंधित किसी भी समस्या के लिए MSS जिम्मेदार नहीं है।",
+      "• AC केबल व DC केबल MSS द्वारा आपूर्ति नहीं की जातीं — ग्राहक की जिम्मेदारी।",
+      "• विद्युत वायरिंग ग्राहक की आवश्यकता के अनुसार की जाती है और MSS मानक डिज़ाइन/प्रथा के अनुसार नहीं है। इस व्यवस्था में जनरेशन प्रदर्शन/मानकों की जिम्मेदारी MSS नहीं लेता।",
+      "• वायरिंग, AC/DC केबल, स्ट्रक्चर या गैर-MSS-मानक कार्य से उत्पन्न कोई दोष, खराबी, जनरेशन कमी, क्षति या भविष्य की समस्या पूरी तरह ग्राहक की जिम्मेदारी होगी। इसके लिए MSS उत्तरदायी नहीं होगा।",
+    ].join("\n");
+  }
+  return [
+    "Important — Client-supplied structure, AC/DC cable & wiring (this quotation):",
+    "• Mounting structure is not in MSS scope and is not supplied by Mahi Solar Solution. MSS is not responsible for the structure, its design, strength, installation, or any related issues.",
+    "• AC cable and DC cable are not supplied by MSS — these are the client's responsibility.",
+    "• Electrical wiring is as per the client's requirement and is not as per MSS standard design/practice. MSS does not take responsibility for generation performance or generation standards under this arrangement.",
+    "• Any fault, failure, shortfall in generation, damage, or future issue arising from wiring, AC/DC cable, structure, or non-MSS-standard work shall be solely the client's responsibility. MSS shall not be liable for the same.",
+  ].join("\n");
+}
+
+function rituWarrantyCoverageTerm(language: QuotationLanguage): QuotationTermItem {
+  if (language === "hi") {
+    return {
+      id: crypto.randomUUID(),
+      label: "वारंटी कवरेज व सीमाएँ",
+      text: [
+        "दायित्व व कार्यक्षेत्र:",
+        "• माही सोलर सॉल्यूशन की जिम्मेदारी केवल सहमत आपूर्ति व इंस्टॉलेशन कार्यक्षेत्र तक सीमित है।",
+        "• माउंटिंग स्ट्रक्चर ग्राहक द्वारा उपलब्ध/निर्धारित है — MSS आपूर्ति या स्ट्रक्चर वारंटी नहीं देता।",
+        "• AC केबल व DC केबल MSS द्वारा आपूर्ति नहीं — ग्राहक की जिम्मेदारी।",
+        "• वायरिंग ग्राहक आवश्यकतानुसार है (MSS मानक नहीं) — वायरिंग दोष, विद्युत खराबी या उससे जनरेशन प्रभाव हेतु MSS जिम्मेदार नहीं।",
+        "• सेटअप व BOS की 5 वर्ष वर्कमैनशिप वारंटी इस कोटेशन पर लागू नहीं।",
+        "",
+        "वारंटी कवरेज (केवल आपूर्ति घटक):",
+        "• पैनल: 30 वर्ष उत्पाद वारंटी (निर्माण दोष) + 25 वर्ष प्रदर्शन वारंटी — निर्माता शर्तों के अधीन",
+        "• इनवर्टर: 10 वर्ष निर्माता वारंटी — निर्माता शर्तों के अधीन",
+        "",
+        "निर्माता वारंटी:",
+        "• सोलर पैनल, इनवर्टर व अन्य आपूर्ति घटक केवल संबंधित निर्माता की वारंटी शर्तों के अंतर्गत कवर हैं।",
+        "",
+        "MSS जिम्मेदार नहीं होगा:",
+        "• ग्राहक स्ट्रक्चर संबंधी कोई मुद्दा",
+        "• AC/DC केबल या ग्राहक-निर्धारित/गैर-मानक वायरिंग से दोष या भविष्य की खराबी",
+        "• जनरेशन मानकों/अनुमानों की गारंटी (इस व्यवस्था में)",
+        "• प्राकृतिक आपदा, चोरी, तोड़फोड़, अनुचित उपयोग, अनधिकृत संशोधन",
+        "",
+        "वारंटी दावे मूल उपकरण निर्माता की शर्तों के अधीन हैं।",
+      ].join("\n"),
+    };
+  }
+  return {
+    id: crypto.randomUUID(),
+    label: "Warranty Coverage & Limitations",
+    text: [
+      "Scope of Responsibility:",
+      "• Mahi Solar Solution's responsibility is limited to the agreed supply and installation scope under this quotation.",
+      "• Mounting structure is client-provided / client-arranged — MSS does not supply it and provides no structure warranty.",
+      "• AC cable and DC cable are not supplied by MSS — these are the client's responsibility.",
+      "• Wiring is as per client requirement (not MSS standards) — MSS is not responsible for wiring faults, electrical failures, or generation impact arising therefrom.",
+      "• The 5-year Setup & BOS workmanship warranty does not apply to this quotation.",
+      "",
+      "Warranty Coverage (supplied components only):",
+      "• Panels: 30-year product warranty (manufacturing defects) + 25-year performance warranty — subject to manufacturer terms",
+      "• Inverter: 10-year manufacturer warranty — subject to manufacturer terms",
+      "",
+      "Manufacturer's Warranty:",
+      "• Solar panels, inverter and other supplied components are covered solely under the respective manufacturer's warranty terms.",
+      "",
+      "MSS shall NOT be responsible for:",
+      "• Any issue related to the client structure",
+      "• Faults or future failures due to AC/DC cable or client-specified / non-MSS-standard wiring",
+      "• Generation standards or estimated generation guarantees under this arrangement",
+      "• Natural calamities, theft, vandalism, improper use, or unauthorized modifications",
+      "",
+      "Warranty claims are subject to the original equipment manufacturer's terms and conditions.",
+    ].join("\n"),
+  };
+}
+
+function patchRituTimelineTerm(text: string, language: QuotationLanguage): string {
+  if (language === "hi") {
+    return text.replace(
+      "• शामिल: माउंटिंग स्ट्रक्चर, सोलर पैनल, इनवर्टर, BOS, विद्युत कनेक्शन, परीक्षण व कमीशनिंग।",
+      "• शामिल: सोलर पैनल, इनवर्टर, सहमत BOS आपूर्ति, परीक्षण व कमीशनिंग। माउंटिंग स्ट्रक्चर, AC केबल व DC केबल MSS कार्यक्षेत्र में नहीं। वायरिंग ग्राहक आवश्यकतानुसार (MSS मानक नहीं)।",
+    );
+  }
+  return text.replace(
+    "• Includes: Mounting structure, solar panel installation, inverter setup, BOS components, electrical connections, testing & system commissioning.",
+    "• Includes: Solar panel installation, inverter setup, agreed BOS supply, testing & system commissioning. Mounting structure, AC cable and DC cable are not in MSS scope. Wiring is as per client requirement (not MSS standards).",
+  );
+}
+
+function patchRituGenerationTerm(text: string, language: QuotationLanguage): string {
+  const note =
+    language === "hi"
+      ? "\n\nविशेष नोट (यह कोटेशन): जनरेशन अनुमान केवल संकेतात्मक हैं। ग्राहक स्ट्रक्चर, AC/DC केबल व गैर-MSS-मानक वायरिंग के कारण MSS जनरेशन मानकों या अनुमानित यूनिट्स की गारंटी नहीं देता।"
+      : "\n\nSpecial note (this quotation): Generation figures are indicative only. Because structure, AC/DC cable are client-side and wiring is not as per MSS standards, MSS does not guarantee generation standards or estimated units.";
+  return `${text.trim()}${note}`;
+}
+
+function applyRituChoudharySpecialOverrides(data: QuotationData, language: QuotationLanguage): QuotationData {
+  const terms = data.terms.map((item) => {
+    const label = item.label.trim();
+    if (label === "Warranty Coverage & Limitations" || label === "वारंटी कवरेज व सीमाएँ") {
+      return rituWarrantyCoverageTerm(language);
+    }
+    if (label === "Project Timeline & Installation Process" || label === "प्रोजेक्ट समयरेखा व इंस्टॉलेशन प्रक्रिया") {
+      return { ...item, text: patchRituTimelineTerm(item.text, language) };
+    }
+    if (label === "Electricity Generation & Seasonal Variation" || label === "विद्युत उत्पादन व मौसमी भिन्नता") {
+      return { ...item, text: patchRituGenerationTerm(item.text, language) };
+    }
+    if (label === "Warranty" || label === "वारंटी") {
+      return {
+        ...item,
+        text:
+          language === "hi"
+            ? "पैनल व इनवर्टर पर निर्माता वारंटी लागू। माउंटिंग स्ट्रक्चर, AC केबल व DC केबल MSS कार्यक्षेत्र में नहीं। वायरिंग ग्राहक आवश्यकतानुसार (MSS मानक नहीं)। सेटअप व BOS की 5 वर्ष वारंटी इस कोटेशन पर लागू नहीं। जनरेशन मानकों की गारंटी नहीं।"
+            : "Manufacturer warranty applies on panels and inverter. Mounting structure, AC cable and DC cable are not in MSS scope. Wiring is as per client requirement (not MSS standards). The 5-year Setup & BOS warranty does not apply on this quotation. Generation standards are not guaranteed.",
+      };
+    }
+    return item;
+  });
+
+  return {
+    ...data,
+    proposalDate: "2026-09-15",
+    materialItems: applyRituEarthingKit(withoutClientScopeMaterials(data.materialItems), language),
+    warrantySetupBosYears: "",
+    warrantyText: rituClientScopeWarrantyNote(language),
+    showComponentWarranty: false,
+    showGeneration: false,
+    terms,
+  };
+}
+
 export function createQuotationFromTemplate(
   templateId: QuotationTemplateId = DEFAULT_QUOTATION_TEMPLATE_ID,
   language: QuotationLanguage = "en",
@@ -318,31 +527,43 @@ export function createQuotationFromTemplate(
   const template = getQuotationTemplate(templateId);
   const offgrid = template.kind === "offgrid";
   const commercial = template.kind === "commercial";
+  const special = template.kind === "special";
   const includeSubsidy = !commercial && !offgrid;
+  const subsidyScope = template.subsidyScope === "central" ? "central" : "both";
   const base = createDefaultQuotationData(language, { includeSubsidy, commercial, offgrid });
   const projectAmount = template.projectAmount;
   const centralSubsidy = includeSubsidy ? template.centralSubsidy : "";
-  const stateSubsidy = includeSubsidy ? template.stateSubsidy : "";
+  const stateSubsidy = includeSubsidy && subsidyScope === "both" ? template.stateSubsidy : "";
   const effectivePayable = includeSubsidy
-    ? computeEffectivePayable(projectAmount, centralSubsidy, stateSubsidy, "both")
+    ? computeEffectivePayable(projectAmount, centralSubsidy, stateSubsidy, subsidyScope)
     : 0;
 
-  return {
+  const namedCustomer =
+    special || offgrid
+      ? {
+          customerName: template.customerName ?? (offgrid ? "Devandra Ji" : ""),
+          customerPhone: template.customerPhone ?? (offgrid ? "9131311167" : ""),
+          customerEmail: template.customerEmail ?? "",
+          address: template.address ?? "",
+        }
+      : {};
+
+  const residentialMaterials = applyTemplateSizing(base.materialItems, template, language);
+  const specialMaterials = special
+    ? applyCommercialModuleSpec(residentialMaterials, template, language)
+    : residentialMaterials;
+
+  const quotation: QuotationData = {
     ...base,
     capacity: template.capacity,
     phase: template.phase,
     projectAmount,
     centralSubsidy,
     stateSubsidy,
-    subsidyNote: includeSubsidy ? subsidyNoteForLanguage(language, "both") : "",
+    subsidyNote: includeSubsidy ? subsidyNoteForLanguage(language, subsidyScope) : "",
     showSubsidySection: includeSubsidy,
-    subsidyScope: "both",
-    ...(offgrid
-      ? {
-          customerName: "Devandra Ji",
-          customerPhone: "9131311167",
-        }
-      : {}),
+    subsidyScope,
+    ...namedCustomer,
     generation: {
       unitRate: "8",
     },
@@ -357,7 +578,13 @@ export function createQuotationFromTemplate(
             language,
             { panels: template.panels, acCableBrand: base.acCableBrand },
           )
-        : applyTemplateSizing(base.materialItems, template, language),
+        : specialMaterials,
     commercialOffer: stripSyncedCommercialRows(base.commercialOffer),
   };
+
+  if (templateId === "special-ritu-choudhary") {
+    return applyRituChoudharySpecialOverrides(quotation, language);
+  }
+
+  return quotation;
 }

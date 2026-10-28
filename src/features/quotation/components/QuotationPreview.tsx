@@ -405,10 +405,10 @@ function RepBlock({ data }: { data: QuotationData }) {
     <div style={{ marginTop: 30 }}>
       <p style={{ margin: "0 0 6px", fontWeight: 600 }}>{L.representedBy}</p>
       <div style={{ height: 44, borderBottom: "1px solid #111827", width: 240, marginBottom: 8 }} />
-      <p style={{ margin: "0 0 2px", fontWeight: 700 }}>
-        {filledValue(data.repName)}
-        {data.repTitle ? ` (${data.repTitle})` : ""}
-      </p>
+      <p style={{ margin: "0 0 2px", fontWeight: 700 }}>{filledValue(data.repName)}</p>
+      {data.repTitle ? (
+        <p style={{ margin: "0 0 2px", fontSize: 11, color: "#4b5563" }}>{data.repTitle}</p>
+      ) : null}
       {data.repCompany ? <p style={{ margin: "0 0 2px", fontSize: 11 }}>{data.repCompany}</p> : null}
       {data.repMobiles ? <p style={{ margin: 0, fontSize: 11 }}>{L.mobNo} {data.repMobiles}</p> : null}
     </div>
@@ -450,7 +450,8 @@ function CoverBand({ data }: { data: QuotationData }) {
 function WarrantyBadges({ data }: { data: QuotationData }) {
   const L = quotationLabels(data.language);
   const offgrid = isOffgridQuotation(data);
-  const itemCount = offgrid ? 4 : 3;
+  const showSetupBos = Boolean(data.warrantySetupBosYears.trim());
+  const itemCount = offgrid ? (showSetupBos ? 4 : 3) : showSetupBos ? 3 : 2;
 
   const circleBase: CSSProperties = {
     width: 86,
@@ -536,7 +537,26 @@ function WarrantyBadges({ data }: { data: QuotationData }) {
       {yearsBadge(data.warrantySolarPanelYears || "30", L.solarPanelWarranty)}
       {offgrid ? companyBadge(L.inverterWarranty) : yearsBadge(data.warrantyInverterYears, L.inverterWarranty)}
       {offgrid ? companyBadge(L.batteryWarranty) : null}
-      {yearsBadge(data.warrantySetupBosYears || "5", L.setupBosWarranty)}
+      {showSetupBos ? yearsBadge(data.warrantySetupBosYears, L.setupBosWarranty) : null}
+    </div>
+  );
+}
+
+function WarrantySpecialNote({ text }: { text: string }) {
+  return (
+    <div
+      style={{
+        marginTop: 10,
+        marginBottom: 4,
+        padding: "10px 12px",
+        background: "#fff7ed",
+        border: "1px solid #fdba74",
+        borderRadius: 4,
+      }}
+    >
+      <div style={{ fontSize: 10.5, color: "#9a3412", lineHeight: 1.55, whiteSpace: "pre-wrap", fontWeight: 600 }}>
+        {text}
+      </div>
     </div>
   );
 }
@@ -989,7 +1009,19 @@ function createBlocks(data: QuotationData): PreviewBlock[] {
   // Warranty Coverage badges
   if (data.showWarrantyBadges) {
     pushHeading(blocks, "warranty-badges-heading", L.warrantyCoverage);
-    blocks.push({ key: "warranty-badges", estimate: 280, node: <WarrantyBadges data={data} /> });
+    blocks.push({
+      key: "warranty-badges",
+      estimate: data.warrantySetupBosYears.trim() ? 280 : 200,
+      node: <WarrantyBadges data={data} />,
+    });
+    if (data.warrantyText.trim()) {
+      const noteLines = data.warrantyText.trim().split("\n").length;
+      blocks.push({
+        key: "warranty-special-note",
+        estimate: 28 + noteLines * 16,
+        node: <WarrantySpecialNote text={data.warrantyText.trim()} />,
+      });
+    }
   }
 
   // Installation Process diagram
@@ -1092,7 +1124,10 @@ function createBlocks(data: QuotationData): PreviewBlock[] {
               <div style={{ fontSize: 10, color: "#666666" }}>{L.date}: _________________</div>
             </div>
             <div>
-              <div style={{ fontWeight: 600, marginBottom: 4 }}>{filledValue(data.repName || "")}</div>
+              <div style={{ fontWeight: 600, marginBottom: 2 }}>{filledValue(data.repName || "")}</div>
+              {data.repTitle ? (
+                <div style={{ fontSize: 10, color: "#4b5563", marginBottom: 2 }}>{data.repTitle}</div>
+              ) : null}
               <div style={{ fontSize: 10, color: "#666666" }}>{filledValue(data.repCompany || "")}</div>
             </div>
           </div>

@@ -1,8 +1,10 @@
 import {
   canonicalizeEnquiryHeader,
-  ENQUIRIES_SHEET_TAB,
   enquiriesSheetCsvUrl,
+  getEnquirySheetTab,
   type EnquiryColumn,
+  type EnquirySheetTab,
+  type EnquirySheetTabId,
 } from "./enquiries-config";
 import { filterRowsWithEnquiryIdentity } from "./enquiries-columns";
 import type { EnquiriesTable } from "../types/enquiries";
@@ -66,10 +68,13 @@ export function parseCsv(text: string): string[][] {
   return rows;
 }
 
-function parseEnquiriesCsv(text: string): { headers: EnquiryColumn[]; rows: string[][] } {
+function parseEnquiriesCsv(
+  text: string,
+  tab: EnquirySheetTab,
+): { headers: EnquiryColumn[]; rows: string[][] } {
   const matrix = parseCsv(text);
   if (matrix.length === 0) {
-    throw new Error(`Sheet "${ENQUIRIES_SHEET_TAB}" is empty`);
+    throw new Error(`Sheet "${tab.sheetName}" is empty`);
   }
 
   const rawHeaders = matrix[0].map((label) => canonicalizeEnquiryHeader(label));
@@ -84,7 +89,7 @@ function parseEnquiriesCsv(text: string): { headers: EnquiryColumn[]; rows: stri
   });
 
   if (!headers.includes("Client name")) {
-    throw new Error(`Sheet "${ENQUIRIES_SHEET_TAB}" has no Client name column`);
+    throw new Error(`Sheet "${tab.sheetName}" has no Client name column`);
   }
 
   const rows = filterRowsWithEnquiryIdentity(
@@ -95,9 +100,12 @@ function parseEnquiriesCsv(text: string): { headers: EnquiryColumn[]; rows: stri
   return { headers, rows };
 }
 
-export async function fetchEnquiriesTable(): Promise<EnquiriesTable> {
+export async function fetchEnquiriesTable(
+  tabId?: EnquirySheetTabId | string | null,
+): Promise<EnquiriesTable> {
+  const tab = getEnquirySheetTab(tabId);
   // CSV export keeps text in number-typed columns (kw "3+5", estimate "190k") that gviz drops.
-  const response = await fetch(enquiriesSheetCsvUrl());
+  const response = await fetch(enquiriesSheetCsvUrl(tab.gid));
   if (!response.ok) {
     throw new Error(`Could not load enquiries (HTTP ${response.status})`);
   }
@@ -105,16 +113,17 @@ export async function fetchEnquiriesTable(): Promise<EnquiriesTable> {
   const text = await response.text();
   if (text.trimStart().startsWith("<!DOCTYPE") || text.trimStart().startsWith("<html")) {
     throw new Error(
-      `Could not export "${ENQUIRIES_SHEET_TAB}" as CSV. Check the sheet is shared (Anyone with the link can view).`,
+      `Could not export "${tab.sheetName}" as CSV. Check the sheet is shared (Anyone with the link can view).`,
     );
   }
 
-  const { headers, rows } = parseEnquiriesCsv(text);
+  const { headers, rows } = parseEnquiriesCsv(text, tab);
 
   return {
-    title: "Sep Updated · Enquiries",
+    title: tab.title,
     headers,
     rows,
     fetchedAt: new Date().toISOString(),
+    tabId: tab.id,
   };
 }

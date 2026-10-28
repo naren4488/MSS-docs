@@ -380,6 +380,10 @@
   border-top: 3px solid #7c3aed;
 }
 
+.quotation-package-card--special {
+  border-top: 3px solid #b45309;
+}
+
 .quotation-package-card--default {
   box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.25);
 }
@@ -449,6 +453,11 @@
 .quotation-phase-badge--offgrid {
   color: #6d28d9;
   background: rgba(124, 58, 237, 0.1);
+}
+
+.quotation-phase-badge--special {
+  color: #b45309;
+  background: rgba(180, 83, 9, 0.12);
 }
 
 .quotation-package-card-copy {
@@ -522,6 +531,10 @@
 
 .quotation-package-card--offgrid .quotation-package-card-cta {
   color: #7c3aed;
+}
+
+.quotation-package-card--special .quotation-package-card-cta {
+  color: #b45309;
 }
 
 .quotation-package-card:hover .quotation-package-card-cta {

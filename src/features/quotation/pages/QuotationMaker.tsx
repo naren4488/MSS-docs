@@ -85,6 +85,8 @@ export function QuotationMaker() {
     setData(createQuotationFromTemplate(activeTemplate, data.language));
   }
 
+  const templateMeta = getQuotationTemplate(activeTemplate);
+
   function handleLanguageChange(next: QuotationLanguage) {
     if (next === data.language) return;
     if (
@@ -96,18 +98,22 @@ export function QuotationMaker() {
     ) {
       return;
     }
-    setData(switchQuotationLanguage(data, next));
+    setData(
+      templateMeta.kind === "special" || templateMeta.kind === "offgrid"
+        ? createQuotationFromTemplate(activeTemplate, next)
+        : switchQuotationLanguage(data, next),
+    );
   }
-
-  const templateMeta = getQuotationTemplate(activeTemplate);
   const editorEyebrow =
     templateMeta.kind === "offgrid"
       ? "Off-grid"
-      : templateMeta.kind === "commercial"
-        ? templateMeta.id === "commercial"
-          ? "Commercial"
-          : `Commercial · ${templateMeta.label}`
-        : templateMeta.label;
+      : templateMeta.kind === "special"
+        ? `Special · ${templateMeta.customerName || templateMeta.label}`
+        : templateMeta.kind === "commercial"
+          ? templateMeta.id === "commercial"
+            ? "Commercial"
+            : `Commercial · ${templateMeta.label}`
+          : templateMeta.label;
 
   return (
     <div className="page-shell page-shell--maker page-shell--maker-agreement">

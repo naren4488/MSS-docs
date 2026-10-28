@@ -60,7 +60,7 @@ const MSS_ISSUER_PRESET: QuotationIssuerPreset = {
     cin: "",
     gst: "08AAUCM4104G1ZD",
     representativeName: "Mahendra Kumawat",
-    representativeTitle: "Director",
+    representativeTitle: "Director of Sales",
   },
   bankAccountName: "MAHI SOLAR SOLUTION PRIVATE LIMITED",
   bankName: "AU Small Finance Bank",
@@ -68,7 +68,7 @@ const MSS_ISSUER_PRESET: QuotationIssuerPreset = {
   bankIfsc: "AUBL0002206",
   bankGst: "08AAUCM4104G1ZD",
   repName: "MAHENDRA KUMAWAT",
-  repTitle: "Director",
+  repTitle: "Director of Sales",
   repCompany: "MAHI SOLAR SOLUTION PRIVATE LIMITED",
   repMobiles: "9928413501",
 };
@@ -84,7 +84,7 @@ const MSE_ISSUER_PRESET: QuotationIssuerPreset = {
     cin: "",
     gst: "08GPEPK1479A1ZZ",
     representativeName: "Mahendra Kumawat",
-    representativeTitle: "Proprietor",
+    representativeTitle: "Director of Sales",
   },
   bankAccountName: "MAHI SOLAR ENERGY",
   bankName: "AU Small Finance Bank",
@@ -92,7 +92,7 @@ const MSE_ISSUER_PRESET: QuotationIssuerPreset = {
   bankIfsc: "AUBL0002444",
   bankGst: "08GPEPK1479A1ZZ",
   repName: "MAHENDRA KUMAWAT",
-  repTitle: "Proprietor",
+  repTitle: "Director of Sales",
   repCompany: "MAHI SOLAR ENERGY",
   repMobiles: "9928413501",
 };
@@ -995,6 +995,22 @@ function isInverterSupportTerm(item: QuotationTermItem): boolean {
   );
 }
 
+function isPostSigningMaterialChangeTerm(item: QuotationTermItem): boolean {
+  const label = item.label.trim();
+  return (
+    label === "Post-Agreement Material Changes" ||
+    label === "हस्ताक्षर के बाद सामग्री परिवर्तन"
+  );
+}
+
+function isVendorshipCancellationChargeTerm(item: QuotationTermItem): boolean {
+  const label = item.label.trim();
+  return (
+    label === "Project Cancellation, File Reversal & Vendorship Removal" ||
+    label === "प्रोजेक्ट रद्दीकरण, फाइल रिवर्सल व वेंडरशिप हटाना"
+  );
+}
+
 function inverterSupportTerm(language: QuotationLanguage): QuotationTermItem {
   if (language === "hi") {
     return term(
@@ -1005,6 +1021,32 @@ function inverterSupportTerm(language: QuotationLanguage): QuotationTermItem {
   return term(
     "Non-Polycab Inverter Technical Support",
     "If the inverter is not Polycab, any technical issue can be resolved only by that brand's customer support — Mahi Solar Solution cannot resolve such issues on its own. Other brands do not allow us to diagnose or repair these faults ourselves. Only with a Polycab inverter can we resolve technical issues on our own.",
+  );
+}
+
+function postSigningMaterialChangeTerm(language: QuotationLanguage): QuotationTermItem {
+  if (language === "hi") {
+    return term(
+      "हस्ताक्षर के बाद सामग्री परिवर्तन",
+      "इंस्टॉलेशन समझौते / कोटेशन पर हस्ताक्षर के बाद यदि ग्राहक सामग्री (मेक, ब्रांड, विशिष्टता या BOM आइटम) में कोई परिवर्तन मांगता है, तो उसे स्वीकार करना या न करना माही सोलर सॉल्यूशन के पूर्ण विवेकाधिकार पर निर्भर है। हम ऐसे परिवर्तन स्वीकार करने के लिए बाध्य नहीं हैं। यदि हम परिवर्तन स्वीकार करते हैं, तो माही सोलर सॉल्यूशन प्राइवेट लिमिटेड अतिरिक्त शुल्क लेने और/या अद्यतन सामग्री व मूल्य दर्शाने वाला संशोधित कोटेशन जारी करने का अधिकार सुरक्षित रखता है।",
+    );
+  }
+  return term(
+    "Post-Agreement Material Changes",
+    "After the Installation Agreement / quotation is signed, any request by the client to change materials (make, brand, specification, or BOM items) is subject to Mahi Solar Solution's sole discretion. We are not obliged to accept such changes. If we agree to make a change, Mahi Solar Solution Private Limited reserves the right to charge additional amounts and/or issue a revised quotation reflecting the updated materials and pricing.",
+  );
+}
+
+function vendorshipCancellationChargeTerm(language: QuotationLanguage): QuotationTermItem {
+  if (language === "hi") {
+    return term(
+      "प्रोजेक्ट रद्दीकरण, फाइल रिवर्सल व वेंडरशिप हटाना",
+      "यदि ग्राहक बाद में प्रोजेक्ट रद्द करने का अनुरोध करता है तथा फाइल रिवर्स/वापस करने व माही सोलर सॉल्यूशन की वेंडरशिप से लॉगिन / पंजीकरण हटाने की मांग करता है, तो अब तक हुए डील के अनुसार प्रोजेक्ट क्षमता (किलोवाट) पर ₹1 (एक रुपये) प्रति वॉट रद्दीकरण शुल्क लगेगा। उदाहरण: 3 किलोवाट प्रोजेक्ट = 3,000 W × ₹1 = ₹3,000। यह शुल्क रद्दीकरण नीति के अंतर्गत अन्य कटौतियों के अतिरिक्त ग्राहक द्वारा देय होगा।",
+    );
+  }
+  return term(
+    "Project Cancellation, File Reversal & Vendorship Removal",
+    "If the client later requests cancellation of the project and asks to reverse/revert the file and remove the login / registration from Mahi Solar Solution's vendorship, a cancellation charge of ₹1 (one rupee) per watt shall apply, calculated on the project capacity (kW) as per the deal agreed so far. Example: a 3 kW project = 3,000 W × ₹1 = ₹3,000. This charge is payable by the client in addition to any other deductions under the Cancellation Policy.",
   );
 }
 
@@ -1020,6 +1062,48 @@ function ensureInverterSupportTerm(
     return [...terms.slice(0, warrantyIdx + 1), item, ...terms.slice(warrantyIdx + 1)];
   }
   return [...terms, item];
+}
+
+function ensurePostSigningMaterialChangeTerm(
+  terms: QuotationTermItem[],
+  language: QuotationLanguage,
+): QuotationTermItem[] {
+  if (terms.some(isPostSigningMaterialChangeTerm)) return terms;
+  const item = postSigningMaterialChangeTerm(language);
+  const afterIdx = terms.findIndex(
+    (t) =>
+      t.label.trim() === "Measurement, Planning & Post-Installation Changes" ||
+      t.label.trim() === "माप, योजना व इंस्टॉलेशन के बाद परिवर्तन",
+  );
+  if (afterIdx >= 0) {
+    return [...terms.slice(0, afterIdx + 1), item, ...terms.slice(afterIdx + 1)];
+  }
+  return [...terms, item];
+}
+
+function ensureVendorshipCancellationChargeTerm(
+  terms: QuotationTermItem[],
+  language: QuotationLanguage,
+): QuotationTermItem[] {
+  if (terms.some(isVendorshipCancellationChargeTerm)) return terms;
+  const item = vendorshipCancellationChargeTerm(language);
+  const afterIdx = terms.findIndex(
+    (t) => t.label.trim() === "Cancellation Policy" || t.label.trim() === "रद्दीकरण नीति",
+  );
+  if (afterIdx >= 0) {
+    return [...terms.slice(0, afterIdx + 1), item, ...terms.slice(afterIdx + 1)];
+  }
+  return [...terms, item];
+}
+
+function ensureQuotationTerms(
+  terms: QuotationTermItem[],
+  language: QuotationLanguage,
+): QuotationTermItem[] {
+  return ensureVendorshipCancellationChargeTerm(
+    ensurePostSigningMaterialChangeTerm(ensureInverterSupportTerm(terms, language), language),
+    language,
+  );
 }
 
 function isTimelineTerm(item: QuotationTermItem): boolean {
@@ -1097,7 +1181,7 @@ function defaultTerms(
       term("ट्रांजिट बीमा", "साइट पर सामग्री डिलीवरी तक।"),
       term(
         "भुगतान शर्तें व प्रोजेक्ट चरण",
-        "भुगतान अनुसूची वित्त विधि पर निर्भर करती है:\n\n100% नकद भुगतान\n• अग्रिम: ऑर्डर पुष्टि के साथ 20%\n• द्वितीय भुगतान: सामग्री डिस्पैच व इंस्टॉलेशन शुरू होने से पहले 70%\n• अंतिम भुगतान: DISCOM से नेट मीटरिंग अनुमोदन के बाद 10%\n\n100% ऋण वित्त\n• बैंक से प्रथम ऋण किस्त प्राप्त होते ही इंस्टॉलेशन कार्य शुरू\n• आगे के भुगतान बैंक की ऋण वितरण अनुसूची के अनुसार\n• इंस्टॉलेशन पूर्णता शेष ऋण किस्तों पर निर्भर नहीं\n\nहाइब्रिड (ऋण + नकद मिश्रण)\n• प्रथम किस्त (इंस्टॉलेशन से पहले): बैंक की पहली ऋण वितरण + ग्राहक का नकद योगदान\n• आगे के भुगतान (नेट मीटरिंग अनुमोदन के बाद): शेष बैंक वितरण + ग्राहक का स्थगित अधिकतम 10%\n• ग्राहक का नकद योगदान = ऋण से न ढकी प्रोजेक्ट राशि (नेट मीटरिंग तक अधिकतम 10% स्थगित किया जा सकता है)\n• पहली बैंक किस्त + ग्राहक नकद प्राप्त होते ही इंस्टॉलेशन तुरंत शुरू\n\nमहत्वपूर्ण नोट\n• नकद विधि में: ग्राहक कुल प्रोजेक्ट लागत का अधिकतम 10% नेट मीटरिंग अनुमोदन तक स्थगित कर सकता है\n• हाइब्रिड में: ग्राहक का नकद पहली बैंक किस्त के साथ अग्रिम; अधिकतम 10% नेट मीटरिंग तक स्थगित\n• नेट मीटरिंग अनुमोदन समयरेखा इंस्टॉलेशन पूर्णता को प्रभावित नहीं करती\n• पहली किस्त (बैंक + ग्राहक नकद) मिलते ही इंस्टॉलेशन तुरंत शुरू होता है",
+        "भुगतान अनुसूची वित्त विधि पर निर्भर करती है:\n\n100% नकद भुगतान\n• अग्रिम: ऑर्डर पुष्टि के साथ 20%\n• द्वितीय भुगतान: सामग्री डिस्पैच व इंस्टॉलेशन शुरू होने से पहले 70%\n• अंतिम भुगतान: DISCOM से नेट मीटरिंग अनुमोदन के बाद 10%\n\n100% ऋण वित्त\n• बैंक से प्रथम ऋण किस्त प्राप्त होते ही इंस्टॉलेशन कार्य शुरू\n• आगे के भुगतान बैंक की ऋण वितरण अनुसूची के अनुसार\n• इंस्टॉलेशन पूर्णता शेष ऋण किस्तों पर निर्भर नहीं\n\nहाइब्रिड (ऋण + नकद मिश्रण)\n• प्रथम किस्त (इंस्टॉलेशन से पहले): बैंक की पहली ऋण वितरण + ग्राहक का पूर्ण नकद योगदान (ऋण से न ढकी पूरी राशि — 100%)\n  उदाहरण: कुल लागत ₹2.5L | ऋण ₹2L (पहली वितरण ₹1.4L) + ग्राहक नकद ₹50k (ऋण से ऊपर पूरी नकद) = ₹1.9L प्राप्त → इंस्टॉलेशन शुरू\n• आगे के भुगतान (नेट मीटरिंग अनुमोदन के बाद): केवल शेष बैंक वितरण\n  उदाहरण: बैंक दूसरी वितरण ₹60k\n• ग्राहक का नकद योगदान = ऋण से न ढकी पूरी प्रोजेक्ट राशि — पहली किस्त के साथ ही पूर्ण भुगतान। आगे कोई ग्राहक नकद स्थगित नहीं।\n• हाइब्रिड में 10% ग्राहक होल्ड क्यों नहीं: बैंक की दूसरी वितरण पहले से ही उस 10% से अधिक रोकती है जो हम नकद डील में ग्राहक को होल्ड करने देते हैं, इसलिए होल्ड वादा ऋण अनुसूची से ही पूरा हो जाता है। ग्राहक को ऋण-से-ऊपर की पूरी नकद राशि अग्रिम देनी होगी।\n• पहली बैंक किस्त + ग्राहक का पूर्ण नकद प्राप्त होते ही इंस्टॉलेशन तुरंत शुरू\n\nमहत्वपूर्ण नोट\n• नकद विधि में: ग्राहक कुल प्रोजेक्ट लागत का अधिकतम 10% नेट मीटरिंग अनुमोदन तक स्थगित कर सकता है\n• हाइब्रिड में: ग्राहक ऋण-से-ऊपर की 100% नकद पहली बैंक किस्त के साथ देता है (कोई स्थगित ग्राहक नकद नहीं)। बैंक की शेष वितरण पहले से होल्ड कवर करती है।\n• नेट मीटरिंग अनुमोदन समयरेखा इंस्टॉलेशन पूर्णता को प्रभावित नहीं करती\n• पहली किस्त (बैंक + ग्राहक की पूर्ण नकद) मिलते ही इंस्टॉलेशन तुरंत शुरू होता है",
       ),
       term(
         "प्रोजेक्ट समयरेखा व इंस्टॉलेशन प्रक्रिया",
@@ -1119,6 +1203,7 @@ function defaultTerms(
         "माप, योजना व इंस्टॉलेशन के बाद परिवर्तन",
         "माही सोलर सॉल्यूशन का इंजीनियर साइट पर माप व इंस्टॉलेशन योजना करेगा। ग्राहक द्वारा उस योजना / लेआउट / विशिष्टताओं पर सहमति देने के बाद, इंस्टॉलेशन पूर्ण होने पर यदि ग्राहक किसी भी प्रकार का परिवर्तन, शिफ्टिंग, री-वर्क या लेआउट संशोधन मांगता है, तो वह माही सोलर सॉल्यूशन की जिम्मेदारी नहीं होगा। ऐसे परिवर्तन अतिरिक्त कार्य माने जाएँगे और कंपनी की प्रचलित दरों पर अलग से शुल्क लगेगा।",
       ),
+      postSigningMaterialChangeTerm("hi"),
       term(
         "सामग्री सुरक्षा व जिम्मेदारी",
         "ट्रांजिट के दौरान व प्रोजेक्ट साइट पर डिलीवरी तक सामग्री सुरक्षा माही सोलर सॉल्यूशन की जिम्मेदारी है। साइट पर डिलीवरी के बाद:\n• सभी आपूर्ति सामग्री की सुरक्षा व सुरक्षा ग्राहक की जिम्मेदारी।\n• साइट पर चोरी, क्षति, तोड़फोड़ या हानि हेतु माही सोलर उत्तरदायी नहीं।\n• इंस्टॉलेशन तक सामग्री सुरक्षित स्थान पर रखें।\n• डिलीवरी के बाद लापरवाही या अनुचित भंडारण से क्षति पर रिप्लेसमेंट हेतु अतिरिक्त शुल्क लगेगा।",
@@ -1156,6 +1241,7 @@ function defaultTerms(
         "रद्दीकरण नीति",
         "यदि ग्राहक पुष्टि या सामग्री डिस्पैच के बाद ऑर्डर रद्द करता है, तो खरीदी गई सामग्री, परिवहन व अन्य खर्चों की वास्तविक लागत काटी जाएगी। ऐसी कटौती के बाद ही वापसी योग्य राशि संसाधित होगी।",
       ),
+      vendorshipCancellationChargeTerm("hi"),
       term(
         "अप्रत्याशित घटना (Force Majeure)",
         "प्राकृतिक आपदा, भारी वर्षा, बाढ़, भूकंप, आग, हड़ताल, सरकारी प्रतिबंध, युद्ध, महामारी या अन्य अप्रत्याशित घटनाओं के कारण प्रोजेक्ट निष्पादन में विलंब या विफलता हेतु माही सोलर सॉल्यूशन प्राइवेट लिमिटेड उत्तरदायी नहीं होगा।",
@@ -1189,7 +1275,7 @@ function defaultTerms(
     term("Transit Insurance", "Up to delivery of material at site."),
     term(
       "Payment Terms & Project Phases",
-      "Payment schedule depends on the financing method:\n\n100% CASH PAYMENT\n• Advance: 20% with order confirmation\n• 2nd Payment: 70% before material dispatch & installation begins\n• Final Payment: 10% after net metering approval from DISCOM\n\n100% LOAN FINANCING\n• Installation work begins immediately upon receipt of first loan installment from bank\n• Subsequent payments follow bank's loan disbursement schedule\n• Installation completion not dependent on remaining loan tranches\n\nHYBRID (LOAN + CASH MIX)\n• 1st Installment (Before Installation Starts): Bank's 1st loan disbursement + Client's cash contribution\n  Example: Total cost ₹2.5L | Loan ₹2L (1st disbursement ₹1.4L) + Client cash ₹50k = ₹1.9L received → Installation begins\n• Subsequent Payments (After Net Metering Approval): Remaining bank disbursements + Client's deferred 10%\n  Example: Bank 2nd disbursement ₹60k + Client deferred 10% (₹25k) = ₹85k\n• Client's cash contribution = Amount of project not covered by loan (can defer max 10% until net metering)\n• Installation proceeds immediately once 1st bank installment + client's cash contribution are received\n\nIMPORTANT NOTE\n• In CASH method: Client defers max 10% of total project cost until after net metering approval\n• In HYBRID method: Client's cash is paid upfront with 1st bank installment; max 10% can be deferred until after net metering\n• Net metering approval timeline does not impact installation work completion\n• Once 1st installment (bank payment + client cash) is received, installation work commences immediately",
+      "Payment schedule depends on the financing method:\n\n100% CASH PAYMENT\n• Advance: 20% with order confirmation\n• 2nd Payment: 70% before material dispatch & installation begins\n• Final Payment: 10% after net metering approval from DISCOM\n\n100% LOAN FINANCING\n• Installation work begins immediately upon receipt of first loan installment from bank\n• Subsequent payments follow bank's loan disbursement schedule\n• Installation completion not dependent on remaining loan tranches\n\nHYBRID (LOAN + CASH MIX)\n• 1st Installment (Before Installation Starts): Bank's 1st loan disbursement + Client's full cash contribution (100% of the amount not covered by loan)\n  Example: Total cost ₹2.5L | Loan ₹2L (1st disbursement ₹1.4L) + Client cash ₹50k (full cash above loan) = ₹1.9L received → Installation begins\n• Subsequent Payments (After Net Metering Approval): Remaining bank disbursements only\n  Example: Bank 2nd disbursement ₹60k\n• Client's cash contribution = Full amount of project not covered by loan — paid entirely with the 1st installment. No further client cash is deferred.\n• Why no 10% client hold in hybrid: The bank's 2nd disbursement already holds back more than the 10% we allow clients to hold in a cash deal, so the hold promise is already met via the loan schedule. The client must therefore pay the complete cash-above-loan amount upfront.\n• Installation proceeds immediately once 1st bank installment + client's full cash contribution are received\n\nIMPORTANT NOTE\n• In CASH method: Client defers max 10% of total project cost until after net metering approval\n• In HYBRID method: Client pays 100% of cash-above-loan with the 1st bank installment (no deferred client cash). The bank's remaining disbursement already covers the hold.\n• Net metering approval timeline does not impact installation work completion\n• Once 1st installment (bank payment + full client cash) is received, installation work commences immediately",
     ),
     term(
       "Project Timeline & Installation Process",
@@ -1211,6 +1297,7 @@ function defaultTerms(
       "Measurement, Planning & Post-Installation Changes",
       "Once Mahi Solar Solution's engineer has completed site measurement and installation planning, and the client has agreed to that plan / layout / specifications, any changes, shifting, re-work, or layout modifications requested by the client after installation is complete shall not be Mahi Solar Solution's responsibility. Such changes will be treated as extra work and charged separately at the Company's prevailing rates.",
     ),
+    postSigningMaterialChangeTerm("en"),
     term(
       "Material Safety & Responsibility",
       "Mahi Solar Solution is responsible for material safety during transit and up to delivery at the project site. After delivery at the site:\n• The client becomes responsible for the safety and security of all supplied materials.\n• Mahi Solar Solution is not liable for theft, damage, vandalism, or loss of materials at the site.\n• The client must store materials in a safe, secure location until installation.\n• Any damage to materials after delivery due to negligence or improper storage will result in additional charges for replacement.",
@@ -1248,6 +1335,7 @@ function defaultTerms(
       "Cancellation Policy",
       "If the customer cancels the order after confirmation or after material dispatch, the actual cost of procured materials, transportation, and other expenses incurred by Mahi Solar Solution Private Limited shall be deducted. Any refundable amount will be processed after adjusting such charges.",
     ),
+    vendorshipCancellationChargeTerm("en"),
     term(
       "Force Majeure",
       "Mahi Solar Solution Private Limited shall not be held responsible for delays or failure in project execution due to events beyond its reasonable control, including but not limited to natural disasters, heavy rainfall, floods, earthquakes, fire, strikes, government restrictions, war, pandemic, or any other force majeure event.",
@@ -1691,7 +1779,7 @@ export function normalizeQuotationData(input?: Partial<QuotationData> | null): Q
     commercialOffer: stripSyncedCommercialRows(input?.commercialOffer ?? defaults.commercialOffer),
     onGridNote: input?.onGridNote ?? defaults.onGridNote,
     discomChargesNote: input?.discomChargesNote ?? defaults.discomChargesNote,
-    terms: ensureInverterSupportTerm(input?.terms ?? defaults.terms, language),
+    terms: ensureQuotationTerms(input?.terms ?? defaults.terms, language),
     subsidyDocuments: input?.subsidyDocuments ?? defaults.subsidyDocuments,
     installationSteps: input?.installationSteps ?? defaults.installationSteps,
     kind: offgrid ? "offgrid" : isCommercialQuotation({ ...defaults, ...input }) ? "commercial" : "residential",
