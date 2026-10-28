@@ -1003,6 +1003,11 @@ function isPostSigningMaterialChangeTerm(item: QuotationTermItem): boolean {
   );
 }
 
+function isSiteSurveyFinalTerm(item: QuotationTermItem): boolean {
+  const label = item.label.trim();
+  return label === "Site Survey Confirmation" || label === "साइट सर्वे पुष्टि";
+}
+
 function isVendorshipCancellationChargeTerm(item: QuotationTermItem): boolean {
   const label = item.label.trim();
   return (
@@ -1034,6 +1039,19 @@ function postSigningMaterialChangeTerm(language: QuotationLanguage): QuotationTe
   return term(
     "Post-Agreement Material Changes",
     "After the Installation Agreement / quotation is signed, any request by the client to change materials (make, brand, specification, or BOM items) is subject to Mahi Solar Solution's sole discretion. We are not obliged to accept such changes. If we agree to make a change, Mahi Solar Solution Private Limited reserves the right to charge additional amounts and/or issue a revised quotation reflecting the updated materials and pricing.",
+  );
+}
+
+function siteSurveyFinalTerm(language: QuotationLanguage): QuotationTermItem {
+  if (language === "hi") {
+    return term(
+      "साइट सर्वे पुष्टि",
+      "कोटेशन स्वीकृति के बाद साइट इंजीनियर विज़िट पर साइट सर्वे पुष्टि फॉर्म में अंतिम माप, सामग्री (पैनल मेक, इनवर्टर, वायरिंग), स्ट्रक्चर साइज़, केबल लंबाई व उपकरण स्थान दर्ज किए जाते हैं। ग्राहक व साइट इंजीनियर द्वारा हस्ताक्षर के बाद वह फॉर्म अंतिम माना जाएगा और जहाँ अंतर हो वहाँ अनुमोदित कोटेशन पर प्रभावी रहेगा। सामग्री या लागत परिवर्तन पर संशोधित कोटेशन जारी किया जा सकता है। इस फॉर्म पर हस्ताक्षर के बाद ग्राहक द्वारा मांगा गया कोई परिवर्तन अतिरिक्त कार्य माना जाएगा।",
+    );
+  }
+  return term(
+    "Site Survey Confirmation",
+    "After quotation approval, a site engineer visit records final measurements, materials (panel make, inverter, wiring), structure sizes, cable lengths and equipment placement on the Site Survey Confirmation form. Once signed by the client and the site engineer, that form is final and prevails over this quotation wherever the recorded items differ. A revised quotation may be issued if material or cost changes require it. Any change requested by the client after that form is signed is treated as extra work.",
   );
 }
 
@@ -1081,6 +1099,19 @@ function ensurePostSigningMaterialChangeTerm(
   return [...terms, item];
 }
 
+function ensureSiteSurveyFinalTerm(
+  terms: QuotationTermItem[],
+  language: QuotationLanguage,
+): QuotationTermItem[] {
+  if (terms.some(isSiteSurveyFinalTerm)) return terms;
+  const item = siteSurveyFinalTerm(language);
+  const afterIdx = terms.findIndex(isPostSigningMaterialChangeTerm);
+  if (afterIdx >= 0) {
+    return [...terms.slice(0, afterIdx + 1), item, ...terms.slice(afterIdx + 1)];
+  }
+  return [...terms, item];
+}
+
 function ensureVendorshipCancellationChargeTerm(
   terms: QuotationTermItem[],
   language: QuotationLanguage,
@@ -1101,7 +1132,10 @@ function ensureQuotationTerms(
   language: QuotationLanguage,
 ): QuotationTermItem[] {
   return ensureVendorshipCancellationChargeTerm(
-    ensurePostSigningMaterialChangeTerm(ensureInverterSupportTerm(terms, language), language),
+    ensureSiteSurveyFinalTerm(
+      ensurePostSigningMaterialChangeTerm(ensureInverterSupportTerm(terms, language), language),
+      language,
+    ),
     language,
   );
 }
@@ -1204,6 +1238,7 @@ function defaultTerms(
         "माही सोलर सॉल्यूशन का इंजीनियर साइट पर माप व इंस्टॉलेशन योजना करेगा। ग्राहक द्वारा उस योजना / लेआउट / विशिष्टताओं पर सहमति देने के बाद, इंस्टॉलेशन पूर्ण होने पर यदि ग्राहक किसी भी प्रकार का परिवर्तन, शिफ्टिंग, री-वर्क या लेआउट संशोधन मांगता है, तो वह माही सोलर सॉल्यूशन की जिम्मेदारी नहीं होगा। ऐसे परिवर्तन अतिरिक्त कार्य माने जाएँगे और कंपनी की प्रचलित दरों पर अलग से शुल्क लगेगा।",
       ),
       postSigningMaterialChangeTerm("hi"),
+      siteSurveyFinalTerm("hi"),
       term(
         "सामग्री सुरक्षा व जिम्मेदारी",
         "ट्रांजिट के दौरान व प्रोजेक्ट साइट पर डिलीवरी तक सामग्री सुरक्षा माही सोलर सॉल्यूशन की जिम्मेदारी है। साइट पर डिलीवरी के बाद:\n• सभी आपूर्ति सामग्री की सुरक्षा व सुरक्षा ग्राहक की जिम्मेदारी।\n• साइट पर चोरी, क्षति, तोड़फोड़ या हानि हेतु माही सोलर उत्तरदायी नहीं।\n• इंस्टॉलेशन तक सामग्री सुरक्षित स्थान पर रखें।\n• डिलीवरी के बाद लापरवाही या अनुचित भंडारण से क्षति पर रिप्लेसमेंट हेतु अतिरिक्त शुल्क लगेगा।",
@@ -1298,6 +1333,7 @@ function defaultTerms(
       "Once Mahi Solar Solution's engineer has completed site measurement and installation planning, and the client has agreed to that plan / layout / specifications, any changes, shifting, re-work, or layout modifications requested by the client after installation is complete shall not be Mahi Solar Solution's responsibility. Such changes will be treated as extra work and charged separately at the Company's prevailing rates.",
     ),
     postSigningMaterialChangeTerm("en"),
+    siteSurveyFinalTerm("en"),
     term(
       "Material Safety & Responsibility",
       "Mahi Solar Solution is responsible for material safety during transit and up to delivery at the project site. After delivery at the site:\n• The client becomes responsible for the safety and security of all supplied materials.\n• Mahi Solar Solution is not liable for theft, damage, vandalism, or loss of materials at the site.\n• The client must store materials in a safe, secure location until installation.\n• Any damage to materials after delivery due to negligence or improper storage will result in additional charges for replacement.",

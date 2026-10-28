@@ -1,4 +1,10 @@
-import type { AnnexureProjectReference, CompanyFirm, CompanyProfileData, EmpanelmentAnnexure } from "../types/company-profile";
+import type {
+  AnnexureProjectReference,
+  CompanyFirm,
+  CompanyProfileData,
+  EmpanelmentAnnexure,
+  SiteSurveyForm,
+} from "../types/company-profile";
 
 export const COMPANY_FIRMS: { id: CompanyFirm; label: string; description: string }[] = [
   {
@@ -31,6 +37,18 @@ export const COMPANY_FIRMS: { id: CompanyFirm; label: string; description: strin
     label: "MSE Empanelment Annexure",
     description: "Partner empanelment annexure (experience, project references and bureau consent) on MSE letterhead.",
   },
+  {
+    id: "mss-site-survey",
+    label: "MSS Site Survey Confirmation",
+    description:
+      "For the site engineer after quotation approval — measurement, structure & cable plan, placement lock-in and client sign-off on MSS letterhead.",
+  },
+  {
+    id: "mse-site-survey",
+    label: "MSE Site Survey Confirmation",
+    description:
+      "For the site engineer after quotation approval — measurement, structure & cable plan, placement lock-in and client sign-off on MSE letterhead.",
+  },
 ];
 
 const COMPANY_FIRM_IDS: CompanyFirm[] = [
@@ -40,6 +58,8 @@ const COMPANY_FIRM_IDS: CompanyFirm[] = [
   "mse-letterhead",
   "mss-empanelment-annexure",
   "mse-empanelment-annexure",
+  "mss-site-survey",
+  "mse-site-survey",
 ];
 
 export function isCompanyFirm(value: string | null): value is CompanyFirm {
@@ -54,12 +74,21 @@ export function isAnnexureFirm(firm: CompanyFirm): boolean {
   return firm === "mss-empanelment-annexure" || firm === "mse-empanelment-annexure";
 }
 
+export function isSiteSurveyFirm(firm: CompanyFirm): boolean {
+  return firm === "mss-site-survey" || firm === "mse-site-survey";
+}
+
 export function usesLetterheadChrome(firm: CompanyFirm): boolean {
-  return isLetterheadFirm(firm) || isAnnexureFirm(firm);
+  return isLetterheadFirm(firm) || isAnnexureFirm(firm) || isSiteSurveyFirm(firm);
 }
 
 export function isMseFirm(firm: CompanyFirm): boolean {
-  return firm === "mahi-solar-energy" || firm === "mse-letterhead" || firm === "mse-empanelment-annexure";
+  return (
+    firm === "mahi-solar-energy" ||
+    firm === "mse-letterhead" ||
+    firm === "mse-empanelment-annexure" ||
+    firm === "mse-site-survey"
+  );
 }
 
 export function getLetterheadVendorLine(firm: CompanyFirm): string {
@@ -131,6 +160,69 @@ export function createDefaultAnnexure(overrides: Partial<EmpanelmentAnnexure> = 
   };
 }
 
+export const SITE_SURVEY_TERMS = [
+  "This form is filled during the site engineer’s visit after quotation approval. It records final measurements and layout for installation planning.",
+  "Panel make, inverter, wiring, structure sizes, cable lengths and equipment positions decided and signed on this form are final for installation and override the approved quotation wherever they differ. A revised quotation may be issued if material or cost changes require it.",
+  "By signing, the client confirms the physical quotation copy presented on site and agrees the structure sizes, cable lengths (approx.), equipment positions and cable paths recorded on this form.",
+  "Cable lengths are approximate site estimates. Actual length used may vary based on final routing; material beyond the agreed scope may be charged extra.",
+  "After this form is signed, any change in structure height/placement, inverter or DB position, or cable path requested by the client is treated as extra work and may incur re-work charges and/or a revised quotation.",
+  "Site readiness (safe roof access, shadow-free area, load-bearing capacity, electricity for tools) remains the client’s responsibility. Installation start still depends on the agreed payment schedule.",
+  "This survey does not by itself start material dispatch or installation. Work proceeds only as per the quotation payment terms and company schedule.",
+  "Photos, sketches or mark-ups attached or drawn on this sheet form part of the agreed site record.",
+] as const;
+
+export function createDefaultSiteSurvey(overrides: Partial<SiteSurveyForm> = {}): SiteSurveyForm {
+  return {
+    customerName: "",
+    customerPhone: "",
+    siteAddress: "",
+    capacity: "",
+    phase: "",
+    surveyDate: new Date().toISOString().slice(0, 10),
+    engineerName: "Yogesh Kumar Poonia",
+    engineerMobile: "7023351302",
+    panelMake: "",
+    panelMakeOther: "",
+    panelWp: "",
+    panelQty: "",
+    inverterMake: "",
+    inverterMakeOther: "",
+    inverterSize: "",
+    structureBrand: "",
+    legSize: "75×75 for Apollo / 72×72 for Tata",
+    legHeight: "",
+    legQty: "",
+    rafterSize: "60×40",
+    rafterLength: "",
+    rafterQty: "",
+    purlinSize: "40×40",
+    purlinLength: "",
+    purlinQty: "",
+    structureNotes: "",
+    acCableMake: "Ramsons",
+    acCableSize: "",
+    acCableLengthM: "",
+    dcCableMake: "Polycab",
+    dcCableSize: "4 sq mm",
+    dcCableLengthM: "",
+    inverterLocation: "",
+    acDbLocation: "",
+    dcDbLocation: "",
+    acCablePath: "",
+    earthingCablePath: "",
+    earthingPits: "3",
+    roofType: "",
+    shadowNotes: "",
+    otherNotes: "",
+    quotationSignedOnSite: "Yes",
+    clientAgreesLayout: "Yes",
+    place: "Jaipur",
+    date: new Date().toISOString().slice(0, 10),
+    clientSignName: "",
+    ...overrides,
+  };
+}
+
 const MSE_BANK_DETAILS = {
   bankAccountName: "MAHI SOLAR ENERGY",
   bankName: "AU Small Finance Bank",
@@ -163,6 +255,7 @@ export function createDefaultCompanyProfileData(firm: CompanyFirm = "mahi-solar-
     contactTitle: "",
     notes: "",
     annexure: createDefaultAnnexure(),
+    siteSurvey: createDefaultSiteSurvey(),
     showContact: true,
     showStatutory: true,
     showBank: true,
@@ -282,6 +375,36 @@ export function createDefaultCompanyProfileData(firm: CompanyFirm = "mahi-solar-
     };
   }
 
+  if (firm === "mss-site-survey") {
+    return {
+      ...mss,
+      title: "",
+      tagline: "",
+      showContact: false,
+      showStatutory: false,
+      showBank: false,
+      showContactPerson: false,
+      showNotes: false,
+      showLetterhead: true,
+      siteSurvey: createDefaultSiteSurvey(),
+    };
+  }
+
+  if (firm === "mse-site-survey") {
+    return {
+      ...mse,
+      title: "",
+      tagline: "",
+      showContact: false,
+      showStatutory: false,
+      showBank: false,
+      showContactPerson: false,
+      showNotes: false,
+      showLetterhead: true,
+      siteSurvey: createDefaultSiteSurvey(),
+    };
+  }
+
   return mss;
 }
 
@@ -329,5 +452,9 @@ export function normalizeCompanyProfileData(input?: Partial<CompanyProfileData> 
   };
   merged.annexure.officeAddress = fixPincode(merged.annexure.officeAddress);
   merged.annexure.registeredAddress = fixPincode(merged.annexure.registeredAddress);
+  merged.siteSurvey = {
+    ...defaults.siteSurvey,
+    ...input?.siteSurvey,
+  };
   return merged;
 }

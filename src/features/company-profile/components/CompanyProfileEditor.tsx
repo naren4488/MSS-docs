@@ -2,8 +2,15 @@ import type { ReactNode } from "react";
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { ImageUploader } from "@/features/offer-letter/components/ImageUploader";
-import { getCompanyFirmLabel, isAnnexureFirm, isLetterheadFirm, isMseFirm, usesLetterheadChrome } from "../lib/company-profile-defaults";
-import type { CompanyProfileData, EmpanelmentAnnexure } from "../types/company-profile";
+import {
+  getCompanyFirmLabel,
+  isAnnexureFirm,
+  isLetterheadFirm,
+  isMseFirm,
+  isSiteSurveyFirm,
+  usesLetterheadChrome,
+} from "../lib/company-profile-defaults";
+import type { CompanyProfileData, EmpanelmentAnnexure, SiteSurveyForm } from "../types/company-profile";
 
 interface CompanyProfileEditorProps {
   data: CompanyProfileData;
@@ -81,11 +88,16 @@ export function CompanyProfileEditor({ data, onChange }: CompanyProfileEditorPro
 
   const letterheadOnly = isLetterheadFirm(data.firm);
   const annexureDoc = isAnnexureFirm(data.firm);
+  const siteSurveyDoc = isSiteSurveyFirm(data.firm);
   const letterheadChrome = usesLetterheadChrome(data.firm);
   const brandShort = isMseFirm(data.firm) ? "MSE" : "MSS";
 
   function updateAnnexure<K extends keyof EmpanelmentAnnexure>(key: K, value: EmpanelmentAnnexure[K]) {
     onChange({ ...data, annexure: { ...data.annexure, [key]: value } });
+  }
+
+  function updateSiteSurvey<K extends keyof SiteSurveyForm>(key: K, value: SiteSurveyForm[K]) {
+    onChange({ ...data, siteSurvey: { ...data.siteSurvey, [key]: value } });
   }
 
   function updateReference(index: number, key: "details" | "address" | "contactName" | "mobile", value: string) {
@@ -227,7 +239,345 @@ export function CompanyProfileEditor({ data, onChange }: CompanyProfileEditorPro
         </AccordionSection>
       )}
 
-      {annexureDoc ? (
+      {siteSurveyDoc ? (
+        <>
+          <AccordionSection
+            title="Customer & Quotation"
+            defaultOpen
+            helper="Filled before or during the site visit. Matches the approved quotation the engineer carries."
+          >
+            <div className="field-grid">
+              <div className="field">
+                <label>Customer name</label>
+                <input value={data.siteSurvey.customerName} onChange={(event) => updateSiteSurvey("customerName", event.target.value)} />
+              </div>
+              <div className="field">
+                <label>Contact number</label>
+                <input value={data.siteSurvey.customerPhone} onChange={(event) => updateSiteSurvey("customerPhone", event.target.value)} />
+              </div>
+              <div className="field full-span">
+                <label>Site address</label>
+                <textarea rows={2} value={data.siteSurvey.siteAddress} onChange={(event) => updateSiteSurvey("siteAddress", event.target.value)} />
+              </div>
+              <div className="field">
+                <label>Capacity</label>
+                <input value={data.siteSurvey.capacity} placeholder="e.g. 3 KW" onChange={(event) => updateSiteSurvey("capacity", event.target.value)} />
+              </div>
+              <div className="field">
+                <label>Survey date</label>
+                <input type="date" value={data.siteSurvey.surveyDate} onChange={(event) => updateSiteSurvey("surveyDate", event.target.value)} />
+              </div>
+              <div className="field full-span">
+                <label>Phase</label>
+                <div style={{ display: "flex", gap: 16, alignItems: "center", paddingTop: 6 }}>
+                  {(["1PH", "3PH"] as const).map((option) => (
+                    <label key={option} style={{ display: "inline-flex", gap: 6, alignItems: "center", fontSize: 13 }}>
+                      <input
+                        type="checkbox"
+                        checked={data.siteSurvey.phase === option}
+                        onChange={() =>
+                          updateSiteSurvey("phase", data.siteSurvey.phase === option ? "" : option)
+                        }
+                      />
+                      {option}
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <div className="field">
+                <label>Site engineer</label>
+                <input value={data.siteSurvey.engineerName} onChange={(event) => updateSiteSurvey("engineerName", event.target.value)} />
+              </div>
+              <div className="field">
+                <label>Engineer mobile</label>
+                <input value={data.siteSurvey.engineerMobile} onChange={(event) => updateSiteSurvey("engineerMobile", event.target.value)} />
+              </div>
+            </div>
+          </AccordionSection>
+
+          <AccordionSection title="Confirmed Materials" defaultOpen helper="Should match the approved quotation BOM. Panel Wp is left blank for survey fill-in.">
+            <div className="field-grid">
+              <div className="field full-span">
+                <label>Panel make</label>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 14, alignItems: "center", paddingTop: 6 }}>
+                  {(["Adani", "Waaree", "INA", "Other"] as const).map((option) => (
+                    <label key={option} style={{ display: "inline-flex", gap: 6, alignItems: "center", fontSize: 13 }}>
+                      <input
+                        type="checkbox"
+                        checked={data.siteSurvey.panelMake === option}
+                        onChange={() =>
+                          updateSiteSurvey("panelMake", data.siteSurvey.panelMake === option ? "" : option)
+                        }
+                      />
+                      {option}
+                    </label>
+                  ))}
+                </div>
+              </div>
+              {data.siteSurvey.panelMake === "Other" ? (
+                <div className="field full-span">
+                  <label>Other panel make</label>
+                  <input
+                    value={data.siteSurvey.panelMakeOther}
+                    placeholder="Write brand name"
+                    onChange={(event) => updateSiteSurvey("panelMakeOther", event.target.value)}
+                  />
+                </div>
+              ) : null}
+              <div className="field">
+                <label>Panel Wp</label>
+                <input
+                  value={data.siteSurvey.panelWp}
+                  placeholder="Fill at survey"
+                  onChange={(event) => updateSiteSurvey("panelWp", event.target.value)}
+                />
+              </div>
+              <div className="field">
+                <label>Panel quantity</label>
+                <input value={data.siteSurvey.panelQty} onChange={(event) => updateSiteSurvey("panelQty", event.target.value)} />
+              </div>
+              <div className="field full-span">
+                <label>Inverter make</label>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 14, alignItems: "center", paddingTop: 6 }}>
+                  {(["Polycab", "Luminous", "Other"] as const).map((option) => (
+                    <label key={option} style={{ display: "inline-flex", gap: 6, alignItems: "center", fontSize: 13 }}>
+                      <input
+                        type="checkbox"
+                        checked={data.siteSurvey.inverterMake === option}
+                        onChange={() =>
+                          updateSiteSurvey("inverterMake", data.siteSurvey.inverterMake === option ? "" : option)
+                        }
+                      />
+                      {option}
+                    </label>
+                  ))}
+                </div>
+              </div>
+              {data.siteSurvey.inverterMake === "Other" ? (
+                <div className="field full-span">
+                  <label>Other inverter make</label>
+                  <input
+                    value={data.siteSurvey.inverterMakeOther}
+                    placeholder="Write brand name"
+                    onChange={(event) => updateSiteSurvey("inverterMakeOther", event.target.value)}
+                  />
+                </div>
+              ) : null}
+              <div className="field">
+                <label>Inverter size</label>
+                <input value={data.siteSurvey.inverterSize} placeholder="e.g. 3.6 KW" onChange={(event) => updateSiteSurvey("inverterSize", event.target.value)} />
+              </div>
+            </div>
+          </AccordionSection>
+
+          <AccordionSection title="Structure Measurement" defaultOpen helper="Table on the PDF: Member · Spec · Height/Length · Qty.">
+            <div className="field-grid">
+              <div className="field full-span">
+                <label>Structure brand</label>
+                <div style={{ display: "flex", gap: 16, alignItems: "center", paddingTop: 6 }}>
+                  {(["Apollo", "Tata"] as const).map((option) => (
+                    <label key={option} style={{ display: "inline-flex", gap: 6, alignItems: "center", fontSize: 13 }}>
+                      <input
+                        type="checkbox"
+                        checked={data.siteSurvey.structureBrand === option}
+                        onChange={() =>
+                          updateSiteSurvey(
+                            "structureBrand",
+                            data.siteSurvey.structureBrand === option ? "" : option,
+                          )
+                        }
+                      />
+                      {option}
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div style={{ overflowX: "auto", marginTop: 12 }}>
+              <table className="mss-sites-table" style={{ width: "100%", fontSize: 13 }}>
+                <thead>
+                  <tr>
+                    <th>Member</th>
+                    <th>Spec (size)</th>
+                    <th>Height / Length</th>
+                    <th>Qty</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td style={{ fontWeight: 600 }}>Leg</td>
+                    <td>
+                      <input
+                        value={data.siteSurvey.legSize}
+                        placeholder="75×75 for Apollo / 72×72 for Tata"
+                        onChange={(event) => updateSiteSurvey("legSize", event.target.value)}
+                      />
+                    </td>
+                    <td>
+                      <input value={data.siteSurvey.legHeight} placeholder="Height" onChange={(event) => updateSiteSurvey("legHeight", event.target.value)} />
+                    </td>
+                    <td>
+                      <input value={data.siteSurvey.legQty} placeholder="Qty" onChange={(event) => updateSiteSurvey("legQty", event.target.value)} />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style={{ fontWeight: 600 }}>Rafter</td>
+                    <td>
+                      <input value={data.siteSurvey.rafterSize} placeholder="60×40" onChange={(event) => updateSiteSurvey("rafterSize", event.target.value)} />
+                    </td>
+                    <td>
+                      <input value={data.siteSurvey.rafterLength} placeholder="Length" onChange={(event) => updateSiteSurvey("rafterLength", event.target.value)} />
+                    </td>
+                    <td>
+                      <input value={data.siteSurvey.rafterQty} placeholder="Qty" onChange={(event) => updateSiteSurvey("rafterQty", event.target.value)} />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style={{ fontWeight: 600 }}>Purlin</td>
+                    <td>
+                      <input value={data.siteSurvey.purlinSize} placeholder="40×40" onChange={(event) => updateSiteSurvey("purlinSize", event.target.value)} />
+                    </td>
+                    <td>
+                      <input value={data.siteSurvey.purlinLength} placeholder="Length" onChange={(event) => updateSiteSurvey("purlinLength", event.target.value)} />
+                    </td>
+                    <td>
+                      <input value={data.siteSurvey.purlinQty} placeholder="Qty" onChange={(event) => updateSiteSurvey("purlinQty", event.target.value)} />
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div className="field-grid" style={{ marginTop: 12 }}>
+              <div className="field full-span">
+                <label>Structure notes</label>
+                <textarea rows={2} value={data.siteSurvey.structureNotes} onChange={(event) => updateSiteSurvey("structureNotes", event.target.value)} />
+              </div>
+            </div>
+          </AccordionSection>
+
+          <AccordionSection title="Cables & Placement" defaultOpen helper="Cable table on the PDF: Cable · Make · Size · Length.">
+            <div style={{ overflowX: "auto" }}>
+              <table className="mss-sites-table" style={{ width: "100%", fontSize: 13 }}>
+                <thead>
+                  <tr>
+                    <th>Cable</th>
+                    <th>Make</th>
+                    <th>Size</th>
+                    <th>Length (approx. m)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td style={{ fontWeight: 600 }}>AC Cable</td>
+                    <td>
+                      <input value={data.siteSurvey.acCableMake} placeholder="Ramsons" onChange={(event) => updateSiteSurvey("acCableMake", event.target.value)} />
+                    </td>
+                    <td>
+                      <input
+                        value={data.siteSurvey.acCableSize}
+                        placeholder="e.g. 2C / 4C 10 sq mm"
+                        onChange={(event) => updateSiteSurvey("acCableSize", event.target.value)}
+                      />
+                    </td>
+                    <td>
+                      <input value={data.siteSurvey.acCableLengthM} placeholder="m" onChange={(event) => updateSiteSurvey("acCableLengthM", event.target.value)} />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style={{ fontWeight: 600 }}>DC Cable</td>
+                    <td>
+                      <input value={data.siteSurvey.dcCableMake} placeholder="Polycab" onChange={(event) => updateSiteSurvey("dcCableMake", event.target.value)} />
+                    </td>
+                    <td>
+                      <input value={data.siteSurvey.dcCableSize} placeholder="4 sq mm" onChange={(event) => updateSiteSurvey("dcCableSize", event.target.value)} />
+                    </td>
+                    <td>
+                      <input value={data.siteSurvey.dcCableLengthM} placeholder="m" onChange={(event) => updateSiteSurvey("dcCableLengthM", event.target.value)} />
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div className="field-grid" style={{ marginTop: 12 }}>
+              <div className="field full-span">
+                <label>Inverter position</label>
+                <input value={data.siteSurvey.inverterLocation} onChange={(event) => updateSiteSurvey("inverterLocation", event.target.value)} />
+              </div>
+              <div className="field">
+                <label>ACDB position</label>
+                <input value={data.siteSurvey.acDbLocation} onChange={(event) => updateSiteSurvey("acDbLocation", event.target.value)} />
+              </div>
+              <div className="field">
+                <label>DCDB position</label>
+                <input value={data.siteSurvey.dcDbLocation} onChange={(event) => updateSiteSurvey("dcDbLocation", event.target.value)} />
+              </div>
+              <div className="field full-span">
+                <label>AC cable / wiring path</label>
+                <textarea rows={2} value={data.siteSurvey.acCablePath} onChange={(event) => updateSiteSurvey("acCablePath", event.target.value)} />
+              </div>
+              <div className="field full-span">
+                <label>Earthing cable path</label>
+                <textarea rows={2} value={data.siteSurvey.earthingCablePath} onChange={(event) => updateSiteSurvey("earthingCablePath", event.target.value)} />
+              </div>
+              <div className="field">
+                <label>Earthing pits / kit</label>
+                <input value={data.siteSurvey.earthingPits} onChange={(event) => updateSiteSurvey("earthingPits", event.target.value)} />
+              </div>
+              <div className="field">
+                <label>Roof type</label>
+                <input value={data.siteSurvey.roofType} placeholder="RCC / Tin shed" onChange={(event) => updateSiteSurvey("roofType", event.target.value)} />
+              </div>
+              <div className="field full-span">
+                <label>Shadow notes</label>
+                <input value={data.siteSurvey.shadowNotes} onChange={(event) => updateSiteSurvey("shadowNotes", event.target.value)} />
+              </div>
+              <div className="field full-span">
+                <label>Other notes</label>
+                <textarea rows={2} value={data.siteSurvey.otherNotes} onChange={(event) => updateSiteSurvey("otherNotes", event.target.value)} />
+              </div>
+            </div>
+          </AccordionSection>
+
+          <AccordionSection title="Sign-off">
+            <div className="field-grid">
+              <div className="field">
+                <label>Quotation signed on site</label>
+                <select
+                  value={data.siteSurvey.quotationSignedOnSite}
+                  onChange={(event) => updateSiteSurvey("quotationSignedOnSite", event.target.value)}
+                >
+                  <option value="Yes">Yes</option>
+                  <option value="No">No</option>
+                  <option value="Pending">Pending</option>
+                </select>
+              </div>
+              <div className="field">
+                <label>Client agrees layout</label>
+                <select
+                  value={data.siteSurvey.clientAgreesLayout}
+                  onChange={(event) => updateSiteSurvey("clientAgreesLayout", event.target.value)}
+                >
+                  <option value="Yes">Yes</option>
+                  <option value="No">No</option>
+                  <option value="With notes">With notes</option>
+                </select>
+              </div>
+              <div className="field">
+                <label>Client sign name</label>
+                <input value={data.siteSurvey.clientSignName} onChange={(event) => updateSiteSurvey("clientSignName", event.target.value)} />
+              </div>
+              <div className="field">
+                <label>Place</label>
+                <input value={data.siteSurvey.place} onChange={(event) => updateSiteSurvey("place", event.target.value)} />
+              </div>
+              <div className="field">
+                <label>Date</label>
+                <input type="date" value={data.siteSurvey.date} onChange={(event) => updateSiteSurvey("date", event.target.value)} />
+              </div>
+            </div>
+          </AccordionSection>
+        </>
+      ) : annexureDoc ? (
         <>
           <AccordionSection title="Annexure 1 — Experience Details" defaultOpen helper={`Printed on ${brandShort} letterhead. Company name, phone and email come from the sections above.`}>
             <div className="field-grid">

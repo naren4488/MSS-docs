@@ -3,7 +3,15 @@ import { Navigate, useNavigate, useParams, useSearchParams } from "react-router-
 import { MakerStickyTopbar } from "@/components/MakerStickyTopbar";
 import { CompanyProfileEditor } from "../components/CompanyProfileEditor";
 import { CompanyProfilePreview } from "../components/CompanyProfilePreview";
-import { createDefaultCompanyProfileData, isAnnexureFirm, isCompanyFirm, isLetterheadFirm, isMseFirm, normalizeCompanyProfileData } from "../lib/company-profile-defaults";
+import {
+  createDefaultCompanyProfileData,
+  isAnnexureFirm,
+  isCompanyFirm,
+  isLetterheadFirm,
+  isMseFirm,
+  isSiteSurveyFirm,
+  normalizeCompanyProfileData,
+} from "../lib/company-profile-defaults";
 import { documentDownloadName } from "@/lib/document-filename";
 import { downloadAnnexureDocx } from "../lib/download-annexure-docx";
 import {
@@ -15,6 +23,9 @@ import type { CompanyFirm, CompanyProfileData } from "../types/company-profile";
 
 function companyDocumentName(data: CompanyProfileData): string {
   const brand = isMseFirm(data.firm) ? "MSE" : "MSS";
+  if (isSiteSurveyFirm(data.firm)) {
+    return documentDownloadName(data.siteSurvey.customerName, "Site Survey Confirmation", brand);
+  }
   if (isAnnexureFirm(data.firm)) return documentDownloadName("", "Empanelment Annexure", brand);
   if (isLetterheadFirm(data.firm)) return documentDownloadName("", "Letterhead", brand);
   return documentDownloadName(data.legalName, "Company Details", brand);
@@ -107,11 +118,34 @@ export function CompanyProfileMaker() {
 
   const letterheadOnly = isLetterheadFirm(data.firm);
   const annexureDoc = isAnnexureFirm(data.firm);
+  const siteSurveyDoc = isSiteSurveyFirm(data.firm);
   const brandShort = isMseFirm(data.firm) ? "MSE" : "MSS";
 
   if (shouldRedirectToList) {
     return <Navigate replace to="/company-profiles" />;
   }
+
+  const editorTitle = siteSurveyDoc
+    ? "Site Survey Confirmation"
+    : annexureDoc
+      ? "Empanelment Annexure"
+      : letterheadOnly
+        ? `${brandShort} Letterhead`
+        : "Company Details";
+  const editorHelper = siteSurveyDoc
+    ? `Site engineer form on ${brandShort} letterhead — measurement, structure, cables, placement and client sign-off.`
+    : annexureDoc
+      ? `Experience certificate, project references and bureau consent printed on ${brandShort} letterhead.`
+      : letterheadOnly
+        ? "Edit the header and footer. Leave the body blank to print stationery, or type a letter."
+        : "Fill in the firm's contact, statutory and bank details.";
+  const previewTitle = siteSurveyDoc
+    ? "Survey Sheet"
+    : annexureDoc
+      ? "Letterhead Annexure"
+      : letterheadOnly
+        ? "Letterhead"
+        : "Shareable Sheet";
 
   return (
     <div className="page-shell page-shell--maker page-shell--maker-agreement">
@@ -131,15 +165,9 @@ export function CompanyProfileMaker() {
             <div className="panel-header">
               <div>
                 <p className="eyebrow">Editor</p>
-                <h2>{annexureDoc ? "Empanelment Annexure" : letterheadOnly ? `${brandShort} Letterhead` : "Company Details"}</h2>
+                <h2>{editorTitle}</h2>
               </div>
-              <p className="muted-text">
-                {annexureDoc
-                  ? `Experience certificate, project references and bureau consent printed on ${brandShort} letterhead.`
-                  : letterheadOnly
-                    ? "Edit the header and footer. Leave the body blank to print stationery, or type a letter."
-                    : "Fill in the firm's contact, statutory and bank details."}
-              </p>
+              <p className="muted-text">{editorHelper}</p>
             </div>
             <CompanyProfileEditor data={data} onChange={setData} />
           </section>
@@ -152,7 +180,7 @@ export function CompanyProfileMaker() {
           <div className="panel-header no-print">
             <div>
               <p className="eyebrow">Preview</p>
-              <h2>{annexureDoc ? "Letterhead Annexure" : letterheadOnly ? "Letterhead" : "Shareable Sheet"}</h2>
+              <h2>{previewTitle}</h2>
             </div>
             <p className="muted-text">
               {annexureDoc

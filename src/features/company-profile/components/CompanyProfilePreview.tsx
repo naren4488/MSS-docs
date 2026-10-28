@@ -1,10 +1,11 @@
 import type { CSSProperties, ReactNode } from "react";
 import { CompanyLogo, getLetterheadLogoSize, getLetterheadLogoWrap } from "@/components/CompanyLogo";
 import { PAGE_HEIGHT, PAGE_SIDE_PADDING, PAGE_TOP_BOTTOM_PADDING, PAGE_WIDTH } from "../constants/sheet-layout";
-import { isAnnexureFirm, isLetterheadFirm } from "../lib/company-profile-defaults";
+import { isAnnexureFirm, isLetterheadFirm, isSiteSurveyFirm } from "../lib/company-profile-defaults";
 import type { CompanyProfileData } from "../types/company-profile";
 import { filledValue } from "../lib/company-profile-formatters";
 import { CompanyProfileAnnexurePreview } from "./CompanyProfileAnnexurePreview";
+import { CompanyProfileSiteSurveyPreview } from "./CompanyProfileSiteSurveyPreview";
 import { LetterheadPage, NAVY, NAVY2 } from "./MssLetterheadChrome";
 
 interface CompanyProfilePreviewProps {
@@ -73,6 +74,10 @@ function DetailsHeader({ data }: { data: CompanyProfileData }) {
 export function CompanyProfilePreview({ data }: CompanyProfilePreviewProps) {
   if (isAnnexureFirm(data.firm)) {
     return <CompanyProfileAnnexurePreview data={data} />;
+  }
+
+  if (isSiteSurveyFirm(data.firm)) {
+    return <CompanyProfileSiteSurveyPreview data={data} />;
   }
 
   if (isLetterheadFirm(data.firm)) {

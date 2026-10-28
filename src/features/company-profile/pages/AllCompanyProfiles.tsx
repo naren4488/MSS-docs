@@ -1,7 +1,13 @@
 import { useMemo, useState } from "react";
-import { Building2, ClipboardList, ScrollText, Trash2 } from "lucide-react";
+import { Building2, ClipboardCheck, ClipboardList, ScrollText, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { COMPANY_FIRMS, getCompanyFirmLabel, isAnnexureFirm, isLetterheadFirm } from "../lib/company-profile-defaults";
+import {
+  COMPANY_FIRMS,
+  getCompanyFirmLabel,
+  isAnnexureFirm,
+  isLetterheadFirm,
+  isSiteSurveyFirm,
+} from "../lib/company-profile-defaults";
 import { formatRecordDate } from "../lib/company-profile-formatters";
 import { deleteCompanyProfileRecord, listCompanyProfiles } from "../lib/company-profile-storage";
 
@@ -25,7 +31,7 @@ export function AllCompanyProfiles() {
             <p className="eyebrow">Create New</p>
             <h2 style={{ margin: "4px 0 0" }}>Pick a document</h2>
             <p className="muted-text" style={{ marginTop: 8, marginBottom: 0 }}>
-              Choose a firm details sheet, MSS/MSE letterhead, or an empanelment annexure. Saved documents appear further down.
+              Choose a firm details sheet, letterhead, empanelment annexure, or site survey confirmation. Saved documents appear further down.
             </p>
           </div>
           <p className="muted-text">Each option pre-fills Mahi Solar Solution or Mahi Solar Energy details.</p>
@@ -34,7 +40,15 @@ export function AllCompanyProfiles() {
           {COMPANY_FIRMS.map((firm) => (
             <Link className="template-card" key={firm.id} to={`/company-profile?firm=${firm.id}`}>
               <div className="template-card-icon">
-                {isAnnexureFirm(firm.id) ? <ClipboardList size={20} /> : isLetterheadFirm(firm.id) ? <ScrollText size={20} /> : <Building2 size={20} />}
+                {isSiteSurveyFirm(firm.id) ? (
+                  <ClipboardCheck size={20} />
+                ) : isAnnexureFirm(firm.id) ? (
+                  <ClipboardList size={20} />
+                ) : isLetterheadFirm(firm.id) ? (
+                  <ScrollText size={20} />
+                ) : (
+                  <Building2 size={20} />
+                )}
               </div>
               <div>
                 <h3>{firm.label}</h3>
