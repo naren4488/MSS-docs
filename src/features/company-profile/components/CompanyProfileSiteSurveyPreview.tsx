@@ -287,7 +287,7 @@ function TitleBlock() {
   );
 }
 
-function DualSign({ survey, companyName }: { survey: SiteSurveyForm; companyName: string }) {
+function DualSign({ survey }: { survey: SiteSurveyForm }) {
   return (
     <div
       style={{
@@ -311,9 +311,6 @@ function DualSign({ survey, companyName }: { survey: SiteSurveyForm; companyName
         <div>Name: {survey.clientSignName || survey.customerName || "_______________________"}</div>
         <div style={{ marginTop: 2 }}>Place: {survey.place || "Jaipur"}</div>
         <div style={{ marginTop: 2 }}>Date: {formatDate(survey.date)}</div>
-        <div style={{ marginTop: 8, fontSize: 9, color: "#4b5563" }}>
-          For {filledValue(companyName)} quotation on site
-        </div>
       </div>
     </div>
   );
@@ -511,7 +508,7 @@ export function CompanyProfileSiteSurveyPreview({ data }: { data: CompanyProfile
           ))}
         </ol>
 
-        <DualSign survey={s} companyName={data.legalName} />
+        <DualSign survey={s} />
       </SurveyPage>
     </div>
   );
