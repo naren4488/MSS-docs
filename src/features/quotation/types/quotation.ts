@@ -11,7 +11,7 @@ export type QuotationAcCableBrand = "Ramsons" | "Polycab";
 export type QuotationPanelBrand = "Adani" | "Waaree" | "INA";
 /** Earthing wire BOM option — single make or Indo/Ramsons either-or. */
 export type QuotationEarthingWireOption = "Polycab25" | "Indo6" | "Ramsons16" | "IndoOrRamsons";
-/** Residential subsidy: MNRE only, or MNRE + state. */
+/** Residential subsidy: MNRE only, or MNRE + state. Hide the block via showSubsidySection. */
 export type QuotationSubsidyScope = "central" | "both";
 export type QuotationKind = "residential" | "commercial" | "offgrid";
 /** Letterhead / bank / signatory identity on the quotation. */

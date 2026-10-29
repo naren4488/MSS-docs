@@ -43,7 +43,8 @@
 }
 
 .field input,
-.field textarea {
+.field textarea,
+.field select {
   width: 100%;
   border-radius: 16px;
   border: 1px solid #d7dfeb;
@@ -52,10 +53,25 @@
   resize: vertical;
   color: #152036;
   outline: none;
+  font: inherit;
+}
+
+.field select {
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, #8492ab 50%),
+    linear-gradient(135deg, #8492ab 50%, transparent 50%);
+  background-position:
+    calc(100% - 18px) calc(50% - 3px),
+    calc(100% - 12px) calc(50% - 3px);
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+  padding-right: 36px;
+  cursor: pointer;
 }
 
 .field input:focus,
-.field textarea:focus {
+.field textarea:focus,
+.field select:focus {
   border-color: #f5a524;
   box-shadow: 0 0 0 4px rgba(245, 165, 36, 0.12);
 }
@@ -64,6 +80,36 @@
   margin: 0 0 16px;
   color: #65748b;
   font-size: 0.9rem;
+}
+
+.editor-fieldset {
+  display: grid;
+  gap: 12px;
+  margin: 0 0 14px;
+  padding: 14px 16px 16px;
+  border-radius: 18px;
+  background: #f8fbff;
+  border: 1px solid #e3eaf4;
+}
+
+.editor-fieldset:last-child {
+  margin-bottom: 0;
+}
+
+.editor-fieldset-title {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #65748b;
+}
+
+.editor-fieldset-note {
+  margin: -2px 0 0;
+  color: #8492ab;
+  font-size: 0.82rem;
+  line-height: 1.45;
 }
 
 .upload-card {

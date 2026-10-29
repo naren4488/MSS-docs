@@ -189,200 +189,207 @@ export function QuotationEditor({ data, onChange }: QuotationEditorProps) {
         title="Customer Details"
         helper={
           offgrid
-            ? "Customer, site address and plant capacity. Panel qty, Microtek PCU kW, battery count and project amount update from the plant kW (₹2,60,000 for 3 kW)."
+            ? "Grouped by customer, plant options and pricing. Capacity updates BOM qty and project amount (₹2,60,000 for 3 kW)."
             : commercial
-              ? "Customer, site address, plant capacity and commercial site facts. Panel qty and inverter kW update from the plant kW."
-              : "Customer, site address, plant capacity and phase."
+              ? "Grouped by customer, plant options, site facts and pricing. Capacity updates panel qty and inverter kW."
+              : "Grouped by customer, plant options and pricing. Subsidy and EMI control what appears on the PDF."
         }
         defaultOpen
       >
-        <div className="field-grid">
-          <div className="field">
-            <label>Customer Name</label>
-            <input value={data.customerName} onChange={(event) => update("customerName", event.target.value)} />
-          </div>
-          <div className="field">
-            <label>Customer Phone</label>
-            <input value={data.customerPhone} placeholder="e.g. 9876543210" onChange={(event) => update("customerPhone", event.target.value)} />
-          </div>
-          <div className="field">
-            <label>Customer Email (optional)</label>
-            <input
-              type="email"
-              value={data.customerEmail}
-              placeholder="Shown on PDF only if filled"
-              onChange={(event) => update("customerEmail", event.target.value)}
-            />
-          </div>
-          <div className="field">
-            <label>Capacity of Power Plant</label>
-            <input
-              value={data.capacity}
-              placeholder={commercial ? "e.g. 100 KW" : "e.g. 3 KW"}
-              onChange={(event) => {
-                const capacity = event.target.value;
-                if (!sizesFromCapacity || !/^\s*\d+(?:\.\d+)?\s*(kwp?|kilowatt)/i.test(capacity)) {
-                  update("capacity", capacity);
-                  return;
-                }
-                onChange({
-                  ...data,
-                  capacity,
-                  ...(offgrid ? applyOffgridSizing(capacity, data.phase) : applyCommercialSizing(capacity, data.phase)),
-                });
-              }}
-              onBlur={(event) => {
-                if (!sizesFromCapacity) return;
-                const capacity = event.target.value;
-                onChange({
-                  ...data,
-                  capacity,
-                  ...(offgrid ? applyOffgridSizing(capacity, data.phase) : applyCommercialSizing(capacity, data.phase)),
-                });
-              }}
-            />
-          </div>
-          {offgrid ? null : (
+        <div className="editor-fieldset">
+          <p className="editor-fieldset-title">Customer</p>
+          <div className="field-grid">
             <div className="field">
-              <label>System Phase</label>
-              <select
-                value={data.phase}
-                onChange={(event) => {
-                  const phase = event.target.value as QuotationPhase;
-                  onChange({
-                    ...data,
-                    phase,
-                    ...(commercial
-                      ? applyCommercialSizing(data.capacity, phase)
-                      : {
-                          materialItems: applyPhaseToMaterialItems(
-                            data.materialItems,
-                            phase,
-                            data.language,
-                            data.acCableBrand === "Polycab" ? "Polycab" : "Ramsons",
-                          ),
-                        }),
-                  });
-                }}
-              >
-                <option value="1PH">Single Phase (1PH)</option>
-                <option value="3PH">Three Phase (3PH)</option>
-              </select>
+              <label>Name</label>
+              <input value={data.customerName} onChange={(event) => update("customerName", event.target.value)} />
             </div>
-          )}
-          <div className="field">
-            <label>Structure</label>
-            <select
-              value={data.structureBrand === "Tata" ? "Tata" : "Apollo"}
-              onChange={(event) => {
-                const structureBrand = event.target.value as QuotationStructureBrand;
-                onChange({
-                  ...data,
-                  structureBrand,
-                  materialItems: applyStructureBrandToMaterials(data.materialItems, structureBrand, data.language),
-                });
-              }}
-            >
-              <option value="Apollo">Apollo · Leg 75×75</option>
-              <option value="Tata">Tata · Leg 72×72</option>
-            </select>
-          </div>
-          <div className="field">
-            <label>Panels</label>
-            <select
-              value={resolvePanelBrand(data.panelBrand ?? (offgrid ? "Waaree" : "Adani"))}
-              onChange={(event) => {
-                const panelBrand = event.target.value as QuotationPanelBrand;
-                onChange({
-                  ...data,
-                  panelBrand,
-                  materialItems: applyPanelBrandToMaterials(data.materialItems, panelBrand, data.language),
-                });
-              }}
-            >
-              <option value="Adani">Adani</option>
-              <option value="Waaree">Waaree</option>
-              <option value="INA">INA</option>
-            </select>
-          </div>
-          {offgrid ? null : (
             <div className="field">
-              <label>AC Cable</label>
-              <select
-                value={data.acCableBrand === "Polycab" ? "Polycab" : "Ramsons"}
-                onChange={(event) => {
-                  const acCableBrand = event.target.value as QuotationAcCableBrand;
-                  onChange({
-                    ...data,
-                    acCableBrand,
-                    materialItems: applyAcCableBrandToMaterials(
-                      data.materialItems,
-                      acCableBrand,
-                      data.phase,
-                      data.language,
-                      commercial ? { commercial: true, capacity: data.capacity } : undefined,
-                    ),
-                  });
-                }}
-              >
-                <option value="Ramsons">Ramsons · Al armoured</option>
-                <option value="Polycab">Polycab · Al armoured</option>
-              </select>
+              <label>Phone</label>
+              <input value={data.customerPhone} placeholder="e.g. 9876543210" onChange={(event) => update("customerPhone", event.target.value)} />
             </div>
-          )}
-          {commercial || offgrid ? null : (
-            <div className="field">
-              <label>Subsidy</label>
-              <select
-                value={data.subsidyScope === "central" ? "central" : "both"}
-                onChange={(event) => {
-                  const subsidyScope = event.target.value as QuotationSubsidyScope;
-                  const effectivePayableAmount = String(
-                    Math.max(
-                      0,
-                      computeEffectivePayable(data.projectAmount, data.centralSubsidy, data.stateSubsidy, subsidyScope),
-                    ),
-                  );
-                  onChange({
-                    ...data,
-                    subsidyScope,
-                    effectivePayableAmount,
-                    subsidyNote: defaultSubsidyNote(data.language, subsidyScope),
-                  });
-                }}
-              >
-                <option value="central">Central only (MNRE)</option>
-                <option value="both">Central + State</option>
-              </select>
-            </div>
-          )}
-          {offgrid ? null : (
             <div className="field full-span">
-              <label>Earthing Wire</label>
-              <select
-                value={resolveEarthingWireOption(data.earthingWire)}
+              <label>Email (optional)</label>
+              <input
+                type="email"
+                value={data.customerEmail}
+                placeholder="Shown on PDF only if filled"
+                onChange={(event) => update("customerEmail", event.target.value)}
+              />
+            </div>
+            <div className="field full-span">
+              <label>Address</label>
+              <textarea rows={2} value={data.address} onChange={(event) => update("address", event.target.value)} />
+            </div>
+          </div>
+        </div>
+
+        <div className="editor-fieldset">
+          <p className="editor-fieldset-title">Plant & materials</p>
+          <div className="field-grid">
+            <div className="field">
+              <label>Capacity</label>
+              <input
+                value={data.capacity}
+                placeholder={commercial ? "e.g. 100 KW" : "e.g. 3 KW"}
                 onChange={(event) => {
-                  const earthingWire = event.target.value as QuotationEarthingWireOption;
+                  const capacity = event.target.value;
+                  if (!sizesFromCapacity || !/^\s*\d+(?:\.\d+)?\s*(kwp?|kilowatt)/i.test(capacity)) {
+                    update("capacity", capacity);
+                    return;
+                  }
                   onChange({
                     ...data,
-                    earthingWire,
-                    materialItems: applyEarthingWireToMaterials(data.materialItems, earthingWire, data.language),
+                    capacity,
+                    ...(offgrid ? applyOffgridSizing(capacity, data.phase) : applyCommercialSizing(capacity, data.phase)),
+                  });
+                }}
+                onBlur={(event) => {
+                  if (!sizesFromCapacity) return;
+                  const capacity = event.target.value;
+                  onChange({
+                    ...data,
+                    capacity,
+                    ...(offgrid ? applyOffgridSizing(capacity, data.phase) : applyCommercialSizing(capacity, data.phase)),
+                  });
+                }}
+              />
+            </div>
+            {offgrid ? (
+              <div className="field">
+                <label>Structure</label>
+                <select
+                  value={data.structureBrand === "Tata" ? "Tata" : "Apollo"}
+                  onChange={(event) => {
+                    const structureBrand = event.target.value as QuotationStructureBrand;
+                    onChange({
+                      ...data,
+                      structureBrand,
+                      materialItems: applyStructureBrandToMaterials(data.materialItems, structureBrand, data.language),
+                    });
+                  }}
+                >
+                  <option value="Apollo">Apollo · Leg 75×75</option>
+                  <option value="Tata">Tata · Leg 72×72</option>
+                </select>
+              </div>
+            ) : (
+              <div className="field">
+                <label>Phase</label>
+                <select
+                  value={data.phase}
+                  onChange={(event) => {
+                    const phase = event.target.value as QuotationPhase;
+                    onChange({
+                      ...data,
+                      phase,
+                      ...(commercial
+                        ? applyCommercialSizing(data.capacity, phase)
+                        : {
+                            materialItems: applyPhaseToMaterialItems(
+                              data.materialItems,
+                              phase,
+                              data.language,
+                              data.acCableBrand === "Polycab" ? "Polycab" : "Ramsons",
+                            ),
+                          }),
+                    });
+                  }}
+                >
+                  <option value="1PH">Single Phase (1PH)</option>
+                  <option value="3PH">Three Phase (3PH)</option>
+                </select>
+              </div>
+            )}
+            {offgrid ? null : (
+              <div className="field">
+                <label>Structure</label>
+                <select
+                  value={data.structureBrand === "Tata" ? "Tata" : "Apollo"}
+                  onChange={(event) => {
+                    const structureBrand = event.target.value as QuotationStructureBrand;
+                    onChange({
+                      ...data,
+                      structureBrand,
+                      materialItems: applyStructureBrandToMaterials(data.materialItems, structureBrand, data.language),
+                    });
+                  }}
+                >
+                  <option value="Apollo">Apollo · Leg 75×75</option>
+                  <option value="Tata">Tata · Leg 72×72</option>
+                </select>
+              </div>
+            )}
+            <div className="field">
+              <label>Panels</label>
+              <select
+                value={resolvePanelBrand(data.panelBrand ?? (offgrid ? "Waaree" : "Adani"))}
+                onChange={(event) => {
+                  const panelBrand = event.target.value as QuotationPanelBrand;
+                  onChange({
+                    ...data,
+                    panelBrand,
+                    materialItems: applyPanelBrandToMaterials(data.materialItems, panelBrand, data.language),
                   });
                 }}
               >
-                <option value="Polycab25">2.5 sq mm copper (Polycab)</option>
-                <option value="Indo6">6 sq mm copper clad (Indo)</option>
-                <option value="Ramsons16">16 sq mm aluminium (Ramsons)</option>
-                <option value="IndoOrRamsons">6 sq mm Indo or 16 sq mm Ramsons</option>
+                <option value="Adani">Adani</option>
+                <option value="Waaree">Waaree</option>
+                <option value="INA">INA</option>
               </select>
             </div>
-          )}
-          <div className="field full-span">
-            <label>Address</label>
-            <textarea rows={2} value={data.address} onChange={(event) => update("address", event.target.value)} />
+            {offgrid ? null : (
+              <>
+                <div className="field">
+                  <label>AC Cable</label>
+                  <select
+                    value={data.acCableBrand === "Polycab" ? "Polycab" : "Ramsons"}
+                    onChange={(event) => {
+                      const acCableBrand = event.target.value as QuotationAcCableBrand;
+                      onChange({
+                        ...data,
+                        acCableBrand,
+                        materialItems: applyAcCableBrandToMaterials(
+                          data.materialItems,
+                          acCableBrand,
+                          data.phase,
+                          data.language,
+                          commercial ? { commercial: true, capacity: data.capacity } : undefined,
+                        ),
+                      });
+                    }}
+                  >
+                    <option value="Ramsons">Ramsons · Al armoured</option>
+                    <option value="Polycab">Polycab · Al armoured</option>
+                  </select>
+                </div>
+                <div className="field">
+                  <label>Earthing Wire</label>
+                  <select
+                    value={resolveEarthingWireOption(data.earthingWire)}
+                    onChange={(event) => {
+                      const earthingWire = event.target.value as QuotationEarthingWireOption;
+                      onChange({
+                        ...data,
+                        earthingWire,
+                        materialItems: applyEarthingWireToMaterials(data.materialItems, earthingWire, data.language),
+                      });
+                    }}
+                  >
+                    <option value="Polycab25">2.5 sq mm copper (Polycab)</option>
+                    <option value="Indo6">6 sq mm copper clad (Indo)</option>
+                    <option value="Ramsons16">16 sq mm aluminium (Ramsons)</option>
+                    <option value="IndoOrRamsons">6 sq mm Indo or 16 sq mm Ramsons</option>
+                  </select>
+                </div>
+              </>
+            )}
           </div>
-          {commercial ? (
-            <>
+        </div>
+
+        {commercial ? (
+          <div className="editor-fieldset">
+            <p className="editor-fieldset-title">Site facts</p>
+            <div className="field-grid">
               <div className="field">
                 <label>Sanction load</label>
                 <input
@@ -415,8 +422,105 @@ export function QuotationEditor({ data, onChange }: QuotationEditorProps) {
                   onChange={(event) => update("roofType", event.target.value)}
                 />
               </div>
-            </>
-          ) : null}
+            </div>
+          </div>
+        ) : null}
+
+        <div className="editor-fieldset">
+          <p className="editor-fieldset-title">Pricing & PDF sections</p>
+          <div className="field-grid">
+            <div className="field">
+              <label>Project Amount (incl. GST) (₹)</label>
+              <input
+                value={data.projectAmount}
+                placeholder="e.g. 1,80,000"
+                onChange={(event) => {
+                  const projectAmount = event.target.value;
+                  onChange({
+                    ...data,
+                    projectAmount,
+                    effectivePayableAmount: String(
+                      Math.max(
+                        0,
+                        computeEffectivePayable(
+                          projectAmount,
+                          data.centralSubsidy,
+                          data.stateSubsidy,
+                          data.subsidyScope === "central" ? "central" : "both",
+                        ),
+                      ),
+                    ),
+                  });
+                }}
+              />
+            </div>
+            <div className="field">
+              <label>EMI & Financing</label>
+              <select
+                value={data.showEmiSection ? "show" : "hide"}
+                onChange={(event) => update("showEmiSection", event.target.value === "show")}
+              >
+                <option value="show">Show on PDF</option>
+                <option value="hide">Hide on PDF</option>
+              </select>
+            </div>
+            {commercial || offgrid ? null : (
+              <div className="field full-span">
+                <label>Subsidy</label>
+                <select
+                  value={
+                    data.showSubsidySection === false
+                      ? "none"
+                      : data.subsidyScope === "central"
+                        ? "central"
+                        : "both"
+                  }
+                  onChange={(event) => {
+                    const value = event.target.value;
+                    if (value === "none") {
+                      onChange({ ...data, showSubsidySection: false });
+                      return;
+                    }
+                    const subsidyScope = value as QuotationSubsidyScope;
+                    const effectivePayableAmount = String(
+                      Math.max(
+                        0,
+                        computeEffectivePayable(data.projectAmount, data.centralSubsidy, data.stateSubsidy, subsidyScope),
+                      ),
+                    );
+                    onChange({
+                      ...data,
+                      showSubsidySection: true,
+                      subsidyScope,
+                      effectivePayableAmount,
+                      subsidyNote: defaultSubsidyNote(data.language, subsidyScope),
+                    });
+                  }}
+                >
+                  <option value="both">Central + State</option>
+                  <option value="central">Central only (MNRE)</option>
+                  <option value="none">No subsidy (hide block)</option>
+                </select>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="editor-fieldset">
+          <p className="editor-fieldset-title">Commercial offer</p>
+          <p className="editor-fieldset-note">
+            {offgrid
+              ? "Rows on the PDF. Plant kW sets project amount; Customer Net Payable and turnkey price follow it. Solar Plant Capacity comes from Solar PV Modules."
+              : commercial
+                ? "Rows on the PDF. Project amount fills Customer Net Payable and the turnkey EPC box. DISCOM charges stay extra as actual."
+                : data.showSubsidySection
+                  ? "Rows on the PDF. Project amount fills Customer Net Payable and the investment box."
+                  : "Rows on the PDF. Project amount fills Customer Net Payable. Subsidy block is hidden."}
+          </p>
+          <CommercialOfferEditor
+            rows={stripSyncedCommercialRows(data.commercialOffer)}
+            onChange={(next) => update("commercialOffer", stripSyncedCommercialRows(next))}
+          />
         </div>
       </AccordionSection>
 
@@ -447,52 +551,6 @@ export function QuotationEditor({ data, onChange }: QuotationEditorProps) {
           <BulletListEditor label="Scope of Work" items={data.ourScope} onChange={(next) => update("ourScope", next)} />
         </AccordionSection>
       ) : null}
-
-      <AccordionSection
-        title="Commercial Offer"
-        helper={
-          offgrid
-            ? "Solar Plant Capacity on the PDF is filled from Solar PV Modules (qty, wattage and make). Plant kW sets the project amount (₹2,60,000 for 3 kW). Customer Net Payable and the turnkey price box follow that amount."
-            : commercial
-              ? "Solar Plant Capacity on the PDF is filled from Solar PV Modules (qty, wattage and make). Project amount fills Customer Net Payable and the turnkey EPC price box. DISCOM charges stay extra as actual."
-              : data.showSubsidySection
-                ? "Solar Plant Capacity on the PDF is filled from Solar PV Modules (qty, wattage and make). Project amount fills Customer Net Payable and the investment box on the PDF."
-                : "Solar Plant Capacity on the PDF is filled from Solar PV Modules (qty, wattage and make). Project amount fills Customer Net Payable on the PDF. Subsidy section is hidden."
-        }
-        defaultOpen
-      >
-        <div className="field-grid" style={{ marginBottom: 12 }}>
-          <div className="field full-span">
-            <label>Project Amount (incl. GST) (₹)</label>
-            <input
-              value={data.projectAmount}
-              placeholder="e.g. 1,80,000"
-              onChange={(event) => {
-                const projectAmount = event.target.value;
-                onChange({
-                  ...data,
-                  projectAmount,
-                  effectivePayableAmount: String(
-                    Math.max(
-                      0,
-                      computeEffectivePayable(
-                        projectAmount,
-                        data.centralSubsidy,
-                        data.stateSubsidy,
-                        data.subsidyScope === "central" ? "central" : "both",
-                      ),
-                    ),
-                  ),
-                });
-              }}
-            />
-          </div>
-        </div>
-        <CommercialOfferEditor
-          rows={stripSyncedCommercialRows(data.commercialOffer)}
-          onChange={(next) => update("commercialOffer", stripSyncedCommercialRows(next))}
-        />
-      </AccordionSection>
 
       {offgrid ? null : (
       <AccordionSection
@@ -597,19 +655,11 @@ export function QuotationEditor({ data, onChange }: QuotationEditorProps) {
         ) : null}
       </AccordionSection>
 
-      {commercial || offgrid ? null : (
-      <AccordionSection title="Effective Investment Section" helper="Subsidies only. Effective payable is calculated as project amount minus total subsidy.">
-        <div className="toggle-row" style={{ marginBottom: 12 }}>
-          <span>Show Subsidy Section</span>
-          <button
-            className={`toggle ${data.showSubsidySection ? "on" : ""}`}
-            type="button"
-            onClick={() => update("showSubsidySection", !data.showSubsidySection)}
-          >
-            <span className="toggle-thumb" />
-          </button>
-        </div>
-        {data.showSubsidySection ? (
+      {commercial || offgrid || !data.showSubsidySection ? null : (
+      <AccordionSection
+        title="Effective Investment Section"
+        helper="Controlled by Subsidy above. Effective payable is project amount minus total subsidy."
+      >
         <div className="field-grid">
           <div className="field">
             <label>Central Subsidy (₹)</label>
@@ -678,50 +728,38 @@ export function QuotationEditor({ data, onChange }: QuotationEditorProps) {
             <textarea rows={2} value={data.subsidyNote} onChange={(event) => update("subsidyNote", event.target.value)} />
           </div>
         </div>
-        ) : (
-          <p className="helper-text" style={{ margin: 0 }}>
-            Hidden on the PDF. Subsidy amounts stay saved if you turn this back on.
-          </p>
-        )}
       </AccordionSection>
       )}
 
-      <AccordionSection title="EMI & Financing Options">
-        <div className="toggle-row" style={{ marginBottom: 12 }}>
-          <span>Show EMI & Financing Section</span>
-          <button
-            className={`toggle ${data.showEmiSection ? "on" : ""}`}
-            type="button"
-            onClick={() => update("showEmiSection", !data.showEmiSection)}
-          >
-            <span className="toggle-thumb" />
-          </button>
-        </div>
-        {data.showEmiSection ? (
-          <div className="field-grid">
-            <div className="field full-span">
-              <label>Loan Amount (₹) - Auto: {data.emiInfo.uptoLoanAmount}</label>
-              <input value={data.emiInfo.uptoLoanAmount} placeholder="e.g. ₹2,00,000" onChange={(event) => update("emiInfo", { ...data.emiInfo, uptoLoanAmount: event.target.value })} />
-            </div>
-            <div className="field full-span">
-              <label>Interest Rate - Auto: {data.emiInfo.interestRate}</label>
-              <input value={data.emiInfo.interestRate} placeholder="e.g. ~6% per annum" onChange={(event) => update("emiInfo", { ...data.emiInfo, interestRate: event.target.value })} />
-            </div>
-            <div className="field">
-              <label>5-Year EMI - Auto: {data.emiInfo.tenure5YearEmi}</label>
-              <input value={data.emiInfo.tenure5YearEmi} placeholder="e.g. ₹3,865/month" onChange={(event) => update("emiInfo", { ...data.emiInfo, tenure5YearEmi: event.target.value })} />
-            </div>
-            <div className="field">
-              <label>7-Year EMI - Auto: {data.emiInfo.tenure7YearEmi}</label>
-              <input value={data.emiInfo.tenure7YearEmi} placeholder="e.g. ₹2,790/month" onChange={(event) => update("emiInfo", { ...data.emiInfo, tenure7YearEmi: event.target.value })} />
-            </div>
-            <div className="field">
-              <label>10-Year EMI - Auto: {data.emiInfo.tenure10YearEmi}</label>
-              <input value={data.emiInfo.tenure10YearEmi} placeholder="e.g. ₹1,983/month" onChange={(event) => update("emiInfo", { ...data.emiInfo, tenure10YearEmi: event.target.value })} />
-            </div>
+      {data.showEmiSection ? (
+      <AccordionSection
+        title="EMI & Financing Options"
+        helper="Visibility is controlled by EMI & Financing in Customer Details."
+      >
+        <div className="field-grid">
+          <div className="field full-span">
+            <label>Loan Amount (₹) - Auto: {data.emiInfo.uptoLoanAmount}</label>
+            <input value={data.emiInfo.uptoLoanAmount} placeholder="e.g. ₹2,00,000" onChange={(event) => update("emiInfo", { ...data.emiInfo, uptoLoanAmount: event.target.value })} />
           </div>
-        ) : null}
+          <div className="field full-span">
+            <label>Interest Rate - Auto: {data.emiInfo.interestRate}</label>
+            <input value={data.emiInfo.interestRate} placeholder="e.g. ~6% per annum" onChange={(event) => update("emiInfo", { ...data.emiInfo, interestRate: event.target.value })} />
+          </div>
+          <div className="field">
+            <label>5-Year EMI - Auto: {data.emiInfo.tenure5YearEmi}</label>
+            <input value={data.emiInfo.tenure5YearEmi} placeholder="e.g. ₹3,865/month" onChange={(event) => update("emiInfo", { ...data.emiInfo, tenure5YearEmi: event.target.value })} />
+          </div>
+          <div className="field">
+            <label>7-Year EMI - Auto: {data.emiInfo.tenure7YearEmi}</label>
+            <input value={data.emiInfo.tenure7YearEmi} placeholder="e.g. ₹2,790/month" onChange={(event) => update("emiInfo", { ...data.emiInfo, tenure7YearEmi: event.target.value })} />
+          </div>
+          <div className="field">
+            <label>10-Year EMI - Auto: {data.emiInfo.tenure10YearEmi}</label>
+            <input value={data.emiInfo.tenure10YearEmi} placeholder="e.g. ₹1,983/month" onChange={(event) => update("emiInfo", { ...data.emiInfo, tenure10YearEmi: event.target.value })} />
+          </div>
+        </div>
       </AccordionSection>
+      ) : null}
 
       <AccordionSection title="Warranty & Maintenance">
         <div className="toggle-row" style={{ marginBottom: 12 }}>
