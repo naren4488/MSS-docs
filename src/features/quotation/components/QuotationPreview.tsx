@@ -15,7 +15,6 @@ import {
   FIRST_PAGE_CAPACITY,
   FOLLOWING_PAGE_CAPACITY,
   PAGE_HEIGHT,
-  PAGE_NUMBER_FOOTER_HEIGHT,
   PAGE_SIDE_PADDING,
   PAGE_TOP_BOTTOM_PADDING,
   PAGE_WIDTH,
@@ -946,7 +945,7 @@ function createBlocks(data: QuotationData): PreviewBlock[] {
     
     // Show Solar Panel Wattage Info
     if (data.showWattageInfo && parseWattageFromMaterials(data.materialItems)) {
-      blocks.push({ key: "wattage-info", estimate: 50, keepWithNext: true, node: <WattageInfoBox data={data} /> });
+      blocks.push({ key: "wattage-info", estimate: 50, node: <WattageInfoBox data={data} /> });
     }
   }
 
@@ -984,35 +983,64 @@ function createBlocks(data: QuotationData): PreviewBlock[] {
 
   // Effective Investment After Subsidy
   if (data.showSubsidySection && (data.projectAmount.trim() || data.centralSubsidy.trim() || data.stateSubsidy.trim())) {
-    blocks.push({ key: "effective-investment", estimate: 120, node: <EffectiveInvestmentBox data={data} /> });
+    blocks.push({ key: "effective-investment", estimate: 180, node: <EffectiveInvestmentBox data={data} /> });
   }
 
-  // Solar Power Generation
+  // Solar Power Generation — heading+table as one block so leftover page space is used
   if (data.showGeneration) {
-    pushHeading(blocks, "gen-heading", L.solarGeneration);
-    blocks.push({ key: "gen-table", estimate: 110, node: <GenerationTable data={data} /> });
+    blocks.push({
+      key: "generation",
+      estimate: 160,
+      node: (
+        <>
+          <h3 style={sectionHeadingStyle}>{L.solarGeneration}</h3>
+          <GenerationTable data={data} />
+        </>
+      ),
+    });
   }
 
   // EMI & Financing Section
   if (data.showEmiSection) {
-    pushHeading(blocks, "emi-heading", L.emiFinancing);
-    blocks.push({ key: "emi-section", estimate: 140, node: <EmiFinancingSection data={data} /> });
+    blocks.push({
+      key: "emi-section",
+      estimate: 200,
+      node: (
+        <>
+          <h3 style={sectionHeadingStyle}>{L.emiFinancing}</h3>
+          <EmiFinancingSection data={data} />
+        </>
+      ),
+    });
   }
 
-  // What's Included vs Excluded — heading stays with matrix; yellow box moves alone if it won't fit
+  // What's Included vs Excluded — heading+matrix as one block
   if (data.showComponentWarranty) {
-    pushHeading(blocks, "included-excluded-heading", L.whatsCovered);
-    blocks.push({ key: "included-excluded-matrix", estimate: 180, node: <IncludedExcludedMatrix data={data} /> });
-    blocks.push({ key: "warranty-after-period", estimate: 72, node: <WarrantyAfterPeriodBox data={data} /> });
+    blocks.push({
+      key: "included-excluded",
+      estimate: 220,
+      node: (
+        <>
+          <h3 style={sectionHeadingStyle}>{L.whatsCovered}</h3>
+          <IncludedExcludedMatrix data={data} />
+        </>
+      ),
+    });
   }
 
-  // Warranty Coverage badges
+  // Warranty Coverage badges — pack immediately after the matrix so leftover page space is used
+  // before the smaller yellow note; heading+badges are one block so they never orphan.
   if (data.showWarrantyBadges) {
-    pushHeading(blocks, "warranty-badges-heading", L.warrantyCoverage);
+    const badgeEstimate = data.warrantySetupBosYears.trim() ? 170 : 160;
     blocks.push({
       key: "warranty-badges",
-      estimate: data.warrantySetupBosYears.trim() ? 280 : 200,
-      node: <WarrantyBadges data={data} />,
+      estimate: 28 + badgeEstimate,
+      node: (
+        <>
+          <h3 style={sectionHeadingStyle}>{L.warrantyCoverage}</h3>
+          <WarrantyBadges data={data} />
+        </>
+      ),
     });
     if (data.warrantyText.trim()) {
       const noteLines = data.warrantyText.trim().split("\n").length;
@@ -1024,14 +1052,23 @@ function createBlocks(data: QuotationData): PreviewBlock[] {
     }
   }
 
+  // Yellow "after free period" note — small, can trail onto the next page alone if needed
+  if (data.showComponentWarranty) {
+    blocks.push({ key: "warranty-after-period", estimate: 72, node: <WarrantyAfterPeriodBox data={data} /> });
+  }
+
   // Installation Process diagram
   if (data.showInstallationProcess && data.installationSteps.some((step) => step.trim())) {
-    pushHeading(blocks, "install-process-heading", L.installationProcess);
     const stepCount = data.installationSteps.filter((step) => step.trim()).length;
     blocks.push({
       key: "install-process",
-      estimate: 20 + Math.ceil(stepCount / 4) * 84,
-      node: <InstallationProcess data={data} />,
+      estimate: 48 + Math.ceil(stepCount / 4) * 84,
+      node: (
+        <>
+          <h3 style={sectionHeadingStyle}>{L.installationProcess}</h3>
+          <InstallationProcess data={data} />
+        </>
+      ),
     });
   }
 
@@ -1057,7 +1094,7 @@ function createBlocks(data: QuotationData): PreviewBlock[] {
 
   // Maintenance & Service Section
   if (data.showComponentWarranty) {
-    blocks.push({ key: "maintenance-section", estimate: 150, keepWithNext: true, node: <MaintenanceServiceSection data={data} /> });
+    blocks.push({ key: "maintenance-section", estimate: 150, node: <MaintenanceServiceSection data={data} /> });
   }
 
   // Required Documents for Subsidy
@@ -1197,9 +1234,10 @@ export function QuotationPreview({ data }: QuotationPreviewProps) {
     }
   }, [allBlocks, blockHeights]);
 
-  // Extra buffer so content near the page edge is pushed to the next page instead of clipped.
-  const PACKING_BUFFER = 28;
-  const footerReserve = data.showPageNumbers ? PAGE_NUMBER_FOOTER_HEIGHT : 0;
+  // Page body already has bottom padding that clears the absolute page-number footer.
+  // Only keep a small safety margin so we don't leave large empty bands at page bottoms.
+  const PACKING_BUFFER = 8;
+  const footerReserve = data.showPageNumbers ? 12 : 0;
   const firstCapacity =
     (data.showLetterhead ? FIRST_PAGE_CAPACITY : FOLLOWING_PAGE_CAPACITY) - footerReserve - PACKING_BUFFER;
   const followingCapacity = FOLLOWING_PAGE_CAPACITY - footerReserve - PACKING_BUFFER;
