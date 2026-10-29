@@ -210,7 +210,7 @@ export function createDefaultSiteSurvey(overrides: Partial<SiteSurveyForm> = {})
     dcDbLocation: "",
     acCablePath: "",
     earthingCablePath: "",
-    earthingPits: "3",
+    earthingPits: "3 copper bound rods",
     roofType: "",
     shadowNotes: "",
     otherNotes: "",

@@ -379,8 +379,8 @@ function applyRituEarthingKit(items: QuotationMaterialItem[], language: Quotatio
       unit: language === "hi" ? "सेट" : "Set",
       make:
         language === "hi"
-          ? "3 कॉपर बाउंड रॉड (2 मी.)"
-          : "3 copper bound rods (2 mtr)",
+          ? "3 कॉपर बाउंड रॉड"
+          : "3 copper bound rods",
     };
   });
 }
