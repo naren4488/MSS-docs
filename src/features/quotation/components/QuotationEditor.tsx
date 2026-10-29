@@ -12,6 +12,7 @@ import type {
   QuotationAcCableBrand,
   QuotationEarthingWireOption,
   QuotationPanelBrand,
+  QuotationSignatureMode,
   QuotationStructureBrand,
   QuotationSubsidyScope,
 } from "../types/quotation";
@@ -33,6 +34,7 @@ import {
   resolveEarthingWireOption,
   resolvePanelBrand,
   resolveQuotationIssuer,
+  resolveSignatureMode,
   syncOffgridOfferToCapacity,
 } from "../lib/quotation-defaults";
 
@@ -464,8 +466,19 @@ export function QuotationEditor({ data, onChange }: QuotationEditorProps) {
                 <option value="hide">Hide on PDF</option>
               </select>
             </div>
+            <div className="field">
+              <label>Signatures</label>
+              <select
+                value={resolveSignatureMode(data.signatureMode)}
+                onChange={(event) => update("signatureMode", event.target.value as QuotationSignatureMode)}
+              >
+                <option value="both">Client + Authorized Signatory</option>
+                <option value="company">Authorized Signatory only</option>
+                <option value="none">Hide signatures</option>
+              </select>
+            </div>
             {commercial || offgrid ? null : (
-              <div className="field full-span">
+              <div className="field">
                 <label>Subsidy</label>
                 <select
                   value={
@@ -878,7 +891,7 @@ export function QuotationEditor({ data, onChange }: QuotationEditorProps) {
 
       <AccordionSection title="Settings">
         <div className="toggle-grid">
-        <div className="toggle-row">
+          <div className="toggle-row">
             <span>Show Solar Panel Wattage Info</span>
             <button
               className={`toggle ${data.showWattageInfo ? "on" : ""}`}
@@ -888,7 +901,6 @@ export function QuotationEditor({ data, onChange }: QuotationEditorProps) {
               <span className="toggle-thumb" />
             </button>
           </div>
-          
           <div className="toggle-row">
             <span>Show Letterhead Header on Page 1</span>
             <button

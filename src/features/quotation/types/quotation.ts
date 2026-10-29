@@ -16,6 +16,10 @@ export type QuotationSubsidyScope = "central" | "both";
 export type QuotationKind = "residential" | "commercial" | "offgrid";
 /** Letterhead / bank / signatory identity on the quotation. */
 export type QuotationIssuer = "mss" | "mse";
+/** One-off special quotation profiles with their own PDF packing / scope rules. */
+export type QuotationSpecialId = "" | "ritu-choudhary";
+/** Signature block on the PDF: both parties, company only, or hidden. */
+export type QuotationSignatureMode = "both" | "company" | "none";
 
 export interface QuotationMaterialItem {
   id: string;
@@ -59,6 +63,8 @@ export interface QuotationData {
   kind: QuotationKind;
   /** MSS (Solution Pvt Ltd) or MSE (Energy) letterhead, bank and signatory. */
   issuer: QuotationIssuer;
+  /** Special one-off profile (e.g. Ritu Choudhary). Empty for normal templates. */
+  specialQuotation: QuotationSpecialId;
   title: string;
   tagline: string;
   coverImageUrl: string;
@@ -155,6 +161,8 @@ export interface QuotationData {
 
   showLetterhead: boolean;
   showPageNumbers: boolean;
+  /** Client + company, company (Authorized Signatory) only, or hide signatures. */
+  signatureMode: QuotationSignatureMode;
 }
 
 export interface QuotationRecord {

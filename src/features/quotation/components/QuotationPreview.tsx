@@ -32,7 +32,13 @@ import {
   parseWattageFromMaterials,
   totalGovtSubsidy,
 } from "../lib/quotation-formatters";
-import { formatCapacityWithPhase, isCommercialQuotation, isOffgridQuotation } from "../lib/quotation-defaults";
+import {
+  formatCapacityWithPhase,
+  isCommercialQuotation,
+  isOffgridQuotation,
+  isRituChoudharyQuotation,
+  resolveSignatureMode,
+} from "../lib/quotation-defaults";
 import {
   isAcCableDescription,
   isDcCableDescription,
@@ -89,6 +95,13 @@ const sectionHeadingStyle: CSSProperties = {
   background: `linear-gradient(90deg, ${NAVY}, ${NAVY2})`,
   padding: "7px 12px",
   borderRadius: 4,
+};
+
+/** Tighter headings — used only for the Ritu special quotation PDF packing. */
+const rituSectionHeadingStyle: CSSProperties = {
+  ...sectionHeadingStyle,
+  margin: "8px 0 6px",
+  padding: "6px 10px",
 };
 
 function estimateTextLines(text: string, charsPerLine: number) {
@@ -449,6 +462,7 @@ function CoverBand({ data }: { data: QuotationData }) {
 function WarrantyBadges({ data }: { data: QuotationData }) {
   const L = quotationLabels(data.language);
   const offgrid = isOffgridQuotation(data);
+  const ritu = isRituChoudharyQuotation(data);
   const showSetupBos = Boolean(data.warrantySetupBosYears.trim());
   const itemCount = offgrid ? (showSetupBos ? 4 : 3) : showSetupBos ? 3 : 2;
 
@@ -527,9 +541,9 @@ function WarrantyBadges({ data }: { data: QuotationData }) {
       style={{
         display: "grid",
         gridTemplateColumns: `repeat(${itemCount}, minmax(0, 1fr))`,
-        gap: itemCount === 4 ? 8 : 16,
+        gap: itemCount === 4 ? 8 : ritu ? 12 : 16,
         alignItems: "start",
-        margin: "12px 0 6px",
+        margin: ritu ? "6px 0 4px" : "12px 0 6px",
         padding: "2px 0",
       }}
     >
@@ -541,19 +555,19 @@ function WarrantyBadges({ data }: { data: QuotationData }) {
   );
 }
 
-function WarrantySpecialNote({ text }: { text: string }) {
+function WarrantySpecialNote({ text, compact = false }: { text: string; compact?: boolean }) {
   return (
     <div
       style={{
-        marginTop: 10,
-        marginBottom: 4,
-        padding: "10px 12px",
+        marginTop: compact ? 6 : 10,
+        marginBottom: compact ? 2 : 4,
+        padding: compact ? "8px 10px" : "10px 12px",
         background: "#fff7ed",
         border: "1px solid #fdba74",
         borderRadius: 4,
       }}
     >
-      <div style={{ fontSize: 10.5, color: "#9a3412", lineHeight: 1.55, whiteSpace: "pre-wrap", fontWeight: 600 }}>
+      <div style={{ fontSize: compact ? 10 : 10.5, color: "#9a3412", lineHeight: 1.45, whiteSpace: "pre-wrap", fontWeight: 600 }}>
         {text}
       </div>
     </div>
@@ -562,10 +576,11 @@ function WarrantySpecialNote({ text }: { text: string }) {
 
 function EmiFinancingSection({ data }: { data: QuotationData }) {
   const L = quotationLabels(data.language);
+  const ritu = isRituChoudharyQuotation(data);
   const amount = data.emiInfo.uptoLoanAmount || "₹2,00,000";
   const rate = data.emiInfo.interestRate || (data.language === "hi" ? "~6% प्रति वर्ष" : "~6% per annum");
   return (
-    <div style={{ marginTop: 12, marginBottom: 12 }}>
+    <div style={{ marginTop: ritu ? 6 : 12, marginBottom: ritu ? 6 : 12 }}>
       <div style={{ fontSize: 11, fontWeight: 600, color: "#152036", marginBottom: 10 }}>
         <span style={{ fontWeight: 700 }}>{L.emiGovSupport}</span>
       </div>
@@ -748,9 +763,29 @@ function EffectiveInvestmentBox({ data }: { data: QuotationData }) {
   const projectDisplay = formatInrGrouped(data.projectAmount) || data.projectAmount;
   const showSubsidyLine = Boolean(data.centralSubsidy.trim() || (includeState && data.stateSubsidy.trim()));
 
+  const ritu = isRituChoudharyQuotation(data);
   return (
-    <div style={{ border: `3px solid ${GREEN}`, borderRadius: 12, padding: "20px 24px", background: LIGHT_GREEN, marginTop: 12, marginBottom: 12 }}>
-      <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", color: GREEN, marginBottom: 16, textAlign: "left" }}>
+    <div
+      style={{
+        border: `3px solid ${GREEN}`,
+        borderRadius: 12,
+        padding: ritu ? "14px 18px" : "20px 24px",
+        background: LIGHT_GREEN,
+        marginTop: ritu ? 8 : 12,
+        marginBottom: ritu ? 8 : 12,
+      }}
+    >
+      <div
+        style={{
+          fontSize: 13,
+          fontWeight: 800,
+          letterSpacing: 1.2,
+          textTransform: "uppercase",
+          color: GREEN,
+          marginBottom: ritu ? 10 : 16,
+          textAlign: "left",
+        }}
+      >
         {L.effectiveInvestment}
       </div>
 
@@ -826,8 +861,8 @@ function InstallationProcess({ data }: { data: QuotationData }) {
 
 // ---------- Block helpers ----------
 
-function pushHeading(blocks: PreviewBlock[], key: string, text: string) {
-  blocks.push({ key, estimate: 28, keepWithNext: true, node: <h3 style={sectionHeadingStyle}>{text}</h3> });
+function pushHeading(blocks: PreviewBlock[], key: string, text: string, headingStyle: CSSProperties = sectionHeadingStyle) {
+  blocks.push({ key, estimate: 28, keepWithNext: true, node: <h3 style={headingStyle}>{text}</h3> });
 }
 
 function pushBulletList(blocks: PreviewBlock[], keyBase: string, items: string[], ordered: boolean) {
@@ -849,13 +884,17 @@ function pushBulletList(blocks: PreviewBlock[], keyBase: string, items: string[]
 function createBlocks(data: QuotationData): PreviewBlock[] {
   const blocks: PreviewBlock[] = [];
   const L = quotationLabels(data.language);
+  const ritu = isRituChoudharyQuotation(data);
+  const headingStyle = ritu ? rituSectionHeadingStyle : sectionHeadingStyle;
+  // Ritu is a shorter quote; sticky opening blocks leave large empty bands on page 1.
+  const stickOpening = !ritu;
 
   blocks.push({
     key: "title",
     estimate: 44,
-    keepWithNext: true,
+    keepWithNext: stickOpening,
     node: (
-      <div style={{ textAlign: "center", marginBottom: 10 }}>
+      <div style={{ textAlign: "center", marginBottom: ritu ? 6 : 10 }}>
         <div style={{ fontSize: 18, fontWeight: 700, letterSpacing: 2, textDecoration: "underline", textUnderlineOffset: 4 }}>
           {filledValue(data.title)}
         </div>
@@ -867,7 +906,7 @@ function createBlocks(data: QuotationData): PreviewBlock[] {
     blocks.push({
       key: "cover-band",
       estimate: data.coverImageUrl ? 210 : 40,
-      keepWithNext: true,
+      keepWithNext: stickOpening,
       node: <CoverBand data={data} />,
     });
   }
@@ -881,7 +920,7 @@ function createBlocks(data: QuotationData): PreviewBlock[] {
   blocks.push({
     key: "summary",
     estimate: (data.customerEmail?.trim() ? 160 : 140) + extraSummaryRows * 22,
-    keepWithNext: true,
+    keepWithNext: stickOpening,
     node: <SummaryBox data={data} />,
   });
 
@@ -902,7 +941,7 @@ function createBlocks(data: QuotationData): PreviewBlock[] {
 
   // Material Description
   if (data.materialItems.length > 0) {
-    pushHeading(blocks, "material-heading", L.materialDescription);
+    pushHeading(blocks, "material-heading", L.materialDescription, headingStyle);
     blocks.push({ key: "material-table-header", estimate: 26, keepWithNext: true, node: <MaterialHeader data={data} /> });
     data.materialItems.forEach((item, index) => {
       const tall = Math.max(
@@ -951,25 +990,25 @@ function createBlocks(data: QuotationData): PreviewBlock[] {
 
   // Assumptions
   if (data.assumptions.some((item) => item.trim())) {
-    pushHeading(blocks, "assume-heading", L.assumptions);
+    pushHeading(blocks, "assume-heading", L.assumptions, headingStyle);
     pushBulletList(blocks, "assume", data.assumptions, false);
   }
 
   // Customer Scope
   if (data.customerScope.some((item) => item.trim())) {
-    pushHeading(blocks, "scope-heading", L.customerScope);
+    pushHeading(blocks, "scope-heading", L.customerScope, headingStyle);
     pushBulletList(blocks, "scope", data.customerScope, false);
   }
 
   if ((data.ourScope ?? []).some((item) => item.trim())) {
-    pushHeading(blocks, "our-scope-heading", L.scopeOfWork);
+    pushHeading(blocks, "our-scope-heading", L.scopeOfWork, headingStyle);
     pushBulletList(blocks, "our-scope", data.ourScope ?? [], false);
   }
 
   // Commercial Offer
   const commercialRows = commercialRowsForPreview(data);
   if (commercialRows.length > 0) {
-    pushHeading(blocks, "commercial-heading", L.commercialOffer);
+    pushHeading(blocks, "commercial-heading", L.commercialOffer, headingStyle);
     blocks.push({ key: "commercial-table-header", estimate: 26, keepWithNext: true, node: <CommercialHeader data={data} /> });
     commercialRows.forEach((row, index) => {
       const tall = estimateParagraphHeight(row.offering, 50, 14);
@@ -993,7 +1032,7 @@ function createBlocks(data: QuotationData): PreviewBlock[] {
       estimate: 160,
       node: (
         <>
-          <h3 style={sectionHeadingStyle}>{L.solarGeneration}</h3>
+          <h3 style={headingStyle}>{L.solarGeneration}</h3>
           <GenerationTable data={data} />
         </>
       ),
@@ -1007,7 +1046,7 @@ function createBlocks(data: QuotationData): PreviewBlock[] {
       estimate: 200,
       node: (
         <>
-          <h3 style={sectionHeadingStyle}>{L.emiFinancing}</h3>
+          <h3 style={headingStyle}>{L.emiFinancing}</h3>
           <EmiFinancingSection data={data} />
         </>
       ),
@@ -1021,7 +1060,7 @@ function createBlocks(data: QuotationData): PreviewBlock[] {
       estimate: 220,
       node: (
         <>
-          <h3 style={sectionHeadingStyle}>{L.whatsCovered}</h3>
+          <h3 style={headingStyle}>{L.whatsCovered}</h3>
           <IncludedExcludedMatrix data={data} />
         </>
       ),
@@ -1037,7 +1076,7 @@ function createBlocks(data: QuotationData): PreviewBlock[] {
       estimate: 28 + badgeEstimate,
       node: (
         <>
-          <h3 style={sectionHeadingStyle}>{L.warrantyCoverage}</h3>
+          <h3 style={headingStyle}>{L.warrantyCoverage}</h3>
           <WarrantyBadges data={data} />
         </>
       ),
@@ -1047,7 +1086,7 @@ function createBlocks(data: QuotationData): PreviewBlock[] {
       blocks.push({
         key: "warranty-special-note",
         estimate: 28 + noteLines * 16,
-        node: <WarrantySpecialNote text={data.warrantyText.trim()} />,
+        node: <WarrantySpecialNote text={data.warrantyText.trim()} compact={ritu} />,
       });
     }
   }
@@ -1065,7 +1104,7 @@ function createBlocks(data: QuotationData): PreviewBlock[] {
       estimate: 48 + Math.ceil(stepCount / 4) * 84,
       node: (
         <>
-          <h3 style={sectionHeadingStyle}>{L.installationProcess}</h3>
+          <h3 style={headingStyle}>{L.installationProcess}</h3>
           <InstallationProcess data={data} />
         </>
       ),
@@ -1099,19 +1138,19 @@ function createBlocks(data: QuotationData): PreviewBlock[] {
 
   // Required Documents for Subsidy
   if (data.showSubsidySection && data.subsidyDocuments.some((item) => item.trim())) {
-    pushHeading(blocks, "docs-heading", L.subsidyDocuments);
+    pushHeading(blocks, "docs-heading", L.subsidyDocuments, headingStyle);
     pushBulletList(blocks, "docs", data.subsidyDocuments, true);
   }
 
   // Bank Details
   if ([data.bankAccountName, data.bankName, data.bankAccountNo, data.bankIfsc, data.bankGst].some((value) => value.trim())) {
-    pushHeading(blocks, "bank-heading", L.bankDetails);
+    pushHeading(blocks, "bank-heading", L.bankDetails, headingStyle);
     blocks.push({ key: "bank-block", estimate: 120, node: <BankBlock data={data} /> });
   }
 
   // Terms & Conditions (MOVED TO END)
   if (data.terms.some((term) => term.label.trim() || term.text.trim())) {
-    pushHeading(blocks, "terms-heading", L.termsConditions);
+    pushHeading(blocks, "terms-heading", L.termsConditions, headingStyle);
     data.terms.forEach((term, index) => {
       if (!term.label.trim() && !term.text.trim()) return;
       blocks.push({
@@ -1131,47 +1170,60 @@ function createBlocks(data: QuotationData): PreviewBlock[] {
   }
 
   // Client & Company Signatures (AT THE END)
-  blocks.push({
-    key: "signatures-block",
-    estimate: 180,
-    node: (
-      <div style={{ marginTop: 40 }}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 60, fontSize: 11 }}>
-          <div>
-            <div style={{ marginBottom: 40 }}>
-              <div style={{ height: 40, borderBottom: "1px solid #111827", marginBottom: 8 }} />
-              <div style={{ fontWeight: 700 }}>{L.clientSignature}</div>
-              <div style={{ fontSize: 10, color: "#666666" }}>{L.date}: _________________</div>
-            </div>
-            <div>
-              <div style={{ fontWeight: 600, marginBottom: 4 }}>{filledValue(data.customerName || "")}</div>
-              {data.customerPhone ? (
-                <div style={{ fontSize: 10, color: "#666666" }}>{L.mob} {data.customerPhone}</div>
-              ) : null}
-              {data.customerEmail?.trim() ? (
-                <div style={{ fontSize: 10, color: "#666666" }}>{data.customerEmail.trim()}</div>
-              ) : null}
-            </div>
-          </div>
-
-          <div>
-            <div style={{ marginBottom: 40 }}>
-              <div style={{ height: 40, borderBottom: "1px solid #111827", marginBottom: 8 }} />
-              <div style={{ fontWeight: 700 }}>{L.authorizedSignatory}</div>
-              <div style={{ fontSize: 10, color: "#666666" }}>{L.date}: _________________</div>
-            </div>
-            <div>
-              <div style={{ fontWeight: 600, marginBottom: 2 }}>{filledValue(data.repName || "")}</div>
-              {data.repTitle ? (
-                <div style={{ fontSize: 10, color: "#4b5563", marginBottom: 2 }}>{data.repTitle}</div>
-              ) : null}
-              <div style={{ fontSize: 10, color: "#666666" }}>{filledValue(data.repCompany || "")}</div>
-            </div>
-          </div>
+  const signatureMode = resolveSignatureMode(data.signatureMode);
+  if (signatureMode !== "none") {
+    const showClient = signatureMode === "both";
+    const sigTop = ritu ? 18 : 40;
+    const sigGap = ritu ? 36 : 60;
+    const sigLineBottom = ritu ? 24 : 40;
+    const companyColumn = (
+      <div style={showClient ? undefined : { maxWidth: 320 }}>
+        <div style={{ marginBottom: sigLineBottom }}>
+          <div style={{ height: 40, borderBottom: "1px solid #111827", marginBottom: 8 }} />
+          <div style={{ fontWeight: 700 }}>{L.authorizedSignatory}</div>
+          <div style={{ fontSize: 10, color: "#666666" }}>{L.date}: _________________</div>
+        </div>
+        <div>
+          <div style={{ fontWeight: 600, marginBottom: 2 }}>{filledValue(data.repName || "")}</div>
+          {data.repTitle ? (
+            <div style={{ fontSize: 10, color: "#4b5563", marginBottom: 2 }}>{data.repTitle}</div>
+          ) : null}
+          <div style={{ fontSize: 10, color: "#666666" }}>{filledValue(data.repCompany || "")}</div>
         </div>
       </div>
-    ),
-  });
+    );
+    blocks.push({
+      key: "signatures-block",
+      estimate: showClient ? (ritu ? 140 : 180) : ritu ? 110 : 140,
+      node: (
+        <div style={{ marginTop: sigTop }}>
+          {showClient ? (
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: sigGap, fontSize: 11 }}>
+              <div>
+                <div style={{ marginBottom: sigLineBottom }}>
+                  <div style={{ height: 40, borderBottom: "1px solid #111827", marginBottom: 8 }} />
+                  <div style={{ fontWeight: 700 }}>{L.clientSignature}</div>
+                  <div style={{ fontSize: 10, color: "#666666" }}>{L.date}: _________________</div>
+                </div>
+                <div>
+                  <div style={{ fontWeight: 600, marginBottom: 4 }}>{filledValue(data.customerName || "")}</div>
+                  {data.customerPhone ? (
+                    <div style={{ fontSize: 10, color: "#666666" }}>{L.mob} {data.customerPhone}</div>
+                  ) : null}
+                  {data.customerEmail?.trim() ? (
+                    <div style={{ fontSize: 10, color: "#666666" }}>{data.customerEmail.trim()}</div>
+                  ) : null}
+                </div>
+              </div>
+              {companyColumn}
+            </div>
+          ) : (
+            <div style={{ fontSize: 11, display: "flex", justifyContent: "flex-end" }}>{companyColumn}</div>
+          )}
+        </div>
+      ),
+    });
+  }
 
   return blocks;
 }
@@ -1235,9 +1287,10 @@ export function QuotationPreview({ data }: QuotationPreviewProps) {
   }, [allBlocks, blockHeights]);
 
   // Page body already has bottom padding that clears the absolute page-number footer.
-  // Only keep a small safety margin so we don't leave large empty bands at page bottoms.
-  const PACKING_BUFFER = 8;
-  const footerReserve = data.showPageNumbers ? 12 : 0;
+  // Ritu special quote is shorter / has fewer mid sections — pack as tight as possible for that profile only.
+  const ritu = isRituChoudharyQuotation(data);
+  const PACKING_BUFFER = ritu ? 0 : 8;
+  const footerReserve = data.showPageNumbers ? (ritu ? 0 : 12) : 0;
   const firstCapacity =
     (data.showLetterhead ? FIRST_PAGE_CAPACITY : FOLLOWING_PAGE_CAPACITY) - footerReserve - PACKING_BUFFER;
   const followingCapacity = FOLLOWING_PAGE_CAPACITY - footerReserve - PACKING_BUFFER;

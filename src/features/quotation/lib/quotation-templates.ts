@@ -510,12 +510,15 @@ function applyRituChoudharySpecialOverrides(data: QuotationData, language: Quota
 
   return {
     ...data,
+    specialQuotation: "ritu-choudhary",
     proposalDate: "2026-09-15",
     materialItems: applyRituEarthingKit(withoutClientScopeMaterials(data.materialItems), language),
     warrantySetupBosYears: "",
     warrantyText: rituClientScopeWarrantyNote(language),
     showComponentWarranty: false,
     showGeneration: false,
+    // Installation diagram often orphans onto a sparse page on this shorter special quote.
+    showInstallationProcess: false,
     terms,
   };
 }

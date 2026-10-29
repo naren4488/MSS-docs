@@ -11,6 +11,8 @@ import type {
   QuotationAcCableBrand,
   QuotationEarthingWireOption,
   QuotationPanelBrand,
+  QuotationSignatureMode,
+  QuotationSpecialId,
   QuotationStructureBrand,
   QuotationSubsidyScope,
   QuotationTermItem,
@@ -492,6 +494,19 @@ export function isCommercialQuotation(data: { kind?: QuotationKind; showSubsidyS
 
 export function isOffgridQuotation(data: { kind?: QuotationKind }): boolean {
   return data.kind === "offgrid";
+}
+
+export function resolveSpecialQuotation(value?: QuotationSpecialId | string | null): QuotationSpecialId {
+  return value === "ritu-choudhary" ? "ritu-choudhary" : "";
+}
+
+export function resolveSignatureMode(value?: QuotationSignatureMode | string | null): QuotationSignatureMode {
+  if (value === "company" || value === "none") return value;
+  return "both";
+}
+
+export function isRituChoudharyQuotation(data: { specialQuotation?: QuotationSpecialId | string | null }): boolean {
+  return resolveSpecialQuotation(data.specialQuotation) === "ritu-choudhary";
 }
 
 export function resolveSubsidyScope(value?: QuotationSubsidyScope | string | null): QuotationSubsidyScope {
@@ -1544,6 +1559,7 @@ export function createDefaultQuotationData(
     language: isHindi ? "hi" : "en",
     kind: offgrid ? "offgrid" : commercial ? "commercial" : "residential",
     issuer,
+    specialQuotation: "",
     title: isHindi ? "सोलर प्रस्ताव" : "SOLAR PROPOSAL",
     tagline: isHindi ? "स्मार्ट  |  टिकाऊ  |  किफायती" : "SMART  |  SUSTAINABLE  |  COST EFFECTIVE",
     coverImageUrl: "",
@@ -1626,6 +1642,7 @@ export function createDefaultQuotationData(
     repMobiles: issuerPreset.repMobiles,
     showLetterhead: true,
     showPageNumbers: true,
+    signatureMode: "both",
   };
 }
 
@@ -1654,6 +1671,7 @@ export function switchQuotationLanguage(data: QuotationData, language: Quotation
     ...fresh,
     kind: offgrid ? "offgrid" : commercial ? "commercial" : "residential",
     issuer,
+    specialQuotation: resolveSpecialQuotation(data.specialQuotation),
     coverImageUrl: data.coverImageUrl,
     customerName: data.customerName,
     customerPhone: data.customerPhone,
@@ -1738,6 +1756,7 @@ export function switchQuotationLanguage(data: QuotationData, language: Quotation
     repMobiles: data.repMobiles,
     showLetterhead: data.showLetterhead,
     showPageNumbers: data.showPageNumbers,
+    signatureMode: resolveSignatureMode(data.signatureMode),
   };
 }
 
@@ -1762,6 +1781,8 @@ export function normalizeQuotationData(input?: Partial<QuotationData> | null): Q
   const structureBrand: QuotationStructureBrand = input?.structureBrand === "Tata" ? "Tata" : "Apollo";
   const acCableBrand: QuotationAcCableBrand = input?.acCableBrand === "Polycab" ? "Polycab" : "Ramsons";
   const subsidyScope = resolveSubsidyScope(input?.subsidyScope);
+  const specialQuotation = resolveSpecialQuotation(input?.specialQuotation);
+  const signatureMode = resolveSignatureMode(input?.signatureMode);
   const materialItems = (input?.materialItems ?? defaults.materialItems).map((item) => {
     if (!isAcCableDescription(item.description)) return item;
     return { ...item, make: normalizeAcCableMake(item.make) };
@@ -1790,6 +1811,8 @@ export function normalizeQuotationData(input?: Partial<QuotationData> | null): Q
     ...input,
     language,
     issuer,
+    specialQuotation,
+    signatureMode,
     phase,
     structureBrand,
     panelBrand,
