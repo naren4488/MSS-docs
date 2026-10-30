@@ -1,5 +1,5 @@
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useState } from "react";
-import { RotateCcw } from "lucide-react";
+import { Check, Copy, RotateCcw } from "lucide-react";
 import {
   computeVisibleColumnTotals,
   filterRowsByClientName,
@@ -24,6 +24,8 @@ import {
   PROJECT_S_NO_COLUMN_INDEX,
   withSequentialSerialNumbers,
 } from "../lib/projects-columns";
+import { getProjectRowKey } from "../lib/dedupe-project-rows";
+import { buildBulkProjectRowsCopyText, copyTextToClipboard } from "../lib/project-row-copy";
 import type { MssSitesTable } from "../types/mss-sites";
 import { ClientNameSearch } from "./ClientNameSearch";
 import { MssSitesAnalytics } from "./MssSitesAnalytics";
@@ -100,6 +102,21 @@ const moreTdStyle = {
   verticalAlign: "middle" as const,
 };
 
+const selectThStyle = {
+  ...thStyle,
+  textAlign: "center" as const,
+  width: 36,
+  padding: "8px 6px",
+};
+
+const selectTdStyle = {
+  ...tdStyle,
+  textAlign: "center" as const,
+  width: 36,
+  padding: "6px",
+  verticalAlign: "middle" as const,
+};
+
 const copyThStyle = {
   ...thStyle,
   textAlign: "center" as const,
@@ -157,6 +174,9 @@ export const MssSitesTablePreview = forwardRef<MssSitesTablePreviewHandle, MssSi
   const [selectedFileIssues, setSelectedFileIssues] = useState<Set<string>>(() => new Set(fileIssues));
   const [selectedNonzeroDues, setSelectedNonzeroDues] = useState<Set<string>>(() => new Set());
   const [clientNameQuery, setClientNameQuery] = useState("");
+  const [selectedRowKeys, setSelectedRowKeys] = useState<Set<string>>(() => new Set());
+  const [bulkCopied, setBulkCopied] = useState(false);
+  const [bulkCopyError, setBulkCopyError] = useState(false);
 
   const registerFilterLabel = scope === "partner" ? "Partner" : "Register";
   const registerAllLabel = scope === "partner" ? "All partners" : "All registers";
@@ -181,6 +201,7 @@ export const MssSitesTablePreview = forwardRef<MssSitesTablePreviewHandle, MssSi
   useEffect(() => {
     setSelectedNonzeroDues(new Set());
     setClientNameQuery("");
+    setSelectedRowKeys(new Set());
   }, [scope]);
 
   const filteredRows = useMemo(() => {
@@ -201,6 +222,34 @@ export const MssSitesTablePreview = forwardRef<MssSitesTablePreviewHandle, MssSi
     selectedWorkStatuses,
     scope,
   ]);
+
+  const filteredRowKeys = useMemo(
+    () => filteredRows.map((row) => getProjectRowKey(table.headers, row)),
+    [filteredRows, table.headers],
+  );
+
+  useEffect(() => {
+    setSelectedRowKeys((current) => {
+      if (current.size === 0) return current;
+      const visible = new Set(filteredRowKeys);
+      let changed = false;
+      const next = new Set<string>();
+      for (const key of current) {
+        if (visible.has(key)) {
+          next.add(key);
+        } else {
+          changed = true;
+        }
+      }
+      return changed ? next : current;
+    });
+  }, [filteredRowKeys]);
+
+  useEffect(() => {
+    if (!bulkCopied) return undefined;
+    const timer = window.setTimeout(() => setBulkCopied(false), 1600);
+    return () => window.clearTimeout(timer);
+  }, [bulkCopied]);
 
   const workStatusAtDefault = workStatusSelectionMatchesDefault(selectedWorkStatuses, workStatuses);
   const fileIssueAtDefault =
@@ -257,6 +306,69 @@ export const MssSitesTablePreview = forwardRef<MssSitesTablePreviewHandle, MssSi
     setSelectedVendors(new Set(vendors));
     setSelectedProjectTypes(new Set(projectTypes));
   }, [projectTypes, vendors]);
+
+  const selectedVisibleCount = useMemo(() => {
+    let count = 0;
+    for (const key of filteredRowKeys) {
+      if (selectedRowKeys.has(key)) count += 1;
+    }
+    return count;
+  }, [filteredRowKeys, selectedRowKeys]);
+
+  const allFilteredSelected =
+    filteredRowKeys.length > 0 && selectedVisibleCount === filteredRowKeys.length;
+  const someFilteredSelected = selectedVisibleCount > 0 && !allFilteredSelected;
+
+  const toggleRowSelected = useCallback((key: string) => {
+    setSelectedRowKeys((current) => {
+      const next = new Set(current);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+    setBulkCopyError(false);
+  }, []);
+
+  const toggleSelectAllFiltered = useCallback(() => {
+    setSelectedRowKeys((current) => {
+      if (filteredRowKeys.length === 0) return current;
+      const allSelected = filteredRowKeys.every((key) => current.has(key));
+      if (allSelected) {
+        const next = new Set(current);
+        for (const key of filteredRowKeys) next.delete(key);
+        return next;
+      }
+      const next = new Set(current);
+      for (const key of filteredRowKeys) next.add(key);
+      return next;
+    });
+    setBulkCopyError(false);
+  }, [filteredRowKeys]);
+
+  const clearRowSelection = useCallback(() => {
+    setSelectedRowKeys(new Set());
+    setBulkCopyError(false);
+  }, []);
+
+  const handleBulkCopy = useCallback(async () => {
+    const rowsToCopy = filteredRows.filter((row) =>
+      selectedRowKeys.has(getProjectRowKey(table.headers, row)),
+    );
+    const result = buildBulkProjectRowsCopyText(rowsToCopy);
+    if (!result.text.trim()) {
+      setBulkCopyError(true);
+      setBulkCopied(false);
+      return;
+    }
+    try {
+      await copyTextToClipboard(result.text);
+      setBulkCopied(true);
+      setBulkCopyError(false);
+    } catch {
+      setBulkCopyError(true);
+      setBulkCopied(false);
+    }
+  }, [filteredRows, selectedRowKeys, table.headers]);
 
   const vendorFilterActive = selectedVendors.size > 0 && selectedVendors.size < vendors.length;
   const partnerFilterActive = selectedProjectTypes.size > 0 && selectedProjectTypes.size < projectTypes.length;
@@ -319,12 +431,31 @@ export const MssSitesTablePreview = forwardRef<MssSitesTablePreviewHandle, MssSi
             </div>
           </div>
 
-          {isFiltered ? (
-            <button type="button" className="mss-sites-clear-filters no-print" onClick={clearAllFilters}>
-              <RotateCcw size={14} aria-hidden />
-              Clear filters
-            </button>
-          ) : null}
+          <div className="mss-sites-preview-toolbar-actions no-print">
+            {viewMode === "table" && selectedVisibleCount > 0 ? (
+              <>
+                <button
+                  type="button"
+                  className={`mss-sites-bulk-copy${bulkCopied ? " mss-sites-bulk-copy--copied" : ""}`}
+                  onClick={() => void handleBulkCopy()}
+                  title="Copy Maps link, name, kW/PH, contact for selected sites"
+                >
+                  {bulkCopied ? <Check size={14} strokeWidth={2.5} aria-hidden /> : <Copy size={14} aria-hidden />}
+                  {bulkCopied ? "Copied" : `Copy selected (${selectedVisibleCount})`}
+                </button>
+                <button type="button" className="mss-sites-clear-filters" onClick={clearRowSelection}>
+                  Clear selection
+                </button>
+              </>
+            ) : null}
+            {isFiltered ? (
+              <button type="button" className="mss-sites-clear-filters" onClick={clearAllFilters}>
+                <RotateCcw size={14} aria-hidden />
+                Clear filters
+              </button>
+            ) : null}
+            {bulkCopyError ? <span className="mss-sites-bulk-copy-error">Nothing to copy</span> : null}
+          </div>
         </div>
 
         <div className="mss-sites-preview-filters no-print">
@@ -413,6 +544,19 @@ export const MssSitesTablePreview = forwardRef<MssSitesTablePreviewHandle, MssSi
           <table className="mss-sites-table">
             <thead>
               <tr>
+                <th className="mss-sites-table-select-col" style={selectThStyle}>
+                  <input
+                    type="checkbox"
+                    className="mss-sites-row-checkbox"
+                    checked={allFilteredSelected}
+                    ref={(input) => {
+                      if (input) input.indeterminate = someFilteredSelected;
+                    }}
+                    onChange={toggleSelectAllFiltered}
+                    aria-label={allFilteredSelected ? "Deselect all visible projects" : "Select all visible projects"}
+                    title={allFilteredSelected ? "Deselect all" : "Select all"}
+                  />
+                </th>
                 <th className="mss-sites-table-copy-col" style={copyThStyle} aria-label="Copy site details">
                   <span className="mss-sites-table-copy-heading">Copy</span>
                 </th>
@@ -435,6 +579,9 @@ export const MssSitesTablePreview = forwardRef<MssSitesTablePreviewHandle, MssSi
             </thead>
             <tbody>
               <tr className="mss-sites-table-totals-row">
+                <td className="mss-sites-table-select-col" style={{ ...totalsTdStyle, textAlign: "center" }}>
+                  —
+                </td>
                 <td className="mss-sites-table-copy-col" style={{ ...totalsTdStyle, textAlign: "center" }}>
                   —
                 </td>
@@ -455,28 +602,45 @@ export const MssSitesTablePreview = forwardRef<MssSitesTablePreviewHandle, MssSi
                   —
                 </td>
               </tr>
-              {filteredRows.map((row, rowIndex) => (
-                <tr key={`row-${rowIndex}`} style={{ background: rowIndex % 2 === 0 ? "#ffffff" : "#f8fafc" }}>
-                  <td className="mss-sites-table-copy-col" style={copyTdStyle}>
-                    <ProjectRowCopyCell row={row} />
-                  </td>
-                  {visibleColumnIndices.map((columnIndex) => {
-                    const header = table.headers[columnIndex];
-                    return (
-                      <td
-                        key={`${rowIndex}-${columnIndex}`}
-                        className={tableColumnClassName(header)}
-                        style={columnIndex === 0 ? sNoTdStyle : tdStyle}
-                      >
-                        {row[columnIndex] || (columnIndex === 0 ? String(rowIndex + 1) : "—")}
-                      </td>
-                    );
-                  })}
-                  <td className="mss-sites-table-more-col" style={moreTdStyle}>
-                    <ProjectRowMoreCell fields={getHiddenProjectFields(table.headers, row)} />
-                  </td>
-                </tr>
-              ))}
+              {filteredRows.map((row, rowIndex) => {
+                const rowKey = filteredRowKeys[rowIndex] ?? getProjectRowKey(table.headers, row);
+                const isSelected = selectedRowKeys.has(rowKey);
+                return (
+                  <tr
+                    key={rowKey || `row-${rowIndex}`}
+                    className={isSelected ? "mss-sites-table-row--selected" : undefined}
+                    style={{ background: isSelected ? "#eef2ff" : rowIndex % 2 === 0 ? "#ffffff" : "#f8fafc" }}
+                  >
+                    <td className="mss-sites-table-select-col" style={selectTdStyle}>
+                      <input
+                        type="checkbox"
+                        className="mss-sites-row-checkbox"
+                        checked={isSelected}
+                        onChange={() => toggleRowSelected(rowKey)}
+                        aria-label={`Select project ${row[PROJECT_S_NO_COLUMN_INDEX] || rowIndex + 1}`}
+                      />
+                    </td>
+                    <td className="mss-sites-table-copy-col" style={copyTdStyle}>
+                      <ProjectRowCopyCell row={row} />
+                    </td>
+                    {visibleColumnIndices.map((columnIndex) => {
+                      const header = table.headers[columnIndex];
+                      return (
+                        <td
+                          key={`${rowIndex}-${columnIndex}`}
+                          className={tableColumnClassName(header)}
+                          style={columnIndex === 0 ? sNoTdStyle : tdStyle}
+                        >
+                          {row[columnIndex] || (columnIndex === 0 ? String(rowIndex + 1) : "—")}
+                        </td>
+                      );
+                    })}
+                    <td className="mss-sites-table-more-col" style={moreTdStyle}>
+                      <ProjectRowMoreCell fields={getHiddenProjectFields(table.headers, row)} />
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         )}

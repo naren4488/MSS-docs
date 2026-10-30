@@ -34,7 +34,6 @@ const LABELS: Record<AgreementLanguage, {
     dealWithUs: string;
     expected: string;
     received: string;
-    pending: string;
     workStatus: string;
     loan: string;
     cash: string;
@@ -68,7 +67,6 @@ const LABELS: Record<AgreementLanguage, {
       dealWithUs: "Deal with us",
       expected: "To receive (file)",
       received: "Received so far",
-      pending: "Pending",
       workStatus: "Work status",
       loan: "Loan",
       cash: "Cash",
@@ -102,7 +100,6 @@ const LABELS: Record<AgreementLanguage, {
       dealWithUs: "हमसे डील",
       expected: "प्राप्त होना (फ़ाइल)",
       received: "अब तक प्राप्त",
-      pending: "बकाया",
       workStatus: "कार्य स्थिति",
       loan: "लोन",
       cash: "नकद",
@@ -610,12 +607,20 @@ function sumAnnexureField(rows: readonly AgreementClientRow[], key: keyof Agreem
   return String(total);
 }
 
+/** Loan + cash received — always prefer this over a stored totalReceived that can drift. */
+function clientRowTotalReceived(row: AgreementClientRow): number {
+  const fromParts =
+    parseAnnexureNumber(row.loanReceived) + parseAnnexureNumber(row.cashReceived);
+  if (fromParts > 0) return fromParts;
+  return parseAnnexureNumber(row.totalReceived);
+}
+
 /** Register NET DUE TO MSS (falls back to deal − total received). */
 function clientRowNet(row: AgreementClientRow): number {
   if (String(row.netDueToMss ?? "").trim() !== "") {
     return parseAnnexureNumber(row.netDueToMss);
   }
-  return parseAnnexureNumber(row.dealWithUs) - parseAnnexureNumber(row.totalReceived);
+  return parseAnnexureNumber(row.dealWithUs) - clientRowTotalReceived(row);
 }
 
 function chunkClientRows(rows: AgreementClientRow[], size: number): AgreementClientRow[][] {
@@ -667,27 +672,31 @@ function ClientTable({
 
   const totalsSource = showFooter ? allRows : rows;
   const totalsNet = totalsSource.reduce((sum, row) => sum + clientRowNet(row), 0);
+  const totalsLoanReceived = sumAnnexureField(totalsSource, "loanReceived");
+  const totalsCashReceived = sumAnnexureField(totalsSource, "cashReceived");
   const totals = {
     dealWithUs: sumAnnexureField(totalsSource, "dealWithUs"),
     loanExpected: sumAnnexureField(totalsSource, "loanExpected"),
     cashExpected: sumAnnexureField(totalsSource, "cashExpected"),
-    loanReceived: sumAnnexureField(totalsSource, "loanReceived"),
-    cashReceived: sumAnnexureField(totalsSource, "cashReceived"),
-    totalReceived: sumAnnexureField(totalsSource, "totalReceived"),
-    loanPending: sumAnnexureField(totalsSource, "loanPending"),
-    cashPending: sumAnnexureField(totalsSource, "cashPending"),
-    amountToReturn: sumAnnexureField(totalsSource, "amountToReturn"),
-    net: String(totalsNet),
+    loanReceived: totalsLoanReceived,
+    cashReceived: totalsCashReceived,
+    totalReceived: String(
+      parseAnnexureNumber(totalsLoanReceived) + parseAnnexureNumber(totalsCashReceived),
+    ),
   };
 
-  const receivedSettlementLines = (net: number, toReturn: string) => {
+  /** Over-collected → To return (red). Still short → Net due (green). Mutually exclusive. */
+  const receivedSettlementLines = (net: number, toReturn = "") => {
     const lines: { label: string; value: string; strong: true; tone: "danger" | "success" }[] = [];
     const returnAmount = parseAnnexureNumber(toReturn);
-    // Over-collected vs deal → To return (red). Still short of deal → Net due (green).
-    if (returnAmount > 0) {
-      lines.push({ label: headers.toReturn, value: String(returnAmount), strong: true, tone: "danger" });
-    } else if (net < 0) {
-      lines.push({ label: headers.toReturn, value: String(Math.abs(net)), strong: true, tone: "danger" });
+    if (returnAmount > 0 || net < 0) {
+      lines.push({
+        label: headers.toReturn,
+        value: String(returnAmount > 0 ? returnAmount : Math.abs(net)),
+        strong: true,
+        tone: "danger",
+      });
+      return lines;
     }
     if (net > 0) {
       lines.push({ label: headers.net, value: String(net), strong: true, tone: "success" });
@@ -695,7 +704,8 @@ function ClientTable({
     return lines;
   };
 
-  const totalsSettlementLines = receivedSettlementLines(totalsNet, totals.amountToReturn);
+  // Footer uses combined net only (not sum of per-row To return + Net, which double-counts).
+  const totalsSettlementLines = receivedSettlementLines(totalsNet);
 
   return (
     <table
@@ -708,13 +718,12 @@ function ClientTable({
     >
       <thead>
         <tr>
-          <th style={{ ...headerCellStyle, width: "4%" }}>{headers.sno}</th>
-          <th style={{ ...headerCellStyle, width: "20%" }}>{headers.name}</th>
-          <th style={{ ...headerCellStyle, width: "12%", textAlign: "right" }}>{headers.dealWithUs}</th>
-          <th style={{ ...headerCellStyle, width: "15%" }}>{headers.expected}</th>
-          <th style={{ ...headerCellStyle, width: "20%" }}>{headers.received}</th>
-          <th style={{ ...headerCellStyle, width: "15%" }}>{headers.pending}</th>
-          <th style={{ ...headerCellStyle, width: "14%" }}>{headers.workStatus}</th>
+          <th style={{ ...headerCellStyle, width: "5%" }}>{headers.sno}</th>
+          <th style={{ ...headerCellStyle, width: "24%" }}>{headers.name}</th>
+          <th style={{ ...headerCellStyle, width: "14%", textAlign: "right" }}>{headers.dealWithUs}</th>
+          <th style={{ ...headerCellStyle, width: "18%" }}>{headers.expected}</th>
+          <th style={{ ...headerCellStyle, width: "24%" }}>{headers.received}</th>
+          <th style={{ ...headerCellStyle, width: "15%" }}>{headers.workStatus}</th>
         </tr>
       </thead>
       <tbody>
@@ -726,7 +735,7 @@ function ClientTable({
           const receivedLines = [
             { label: headers.loan, value: row.loanReceived },
             { label: headers.cashToMss, value: row.cashReceived },
-            { label: headers.total, value: row.totalReceived, strong: true },
+            { label: headers.total, value: String(clientRowTotalReceived(row)), strong: true },
             ...receivedSettlementLines(net, row.amountToReturn),
           ];
           return (
@@ -768,14 +777,6 @@ function ClientTable({
               <td style={cellStyle}>
                 <MoneyStack lines={receivedLines} />
               </td>
-              <td style={cellStyle}>
-                <MoneyStack
-                  lines={[
-                    { label: headers.loan, value: row.loanPending },
-                    { label: headers.cash, value: row.cashPending },
-                  ]}
-                />
-              </td>
               <td style={{ ...cellStyle, fontSize: 9, lineHeight: 1.35 }}>{row.workStatus || "—"}</td>
             </tr>
           );
@@ -803,14 +804,6 @@ function ClientTable({
                   { label: headers.cashToMss, value: totals.cashReceived },
                   { label: headers.total, value: totals.totalReceived, strong: true },
                   ...totalsSettlementLines,
-                ]}
-              />
-            </td>
-            <td style={footerCellStyle}>
-              <MoneyStack
-                lines={[
-                  { label: headers.loan, value: totals.loanPending },
-                  { label: headers.cash, value: totals.cashPending },
                 ]}
               />
             </td>

@@ -17,7 +17,7 @@ export type QuotationKind = "residential" | "commercial" | "offgrid";
 /** Letterhead / bank / signatory identity on the quotation. */
 export type QuotationIssuer = "mss" | "mse";
 /** One-off special quotation profiles with their own PDF packing / scope rules. */
-export type QuotationSpecialId = "" | "ritu-choudhary";
+export type QuotationSpecialId = "" | "ritu-choudhary" | "lokesh-sharma";
 /** Signature block on the PDF: both parties, company only, or hidden. */
 export type QuotationSignatureMode = "both" | "company" | "none";
 

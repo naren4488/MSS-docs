@@ -76,3 +76,32 @@ export async function copyTextToClipboard(text: string): Promise<void> {
   document.execCommand("copy");
   document.body.removeChild(textarea);
 }
+
+export interface BulkProjectRowsCopyResult {
+  text: string;
+  copiedCount: number;
+  skippedCount: number;
+}
+
+/** Join selected site payloads with a blank line between each site. */
+export function buildBulkProjectRowsCopyText(
+  rows: readonly (readonly string[])[],
+): BulkProjectRowsCopyResult {
+  const parts: string[] = [];
+  let skippedCount = 0;
+
+  for (const row of rows) {
+    const payload = buildProjectRowCopyPayload(row);
+    if (!payload.text.trim()) {
+      skippedCount += 1;
+      continue;
+    }
+    parts.push(payload.text);
+  }
+
+  return {
+    text: parts.join("\n\n"),
+    copiedCount: parts.length,
+    skippedCount,
+  };
+}

@@ -42,7 +42,8 @@ export type QuotationTemplateId =
   | "commercial-15kw"
   | "commercial-30kw"
   | "offgrid"
-  | "special-ritu-choudhary";
+  | "special-ritu-choudhary"
+  | "special-lokesh-sharma";
 
 /** Default package when opening a new quotation. */
 export const DEFAULT_QUOTATION_TEMPLATE_ID: QuotationTemplateId = "3kw-1ph";
@@ -269,6 +270,25 @@ export const QUOTATION_TEMPLATES: readonly QuotationTemplateMeta[] = [
     customerEmail: "MUKESHCHOUDHARY6111@GMAIL.COM",
     address: "Jobner",
   },
+  {
+    id: "special-lokesh-sharma",
+    kind: "special",
+    label: "Lokesh Sharma",
+    description: "₹2,40,000 · 5 KW 1PH · 8 × Adani 625W · MNRE only · no structure (client)",
+    capacity: "5 KW",
+    phase: "1PH",
+    projectAmount: "240000",
+    centralSubsidy: MNRE_SUBSIDY,
+    stateSubsidy: "",
+    subsidyScope: "central",
+    panels: 8,
+    wp: 625,
+    inverterKw: "5",
+    moduleBrand: "Adani Topcon Bifacial",
+    customerName: "Lokesh Sharma",
+    customerPhone: "8003830109",
+    address: "Jaipur",
+  },
 ] as const;
 
 export function isQuotationTemplate(value: string | null | undefined): value is QuotationTemplateId {
@@ -354,6 +374,10 @@ function applyTemplateSizing(
   });
 
   return applyPhaseToMaterialItems(sized, template.phase, language);
+}
+
+function withoutMountingStructure(items: QuotationMaterialItem[]): QuotationMaterialItem[] {
+  return items.filter((item) => !isMountingStructureDescription(item.description));
 }
 
 function withoutClientScopeMaterials(items: QuotationMaterialItem[]): QuotationMaterialItem[] {
@@ -523,6 +547,133 @@ function applyRituChoudharySpecialOverrides(data: QuotationData, language: Quota
   };
 }
 
+function lokeshStructureWarrantyNote(language: QuotationLanguage): string {
+  if (language === "hi") {
+    return [
+      "महत्वपूर्ण — ग्राहक स्ट्रक्चर (यह कोटेशन):",
+      "• माउंटिंग स्ट्रक्चर MSS के कार्यक्षेत्र में नहीं है और माही सोलर सॉल्यूशन द्वारा आपूर्ति नहीं की जाती। स्ट्रक्चर, उसके डिज़ाइन, मजबूती, इंस्टॉलेशन या संबंधित किसी भी समस्या के लिए MSS जिम्मेदार नहीं है।",
+      "• स्ट्रक्चर से उत्पन्न कोई दोष, खराबी, क्षति या भविष्य की समस्या पूरी तरह ग्राहक की जिम्मेदारी होगी। इसके लिए MSS उत्तरदायी नहीं होगा।",
+    ].join("\n");
+  }
+  return [
+    "Important — Client-supplied structure (this quotation):",
+    "• Mounting structure is not in MSS scope and is not supplied by Mahi Solar Solution. MSS is not responsible for the structure, its design, strength, installation, or any related issues.",
+    "• Any fault, failure, damage, or future issue arising from the structure shall be solely the client's responsibility. MSS shall not be liable for the same.",
+  ].join("\n");
+}
+
+function lokeshWarrantyCoverageTerm(language: QuotationLanguage): QuotationTermItem {
+  if (language === "hi") {
+    return {
+      id: crypto.randomUUID(),
+      label: "वारंटी कवरेज व सीमाएँ",
+      text: [
+        "दायित्व व कार्यक्षेत्र:",
+        "• माही सोलर सॉल्यूशन की जिम्मेदारी केवल सहमत आपूर्ति व इंस्टॉलेशन कार्यक्षेत्र तक सीमित है।",
+        "• माउंटिंग स्ट्रक्चर ग्राहक द्वारा उपलब्ध/निर्धारित है — MSS आपूर्ति या स्ट्रक्चर वारंटी नहीं देता।",
+        "• माउंटिंग स्ट्रक्चर व इंस्टॉलेशन पर 5 वर्ष वर्कमैनशिप वारंटी इस कोटेशन पर स्ट्रक्चर भाग के लिए लागू नहीं (स्ट्रक्चर MSS कार्यक्षेत्र में नहीं)।",
+        "",
+        "वारंटी कवरेज:",
+        "• पैनल: 30 वर्ष उत्पाद वारंटी (निर्माण दोष) + 25 वर्ष प्रदर्शन वारंटी — निर्माता शर्तों के अधीन",
+        "• इनवर्टर: 10 वर्ष निर्माता वारंटी — निर्माता शर्तों के अधीन",
+        "• BOS व इंस्टॉलेशन (स्ट्रक्चर छोड़कर): 5 वर्ष वारंटी",
+        "",
+        "निर्माता वारंटी:",
+        "• सोलर पैनल, इनवर्टर व अन्य आपूर्ति घटक केवल संबंधित निर्माता की वारंटी शर्तों के अंतर्गत कवर हैं।",
+        "",
+        "MSS जिम्मेदार नहीं होगा:",
+        "• ग्राहक स्ट्रक्चर संबंधी कोई मुद्दा",
+        "• प्राकृतिक आपदा, चोरी, तोड़फोड़, अनुचित उपयोग, अनधिकृत संशोधन",
+        "",
+        "वारंटी दावे मूल उपकरण निर्माता की शर्तों के अधीन हैं।",
+      ].join("\n"),
+    };
+  }
+  return {
+    id: crypto.randomUUID(),
+    label: "Warranty Coverage & Limitations",
+    text: [
+      "Scope of Responsibility:",
+      "• Mahi Solar Solution's responsibility is limited to the agreed supply and installation scope under this quotation.",
+      "• Mounting structure is client-provided / client-arranged — MSS does not supply it and provides no structure warranty.",
+      "• The 5-year workmanship warranty on mounting structure does not apply on this quotation (structure is outside MSS scope).",
+      "",
+      "Warranty Coverage:",
+      "• Panels: 30-year product warranty (manufacturing defects) + 25-year performance warranty — subject to manufacturer terms",
+      "• Inverter: 10-year manufacturer warranty — subject to manufacturer terms",
+      "• BOS & Installation (excluding structure): 5-year warranty",
+      "",
+      "Manufacturer's Warranty:",
+      "• Solar panels, inverter and other supplied components are covered solely under the respective manufacturer's warranty terms.",
+      "",
+      "MSS shall NOT be responsible for:",
+      "• Any issue related to the client structure",
+      "• Natural calamities, theft, vandalism, improper use, or unauthorized modifications",
+      "",
+      "Warranty claims are subject to the original equipment manufacturer's terms and conditions.",
+    ].join("\n"),
+  };
+}
+
+function patchLokeshTimelineTerm(text: string, language: QuotationLanguage): string {
+  if (language === "hi") {
+    return text.replace(
+      "• शामिल: माउंटिंग स्ट्रक्चर, सोलर पैनल, इनवर्टर, BOS, विद्युत कनेक्शन, परीक्षण व कमीशनिंग।",
+      "• शामिल: सोलर पैनल, इनवर्टर, BOS, विद्युत कनेक्शन, परीक्षण व कमीशनिंग। माउंटिंग स्ट्रक्चर MSS कार्यक्षेत्र में नहीं (ग्राहक द्वारा)।",
+    );
+  }
+  return text.replace(
+    "• Includes: Mounting structure, solar panel installation, inverter setup, BOS components, electrical connections, testing & system commissioning.",
+    "• Includes: Solar panel installation, inverter setup, BOS components, electrical connections, testing & system commissioning. Mounting structure is not in MSS scope (client-provided).",
+  );
+}
+
+function applyLokeshEarthingKit(items: QuotationMaterialItem[], language: QuotationLanguage): QuotationMaterialItem[] {
+  return items.map((item) => {
+    if (!isEarthingKitDescription(item.description)) return item;
+    return {
+      ...item,
+      qty: language === "hi" ? "3 सेट" : "3 Set",
+      unit: language === "hi" ? "सेट" : "Set",
+      make:
+        language === "hi"
+          ? "3 कॉपर बाउंड रॉड (प्रत्येक 2 मी.) व अर्थिंग केमिकल बैग"
+          : "3 copper bound rods (2 mtr each) and earthing chemical bag",
+    };
+  });
+}
+
+function applyLokeshSharmaSpecialOverrides(data: QuotationData, language: QuotationLanguage): QuotationData {
+  const terms = data.terms.map((item) => {
+    const label = item.label.trim();
+    if (label === "Warranty Coverage & Limitations" || label === "वारंटी कवरेज व सीमाएँ") {
+      return lokeshWarrantyCoverageTerm(language);
+    }
+    if (label === "Project Timeline & Installation Process" || label === "प्रोजेक्ट समयरेखा व इंस्टॉलेशन प्रक्रिया") {
+      return { ...item, text: patchLokeshTimelineTerm(item.text, language) };
+    }
+    if (label === "Warranty" || label === "वारंटी") {
+      return {
+        ...item,
+        text:
+          language === "hi"
+            ? "पैनल व इनवर्टर पर निर्माता वारंटी लागू। माउंटिंग स्ट्रक्चर MSS कार्यक्षेत्र में नहीं — MSS स्ट्रक्चर के लिए जिम्मेदार नहीं। BOS व इंस्टॉलेशन (स्ट्रक्चर छोड़कर) पर 5 वर्ष वारंटी।"
+            : "Manufacturer warranty applies on panels and inverter. Mounting structure is not in MSS scope — MSS is not responsible for the structure. 5-year warranty applies on BOS & installation excluding structure.",
+      };
+    }
+    return item;
+  });
+
+  return {
+    ...data,
+    specialQuotation: "lokesh-sharma",
+    proposalDate: "2026-10-26",
+    materialItems: applyLokeshEarthingKit(withoutMountingStructure(data.materialItems), language),
+    warrantyText: lokeshStructureWarrantyNote(language),
+    terms,
+  };
+}
+
 export function createQuotationFromTemplate(
   templateId: QuotationTemplateId = DEFAULT_QUOTATION_TEMPLATE_ID,
   language: QuotationLanguage = "en",
@@ -587,6 +738,10 @@ export function createQuotationFromTemplate(
 
   if (templateId === "special-ritu-choudhary") {
     return applyRituChoudharySpecialOverrides(quotation, language);
+  }
+
+  if (templateId === "special-lokesh-sharma") {
+    return applyLokeshSharmaSpecialOverrides(quotation, language);
   }
 
   return quotation;

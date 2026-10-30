@@ -182,7 +182,7 @@ const SATYA_NARAYAN_VENDOR_CODE_CLIENTS: Omit<AgreementClientRow, "id">[] = [
     cashExpected: "0",
     loanReceived: "211000",
     cashReceived: "0",
-    totalReceived: "192000",
+    totalReceived: "211000",
     loanPending: "0",
     cashPending: "0",
     amountToReturn: "41000",
@@ -314,10 +314,6 @@ const SATYA_NARAYAN_VENDOR_CODE_CLIENTS: Omit<AgreementClientRow, "id">[] = [
     amountToReturn: "0",
     netDueToMss: "149000",
   },
-];
-
-/** Structure-only / not fully logged — shown separately from the regular client table. */
-const SATYA_NARAYAN_OTHER_CLIENTS: Omit<AgreementClientRow, "id">[] = [
   {
     name: "Lalchand Verma",
     capacity: "6 kW",
@@ -325,14 +321,14 @@ const SATYA_NARAYAN_OTHER_CLIENTS: Omit<AgreementClientRow, "id">[] = [
     kNo: "",
     dealWithUs: "30000",
     workStatus: "Structure Work",
-    remark: "File is not logged in. Only structure work was done; listed separately from regular logged clients.",
+    remark: "File is not logged in. Only structure work was done.",
     loanExpected: "0",
     cashExpected: "40000",
     loanReceived: "0",
     cashReceived: "0",
-    totalReceived: "40000",
+    totalReceived: "0",
     loanPending: "0",
-    cashPending: "0",
+    cashPending: "40000",
     amountToReturn: "0",
     netDueToMss: "30000",
   },
@@ -354,26 +350,11 @@ function createClientRows(): AgreementClientRow[] {
   );
 }
 
-function createOtherClientRows(): AgreementClientRow[] {
-  return mapAgreementClientRows(
-    SATYA_NARAYAN_OTHER_CLIENTS.map((row) =>
-      applyRegisterNetSettlement({
-        ...row,
-        name: titleCaseName(row.name),
-        capacity: normalizeCapacity(row.capacity),
-        phase: row.phase.trim(),
-        kNo: row.kNo.trim(),
-        dealWithUs: row.dealWithUs.trim(),
-        remark: row.remark.trim(),
-      }),
-    ),
-  );
-}
-
-/** Sum of register NET DUE TO MSS across logged + other annexure sites. */
-const SATYA_NARAYAN_FILES_NET =
-  SATYA_NARAYAN_VENDOR_CODE_CLIENTS.reduce((sum, row) => sum + fileNetAmount(row), 0) +
-  SATYA_NARAYAN_OTHER_CLIENTS.reduce((sum, row) => sum + fileNetAmount(row), 0);
+/** Sum of register NET DUE TO MSS across annexed sites. */
+const SATYA_NARAYAN_FILES_NET = SATYA_NARAYAN_VENDOR_CODE_CLIENTS.reduce(
+  (sum, row) => sum + fileNetAmount(row),
+  0,
+);
 
 const SATYA_NARAYAN_SETTLEMENT_FINAL =
   SATYA_NARAYAN_FILES_NET +
@@ -427,6 +408,7 @@ function createSatyaNarayanYadavAgreementData() {
     },
     partyIsIndividual: true,
     showPartyPan: true,
+    effectiveDate: "2026-09-28",
     introTemplate:
       'THIS PARTNERSHIP AGREEMENT (the "Agreement") is made as of {{effectiveDateFormatted}} (the "Effective Date") by and between {{company.name}}, having its principal place of business at {{company.address}} ("MSS").\n\nAnd {{party.entityName}} ("Partner"), having its principal place of business at {{party.addressWithPan}}.',
     party: {
@@ -459,10 +441,9 @@ function createSatyaNarayanYadavAgreementData() {
     clientScheduleIntro:
       "The Parties have worked, and continue to work, on the fixed-rate basis described in this Agreement: the Partner brings the Project and collects payment; MSS executes end to end; the Partner earns commission / margin. The following clients / sites were logged or enrolled by the Partner under the Vendor Code (MSS register · SATAYNARAYAN JI) and are listed here for identification and record. Only sites with work status I&C Completed or Structure Work are included. For each site: (i) deal with MSS; (ii) net = register NET DUE TO MSS (negative when MSS is over-collected); (iii) loan and cash expected / received / pending; and (iv) To return when net is negative. Totals and the Settlement summary use the sum of these nets. The listed sites remain subject to the customer-service, O&M, warranty and indemnity obligations of this Agreement where applicable.",
     clientRows: createClientRows(),
-    otherClientScheduleHeading: "Other sites — not fully logged in",
-    otherClientScheduleIntro:
-      "The following site is listed separately because the file is not logged in under the Vendor Code; only structure work was done.",
-    otherClientRows: createOtherClientRows(),
+    otherClientScheduleHeading: "",
+    otherClientScheduleIntro: "",
+    otherClientRows: [],
     clientScheduleNote:
       "This annexure is for identification and record only. It does not alter the fixed-rate commercial terms or the division of roles (Partner: bring project + collect payment; MSS: end-to-end execution). Figures are as per the live project register. Net for each file follows the register NET DUE TO MSS. When that net is negative, the surplus is shown as To return (e.g. Raj Kumar Yadav: deal ₹1,70,000 vs loan received ₹2,11,000 → net −₹41,000).",
     showLedgerAnnexure: true,
@@ -505,7 +486,7 @@ export const SATYA_NARAYAN_YADAV_AGREEMENT_ID = "agreement-satya-narayan-yadav-f
 export const satyaNarayanYadavAgreement: AgreementRecord = {
   id: SATYA_NARAYAN_YADAV_AGREEMENT_ID,
   name: "Satya Narayan Yadav — Fixed Rate Partnership Agreement",
-  createdAt: "2026-09-19T00:00:00Z",
-  updatedAt: "2026-10-26T00:00:00Z",
+  createdAt: "2026-09-28T00:00:00Z",
+  updatedAt: "2026-09-28T00:00:00Z",
   content: createSatyaNarayanYadavAgreementData(),
 };

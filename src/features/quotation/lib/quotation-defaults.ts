@@ -167,7 +167,7 @@ export function acDbDcDbUnit(phase: QuotationPhase): string {
 }
 
 export function acDbDcDbMake(language: QuotationLanguage): string {
-  return language === "hi" ? "AC — हैवेल्स · DC — सिबास" : "AC — Havells · DC — Sibass";
+  return language === "hi" ? "AC — हैवेल्स · DC — हैवेल्स" : "AC — Havells · DC — Havells";
 }
 
 function stripPhaseFromCapacity(capacity: string): string {
@@ -497,7 +497,8 @@ export function isOffgridQuotation(data: { kind?: QuotationKind }): boolean {
 }
 
 export function resolveSpecialQuotation(value?: QuotationSpecialId | string | null): QuotationSpecialId {
-  return value === "ritu-choudhary" ? "ritu-choudhary" : "";
+  if (value === "ritu-choudhary" || value === "lokesh-sharma") return value;
+  return "";
 }
 
 export function resolveSignatureMode(value?: QuotationSignatureMode | string | null): QuotationSignatureMode {

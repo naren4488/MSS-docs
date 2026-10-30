@@ -2606,6 +2606,64 @@
   letter-spacing: 0.35px;
 }
 
+.mss-sites-preview-toolbar-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.mss-sites-bulk-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid #14306b;
+  border-radius: 6px;
+  background: #14306b;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.mss-sites-bulk-copy:hover,
+.mss-sites-bulk-copy:focus-visible {
+  background: #0f244f;
+  border-color: #0f244f;
+  outline: none;
+}
+
+.mss-sites-bulk-copy--copied {
+  background: #047857;
+  border-color: #047857;
+}
+
+.mss-sites-bulk-copy--copied:hover,
+.mss-sites-bulk-copy--copied:focus-visible {
+  background: #066649;
+  border-color: #066649;
+}
+
+.mss-sites-bulk-copy-error {
+  font-size: 12px;
+  color: #b91c1c;
+  font-weight: 600;
+}
+
+.mss-sites-row-checkbox {
+  width: 15px;
+  height: 15px;
+  margin: 0;
+  accent-color: #14306b;
+  cursor: pointer;
+}
+
+.mss-sites-table-row--selected td {
+  border-bottom-color: #c7d2fe;
+}
+
 .projects-row-copy-cell {
   display: inline-flex;
   flex-direction: column;
