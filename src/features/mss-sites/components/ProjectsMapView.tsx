@@ -16,6 +16,7 @@ const GPS_INDEX = PROJECT_TABLE_HEADERS.indexOf("GPS / LINK");
 const WORK_STATUS_INDEX = PROJECT_TABLE_HEADERS.indexOf("WORK STATUS");
 const LOCATION_INDEX = PROJECT_TABLE_HEADERS.indexOf("LOCATION");
 const PROJECT_TYPE_INDEX = PROJECT_TABLE_HEADERS.indexOf("PROJECT TYPE");
+const VENDOR_INDEX = PROJECT_TABLE_HEADERS.indexOf("VENDOR");
 
 /** Default view when nothing is plottable — Jaipur / Rajasthan area. */
 const DEFAULT_CENTER: [number, number] = [26.9124, 75.7873];
@@ -38,6 +39,7 @@ interface MapProjectPoint {
   workStatus: string;
   location: string;
   projectType: string;
+  vendor: string;
   missing: ReturnType<typeof buildProjectRowCopyPayload>["missing"];
   copyText: string;
 }
@@ -74,6 +76,7 @@ function buildMapPoints(
       workStatus: cell(row, WORK_STATUS_INDEX),
       location: cell(row, LOCATION_INDEX),
       projectType: cell(row, PROJECT_TYPE_INDEX),
+      vendor: cell(row, VENDOR_INDEX),
       missing: payload.missing,
       copyText: payload.text,
     });
@@ -135,16 +138,16 @@ function MapPointPopup({ point }: { point: MapProjectPoint }) {
           {point.workStatus}
         </p>
       ) : null}
+      {point.projectType || point.vendor ? (
+        <p className="projects-map-popup-meta">
+          <span className="projects-map-popup-label">Type</span>
+          {[point.projectType, point.vendor].filter(Boolean).join(" · ")}
+        </p>
+      ) : null}
       {point.location ? (
         <p className="projects-map-popup-meta">
           <span className="projects-map-popup-label">Location</span>
           {point.location}
-        </p>
-      ) : null}
-      {point.projectType ? (
-        <p className="projects-map-popup-meta">
-          <span className="projects-map-popup-label">Register</span>
-          {point.projectType}
         </p>
       ) : null}
       {point.missing.length > 0 ? (
@@ -228,6 +231,12 @@ export function ProjectsMapView({ headers, rows, totalFilteredCount }: ProjectsM
                   <strong>{point.name}</strong>
                   {point.system ? <span>{point.system}</span> : null}
                   {point.contact ? <span>{point.contact}</span> : null}
+                  {point.projectType || point.vendor ? (
+                    <span>
+                      {[point.projectType, point.vendor].filter(Boolean).join(" · ")}
+                    </span>
+                  ) : null}
+                  {point.location ? <span>{point.location}</span> : null}
                   {point.workStatus ? <span className="projects-map-tooltip-status">{point.workStatus}</span> : null}
                 </div>
               </Tooltip>
