@@ -4,6 +4,7 @@ import {
   FolderKanban,
   Handshake,
   LayoutGrid,
+  MapPinned,
   Printer,
   RefreshCw,
   Table2,
@@ -156,6 +157,15 @@ export function MssSitesPage() {
             >
               <LayoutGrid size={14} aria-hidden />
               Analytics
+            </button>
+            <button
+              className={`segment-button ${viewMode === "map" ? "active" : ""}`}
+              type="button"
+              title="Map view"
+              onClick={() => setViewMode("map")}
+            >
+              <MapPinned size={14} aria-hidden />
+              Map
             </button>
           </div>
           {viewMode === "table" ? (

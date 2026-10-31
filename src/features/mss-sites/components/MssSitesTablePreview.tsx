@@ -31,11 +31,12 @@ import { ClientNameSearch } from "./ClientNameSearch";
 import { MssSitesAnalytics } from "./MssSitesAnalytics";
 import { ProjectRowCopyCell } from "./ProjectRowCopyCell";
 import { ProjectRowMoreCell } from "./ProjectRowMoreCell";
+import { ProjectsMapView } from "./ProjectsMapView";
 import { ProjectsMultiselectFilter } from "./ProjectsMultiselectFilter";
 import { ProjectsSheetTabFilter } from "./ProjectsSheetTabFilter";
 import type { ProjectSheetTabShortcut, ProjectsScope } from "../lib/projects-config";
 
-export type MssSitesViewMode = "table" | "analytics";
+export type MssSitesViewMode = "table" | "analytics" | "map";
 
 export interface MssSitesTableExcelPayload {
   headers: string[];
@@ -539,6 +540,12 @@ export const MssSitesTablePreview = forwardRef<MssSitesTablePreviewHandle, MssSi
             rows={filteredRows}
             totalRowCount={scopedRows.length}
             scope={scope}
+          />
+        ) : viewMode === "map" ? (
+          <ProjectsMapView
+            headers={table.headers}
+            rows={filteredRows}
+            totalFilteredCount={filteredRows.length}
           />
         ) : (
           <table className="mss-sites-table">
