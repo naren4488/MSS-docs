@@ -31,29 +31,26 @@ export interface AgreementClientRow {
   workStatus: string;
   /** Optional note under the client name (e.g. first-site rate exception). */
   remark: string;
-  /** Loan amount expected for the file (register LOAN). */
+  /** Deal with client — loan portion (register LOAN). */
   loanExpected: string;
-  /** Cash amount expected for the file (register CASH). */
+  /** Deal with client — cash portion (register CASH). */
   cashExpected: string;
   /** Loan received so far (1st + 2nd installment amounts). */
   loanReceived: string;
   /** Cash received by MSS so far (register CASH TO MSS). */
   cashReceived: string;
-  /** Total payment received (register TOTAL PAYMENT RECIVED). */
+  /** Total payment received (loan + cash parts; may mirror register TOTAL). */
   totalReceived: string;
-  /** Loan still pending (register BANK DUE). */
+  /** Loan still pending from bank (register BANK DUE) — assumed to land eventually. */
   loanPending: string;
-  /** Cash still pending (register CASH DUE FROM CLIENT). */
+  /** Cash still due to MSS (register CASH DUE TO MSS); kept for sync / legacy. */
   cashPending: string;
   /**
-   * Extra amount received beyond the file deal that MSS will return
-   * (shown when netDueToMss is negative).
+   * Legacy: surplus to return when register net is negative.
+   * Annexure col 5 now uses deal − (loan received + loan pending + cash received).
    */
   amountToReturn: string;
-  /**
-   * Register NET DUE TO MSS for the file (deal vs what MSS keeps).
-   * Negative = MSS over-collected / surplus to return.
-   */
+  /** Register NET DUE TO MSS (kept for sync / reference). */
   netDueToMss: string;
 }
 

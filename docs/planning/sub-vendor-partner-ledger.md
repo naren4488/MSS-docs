@@ -204,6 +204,13 @@ When implementing:
 
 Append dated notes here. Do not delete older entries — strike through if superseded.
 
+### 2026-10-31 — Satyanarayan register + ledger re-read
+
+- Live re-read Sub Vendor `SATYANARAYAN ` and `BS enterprises`: closings still **+₹1,69,992** and **+₹1,70,761** — no new ledger rows.
+- Live re-read Projects `SATAYNARAYAN JI`: annexure client payment fields refreshed (notably **Narendra Kumar** cash to MSS ₹51,000 / cash due to MSS ₹14,000 / net ₹98,000; **Rishabh** cash due to MSS ₹16,000; cash-due column now uses **CASH DUE TO MSS**).
+- App seeds updated: `satya-narayan-yadav-agreement.ts` (snapshot date). Ledger seed file date bumped only.
+- Re-check: all 15 annexed money fields match live; both ledger row sets match. `partner-mss-payments.ts` was short 4 fuel advances (20 Aug–19 Oct) — added so Satya partner seed closes at **₹1,69,992**.
+
 ### 2026-10-26 — Ajay money refresh; Satyanarayan / BS re-check
 
 - Live re-read Sub Vendor `Ajay`: new DR **₹4,50,000** on **25 Oct 2026** → closing **+₹9,59,590**. Header DR **₹17,60,000** · CR **₹8,00,410**. Everest bills still **₹77,781**.

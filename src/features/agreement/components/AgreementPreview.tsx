@@ -31,16 +31,17 @@ const LABELS: Record<AgreementLanguage, {
   clientHeaders: {
     sno: string;
     name: string;
+    dealWithClient: string;
     dealWithUs: string;
-    expected: string;
     received: string;
-    workStatus: string;
+    /** Col 5: collect from partner or repay after loan so far + pending + cash. */
+    withPartner: string;
     loan: string;
     cash: string;
-    cashToMss: string;
     total: string;
-    toReturn: string;
-    net: string;
+    loanPending: string;
+    toCollect: string;
+    toRepay: string;
     totals: string;
   };
   ledgerHeaders: {
@@ -63,17 +64,17 @@ const LABELS: Record<AgreementLanguage, {
     rateHeaders: { capacity: "Capacity", phase: "Phase", price: "MSS Rate (₹)" },
     clientHeaders: {
       sno: "S.No",
-      name: "Client",
-      dealWithUs: "Deal with us",
-      expected: "To receive (file)",
+      name: "Client / site",
+      dealWithClient: "Deal with client",
+      dealWithUs: "Deal with MSS",
       received: "Received so far",
-      workStatus: "Work status",
+      withPartner: "With Partner",
       loan: "Loan",
       cash: "Cash",
-      cashToMss: "Cash to MSS",
       total: "Total",
-      toReturn: "To return",
-      net: "Net",
+      loanPending: "Loan pending",
+      toCollect: "To collect",
+      toRepay: "To repay",
       totals: "Totals",
     },
     ledgerHeaders: {
@@ -96,17 +97,17 @@ const LABELS: Record<AgreementLanguage, {
     rateHeaders: { capacity: "क्षमता", phase: "फेज़", price: "MSS दर (₹)" },
     clientHeaders: {
       sno: "क्र.",
-      name: "ग्राहक",
-      dealWithUs: "हमसे डील",
-      expected: "प्राप्त होना (फ़ाइल)",
+      name: "ग्राहक / साइट",
+      dealWithClient: "क्लाइंट डील",
+      dealWithUs: "MSS डील",
       received: "अब तक प्राप्त",
-      workStatus: "कार्य स्थिति",
+      withPartner: "पार्टनर के साथ",
       loan: "लोन",
       cash: "नकद",
-      cashToMss: "MSS को नकद",
       total: "कुल",
-      toReturn: "वापसी योग्य",
-      net: "नेट",
+      loanPending: "लोन बकाया",
+      toCollect: "लेना है",
+      toRepay: "वापस करना है",
       totals: "कुल योग",
     },
     ledgerHeaders: {
@@ -607,20 +608,30 @@ function sumAnnexureField(rows: readonly AgreementClientRow[], key: keyof Agreem
   return String(total);
 }
 
-/** Loan + cash received — always prefer this over a stored totalReceived that can drift. */
-function clientRowTotalReceived(row: AgreementClientRow): number {
+/** Loan received so far + cash to MSS so far. */
+function clientRowReceivedSoFar(row: AgreementClientRow): number {
   const fromParts =
     parseAnnexureNumber(row.loanReceived) + parseAnnexureNumber(row.cashReceived);
   if (fromParts > 0) return fromParts;
   return parseAnnexureNumber(row.totalReceived);
 }
 
-/** Register NET DUE TO MSS (falls back to deal − total received). */
-function clientRowNet(row: AgreementClientRow): number {
-  if (String(row.netDueToMss ?? "").trim() !== "") {
-    return parseAnnexureNumber(row.netDueToMss);
-  }
-  return parseAnnexureNumber(row.dealWithUs) - clientRowTotalReceived(row);
+/** Loan still pending from bank (assumed to land eventually). */
+function clientRowLoanPending(row: AgreementClientRow): number {
+  return parseAnnexureNumber(row.loanPending);
+}
+
+/**
+ * With Partner after loan so far + upcoming loan + cash so far vs Deal with MSS.
+ * Positive = collect from partner; negative = repay to partner.
+ */
+function clientRowPartnerSettle(row: AgreementClientRow): number {
+  const deal = parseAnnexureNumber(row.dealWithUs);
+  const projected =
+    parseAnnexureNumber(row.loanReceived) +
+    clientRowLoanPending(row) +
+    parseAnnexureNumber(row.cashReceived);
+  return deal - projected;
 }
 
 function chunkClientRows(rows: AgreementClientRow[], size: number): AgreementClientRow[][] {
@@ -671,41 +682,45 @@ function ClientTable({
   };
 
   const totalsSource = showFooter ? allRows : rows;
-  const totalsNet = totalsSource.reduce((sum, row) => sum + clientRowNet(row), 0);
-  const totalsLoanReceived = sumAnnexureField(totalsSource, "loanReceived");
-  const totalsCashReceived = sumAnnexureField(totalsSource, "cashReceived");
+  const totalsLoanPending = totalsSource.reduce((sum, row) => sum + clientRowLoanPending(row), 0);
+  const totalsPartnerSettle = totalsSource.reduce((sum, row) => sum + clientRowPartnerSettle(row), 0);
   const totals = {
     dealWithUs: sumAnnexureField(totalsSource, "dealWithUs"),
     loanExpected: sumAnnexureField(totalsSource, "loanExpected"),
     cashExpected: sumAnnexureField(totalsSource, "cashExpected"),
-    loanReceived: totalsLoanReceived,
-    cashReceived: totalsCashReceived,
-    totalReceived: String(
-      parseAnnexureNumber(totalsLoanReceived) + parseAnnexureNumber(totalsCashReceived),
-    ),
+    loanReceived: sumAnnexureField(totalsSource, "loanReceived"),
+    cashReceived: sumAnnexureField(totalsSource, "cashReceived"),
   };
 
-  /** Over-collected → To return (red). Still short → Net due (green). Mutually exclusive. */
-  const receivedSettlementLines = (net: number, toReturn = "") => {
-    const lines: { label: string; value: string; strong: true; tone: "danger" | "success" }[] = [];
-    const returnAmount = parseAnnexureNumber(toReturn);
-    if (returnAmount > 0 || net < 0) {
-      lines.push({
-        label: headers.toReturn,
-        value: String(returnAmount > 0 ? returnAmount : Math.abs(net)),
-        strong: true,
-        tone: "danger",
-      });
-      return lines;
-    }
-    if (net > 0) {
-      lines.push({ label: headers.net, value: String(net), strong: true, tone: "success" });
+  const metaLineStyle: CSSProperties = {
+    fontWeight: 500,
+    fontSize: 8.5,
+    color: "#4b5563",
+    lineHeight: 1.35,
+    fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+  };
+
+  const receivedLinesFor = (row: AgreementClientRow) => {
+    const lines: { label: string; value: string; strong?: boolean; tone?: "danger" | "success" }[] = [
+      { label: headers.loan, value: row.loanReceived },
+      { label: headers.cash, value: row.cashReceived },
+    ];
+    const pending = clientRowLoanPending(row);
+    if (pending > 0) {
+      lines.push({ label: headers.loanPending, value: String(pending) });
     }
     return lines;
   };
 
-  // Footer uses combined net only (not sum of per-row To return + Net, which double-counts).
-  const totalsSettlementLines = receivedSettlementLines(totalsNet);
+  const partnerLinesFor = (settle: number) => {
+    if (settle > 0) {
+      return [{ label: headers.toCollect, value: String(settle), strong: true as const, tone: "success" as const }];
+    }
+    if (settle < 0) {
+      return [{ label: headers.toRepay, value: String(Math.abs(settle)), strong: true as const, tone: "danger" as const }];
+    }
+    return [{ label: headers.toCollect, value: "0", strong: true as const }];
+  };
 
   return (
     <table
@@ -719,65 +734,66 @@ function ClientTable({
       <thead>
         <tr>
           <th style={{ ...headerCellStyle, width: "5%" }}>{headers.sno}</th>
-          <th style={{ ...headerCellStyle, width: "24%" }}>{headers.name}</th>
-          <th style={{ ...headerCellStyle, width: "14%", textAlign: "right" }}>{headers.dealWithUs}</th>
-          <th style={{ ...headerCellStyle, width: "18%" }}>{headers.expected}</th>
-          <th style={{ ...headerCellStyle, width: "24%" }}>{headers.received}</th>
-          <th style={{ ...headerCellStyle, width: "15%" }}>{headers.workStatus}</th>
+          <th style={{ ...headerCellStyle, width: "26%" }}>{headers.name}</th>
+          <th style={{ ...headerCellStyle, width: "16%" }}>{headers.dealWithClient}</th>
+          <th style={{ ...headerCellStyle, width: "13%", textAlign: "right" }}>{headers.dealWithUs}</th>
+          <th style={{ ...headerCellStyle, width: "22%" }}>{headers.received}</th>
+          <th style={{ ...headerCellStyle, width: "18%" }}>{headers.withPartner}</th>
         </tr>
       </thead>
       <tbody>
         {rows.map((row, index) => {
-          const metaParts = [row.capacity?.trim(), row.phase?.trim(), row.kNo?.trim() ? `K.NO ${row.kNo.trim()}` : ""]
-            .filter(Boolean)
-            .join(" · ");
-          const net = clientRowNet(row);
-          const receivedLines = [
-            { label: headers.loan, value: row.loanReceived },
-            { label: headers.cashToMss, value: row.cashReceived },
-            { label: headers.total, value: String(clientRowTotalReceived(row)), strong: true },
-            ...receivedSettlementLines(net, row.amountToReturn),
-          ];
+          const capacity = row.capacity?.trim() ?? "";
+          const phase = row.phase?.trim() ?? "";
+          const kNo = row.kNo?.trim() ?? "";
+          const remark = row.remark?.trim() ?? "";
+          const settle = clientRowPartnerSettle(row);
           return (
             <tr key={row.id}>
               <td style={cellStyle}>{startIndex + index + 1}</td>
               <td style={cellStyle}>
                 <div style={{ fontWeight: 700, color: "#152036", lineHeight: 1.3 }}>{row.name || "—"}</div>
-                {metaParts ? (
+                {capacity ? <div style={{ ...metaLineStyle, marginTop: 3 }}>{capacity}</div> : null}
+                {phase ? <div style={metaLineStyle}>{phase}</div> : null}
+                {kNo ? <div style={metaLineStyle}>{`K.NO ${kNo}`}</div> : null}
+                {remark ? (
                   <div
                     style={{
-                      marginTop: 3,
+                      marginTop: capacity || phase || kNo ? 4 : 3,
                       fontWeight: 500,
                       fontSize: 8.5,
                       color: "#4b5563",
-                      lineHeight: 1.4,
-                      fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+                      lineHeight: 1.35,
                     }}
                   >
-                    {metaParts}
+                    {remark}
                   </div>
                 ) : null}
-                {row.remark?.trim() ? (
-                  <div style={{ marginTop: 4, fontWeight: 500, fontSize: 8.5, color: "#4b5563", lineHeight: 1.4 }}>
-                    {row.remark.trim()}
-                  </div>
-                ) : null}
-              </td>
-              <td style={{ ...cellStyle, textAlign: "right", fontWeight: 700 }}>
-                {formatAnnexureAmount(row.dealWithUs)}
               </td>
               <td style={cellStyle}>
                 <MoneyStack
                   lines={[
                     { label: headers.loan, value: row.loanExpected },
                     { label: headers.cash, value: row.cashExpected },
+                    {
+                      label: headers.total,
+                      value: String(
+                        parseAnnexureNumber(row.loanExpected) + parseAnnexureNumber(row.cashExpected),
+                      ),
+                      strong: true,
+                    },
                   ]}
                 />
               </td>
-              <td style={cellStyle}>
-                <MoneyStack lines={receivedLines} />
+              <td style={{ ...cellStyle, textAlign: "right", fontWeight: 700 }}>
+                {formatAnnexureAmount(row.dealWithUs)}
               </td>
-              <td style={{ ...cellStyle, fontSize: 9, lineHeight: 1.35 }}>{row.workStatus || "—"}</td>
+              <td style={cellStyle}>
+                <MoneyStack lines={receivedLinesFor(row)} />
+              </td>
+              <td style={cellStyle}>
+                <MoneyStack lines={partnerLinesFor(settle)} />
+              </td>
             </tr>
           );
         })}
@@ -788,26 +804,36 @@ function ClientTable({
             <td style={footerCellStyle} colSpan={2}>
               {headers.totals}
             </td>
-            <td style={{ ...footerCellStyle, textAlign: "right" }}>{formatAnnexureAmount(totals.dealWithUs)}</td>
             <td style={footerCellStyle}>
               <MoneyStack
                 lines={[
                   { label: headers.loan, value: totals.loanExpected },
                   { label: headers.cash, value: totals.cashExpected },
+                  {
+                    label: headers.total,
+                    value: String(
+                      parseAnnexureNumber(totals.loanExpected) + parseAnnexureNumber(totals.cashExpected),
+                    ),
+                    strong: true,
+                  },
                 ]}
               />
             </td>
+            <td style={{ ...footerCellStyle, textAlign: "right" }}>{formatAnnexureAmount(totals.dealWithUs)}</td>
             <td style={footerCellStyle}>
               <MoneyStack
                 lines={[
                   { label: headers.loan, value: totals.loanReceived },
-                  { label: headers.cashToMss, value: totals.cashReceived },
-                  { label: headers.total, value: totals.totalReceived, strong: true },
-                  ...totalsSettlementLines,
+                  { label: headers.cash, value: totals.cashReceived },
+                  ...(totalsLoanPending > 0
+                    ? [{ label: headers.loanPending, value: String(totalsLoanPending) }]
+                    : []),
                 ]}
               />
             </td>
-            <td style={footerCellStyle} />
+            <td style={footerCellStyle}>
+              <MoneyStack lines={partnerLinesFor(totalsPartnerSettle)} />
+            </td>
           </tr>
         </tfoot>
       ) : null}

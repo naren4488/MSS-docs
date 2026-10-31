@@ -33,8 +33,8 @@ function parseMoney(value: string): number {
 }
 
 /**
- * Prefer register NET DUE TO MSS. When negative, To return = |net|.
- * Negative register CASH is not shown under expected/pending (surfaced via To return / net).
+ * Clamp negative cash expected/pending for display.
+ * Partner settle (col 5) = deal with MSS − (loan received + loan pending + cash received).
  */
 function applyRegisterNetSettlement(row: Omit<AgreementClientRow, "id">): Omit<AgreementClientRow, "id"> {
   const net = parseMoney(row.netDueToMss);
@@ -50,15 +50,24 @@ function applyRegisterNetSettlement(row: Omit<AgreementClientRow, "id">): Omit<A
   };
 }
 
-function fileNetAmount(row: Pick<AgreementClientRow, "netDueToMss">): number {
-  return parseMoney(row.netDueToMss);
+/** Deal with MSS − (loan so far + upcoming loan + cash so far). + collect / − repay. */
+function partnerSettleAmount(
+  row: Pick<AgreementClientRow, "dealWithUs" | "loanReceived" | "loanPending" | "cashReceived">,
+): number {
+  return (
+    parseMoney(row.dealWithUs) -
+    parseMoney(row.loanReceived) -
+    parseMoney(row.loanPending) -
+    parseMoney(row.cashReceived)
+  );
 }
 
 /**
- * Live MSS register · SATAYNARAYAN JI (snapshot 2026-10-26).
+ * Live MSS register · SATAYNARAYAN JI (snapshot 2026-10-31).
+ * Cash due uses register CASH DUE TO MSS (not CASH DUE FROM CLIENT).
  * Annexure lists only sites with work status I&C Completed or Structure Work
  * (excludes Work Not Started Yet / Project On Hold / empty).
- * Loan / cash expected, received, and pending follow the live register columns.
+ * Loan / cash expected & received, Bank due, and CASH DUE TO MSS follow the live register.
  */
 const SATYA_NARAYAN_VENDOR_CODE_CLIENTS: Omit<AgreementClientRow, "id">[] = [
   {
@@ -68,8 +77,7 @@ const SATYA_NARAYAN_VENDOR_CODE_CLIENTS: Omit<AgreementClientRow, "id">[] = [
     kNo: "211543033252",
     dealWithUs: "165000",
     workStatus: "I&C Completed",
-    remark:
-      "First site under this arrangement. Rates were lower at that time, so the deal of ₹1,65,000 is correct (not the current ₹1,70,000 card).",
+    remark: "Exceptional deal ₹1,65,000 · 15k extra expense from MSS side",
     loanExpected: "180000",
     cashExpected: "0",
     loanReceived: "180000",
@@ -130,7 +138,7 @@ const SATYA_NARAYAN_VENDOR_CODE_CLIENTS: Omit<AgreementClientRow, "id">[] = [
     cashReceived: "0",
     totalReceived: "200000",
     loanPending: "0",
-    cashPending: "55000",
+    cashPending: "50000",
     amountToReturn: "0",
     netDueToMss: "50000",
   },
@@ -148,7 +156,7 @@ const SATYA_NARAYAN_VENDOR_CODE_CLIENTS: Omit<AgreementClientRow, "id">[] = [
     cashReceived: "0",
     totalReceived: "200000",
     loanPending: "0",
-    cashPending: "155000",
+    cashPending: "100000",
     amountToReturn: "0",
     netDueToMss: "100000",
   },
@@ -202,7 +210,7 @@ const SATYA_NARAYAN_VENDOR_CODE_CLIENTS: Omit<AgreementClientRow, "id">[] = [
     cashReceived: "0",
     totalReceived: "200000",
     loanPending: "0",
-    cashPending: "70000",
+    cashPending: "65000",
     amountToReturn: "0",
     netDueToMss: "65000",
   },
@@ -274,7 +282,7 @@ const SATYA_NARAYAN_VENDOR_CODE_CLIENTS: Omit<AgreementClientRow, "id">[] = [
     cashReceived: "34000",
     totalReceived: "234000",
     loanPending: "0",
-    cashPending: "36000",
+    cashPending: "16000",
     amountToReturn: "0",
     netDueToMss: "16000",
   },
@@ -307,12 +315,12 @@ const SATYA_NARAYAN_VENDOR_CODE_CLIENTS: Omit<AgreementClientRow, "id">[] = [
     loanExpected: "200000",
     cashExpected: "78000",
     loanReceived: "116000",
-    cashReceived: "0",
-    totalReceived: "116000",
+    cashReceived: "51000",
+    totalReceived: "167000",
     loanPending: "84000",
-    cashPending: "78000",
+    cashPending: "14000",
     amountToReturn: "0",
-    netDueToMss: "149000",
+    netDueToMss: "98000",
   },
   {
     name: "Lalchand Verma",
@@ -328,7 +336,7 @@ const SATYA_NARAYAN_VENDOR_CODE_CLIENTS: Omit<AgreementClientRow, "id">[] = [
     cashReceived: "0",
     totalReceived: "0",
     loanPending: "0",
-    cashPending: "40000",
+    cashPending: "30000",
     amountToReturn: "0",
     netDueToMss: "30000",
   },
@@ -350,9 +358,12 @@ function createClientRows(): AgreementClientRow[] {
   );
 }
 
-/** Sum of register NET DUE TO MSS across annexed sites. */
+/**
+ * Files net = sum of With Partner (col 5) across annexed sites.
+ * deal with MSS − (loan received + loan pending + cash received).
+ */
 const SATYA_NARAYAN_FILES_NET = SATYA_NARAYAN_VENDOR_CODE_CLIENTS.reduce(
-  (sum, row) => sum + fileNetAmount(row),
+  (sum, row) => sum + partnerSettleAmount(row),
   0,
 );
 
@@ -439,13 +450,13 @@ function createSatyaNarayanYadavAgreementData() {
     showClientSchedule: true,
     clientScheduleHeading: "Annexure — Clients Logged under Vendor Code",
     clientScheduleIntro:
-      "The Parties have worked, and continue to work, on the fixed-rate basis described in this Agreement: the Partner brings the Project and collects payment; MSS executes end to end; the Partner earns commission / margin. The following clients / sites were logged or enrolled by the Partner under the Vendor Code (MSS register · SATAYNARAYAN JI) and are listed here for identification and record. Only sites with work status I&C Completed or Structure Work are included. For each site: (i) deal with MSS; (ii) net = register NET DUE TO MSS (negative when MSS is over-collected); (iii) loan and cash expected / received / pending; and (iv) To return when net is negative. Totals and the Settlement summary use the sum of these nets. The listed sites remain subject to the customer-service, O&M, warranty and indemnity obligations of this Agreement where applicable.",
+      "The Parties have worked, and continue to work, on the fixed-rate basis described in this Agreement: the Partner brings the Project and collects payment; MSS executes end to end; the Partner earns commission / margin. The following clients / sites were logged or enrolled by the Partner under the Vendor Code (MSS register · SATAYNARAYAN JI) and are listed here for identification and record. Only sites with work status I&C Completed or Structure Work are included. For each site the annexure shows five columns: (1) client / site details; (2) deal with client (loan and cash); (3) deal with MSS; (4) amount received so far (loan and cash), plus any loan still pending from the bank (treated as expected to land); and (5) amount to collect from the Partner or repay to the Partner after loan so far, upcoming loan and cash so far. The listed sites remain subject to the customer-service, O&M, warranty and indemnity obligations of this Agreement where applicable.",
     clientRows: createClientRows(),
     otherClientScheduleHeading: "",
     otherClientScheduleIntro: "",
     otherClientRows: [],
     clientScheduleNote:
-      "This annexure is for identification and record only. It does not alter the fixed-rate commercial terms or the division of roles (Partner: bring project + collect payment; MSS: end-to-end execution). Figures are as per the live project register. Net for each file follows the register NET DUE TO MSS. When that net is negative, the surplus is shown as To return (e.g. Raj Kumar Yadav: deal ₹1,70,000 vs loan received ₹2,11,000 → net −₹41,000).",
+      "This annexure is for identification and record only. It does not alter the fixed-rate commercial terms or the division of roles (Partner: bring project + collect payment; MSS: end-to-end execution). Figures are as per the live project register. With Partner = Deal with MSS − (loan received + loan pending + cash received). Positive means To collect from the Partner; negative means To repay to the Partner.",
     showLedgerAnnexure: true,
     ledgerAnnexureHeading: "Annexure — Sub Vendor Payment Ledgers",
     ledgerAnnexureIntro:
@@ -456,11 +467,11 @@ function createSatyaNarayanYadavAgreementData() {
     showSettlementSummary: true,
     settlementSummaryHeading: "Settlement summary — amount due",
     settlementSummaryIntro:
-      "Files net is the sum of register NET DUE TO MSS across the annexed sites (over-collections count as negative). Adding the two Sub Vendor ledger closings gives the amount due / asked:",
+      "Files net is the sum of With Partner across the annexed sites (Deal with MSS − loan received − loan pending − cash received). Adding the two Sub Vendor ledger closings gives the amount due / asked:",
     settlementLines: [
       {
         id: "settlement-files-net",
-        label: "Net for files (NET DUE TO MSS)",
+        label: "Net for files (With Partner)",
         amount: String(SATYA_NARAYAN_FILES_NET),
       },
       {
@@ -487,6 +498,6 @@ export const satyaNarayanYadavAgreement: AgreementRecord = {
   id: SATYA_NARAYAN_YADAV_AGREEMENT_ID,
   name: "Satya Narayan Yadav — Fixed Rate Partnership Agreement",
   createdAt: "2026-09-28T00:00:00Z",
-  updatedAt: "2026-09-28T00:00:00Z",
+  updatedAt: "2026-10-31T00:00:00Z",
   content: createSatyaNarayanYadavAgreementData(),
 };

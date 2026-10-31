@@ -44,9 +44,20 @@ interface MapProjectPoint {
   copyText: string;
 }
 
+interface MapMarkerGroup {
+  key: string;
+  lat: number;
+  lng: number;
+  points: MapProjectPoint[];
+}
+
 function cell(row: readonly string[], index: number): string {
   if (index < 0 || index >= row.length) return "";
   return (row[index] ?? "").trim();
+}
+
+function coordKey(lat: number, lng: number): string {
+  return `${lat.toFixed(6)},${lng.toFixed(6)}`;
 }
 
 function buildMapPoints(
@@ -85,35 +96,61 @@ function buildMapPoints(
   return { points, skippedCount };
 }
 
-const pinIcon = L.divIcon({
-  className: "projects-map-pin",
-  html: `<span class="projects-map-pin-dot" aria-hidden="true"></span>`,
-  iconSize: [18, 18],
-  iconAnchor: [9, 9],
-  popupAnchor: [0, -10],
-});
+function groupPointsByCoordinates(points: readonly MapProjectPoint[]): MapMarkerGroup[] {
+  const groups = new Map<string, MapMarkerGroup>();
 
-function FitToPoints({ points }: { points: readonly MapProjectPoint[] }) {
+  for (const point of points) {
+    const key = coordKey(point.lat, point.lng);
+    const existing = groups.get(key);
+    if (existing) {
+      existing.points.push(point);
+      continue;
+    }
+    groups.set(key, {
+      key,
+      lat: point.lat,
+      lng: point.lng,
+      points: [point],
+    });
+  }
+
+  return [...groups.values()];
+}
+
+function createPinIcon(count: number): L.DivIcon {
+  const multiClass = count > 1 ? " projects-map-pin--multi" : "";
+  const badge =
+    count > 1 ? `<span class="projects-map-pin-count">${count > 9 ? "9+" : count}</span>` : "";
+  return L.divIcon({
+    className: `projects-map-pin${multiClass}`,
+    html: `<span class="projects-map-pin-dot" aria-hidden="true"></span>${badge}`,
+    iconSize: count > 1 ? [22, 22] : [18, 18],
+    iconAnchor: count > 1 ? [11, 11] : [9, 9],
+    popupAnchor: [0, -10],
+  });
+}
+
+function FitToGroups({ groups }: { groups: readonly MapMarkerGroup[] }) {
   const map = useMap();
-  const signature = points.map((point) => `${point.lat},${point.lng}`).join("|");
+  const signature = groups.map((group) => group.key).join("|");
 
   useEffect(() => {
-    if (points.length === 0) {
+    if (groups.length === 0) {
       map.setView(DEFAULT_CENTER, DEFAULT_ZOOM);
       return;
     }
-    if (points.length === 1) {
-      map.setView([points[0].lat, points[0].lng], 14);
+    if (groups.length === 1) {
+      map.setView([groups[0].lat, groups[0].lng], 14);
       return;
     }
-    const bounds = L.latLngBounds(points.map((point) => [point.lat, point.lng] as [number, number]));
+    const bounds = L.latLngBounds(groups.map((group) => [group.lat, group.lng] as [number, number]));
     map.fitBounds(bounds, { padding: [48, 48], maxZoom: 15 });
-  }, [map, points, signature]);
+  }, [map, groups, signature]);
 
   return null;
 }
 
-function MapPointPopup({ point }: { point: MapProjectPoint }) {
+function ProjectDetails({ point }: { point: MapProjectPoint }) {
   const [copied, setCopied] = useState(false);
 
   async function handleCopy() {
@@ -181,8 +218,56 @@ function MapPointPopup({ point }: { point: MapProjectPoint }) {
   );
 }
 
+function MapGroupPopup({ group }: { group: MapMarkerGroup }) {
+  if (group.points.length === 1) {
+    return <ProjectDetails point={group.points[0]} />;
+  }
+
+  return (
+    <div className="projects-map-popup-stack">
+      <p className="projects-map-popup-stack-title">
+        {group.points.length} projects at this location
+      </p>
+      {group.points.map((point) => (
+        <div key={point.key} className="projects-map-popup-stack-item">
+          <ProjectDetails point={point} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function MapGroupTooltip({ group }: { group: MapMarkerGroup }) {
+  return (
+    <div className="projects-map-tooltip-body">
+      {group.points.length > 1 ? (
+        <strong className="projects-map-tooltip-count">
+          {group.points.length} projects here
+        </strong>
+      ) : null}
+      {group.points.map((point) => (
+        <div key={point.key} className="projects-map-tooltip-item">
+          <strong>{point.name}</strong>
+          {point.system ? <span>{point.system}</span> : null}
+          {point.contact ? <span>{point.contact}</span> : null}
+          {point.projectType || point.vendor ? (
+            <span>{[point.projectType, point.vendor].filter(Boolean).join(" · ")}</span>
+          ) : null}
+          {point.location ? <span>{point.location}</span> : null}
+          {point.workStatus ? <span className="projects-map-tooltip-status">{point.workStatus}</span> : null}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function ProjectsMapView({ headers, rows, totalFilteredCount }: ProjectsMapViewProps) {
   const { points, skippedCount } = useMemo(() => buildMapPoints(headers, rows), [headers, rows]);
+  const groups = useMemo(() => groupPointsByCoordinates(points), [points]);
+  const sharedLocationCount = useMemo(
+    () => groups.reduce((sum, group) => sum + (group.points.length > 1 ? group.points.length : 0), 0),
+    [groups],
+  );
 
   if (points.length === 0) {
     return (
@@ -204,13 +289,22 @@ export function ProjectsMapView({ headers, rows, totalFilteredCount }: ProjectsM
         <p className="projects-map-toolbar-count">
           <span className="projects-map-toolbar-value">{points.length}</span>
           {points.length === 1 ? " site on map" : " sites on map"}
+          {groups.length !== points.length ? (
+            <span className="projects-map-toolbar-skipped">
+              · {groups.length} pin{groups.length === 1 ? "" : "s"}
+              {sharedLocationCount > 0 ? ` (${sharedLocationCount} sharing a location)` : ""}
+            </span>
+          ) : null}
           {skippedCount > 0 ? (
             <span className="projects-map-toolbar-skipped">
               · {skippedCount} without plottable GPS hidden
             </span>
           ) : null}
         </p>
-        <p className="projects-map-toolbar-hint">Hover a pin for a quick look · click for full details</p>
+        <p className="projects-map-toolbar-hint">
+          Hover a pin for a quick look · click for full details
+          {sharedLocationCount > 0 ? " · shared pins list every project" : ""}
+        </p>
       </div>
       <div className="projects-map-frame">
         <MapContainer
@@ -223,25 +317,27 @@ export function ProjectsMapView({ headers, rows, totalFilteredCount }: ProjectsM
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
-          <FitToPoints points={points} />
-          {points.map((point) => (
-            <Marker key={point.key} position={[point.lat, point.lng]} icon={pinIcon}>
-              <Tooltip direction="top" offset={[0, -8]} opacity={1} className="projects-map-tooltip">
-                <div className="projects-map-tooltip-body">
-                  <strong>{point.name}</strong>
-                  {point.system ? <span>{point.system}</span> : null}
-                  {point.contact ? <span>{point.contact}</span> : null}
-                  {point.projectType || point.vendor ? (
-                    <span>
-                      {[point.projectType, point.vendor].filter(Boolean).join(" · ")}
-                    </span>
-                  ) : null}
-                  {point.location ? <span>{point.location}</span> : null}
-                  {point.workStatus ? <span className="projects-map-tooltip-status">{point.workStatus}</span> : null}
-                </div>
+          <FitToGroups groups={groups} />
+          {groups.map((group) => (
+            <Marker
+              key={group.key}
+              position={[group.lat, group.lng]}
+              icon={createPinIcon(group.points.length)}
+            >
+              <Tooltip
+                direction="top"
+                offset={[0, -8]}
+                opacity={1}
+                className="projects-map-tooltip"
+              >
+                <MapGroupTooltip group={group} />
               </Tooltip>
-              <Popup maxWidth={280} minWidth={220} className="projects-map-leaflet-popup">
-                <MapPointPopup point={point} />
+              <Popup
+                maxWidth={group.points.length > 1 ? 320 : 280}
+                minWidth={220}
+                className="projects-map-leaflet-popup"
+              >
+                <MapGroupPopup group={group} />
               </Popup>
             </Marker>
           ))}
