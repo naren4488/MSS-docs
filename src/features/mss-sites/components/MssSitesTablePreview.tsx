@@ -522,7 +522,7 @@ export const MssSitesTablePreview = forwardRef<MssSitesTablePreviewHandle, MssSi
         />
       </div>
 
-      <div className="mss-sites-table-wrap">
+      <div className={`mss-sites-table-wrap${viewMode === "map" ? " mss-sites-table-wrap--map" : ""}`}>
         {filteredRows.length === 0 ? (
           <div className="projects-empty-filter">
             <p className="projects-empty-filter-title">No projects match your filters</p>

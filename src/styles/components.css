@@ -1573,22 +1573,44 @@
   border-radius: 12px;
   overflow: hidden;
   background: #eef2f7;
+  isolation: isolate;
 }
 
-.projects-map-leaflet {
+.projects-map-leaflet.leaflet-container {
   width: 100%;
   height: 100%;
   font-family: inherit;
+  background: #eef2f7;
 }
 
-.projects-map-pin {
-  position: relative;
-  background: transparent;
-  border: 0;
+/* Keep Leaflet panes/markers from inheriting app layout quirks. */
+.projects-map-leaflet .leaflet-tile-pane,
+.projects-map-leaflet .leaflet-overlay-pane,
+.projects-map-leaflet .leaflet-marker-pane,
+.projects-map-leaflet .leaflet-tooltip-pane,
+.projects-map-leaflet .leaflet-popup-pane {
+  transform-origin: 0 0;
+}
+
+.projects-map-leaflet img.leaflet-tile {
+  max-width: none !important;
+  max-height: none !important;
+}
+
+.projects-map-pin.leaflet-div-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 .projects-map-pin-dot {
   display: block;
+  box-sizing: border-box;
   width: 16px;
   height: 16px;
   border-radius: 50%;
@@ -1605,8 +1627,9 @@
 
 .projects-map-pin-count {
   position: absolute;
-  top: -4px;
-  right: -5px;
+  top: -5px;
+  right: -6px;
+  z-index: 2;
   min-width: 16px;
   height: 16px;
   padding: 0 4px;
@@ -1618,6 +1641,11 @@
   line-height: 16px;
   text-align: center;
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.35);
+  pointer-events: none;
+}
+
+.mss-sites-table-wrap--map {
+  overflow: visible;
 }
 
 .projects-map-tooltip-body {

@@ -117,34 +117,54 @@ function groupPointsByCoordinates(points: readonly MapProjectPoint[]): MapMarker
   return [...groups.values()];
 }
 
-function createPinIcon(count: number): L.DivIcon {
-  const multiClass = count > 1 ? " projects-map-pin--multi" : "";
-  const badge =
-    count > 1 ? `<span class="projects-map-pin-count">${count > 9 ? "9+" : count}</span>` : "";
-  return L.divIcon({
-    className: `projects-map-pin${multiClass}`,
-    html: `<span class="projects-map-pin-dot" aria-hidden="true"></span>${badge}`,
-    iconSize: count > 1 ? [22, 22] : [18, 18],
-    iconAnchor: count > 1 ? [11, 11] : [9, 9],
+const PIN_ICON_SINGLE = L.divIcon({
+  className: "leaflet-div-icon projects-map-pin",
+  html: `<span class="projects-map-pin-dot" aria-hidden="true"></span>`,
+  iconSize: [16, 16],
+  iconAnchor: [8, 8],
+  popupAnchor: [0, -8],
+  tooltipAnchor: [0, -8],
+});
+
+const multiPinIconCache = new Map<number, L.DivIcon>();
+
+function pinIconForCount(count: number): L.DivIcon {
+  if (count <= 1) return PIN_ICON_SINGLE;
+  const cached = multiPinIconCache.get(count);
+  if (cached) return cached;
+  const label = count > 9 ? "9+" : String(count);
+  const icon = L.divIcon({
+    className: "leaflet-div-icon projects-map-pin projects-map-pin--multi",
+    html: `<span class="projects-map-pin-dot" aria-hidden="true"></span><span class="projects-map-pin-count">${label}</span>`,
+    iconSize: [20, 20],
+    iconAnchor: [10, 10],
     popupAnchor: [0, -10],
+    tooltipAnchor: [0, -10],
   });
+  multiPinIconCache.set(count, icon);
+  return icon;
 }
 
 function FitToGroups({ groups }: { groups: readonly MapMarkerGroup[] }) {
   const map = useMap();
-  const signature = groups.map((group) => group.key).join("|");
+  const signature = groups.map((group) => `${group.key}:${group.points.length}`).join("|");
 
   useEffect(() => {
-    if (groups.length === 0) {
-      map.setView(DEFAULT_CENTER, DEFAULT_ZOOM);
-      return;
-    }
-    if (groups.length === 1) {
-      map.setView([groups[0].lat, groups[0].lng], 14);
-      return;
-    }
-    const bounds = L.latLngBounds(groups.map((group) => [group.lat, group.lng] as [number, number]));
-    map.fitBounds(bounds, { padding: [48, 48], maxZoom: 15 });
+    const frame = window.requestAnimationFrame(() => {
+      // Recalculate after layout — wrong size makes markers drift while zooming.
+      map.invalidateSize();
+      if (groups.length === 0) {
+        map.setView(DEFAULT_CENTER, DEFAULT_ZOOM);
+        return;
+      }
+      if (groups.length === 1) {
+        map.setView([groups[0].lat, groups[0].lng], 14);
+        return;
+      }
+      const bounds = L.latLngBounds(groups.map((group) => [group.lat, group.lng] as [number, number]));
+      map.fitBounds(bounds, { padding: [48, 48], maxZoom: 15 });
+    });
+    return () => window.cancelAnimationFrame(frame);
   }, [map, groups, signature]);
 
   return null;
@@ -322,7 +342,7 @@ export function ProjectsMapView({ headers, rows, totalFilteredCount }: ProjectsM
             <Marker
               key={group.key}
               position={[group.lat, group.lng]}
-              icon={createPinIcon(group.points.length)}
+              icon={group.points.length > 1 ? pinIconForCount(group.points.length) : PIN_ICON_SINGLE}
             >
               <Tooltip
                 direction="top"
