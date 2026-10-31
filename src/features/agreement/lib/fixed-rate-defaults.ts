@@ -96,16 +96,17 @@ export function createEmptyFixedRateFields(): Pick<
 }
 
 export function createDefaultFixedRateCards(): AgreementRateCard[] {
+  // Aligned with MSS Fixed File Rates circular effective 31 Oct 2026.
   return [
-    { id: uuid(), capacity: "3 kW", phase: "1 Phase", price: "170000" },
-    { id: uuid(), capacity: "4 kW", phase: "1 Phase", price: "200000" },
-    { id: uuid(), capacity: "5 kW", phase: "1 Phase", price: "250000" },
-    { id: uuid(), capacity: "5 kW", phase: "3 Phase", price: "265000" },
-    { id: uuid(), capacity: "6 kW", phase: "1 Phase", price: "300000" },
-    { id: uuid(), capacity: "6 kW", phase: "3 Phase", price: "315000" },
-    { id: uuid(), capacity: "7 kW", phase: "3 Phase", price: "340000" },
-    { id: uuid(), capacity: "8 kW", phase: "3 Phase", price: "385000" },
-    { id: uuid(), capacity: "10 kW", phase: "3 Phase", price: "455000" },
+    { id: uuid(), capacity: "3 kW", phase: "1 Phase", price: "160000" },
+    { id: uuid(), capacity: "4 kW", phase: "1 Phase", price: "190000" },
+    { id: uuid(), capacity: "5 kW", phase: "1 Phase", price: "240000" },
+    { id: uuid(), capacity: "5 kW", phase: "3 Phase", price: "250000" },
+    { id: uuid(), capacity: "6 kW", phase: "1 Phase", price: "290000" },
+    { id: uuid(), capacity: "6 kW", phase: "3 Phase", price: "300000" },
+    { id: uuid(), capacity: "7 kW", phase: "3 Phase", price: "330000" },
+    { id: uuid(), capacity: "8 kW", phase: "3 Phase", price: "370000" },
+    { id: uuid(), capacity: "10 kW", phase: "3 Phase", price: "445000" },
   ];
 }
 

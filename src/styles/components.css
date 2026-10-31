@@ -679,8 +679,8 @@
 }
 
 .saved-card-badge--signing {
-  background: rgba(217, 119, 6, 0.14);
-  color: #b45309;
+  background: rgba(124, 58, 237, 0.14);
+  color: #6d28d9;
 }
 
 .saved-card-body h3 {
@@ -747,7 +747,7 @@
 }
 
 .saved-card-fact--signing dd {
-  color: #b45309;
+  color: #6d28d9;
 }
 
 .saved-card-fact-mono {
@@ -768,8 +768,8 @@
 }
 
 .agreement-signed-banner--progress {
-  border-color: rgba(217, 119, 6, 0.28);
-  background: linear-gradient(135deg, rgba(251, 191, 36, 0.14), rgba(255, 251, 235, 0.9));
+  border-color: rgba(124, 58, 237, 0.28);
+  background: linear-gradient(135deg, rgba(167, 139, 250, 0.16), rgba(245, 243, 255, 0.95));
 }
 
 .agreement-signed-banner-pill {
@@ -785,7 +785,7 @@
 }
 
 .agreement-signed-banner-pill--progress {
-  background: #b45309;
+  background: #6d28d9;
 }
 
 .agreement-signed-banner strong {
@@ -796,7 +796,7 @@
 }
 
 .agreement-signed-banner--progress strong {
-  color: #92400e;
+  color: #5b21b6;
 }
 
 .agreement-signed-banner p {
@@ -807,7 +807,7 @@
 }
 
 .agreement-signed-banner--progress p {
-  color: #a16207;
+  color: #6d28d9;
 }
 
 .saved-card-footer {

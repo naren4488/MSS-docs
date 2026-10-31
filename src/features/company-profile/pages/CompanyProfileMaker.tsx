@@ -7,6 +7,7 @@ import {
   createDefaultCompanyProfileData,
   isAnnexureFirm,
   isCompanyFirm,
+  isFileRatesFirm,
   isLetterheadFirm,
   isMseFirm,
   isSiteSurveyFirm,
@@ -25,6 +26,9 @@ function companyDocumentName(data: CompanyProfileData): string {
   const brand = isMseFirm(data.firm) ? "MSE" : "MSS";
   if (isSiteSurveyFirm(data.firm)) {
     return documentDownloadName(data.siteSurvey.customerName, "Site Survey Confirmation", brand);
+  }
+  if (isFileRatesFirm(data.firm)) {
+    return documentDownloadName(data.fileRates.addresseeName || "Satyanarayan", "Fixed File Rates", brand);
   }
   if (isAnnexureFirm(data.firm)) return documentDownloadName("", "Empanelment Annexure", brand);
   if (isLetterheadFirm(data.firm)) return documentDownloadName("", "Letterhead", brand);
@@ -119,6 +123,7 @@ export function CompanyProfileMaker() {
   const letterheadOnly = isLetterheadFirm(data.firm);
   const annexureDoc = isAnnexureFirm(data.firm);
   const siteSurveyDoc = isSiteSurveyFirm(data.firm);
+  const fileRatesDoc = isFileRatesFirm(data.firm);
   const brandShort = isMseFirm(data.firm) ? "MSE" : "MSS";
 
   if (shouldRedirectToList) {
@@ -127,25 +132,31 @@ export function CompanyProfileMaker() {
 
   const editorTitle = siteSurveyDoc
     ? "Site Survey Confirmation"
-    : annexureDoc
-      ? "Empanelment Annexure"
-      : letterheadOnly
-        ? `${brandShort} Letterhead`
-        : "Company Details";
+    : fileRatesDoc
+      ? "File Rates — Satyanarayan"
+      : annexureDoc
+        ? "Empanelment Annexure"
+        : letterheadOnly
+          ? `${brandShort} Letterhead`
+          : "Company Details";
   const editorHelper = siteSurveyDoc
     ? `Site engineer form on ${brandShort} letterhead — measurement, structure, cables, placement and client sign-off.`
-    : annexureDoc
-      ? `Experience certificate, project references and bureau consent printed on ${brandShort} letterhead.`
-      : letterheadOnly
-        ? "Edit the header and footer. Leave the body blank to print stationery, or type a letter."
+    : fileRatesDoc
+      ? "Circular for Satya Narayan Yadav on MSS letterhead — revised Deal-with-MSS / fixed file rates."
+      : annexureDoc
+        ? `Experience certificate, project references and bureau consent printed on ${brandShort} letterhead.`
+        : letterheadOnly
+          ? "Edit the header and footer. Leave the body blank to print stationery, or type a letter."
         : "Fill in the firm's contact, statutory and bank details.";
   const previewTitle = siteSurveyDoc
     ? "Survey Sheet"
-    : annexureDoc
-      ? "Letterhead Annexure"
-      : letterheadOnly
-        ? "Letterhead"
-        : "Shareable Sheet";
+    : fileRatesDoc
+      ? "Satyanarayan File Rates"
+      : annexureDoc
+        ? "Letterhead Annexure"
+        : letterheadOnly
+          ? "Letterhead"
+          : "Shareable Sheet";
 
   return (
     <div className="page-shell page-shell--maker page-shell--maker-agreement">

@@ -5,12 +5,18 @@ import { ImageUploader } from "@/features/offer-letter/components/ImageUploader"
 import {
   getCompanyFirmLabel,
   isAnnexureFirm,
+  isFileRatesFirm,
   isLetterheadFirm,
   isMseFirm,
   isSiteSurveyFirm,
   usesLetterheadChrome,
 } from "../lib/company-profile-defaults";
-import type { CompanyProfileData, EmpanelmentAnnexure, SiteSurveyForm } from "../types/company-profile";
+import type {
+  CompanyProfileData,
+  EmpanelmentAnnexure,
+  FileRatesNotice,
+  SiteSurveyForm,
+} from "../types/company-profile";
 
 interface CompanyProfileEditorProps {
   data: CompanyProfileData;
@@ -89,6 +95,7 @@ export function CompanyProfileEditor({ data, onChange }: CompanyProfileEditorPro
   const letterheadOnly = isLetterheadFirm(data.firm);
   const annexureDoc = isAnnexureFirm(data.firm);
   const siteSurveyDoc = isSiteSurveyFirm(data.firm);
+  const fileRatesDoc = isFileRatesFirm(data.firm);
   const letterheadChrome = usesLetterheadChrome(data.firm);
   const brandShort = isMseFirm(data.firm) ? "MSE" : "MSS";
 
@@ -98,6 +105,15 @@ export function CompanyProfileEditor({ data, onChange }: CompanyProfileEditorPro
 
   function updateSiteSurvey<K extends keyof SiteSurveyForm>(key: K, value: SiteSurveyForm[K]) {
     onChange({ ...data, siteSurvey: { ...data.siteSurvey, [key]: value } });
+  }
+
+  function updateFileRates<K extends keyof FileRatesNotice>(key: K, value: FileRatesNotice[K]) {
+    onChange({ ...data, fileRates: { ...data.fileRates, [key]: value } });
+  }
+
+  function updateFileRateRow(index: number, key: "capacity" | "phase" | "price", value: string) {
+    const rows = data.fileRates.rows.map((row, rowIndex) => (rowIndex === index ? { ...row, [key]: value } : row));
+    updateFileRates("rows", rows);
   }
 
   function updateReference(index: number, key: "details" | "address" | "contactName" | "mobile", value: string) {
@@ -238,6 +254,102 @@ export function CompanyProfileEditor({ data, onChange }: CompanyProfileEditorPro
           </div>
         </AccordionSection>
       )}
+
+      {fileRatesDoc ? (
+        <>
+          <AccordionSection
+            title="Circular"
+            defaultOpen
+            helper="Addressed to Satya Narayan Yadav on MSS letterhead. Rates apply to his new files from the effective date."
+          >
+            <div className="field-grid">
+              <div className="field">
+                <label>Addressee name</label>
+                <input
+                  value={data.fileRates.addresseeName}
+                  onChange={(event) => updateFileRates("addresseeName", event.target.value)}
+                />
+              </div>
+              <div className="field full-span">
+                <label>Addressee detail</label>
+                <textarea
+                  rows={3}
+                  value={data.fileRates.addresseeDetail}
+                  onChange={(event) => updateFileRates("addresseeDetail", event.target.value)}
+                />
+              </div>
+              <div className="field full-span">
+                <label>Subject</label>
+                <input value={data.fileRates.subject} onChange={(event) => updateFileRates("subject", event.target.value)} />
+              </div>
+              <div className="field">
+                <label>Effective date</label>
+                <input
+                  type="date"
+                  value={data.fileRates.effectiveDate}
+                  onChange={(event) => updateFileRates("effectiveDate", event.target.value)}
+                />
+              </div>
+              <div className="field">
+                <label>Issue date</label>
+                <input type="date" value={data.fileRates.date} onChange={(event) => updateFileRates("date", event.target.value)} />
+              </div>
+              <div className="field full-span">
+                <label>Intro</label>
+                <textarea rows={4} value={data.fileRates.intro} onChange={(event) => updateFileRates("intro", event.target.value)} />
+              </div>
+              <div className="field full-span">
+                <label>Closing note</label>
+                <textarea rows={4} value={data.fileRates.closing} onChange={(event) => updateFileRates("closing", event.target.value)} />
+              </div>
+            </div>
+          </AccordionSection>
+
+          <AccordionSection title="Rate table" defaultOpen helper="Deal with MSS / fixed file rates from the handwritten schedule.">
+            <div className="stack" style={{ gap: 10 }}>
+              {data.fileRates.rows.map((row, index) => (
+                <div key={`file-rate-${index}`} className="field-grid">
+                  <div className="field">
+                    <label>Capacity</label>
+                    <input value={row.capacity} onChange={(event) => updateFileRateRow(index, "capacity", event.target.value)} />
+                  </div>
+                  <div className="field">
+                    <label>Phase</label>
+                    <input value={row.phase} onChange={(event) => updateFileRateRow(index, "phase", event.target.value)} />
+                  </div>
+                  <div className="field">
+                    <label>Price (₹)</label>
+                    <input value={row.price} onChange={(event) => updateFileRateRow(index, "price", event.target.value)} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </AccordionSection>
+
+          <AccordionSection title="Signatory" defaultOpen={false}>
+            <div className="field-grid">
+              <div className="field">
+                <label>Name</label>
+                <input
+                  value={data.fileRates.signatoryName}
+                  onChange={(event) => updateFileRates("signatoryName", event.target.value)}
+                />
+              </div>
+              <div className="field">
+                <label>Title</label>
+                <input
+                  value={data.fileRates.signatoryTitle}
+                  onChange={(event) => updateFileRates("signatoryTitle", event.target.value)}
+                />
+              </div>
+              <div className="field">
+                <label>Place</label>
+                <input value={data.fileRates.place} onChange={(event) => updateFileRates("place", event.target.value)} />
+              </div>
+            </div>
+          </AccordionSection>
+        </>
+      ) : null}
 
       {siteSurveyDoc ? (
         <>
@@ -703,7 +815,7 @@ export function CompanyProfileEditor({ data, onChange }: CompanyProfileEditorPro
             </div>
           </AccordionSection>
         </>
-      ) : (
+      ) : fileRatesDoc ? null : (
         <AccordionSection
           title={letterheadOnly ? "Letter Body" : "Notes"}
           defaultOpen={letterheadOnly}

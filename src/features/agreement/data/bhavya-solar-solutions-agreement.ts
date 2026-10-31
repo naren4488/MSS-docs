@@ -32,9 +32,8 @@ export const bhavyaSolarSolutionsAgreement: AgreementRecord = {
   id: "vendor-agreement-bhavya-solar-001",
   name: "Bhavya Solar Solutions — Vendor Code Agreement",
   createdAt: "2026-07-17T00:00:00Z",
-  updatedAt: "2026-07-17T00:00:00Z",
-  signed: true,
-  signedAt: "2026-07-17",
-  signedNote: "Hard copy signed",
+  updatedAt: "2026-10-31T00:00:00Z",
+  signingInProgress: true,
+  signedNote: "Sign in progress · seal pending",
   content: createBhavyaSolarSolutionsAgreementData(),
 };

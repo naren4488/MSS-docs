@@ -32,8 +32,8 @@ export const everestBuildSolarSolutionsAgreement: AgreementRecord = {
   id: "vendor-agreement-everest-build-solar-001",
   name: "Everest Build & Solar Solutions — Vendor Code Agreement",
   createdAt: "2026-09-16T00:00:00Z",
-  updatedAt: "2026-10-26T00:00:00Z",
+  updatedAt: "2026-10-31T00:00:00Z",
   signingInProgress: true,
-  signedNote: "Sign in progress",
+  signedNote: "Sign in progress · seal pending",
   content: createEverestBuildSolarSolutionsAgreementData(),
 };

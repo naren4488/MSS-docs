@@ -13,7 +13,6 @@ import { bhavyaSolarSolutionsAgreement } from "../data/bhavya-solar-solutions-ag
 import { brightSolarAgencyAgreement } from "../data/bright-solar-agency-agreement";
 import { everestBuildSolarSolutionsAgreement } from "../data/everest-build-solar-solutions-agreement";
 import { rjGreenSolarEnergyAgreement } from "../data/rj-green-solar-energy-agreement";
-import { shriPalKumawatAgreement } from "../data/shri-pal-kumawat-agreement";
 import { satyaNarayanYadavAgreement } from "../data/satya-narayan-yadav-agreement";
 import { solarWorldEnergyAgreement } from "../data/solar-world-energy-agreement";
 import { sunsmartGreenEnergyServicesAgreement } from "../data/sunsmart-green-energy-services-agreement";
@@ -22,7 +21,6 @@ import type { AgreementData, AgreementRecord } from "../types/agreement";
 
 function readRecords() {
   return [
-    shriPalKumawatAgreement,
     satyaNarayanYadavAgreement,
     everestBuildSolarSolutionsAgreement,
     tejasPowermaxAgreement,

@@ -6,7 +6,33 @@ export type CompanyFirm =
   | "mse-letterhead"
   | "mse-empanelment-annexure"
   | "mss-site-survey"
-  | "mse-site-survey";
+  | "mse-site-survey"
+  | "mss-file-rates";
+
+/** One row on the fixed file-rate circular (capacity / phase / MSS deal). */
+export interface FileRateRow {
+  capacity: string;
+  phase: string;
+  /** Rupees as digits only, e.g. "160000". */
+  price: string;
+}
+
+/** Circular announcing revised Deal-with-MSS / fixed file rates. */
+export interface FileRatesNotice {
+  /** Partner / recipient name (e.g. Satya Narayan Yadav). */
+  addresseeName: string;
+  /** Partner address / vendor note under the name. */
+  addresseeDetail: string;
+  subject: string;
+  intro: string;
+  closing: string;
+  effectiveDate: string;
+  place: string;
+  date: string;
+  signatoryName: string;
+  signatoryTitle: string;
+  rows: FileRateRow[];
+}
 
 export interface AnnexureProjectReference {
   details: string;
@@ -131,6 +157,7 @@ export interface CompanyProfileData {
   notes: string;
   annexure: EmpanelmentAnnexure;
   siteSurvey: SiteSurveyForm;
+  fileRates: FileRatesNotice;
 
   // Per-section print toggles
   showContact: boolean;

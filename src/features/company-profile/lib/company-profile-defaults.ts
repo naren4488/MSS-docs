@@ -3,6 +3,7 @@ import type {
   CompanyFirm,
   CompanyProfileData,
   EmpanelmentAnnexure,
+  FileRatesNotice,
   SiteSurveyForm,
 } from "../types/company-profile";
 
@@ -49,6 +50,12 @@ export const COMPANY_FIRMS: { id: CompanyFirm; label: string; description: strin
     description:
       "For the site engineer after quotation approval — measurement, structure & cable plan, placement lock-in and client sign-off on MSE letterhead.",
   },
+  {
+    id: "mss-file-rates",
+    label: "MSS File Rates — Satyanarayan",
+    description:
+      "Circular on MSS letterhead for Satya Narayan Yadav — revised Deal-with-MSS / fixed file rates from today.",
+  },
 ];
 
 const COMPANY_FIRM_IDS: CompanyFirm[] = [
@@ -60,6 +67,7 @@ const COMPANY_FIRM_IDS: CompanyFirm[] = [
   "mse-empanelment-annexure",
   "mss-site-survey",
   "mse-site-survey",
+  "mss-file-rates",
 ];
 
 export function isCompanyFirm(value: string | null): value is CompanyFirm {
@@ -78,8 +86,12 @@ export function isSiteSurveyFirm(firm: CompanyFirm): boolean {
   return firm === "mss-site-survey" || firm === "mse-site-survey";
 }
 
+export function isFileRatesFirm(firm: CompanyFirm): boolean {
+  return firm === "mss-file-rates";
+}
+
 export function usesLetterheadChrome(firm: CompanyFirm): boolean {
-  return isLetterheadFirm(firm) || isAnnexureFirm(firm) || isSiteSurveyFirm(firm);
+  return isLetterheadFirm(firm) || isAnnexureFirm(firm) || isSiteSurveyFirm(firm) || isFileRatesFirm(firm);
 }
 
 export function isMseFirm(firm: CompanyFirm): boolean {
@@ -171,6 +183,44 @@ export const SITE_SURVEY_TERMS = [
   "Photos, sketches or mark-ups attached or drawn on this sheet form part of the agreed site record.",
 ] as const;
 
+/** Current MSS Deal-with-MSS / fixed file rates (circular effective 31 Oct 2026). */
+export const DEFAULT_MSS_FILE_RATE_ROWS = [
+  { capacity: "3 kW", phase: "1 Phase", price: "160000" },
+  { capacity: "4 kW", phase: "1 Phase", price: "190000" },
+  { capacity: "5 kW", phase: "1 Phase", price: "240000" },
+  { capacity: "5 kW", phase: "3 Phase", price: "250000" },
+  { capacity: "6 kW", phase: "1 Phase", price: "290000" },
+  { capacity: "6 kW", phase: "3 Phase", price: "300000" },
+  { capacity: "7 kW", phase: "3 Phase", price: "330000" },
+  { capacity: "8 kW", phase: "3 Phase", price: "370000" },
+  { capacity: "10 kW", phase: "3 Phase", price: "445000" },
+] as const;
+
+export function createDefaultFileRates(overrides: Partial<FileRatesNotice> = {}): FileRatesNotice {
+  const today = "2026-10-31";
+  const { rows: overrideRows, ...rest } = overrides;
+  return {
+    addresseeName: "Satya Narayan Yadav",
+    addresseeDetail: "Deva Baba Ki Dhani, Village Sukhalpura, PO Mundoti, Dist. Jaipur, Rajasthan – 303328",
+    subject: "Revised fixed file rates (Deal with MSS) — effective 31 October 2026",
+    intro:
+      "Dear Satya Narayan Ji,\n\nThis is to confirm that with effect from 31 October 2026, all new files logged by you under the fixed-rate partnership with Mahi Solar Solution Private Limited shall be booked as per the Deal with MSS rates in the table below.",
+    closing:
+      "These rates apply to your new files enrolled on or after the effective date and supersede earlier fixed file rates for such new enrollments. Files already logged or under execution continue on their existing deal unless otherwise agreed in writing.\n\nThis circular forms part of the commercial record of our fixed-rate arrangement with you. Kindly acknowledge and keep a copy for your records.",
+    effectiveDate: today,
+    place: "Jaipur",
+    date: today,
+    signatoryName: "Mahendra Kumawat",
+    signatoryTitle: "Director",
+    ...rest,
+    rows: (overrideRows ?? DEFAULT_MSS_FILE_RATE_ROWS.map((row) => ({ ...row }))).map((row) => ({
+      capacity: row.capacity ?? "",
+      phase: row.phase ?? "",
+      price: row.price ?? "",
+    })),
+  };
+}
+
 export function createDefaultSiteSurvey(overrides: Partial<SiteSurveyForm> = {}): SiteSurveyForm {
   return {
     customerName: "",
@@ -256,6 +306,7 @@ export function createDefaultCompanyProfileData(firm: CompanyFirm = "mahi-solar-
     notes: "",
     annexure: createDefaultAnnexure(),
     siteSurvey: createDefaultSiteSurvey(),
+    fileRates: createDefaultFileRates(),
     showContact: true,
     showStatutory: true,
     showBank: true,
@@ -405,6 +456,21 @@ export function createDefaultCompanyProfileData(firm: CompanyFirm = "mahi-solar-
     };
   }
 
+  if (firm === "mss-file-rates") {
+    return {
+      ...mss,
+      title: "",
+      tagline: "",
+      showContact: false,
+      showStatutory: false,
+      showBank: false,
+      showContactPerson: false,
+      showNotes: false,
+      showLetterhead: true,
+      fileRates: createDefaultFileRates(),
+    };
+  }
+
   return mss;
 }
 
@@ -455,6 +521,21 @@ export function normalizeCompanyProfileData(input?: Partial<CompanyProfileData> 
   merged.siteSurvey = {
     ...defaults.siteSurvey,
     ...input?.siteSurvey,
+  };
+  const fileRateDefaults = defaults.fileRates;
+  merged.fileRates = {
+    ...fileRateDefaults,
+    ...input?.fileRates,
+    addresseeName: input?.fileRates?.addresseeName ?? fileRateDefaults.addresseeName,
+    addresseeDetail: input?.fileRates?.addresseeDetail ?? fileRateDefaults.addresseeDetail,
+    rows:
+      input?.fileRates?.rows && input.fileRates.rows.length > 0
+        ? input.fileRates.rows.map((row) => ({
+            capacity: row.capacity ?? "",
+            phase: row.phase ?? "",
+            price: row.price ?? "",
+          }))
+        : fileRateDefaults.rows.map((row) => ({ ...row })),
   };
   return merged;
 }

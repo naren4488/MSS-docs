@@ -499,5 +499,8 @@ export const satyaNarayanYadavAgreement: AgreementRecord = {
   name: "Satya Narayan Yadav — Fixed Rate Partnership Agreement",
   createdAt: "2026-09-28T00:00:00Z",
   updatedAt: "2026-10-31T00:00:00Z",
+  signed: true,
+  signedAt: "2026-10-31",
+  signedNote: "Hard copy signed",
   content: createSatyaNarayanYadavAgreementData(),
 };
