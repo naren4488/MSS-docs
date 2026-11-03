@@ -10,6 +10,7 @@ import {
   filterRowsByQuotationPrepared,
   filterRowsByQuotationSigned,
   filterRowsByVendors,
+  filterRowsByWhosSites,
   filterRowsByWorkStatuses,
   getDefaultSelectedQuotationFlags,
   getDefaultSelectedWorkStatuses,
@@ -20,6 +21,7 @@ import {
   getProjectTypesFromRows,
   getVendorsFromRows,
   getVisibleColumnIndices,
+  getWhosSitesFromRows,
   getWorkStatusesFromRows,
   isProjectPrintHighlightColumn,
   isProjectPdfOmitColumn,
@@ -177,10 +179,12 @@ export const MssSitesTablePreview = forwardRef<MssSitesTablePreviewHandle, MssSi
   );
   const projectTypes = useMemo(() => getProjectTypesFromRows(scopedRows), [scopedRows]);
   const vendors = useMemo(() => getVendorsFromRows(scopedRows), [scopedRows]);
+  const whosSites = useMemo(() => getWhosSitesFromRows(scopedRows), [scopedRows]);
   const workStatuses = useMemo(() => getWorkStatusesFromRows(scopedRows), [scopedRows]);
   const fileIssues = useMemo(() => getFileIssuesFromRows(scopedRows), [scopedRows]);
   const [selectedProjectTypes, setSelectedProjectTypes] = useState<Set<string>>(() => new Set(projectTypes));
   const [selectedVendors, setSelectedVendors] = useState<Set<string>>(() => new Set(vendors));
+  const [selectedWhosSites, setSelectedWhosSites] = useState<Set<string>>(() => new Set(whosSites));
   const [selectedWorkStatuses, setSelectedWorkStatuses] = useState<Set<string>>(() =>
     getDefaultSelectedWorkStatuses(workStatuses),
   );
@@ -210,6 +214,10 @@ export const MssSitesTablePreview = forwardRef<MssSitesTablePreviewHandle, MssSi
   }, [vendors]);
 
   useEffect(() => {
+    setSelectedWhosSites(new Set(whosSites));
+  }, [whosSites]);
+
+  useEffect(() => {
     setSelectedWorkStatuses(getDefaultSelectedWorkStatuses(workStatuses));
   }, [workStatuses]);
 
@@ -225,7 +233,8 @@ export const MssSitesTablePreview = forwardRef<MssSitesTablePreviewHandle, MssSi
 
   const filteredRows = useMemo(() => {
     const byVendor = filterRowsByVendors(scopedRows, selectedVendors);
-    const byType = filterRowsByProjectTypes(byVendor, selectedProjectTypes);
+    const byWhosSite = filterRowsByWhosSites(byVendor, selectedWhosSites);
+    const byType = filterRowsByProjectTypes(byWhosSite, selectedProjectTypes);
     const byStatus = filterRowsByWorkStatuses(byType, selectedWorkStatuses);
     const byFileIssue = filterRowsByFileIssues(byStatus, selectedFileIssues);
     const byDues = filterRowsByNonzeroDues(byFileIssue, selectedNonzeroDues, scope);
@@ -244,6 +253,7 @@ export const MssSitesTablePreview = forwardRef<MssSitesTablePreviewHandle, MssSi
     selectedQuotationPrepared,
     selectedQuotationSigned,
     selectedVendors,
+    selectedWhosSites,
     selectedWorkStatuses,
     scope,
   ]);
@@ -279,6 +289,8 @@ export const MssSitesTablePreview = forwardRef<MssSitesTablePreviewHandle, MssSi
   const workStatusAtDefault = workStatusSelectionMatchesDefault(selectedWorkStatuses, workStatuses);
   const fileIssueAtDefault =
     selectedFileIssues.size === fileIssues.length && fileIssues.every((value) => selectedFileIssues.has(value));
+  const whosSiteAtDefault =
+    selectedWhosSites.size === whosSites.length && whosSites.every((value) => selectedWhosSites.has(value));
 
   const quotationPreparedAtDefault = quotationFlagSelectionMatchesDefault(selectedQuotationPrepared);
   const quotationSignedAtDefault = quotationFlagSelectionMatchesDefault(selectedQuotationSigned);
@@ -286,6 +298,7 @@ export const MssSitesTablePreview = forwardRef<MssSitesTablePreviewHandle, MssSi
   const isFiltered =
     (selectedProjectTypes.size > 0 && selectedProjectTypes.size < projectTypes.length) ||
     (selectedVendors.size > 0 && selectedVendors.size < vendors.length) ||
+    !whosSiteAtDefault ||
     !workStatusAtDefault ||
     !fileIssueAtDefault ||
     selectedNonzeroDues.size > 0 ||
@@ -318,13 +331,14 @@ export const MssSitesTablePreview = forwardRef<MssSitesTablePreviewHandle, MssSi
   const clearAllFilters = useCallback(() => {
     setSelectedProjectTypes(new Set(projectTypes));
     setSelectedVendors(new Set(vendors));
+    setSelectedWhosSites(new Set(whosSites));
     setSelectedWorkStatuses(getDefaultSelectedWorkStatuses(workStatuses));
     setSelectedFileIssues(new Set(fileIssues));
     setSelectedNonzeroDues(new Set());
     setSelectedQuotationPrepared(getDefaultSelectedQuotationFlags());
     setSelectedQuotationSigned(getDefaultSelectedQuotationFlags());
     setClientNameQuery("");
-  }, [fileIssues, projectTypes, vendors, workStatuses]);
+  }, [fileIssues, projectTypes, vendors, whosSites, workStatuses]);
 
   const applySheetTabShortcut = useCallback(
     (shortcut: ProjectSheetTabShortcut) => {
@@ -403,6 +417,7 @@ export const MssSitesTablePreview = forwardRef<MssSitesTablePreviewHandle, MssSi
   }, [filteredRows, selectedRowKeys, table.headers]);
 
   const vendorFilterActive = selectedVendors.size > 0 && selectedVendors.size < vendors.length;
+  const whosSiteFilterActive = !whosSiteAtDefault;
   const partnerFilterActive = selectedProjectTypes.size > 0 && selectedProjectTypes.size < projectTypes.length;
   const statusFilterActive = !workStatusAtDefault;
   const fileIssueFilterActive = !fileIssueAtDefault;
@@ -507,6 +522,15 @@ export const MssSitesTablePreview = forwardRef<MssSitesTablePreviewHandle, MssSi
             allSummaryLabel="All vendors"
             emptyOptionsLabel="No vendors"
             isActive={vendorFilterActive}
+          />
+          <ProjectsMultiselectFilter
+            label="Who's site"
+            options={whosSites}
+            selected={selectedWhosSites}
+            onChange={setSelectedWhosSites}
+            allSummaryLabel="All sites"
+            emptyOptionsLabel="No who's site values"
+            isActive={whosSiteFilterActive}
           />
           <ProjectsMultiselectFilter
             label={registerFilterLabel}

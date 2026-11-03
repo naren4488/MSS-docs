@@ -140,6 +140,10 @@ export const VENDOR_COLUMN = "VENDOR";
 
 export const VENDOR_COLUMN_INDEX = PROJECT_TABLE_HEADERS.indexOf(VENDOR_COLUMN);
 
+export const WHOS_SITE_COLUMN = "Who's site";
+
+export const WHOS_SITE_COLUMN_INDEX = PROJECT_TABLE_HEADERS.indexOf(WHOS_SITE_COLUMN);
+
 export const PROJECT_S_NO_COLUMN_INDEX = PROJECT_TABLE_HEADERS.indexOf("S NO");
 
 export const CLIENT_NAME_COLUMN_INDEX = PROJECT_TABLE_HEADERS.indexOf("NAME");
@@ -281,6 +285,32 @@ export function getCashDueFilterColumnIndex(scope: ProjectsScope): number {
 export const EMPTY_WORK_STATUS_LABEL = "Not set";
 
 export const EMPTY_FILE_ISSUE_LABEL = "Not set";
+
+export const EMPTY_WHOS_SITE_LABEL = "Not set";
+
+export function normalizeWhosSite(value: string): string {
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : EMPTY_WHOS_SITE_LABEL;
+}
+
+export function getWhosSitesFromRows(rows: readonly (readonly string[])[]): string[] {
+  return [...new Set(rows.map((row) => normalizeWhosSite(row[WHOS_SITE_COLUMN_INDEX] ?? "")))].sort((a, b) =>
+    a.localeCompare(b),
+  );
+}
+
+export function filterRowsByWhosSites(
+  rows: readonly (readonly string[])[],
+  selectedWhosSites: ReadonlySet<string>,
+): string[][] {
+  if (selectedWhosSites.size === 0) {
+    return [];
+  }
+
+  return rows
+    .filter((row) => selectedWhosSites.has(normalizeWhosSite(row[WHOS_SITE_COLUMN_INDEX] ?? "")))
+    .map((row) => [...row]);
+}
 
 /** Sheet value kept unselected in the Work status filter by default. */
 const PROJECT_ON_HOLD_WORK_STATUS = "project on hold";

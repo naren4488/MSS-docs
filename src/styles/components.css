@@ -1270,6 +1270,13 @@
   font-weight: 400;
 }
 
+/* Hide native search clear — we render our own X button. */
+.projects-search-input::-webkit-search-cancel-button,
+.projects-search-input::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
 .projects-search-input:hover,
 .projects-search-input:focus {
   border-color: #14306b;
@@ -2973,26 +2980,13 @@
   border-bottom-color: #86efac;
 }
 
-/* Our projects: dues column tints (Bank = yellow, Cash = purple). */
-.mss-sites-table th.mss-sites-table-col--bank-due,
+/* Our projects: dues column tints on body cells only (headers stay navy). */
 .mss-sites-table td.mss-sites-table-col--bank-due {
   background: #fffbeb !important;
 }
 
-.mss-sites-table th.mss-sites-table-col--cash-due,
 .mss-sites-table td.mss-sites-table-col--cash-due {
   background: #f3e8ff !important;
-}
-
-/* Light dues headers need dark label text (thead defaults to white). */
-.mss-sites-table th.mss-sites-table-col--bank-due {
-  color: #92400e !important;
-  border-bottom-color: #f59e0b !important;
-}
-
-.mss-sites-table th.mss-sites-table-col--cash-due {
-  color: #6b21a8 !important;
-  border-bottom-color: #a855f7 !important;
 }
 
 .projects-row-copy-cell {
