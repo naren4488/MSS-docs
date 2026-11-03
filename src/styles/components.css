@@ -2984,6 +2984,17 @@
   background: #f3e8ff !important;
 }
 
+/* Light dues headers need dark label text (thead defaults to white). */
+.mss-sites-table th.mss-sites-table-col--bank-due {
+  color: #92400e !important;
+  border-bottom-color: #f59e0b !important;
+}
+
+.mss-sites-table th.mss-sites-table-col--cash-due {
+  color: #6b21a8 !important;
+  border-bottom-color: #a855f7 !important;
+}
+
 .projects-row-copy-cell {
   display: inline-flex;
   flex-direction: column;

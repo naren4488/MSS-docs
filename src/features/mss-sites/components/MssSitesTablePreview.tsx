@@ -7,8 +7,11 @@ import {
   filterRowsByNonzeroDues,
   filterRowsByProjectsScope,
   filterRowsByProjectTypes,
+  filterRowsByQuotationPrepared,
+  filterRowsByQuotationSigned,
   filterRowsByVendors,
   filterRowsByWorkStatuses,
+  getDefaultSelectedQuotationFlags,
   getDefaultSelectedWorkStatuses,
   getFileIssuesFromRows,
   getHiddenProjectFields,
@@ -21,6 +24,8 @@ import {
   isProjectPrintHighlightColumn,
   isProjectPdfOmitColumn,
   NONZERO_DUES_FILTER_OPTIONS,
+  QUOTATION_FLAG_FILTER_OPTIONS,
+  quotationFlagSelectionMatchesDefault,
   workStatusSelectionMatchesDefault,
   PROJECT_MORE_COLUMN_HEADER,
   PROJECT_S_NO_COLUMN_INDEX,
@@ -181,6 +186,12 @@ export const MssSitesTablePreview = forwardRef<MssSitesTablePreviewHandle, MssSi
   );
   const [selectedFileIssues, setSelectedFileIssues] = useState<Set<string>>(() => new Set(fileIssues));
   const [selectedNonzeroDues, setSelectedNonzeroDues] = useState<Set<string>>(() => new Set());
+  const [selectedQuotationPrepared, setSelectedQuotationPrepared] = useState<Set<string>>(() =>
+    getDefaultSelectedQuotationFlags(),
+  );
+  const [selectedQuotationSigned, setSelectedQuotationSigned] = useState<Set<string>>(() =>
+    getDefaultSelectedQuotationFlags(),
+  );
   const [clientNameQuery, setClientNameQuery] = useState("");
   const [selectedRowKeys, setSelectedRowKeys] = useState<Set<string>>(() => new Set());
   const [bulkCopied, setBulkCopied] = useState(false);
@@ -218,7 +229,11 @@ export const MssSitesTablePreview = forwardRef<MssSitesTablePreviewHandle, MssSi
     const byStatus = filterRowsByWorkStatuses(byType, selectedWorkStatuses);
     const byFileIssue = filterRowsByFileIssues(byStatus, selectedFileIssues);
     const byDues = filterRowsByNonzeroDues(byFileIssue, selectedNonzeroDues, scope);
-    const byName = filterRowsByClientName(byDues, clientNameQuery);
+    const byPrepared =
+      scope === "our" ? filterRowsByQuotationPrepared(byDues, selectedQuotationPrepared) : byDues;
+    const bySigned =
+      scope === "our" ? filterRowsByQuotationSigned(byPrepared, selectedQuotationSigned) : byPrepared;
+    const byName = filterRowsByClientName(bySigned, clientNameQuery);
     return withSequentialSerialNumbers(byName);
   }, [
     clientNameQuery,
@@ -226,6 +241,8 @@ export const MssSitesTablePreview = forwardRef<MssSitesTablePreviewHandle, MssSi
     selectedFileIssues,
     selectedNonzeroDues,
     selectedProjectTypes,
+    selectedQuotationPrepared,
+    selectedQuotationSigned,
     selectedVendors,
     selectedWorkStatuses,
     scope,
@@ -263,12 +280,17 @@ export const MssSitesTablePreview = forwardRef<MssSitesTablePreviewHandle, MssSi
   const fileIssueAtDefault =
     selectedFileIssues.size === fileIssues.length && fileIssues.every((value) => selectedFileIssues.has(value));
 
+  const quotationPreparedAtDefault = quotationFlagSelectionMatchesDefault(selectedQuotationPrepared);
+  const quotationSignedAtDefault = quotationFlagSelectionMatchesDefault(selectedQuotationSigned);
+
   const isFiltered =
     (selectedProjectTypes.size > 0 && selectedProjectTypes.size < projectTypes.length) ||
     (selectedVendors.size > 0 && selectedVendors.size < vendors.length) ||
     !workStatusAtDefault ||
     !fileIssueAtDefault ||
     selectedNonzeroDues.size > 0 ||
+    (scope === "our" && !quotationPreparedAtDefault) ||
+    (scope === "our" && !quotationSignedAtDefault) ||
     clientNameQuery.trim().length > 0;
 
   const columnTotals = useMemo(
@@ -299,6 +321,8 @@ export const MssSitesTablePreview = forwardRef<MssSitesTablePreviewHandle, MssSi
     setSelectedWorkStatuses(getDefaultSelectedWorkStatuses(workStatuses));
     setSelectedFileIssues(new Set(fileIssues));
     setSelectedNonzeroDues(new Set());
+    setSelectedQuotationPrepared(getDefaultSelectedQuotationFlags());
+    setSelectedQuotationSigned(getDefaultSelectedQuotationFlags());
     setClientNameQuery("");
   }, [fileIssues, projectTypes, vendors, workStatuses]);
 
@@ -383,6 +407,8 @@ export const MssSitesTablePreview = forwardRef<MssSitesTablePreviewHandle, MssSi
   const statusFilterActive = !workStatusAtDefault;
   const fileIssueFilterActive = !fileIssueAtDefault;
   const duesFilterActive = selectedNonzeroDues.size > 0;
+  const quotationPreparedFilterActive = scope === "our" && !quotationPreparedAtDefault;
+  const quotationSignedFilterActive = scope === "our" && !quotationSignedAtDefault;
   const searchActive = clientNameQuery.trim().length > 0;
 
   return (
@@ -519,6 +545,28 @@ export const MssSitesTablePreview = forwardRef<MssSitesTablePreviewHandle, MssSi
             emptyOptionsLabel="No options"
             isActive={duesFilterActive}
           />
+          {scope === "our" ? (
+            <>
+              <ProjectsMultiselectFilter
+                label="Quotation prepared"
+                options={[...QUOTATION_FLAG_FILTER_OPTIONS]}
+                selected={selectedQuotationPrepared}
+                onChange={setSelectedQuotationPrepared}
+                allSummaryLabel="All"
+                emptyOptionsLabel="No options"
+                isActive={quotationPreparedFilterActive}
+              />
+              <ProjectsMultiselectFilter
+                label="Quotation signed"
+                options={[...QUOTATION_FLAG_FILTER_OPTIONS]}
+                selected={selectedQuotationSigned}
+                onChange={setSelectedQuotationSigned}
+                allSummaryLabel="All"
+                emptyOptionsLabel="No options"
+                isActive={quotationSignedFilterActive}
+              />
+            </>
+          ) : null}
         </div>
 
         <ProjectsSheetTabFilter

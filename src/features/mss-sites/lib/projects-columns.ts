@@ -174,6 +174,54 @@ export function getOurProjectsQuotationRowTone(
   return null;
 }
 
+/** Yes/No options for Quotation prepared / Quotation signed filters. */
+export const QUOTATION_YES_LABEL = "Yes";
+export const QUOTATION_NO_LABEL = "No";
+
+export const QUOTATION_FLAG_FILTER_OPTIONS = [QUOTATION_YES_LABEL, QUOTATION_NO_LABEL] as const;
+
+export function quotationFlagFilterLabel(value: string | undefined | null): string {
+  return isProjectYesFlag(value) ? QUOTATION_YES_LABEL : QUOTATION_NO_LABEL;
+}
+
+export function getDefaultSelectedQuotationFlags(): Set<string> {
+  return new Set(QUOTATION_FLAG_FILTER_OPTIONS);
+}
+
+export function quotationFlagSelectionMatchesDefault(selected: ReadonlySet<string>): boolean {
+  return (
+    selected.size === QUOTATION_FLAG_FILTER_OPTIONS.length &&
+    QUOTATION_FLAG_FILTER_OPTIONS.every((value) => selected.has(value))
+  );
+}
+
+/** Empty selection = no rows; otherwise match Yes/No for the column. */
+export function filterRowsByQuotationPrepared(
+  rows: readonly (readonly string[])[],
+  selected: ReadonlySet<string>,
+): string[][] {
+  if (selected.size === 0) {
+    return [];
+  }
+
+  return rows
+    .filter((row) => selected.has(quotationFlagFilterLabel(row[QUOTATION_PREPARED_COLUMN_INDEX])))
+    .map((row) => [...row]);
+}
+
+export function filterRowsByQuotationSigned(
+  rows: readonly (readonly string[])[],
+  selected: ReadonlySet<string>,
+): string[][] {
+  if (selected.size === 0) {
+    return [];
+  }
+
+  return rows
+    .filter((row) => selected.has(quotationFlagFilterLabel(row[QUOTATION_SIGNED_COLUMN_INDEX])))
+    .map((row) => [...row]);
+}
+
 export const WORK_STATUS_COLUMN = "WORK STATUS";
 
 export const WORK_STATUS_COLUMN_INDEX = PROJECT_TABLE_HEADERS.indexOf(WORK_STATUS_COLUMN);
