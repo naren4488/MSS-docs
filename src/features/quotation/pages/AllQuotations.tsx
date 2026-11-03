@@ -111,7 +111,9 @@ function CommercialCard({ template }: { template: QuotationTemplateMeta }) {
         <div className="quotation-package-card-sub">
           <p className="quotation-package-card-phase">
             {priced
-              ? `Commercial rooftop · ${template.capacity} ${template.phase}`
+              ? template.customerName?.trim()
+                ? `${template.customerName.trim()} · ${template.capacity} ${template.phase}`
+                : `Commercial rooftop · ${template.capacity} ${template.phase}`
               : `Commercial rooftop · starts at ${template.capacity} ${template.phase}`}
           </p>
         </div>

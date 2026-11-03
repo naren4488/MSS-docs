@@ -12,6 +12,8 @@ import {
   getDefaultSelectedWorkStatuses,
   getFileIssuesFromRows,
   getHiddenProjectFields,
+  getOurProjectsDueColumnTone,
+  getOurProjectsQuotationRowTone,
   getProjectTypesFromRows,
   getVendorsFromRows,
   getVisibleColumnIndices,
@@ -145,13 +147,18 @@ const totalsSNoTdStyle = {
   textAlign: "center" as const,
 };
 
-function tableColumnClassName(header: string): string {
+function tableColumnClassName(header: string, scope?: ProjectsScope): string {
   const classes = ["mss-sites-table-col"];
   if (isProjectPrintHighlightColumn(header)) {
     classes.push("mss-sites-table-highlight-col");
   }
   if (isProjectPdfOmitColumn(header)) {
     classes.push("mss-sites-table-omit-pdf-col");
+  }
+  if (scope === "our") {
+    const dueTone = getOurProjectsDueColumnTone(header);
+    if (dueTone === "bank") classes.push("mss-sites-table-col--bank-due");
+    if (dueTone === "cash") classes.push("mss-sites-table-col--cash-due");
   }
   return classes.join(" ");
 }
@@ -572,7 +579,7 @@ export const MssSitesTablePreview = forwardRef<MssSitesTablePreviewHandle, MssSi
                   return (
                     <th
                       key={`header-${columnIndex}`}
-                      className={tableColumnClassName(header)}
+                      className={tableColumnClassName(header, scope)}
                       style={columnIndex === 0 ? sNoThStyle : thStyle}
                     >
                       {header}
@@ -598,7 +605,7 @@ export const MssSitesTablePreview = forwardRef<MssSitesTablePreviewHandle, MssSi
                   return (
                     <td
                       key={`total-${columnIndex}`}
-                      className={tableColumnClassName(header)}
+                      className={tableColumnClassName(header, scope)}
                       style={columnIndex === PROJECT_S_NO_COLUMN_INDEX ? totalsSNoTdStyle : totalsTdStyle}
                     >
                       {totalValue ?? (columnIndex === PROJECT_S_NO_COLUMN_INDEX + 1 ? "TOTAL" : "—")}
@@ -612,11 +619,27 @@ export const MssSitesTablePreview = forwardRef<MssSitesTablePreviewHandle, MssSi
               {filteredRows.map((row, rowIndex) => {
                 const rowKey = filteredRowKeys[rowIndex] ?? getProjectRowKey(table.headers, row);
                 const isSelected = selectedRowKeys.has(rowKey);
+                const quotationTone = scope === "our" ? getOurProjectsQuotationRowTone(row) : null;
+                const rowClassName = [
+                  isSelected ? "mss-sites-table-row--selected" : "",
+                  quotationTone === "prepared" ? "mss-sites-table-row--quote-prepared" : "",
+                  quotationTone === "signed" ? "mss-sites-table-row--quote-signed" : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ");
+                const defaultStripe = rowIndex % 2 === 0 ? "#ffffff" : "#f8fafc";
+                const rowBackground = isSelected
+                  ? "#eef2ff"
+                  : quotationTone === "signed"
+                    ? "#bbf7d0"
+                    : quotationTone === "prepared"
+                      ? "#dcfce7"
+                      : defaultStripe;
                 return (
                   <tr
                     key={rowKey || `row-${rowIndex}`}
-                    className={isSelected ? "mss-sites-table-row--selected" : undefined}
-                    style={{ background: isSelected ? "#eef2ff" : rowIndex % 2 === 0 ? "#ffffff" : "#f8fafc" }}
+                    className={rowClassName || undefined}
+                    style={{ background: rowBackground }}
                   >
                     <td className="mss-sites-table-select-col" style={selectTdStyle}>
                       <input
@@ -635,7 +658,7 @@ export const MssSitesTablePreview = forwardRef<MssSitesTablePreviewHandle, MssSi
                       return (
                         <td
                           key={`${rowIndex}-${columnIndex}`}
-                          className={tableColumnClassName(header)}
+                          className={tableColumnClassName(header, scope)}
                           style={columnIndex === 0 ? sNoTdStyle : tdStyle}
                         >
                           {row[columnIndex] || (columnIndex === 0 ? String(rowIndex + 1) : "—")}

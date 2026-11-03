@@ -41,6 +41,8 @@ export type QuotationTemplateId =
   | "commercial"
   | "commercial-15kw"
   | "commercial-30kw"
+  | "commercial-70kw"
+  | "commercial-90kw"
   | "offgrid"
   | "special-ritu-choudhary"
   | "special-lokesh-sharma";
@@ -232,6 +234,40 @@ export const QUOTATION_TEMPLATES: readonly QuotationTemplateMeta[] = [
     wp: 590,
     inverterKw: "30",
     moduleBrand: "Waaree Topcon Bifacial",
+  },
+  {
+    id: "commercial-70kw",
+    kind: "commercial",
+    label: "70 KW · 3PH",
+    description:
+      "₹16,80,000 · 119 × 590W Waaree Topcon · Polycab 70 KW · HT three phase · no subsidy",
+    capacity: "70 KW",
+    phase: "3PH",
+    projectAmount: "1680000",
+    centralSubsidy: "",
+    stateSubsidy: "",
+    panels: 119,
+    wp: 590,
+    inverterKw: "70",
+    moduleBrand: "Waaree Topcon Bifacial",
+  },
+  {
+    id: "commercial-90kw",
+    kind: "commercial",
+    label: "90 KW · 3PH",
+    description:
+      "Hemant Ji · ₹21,60,000 · 153 × 590W Waaree Topcon · Polycab 100 KW · HT three phase · no subsidy",
+    capacity: "90 KW",
+    phase: "3PH",
+    projectAmount: "2160000",
+    centralSubsidy: "",
+    stateSubsidy: "",
+    panels: 153,
+    wp: 590,
+    inverterKw: "100",
+    moduleBrand: "Waaree Topcon Bifacial",
+    customerName: "Hemant Ji",
+    address: "Jaipur",
   },
   {
     id: "offgrid",
@@ -693,7 +729,7 @@ export function createQuotationFromTemplate(
     : 0;
 
   const namedCustomer =
-    special || offgrid
+    special || offgrid || (commercial && Boolean(template.customerName?.trim()))
       ? {
           customerName: template.customerName ?? (offgrid ? "Devandra Ji" : ""),
           customerPhone: template.customerPhone ?? (offgrid ? "9131311167" : ""),
@@ -702,6 +738,10 @@ export function createQuotationFromTemplate(
         }
       : {};
 
+  const commercialAcBrand =
+    templateId === "commercial-90kw" || templateId === "commercial-70kw"
+      ? ("Polycab" as const)
+      : base.acCableBrand;
   const residentialMaterials = applyTemplateSizing(base.materialItems, template, language);
   const specialMaterials = special
     ? applyCommercialModuleSpec(residentialMaterials, template, language)
@@ -718,6 +758,18 @@ export function createQuotationFromTemplate(
     showSubsidySection: includeSubsidy,
     subsidyScope,
     ...namedCustomer,
+    ...(templateId === "commercial-90kw"
+      ? {
+          proposalDate: "2026-09-23",
+          acCableBrand: commercialAcBrand,
+          panelBrand: "Waaree" as const,
+        }
+      : templateId === "commercial-70kw"
+        ? {
+            acCableBrand: commercialAcBrand,
+            panelBrand: "Waaree" as const,
+          }
+        : {}),
     generation: {
       unitRate: "8",
     },
@@ -730,7 +782,11 @@ export function createQuotationFromTemplate(
             template.capacity,
             template.phase,
             language,
-            { panels: template.panels, acCableBrand: base.acCableBrand },
+            {
+              panels: template.panels,
+              acCableBrand: commercialAcBrand,
+              inverterKw: template.inverterKw,
+            },
           )
         : specialMaterials,
     commercialOffer: stripSyncedCommercialRows(base.commercialOffer),

@@ -462,9 +462,11 @@ function commercialAcCableMake(
           ? "पॉलीकैब"
           : "Polycab"
         : "Ramsons";
+    // ~90 kW+ HT plants use heavier armoured AC run (e.g. Hemant Ji 90 KW quote).
+    const sizeMm = kw >= 90 ? 95 : 50;
     return language === "hi"
-      ? `${name} 4 कोर 50 वर्ग मिमी एल्युमिनियम आर्मर्ड केबल (3PH) · JVVNL अनुमोदित · इनवर्टर से LT / HT पैनल`
-      : `${name} 4 Core 50 sq mm Aluminium Armoured Cable (3PH), JVVNL approved · inverter to LT / HT panel`;
+      ? `${name} 4 कोर ${sizeMm} वर्ग मिमी एल्युमिनियम आर्मर्ड केबल (3PH) · JVVNL अनुमोदित · इनवर्टर से LT / HT पैनल`
+      : `${name} 4 Core ${sizeMm} sq mm Aluminium Armoured Cable (3PH), JVVNL approved · inverter to LT / HT panel`;
   }
   const base = acCableMake(phase, language, brand);
   return language === "hi" ? `${base} · इनवर्टर से LT / HT पैनल` : `${base} · inverter to LT / HT panel`;
@@ -623,10 +625,11 @@ export function applyCommercialCapacityToMaterials(
   capacity: string,
   phase: QuotationPhase,
   language: QuotationLanguage,
-  options?: { panels?: number; acCableBrand?: QuotationAcCableBrand },
+  options?: { panels?: number; acCableBrand?: QuotationAcCableBrand; inverterKw?: string },
 ): QuotationMaterialItem[] {
   const kw = parseCapacityKw(capacity);
   const acCableBrand = options?.acCableBrand === "Polycab" ? "Polycab" : "Ramsons";
+  const inverterKwLabel = options?.inverterKw?.trim() || (kw ? formatKwLabel(kw) : "");
   const sized = items.map((item) => {
     if (kw && isSolarPvModulesDescription(item.description)) {
       const wp = commercialModuleWp(item);
@@ -640,7 +643,7 @@ export function applyCommercialCapacityToMaterials(
       return {
         ...item,
         unit: inverterUnit(phase, language),
-        make: commercialInverterMake(formatKwLabel(kw), language),
+        make: commercialInverterMake(inverterKwLabel || formatKwLabel(kw), language),
       };
     }
     return item;

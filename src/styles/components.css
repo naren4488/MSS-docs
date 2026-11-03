@@ -2964,6 +2964,26 @@
   border-bottom-color: #c7d2fe;
 }
 
+/* Our projects: quotation progress row tint (prepared = light, signed = darker). */
+.mss-sites-table-row--quote-prepared td {
+  border-bottom-color: #bbf7d0;
+}
+
+.mss-sites-table-row--quote-signed td {
+  border-bottom-color: #86efac;
+}
+
+/* Our projects: dues column tints (Bank = yellow, Cash = purple). */
+.mss-sites-table th.mss-sites-table-col--bank-due,
+.mss-sites-table td.mss-sites-table-col--bank-due {
+  background: #fffbeb !important;
+}
+
+.mss-sites-table th.mss-sites-table-col--cash-due,
+.mss-sites-table td.mss-sites-table-col--cash-due {
+  background: #f3e8ff !important;
+}
+
 .projects-row-copy-cell {
   display: inline-flex;
   flex-direction: column;

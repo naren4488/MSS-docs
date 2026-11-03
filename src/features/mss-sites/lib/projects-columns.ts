@@ -144,6 +144,36 @@ export const PROJECT_S_NO_COLUMN_INDEX = PROJECT_TABLE_HEADERS.indexOf("S NO");
 
 export const CLIENT_NAME_COLUMN_INDEX = PROJECT_TABLE_HEADERS.indexOf("NAME");
 
+export const QUOTATION_PREPARED_COLUMN = "Quotation prepared";
+
+export const QUOTATION_PREPARED_COLUMN_INDEX = PROJECT_TABLE_HEADERS.indexOf(QUOTATION_PREPARED_COLUMN);
+
+export const QUOTATION_SIGNED_COLUMN = "Quotation signed";
+
+export const QUOTATION_SIGNED_COLUMN_INDEX = PROJECT_TABLE_HEADERS.indexOf(QUOTATION_SIGNED_COLUMN);
+
+/** Sheet yes-flags: YES / Yes / Y / true / 1. */
+export function isProjectYesFlag(value: string | undefined | null): boolean {
+  const normalized = String(value ?? "")
+    .trim()
+    .toLowerCase();
+  return normalized === "yes" || normalized === "y" || normalized === "true" || normalized === "1";
+}
+
+/**
+ * Our-projects row tint from quotation progress.
+ * Signed wins over prepared. Empty / no → null (default striping).
+ */
+export function getOurProjectsQuotationRowTone(
+  row: readonly string[],
+): "prepared" | "signed" | null {
+  const signed = isProjectYesFlag(row[QUOTATION_SIGNED_COLUMN_INDEX]);
+  if (signed) return "signed";
+  const prepared = isProjectYesFlag(row[QUOTATION_PREPARED_COLUMN_INDEX]);
+  if (prepared) return "prepared";
+  return null;
+}
+
 export const WORK_STATUS_COLUMN = "WORK STATUS";
 
 export const WORK_STATUS_COLUMN_INDEX = PROJECT_TABLE_HEADERS.indexOf(WORK_STATUS_COLUMN);
@@ -171,6 +201,13 @@ export const CASH_DUE_FROM_CLIENT_COLUMN_INDEX = PROJECT_TABLE_HEADERS.indexOf(C
 export const BANK_DUE_COLUMN = "Bank due";
 
 export const BANK_DUE_COLUMN_INDEX = PROJECT_TABLE_HEADERS.indexOf(BANK_DUE_COLUMN);
+
+/** Our-projects dues column tint: Bank due = yellow, Cash due from client = purple. */
+export function getOurProjectsDueColumnTone(header: string): "bank" | "cash" | null {
+  if (header === BANK_DUE_COLUMN) return "bank";
+  if (header === CASH_DUE_FROM_CLIENT_COLUMN) return "cash";
+  return null;
+}
 
 /** Optional non-zero dues filters (empty selection = no dues filter). */
 export const DUES_NET_NONZERO_LABEL = "Net due ≠ 0";
