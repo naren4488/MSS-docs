@@ -1,3 +1,4 @@
+import { rowMatchesClientSearch } from "@/features/mss-sites/lib/search-match";
 import {
   ENQUIRY_FILTER_COLUMNS,
   ENQUIRY_MORE_COLUMNS,
@@ -38,8 +39,10 @@ export function filterRowsByClientName(headers: readonly string[], rows: string[
   const needle = query.trim().toLowerCase();
   if (!needle) return rows;
   const index = columnIndex(headers, "Client name");
-  if (index < 0) return rows;
-  return rows.filter((row) => (row[index] ?? "").toLowerCase().includes(needle));
+  const contact = columnIndex(headers, "Contact");
+  return rows.filter((row) =>
+    rowMatchesClientSearch(needle, index >= 0 ? (row[index] ?? "") : "", contact >= 0 ? [row[contact] ?? ""] : []),
+  );
 }
 
 export function filterRowsBySelectedValues(

@@ -1,3 +1,4 @@
+import { rowMatchesClientSearch } from "./search-match";
 import {
   getProjectsScopeForProjectType,
   isOurStyleProjectsScope,
@@ -147,6 +148,8 @@ export const WHOS_SITE_COLUMN_INDEX = PROJECT_TABLE_HEADERS.indexOf(WHOS_SITE_CO
 export const PROJECT_S_NO_COLUMN_INDEX = PROJECT_TABLE_HEADERS.indexOf("S NO");
 
 export const CLIENT_NAME_COLUMN_INDEX = PROJECT_TABLE_HEADERS.indexOf("NAME");
+const K_NO_COLUMN_INDEX = PROJECT_TABLE_HEADERS.indexOf("K.NO");
+const MOBILE_COLUMN_INDEX = PROJECT_TABLE_HEADERS.indexOf("MOBILE");
 
 export const QUOTATION_PREPARED_COLUMN = "Quotation prepared";
 
@@ -514,7 +517,11 @@ export function filterRowsByClientName(
 
   return rows
     .filter((row) =>
-      (row[CLIENT_NAME_COLUMN_INDEX]?.trim() ?? "").toLowerCase().includes(normalizedQuery),
+      rowMatchesClientSearch(
+        normalizedQuery,
+        row[CLIENT_NAME_COLUMN_INDEX]?.trim() ?? "",
+        [row[K_NO_COLUMN_INDEX] ?? "", row[MOBILE_COLUMN_INDEX] ?? ""],
+      ),
     )
     .map((row) => [...row]);
 }

@@ -513,6 +513,7 @@ export const MssSitesTablePreview = forwardRef<MssSitesTablePreviewHandle, MssSi
             onChange={setClientNameQuery}
             isActive={searchActive}
             className="projects-filter--search"
+            placeholder="Name, mobile or K number…"
           />
           <ProjectsMultiselectFilter
             label="Vendor"

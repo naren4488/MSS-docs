@@ -5,9 +5,10 @@ interface ClientNameSearchProps {
   onChange: (value: string) => void;
   isActive?: boolean;
   className?: string;
+  placeholder?: string;
 }
 
-export function ClientNameSearch({ value, onChange, isActive = false, className = "" }: ClientNameSearchProps) {
+export function ClientNameSearch({ value, onChange, isActive = false, className = "", placeholder = "Search by name or mobile…" }: ClientNameSearchProps) {
   return (
     <div className={`projects-filter${isActive ? " projects-filter--active" : ""} ${className}`.trim()}>
       <label className="projects-filter-label" htmlFor="client-name-search">
@@ -19,7 +20,7 @@ export function ClientNameSearch({ value, onChange, isActive = false, className 
           id="client-name-search"
           type="search"
           className="projects-search-input"
-          placeholder="Search by name…"
+          placeholder={placeholder}
           value={value}
           onChange={(event) => onChange(event.target.value)}
         />
