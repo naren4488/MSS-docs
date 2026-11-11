@@ -62,6 +62,7 @@ export function formatEnquiriesExportText(headers: readonly string[], rows: stri
 
 export function enquiryRowStableId(headers: readonly string[], row: string[]): string {
   return [
+    cell(headers, row, "Month"),
     cell(headers, row, "Client name"),
     cell(headers, row, "Contact"),
     cell(headers, row, "Enquiry date"),

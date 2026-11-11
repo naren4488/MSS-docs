@@ -1,6 +1,7 @@
 import { rowMatchesClientSearch } from "@/features/mss-sites/lib/search-match";
 import {
   ENQUIRY_FILTER_COLUMNS,
+  ENQUIRY_MONTH_LABELS,
   ENQUIRY_MORE_COLUMNS,
   ENQUIRY_VISIBLE_COLUMNS,
   type EnquiryColumn,
@@ -74,7 +75,10 @@ export function getFilterOptions(table: EnquiriesTable, column: EnquiryFilterCol
     if (!value) hasBlank = true;
     else values.add(value);
   }
-  const sorted = [...values].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
+  const sorted =
+    column === "Month"
+      ? ENQUIRY_MONTH_LABELS.filter((label) => values.has(label))
+      : [...values].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
   return hasBlank ? [...sorted, "(blank)"] : sorted;
 }
 

@@ -53,6 +53,7 @@ const tdStyle = {
 };
 
 const FILTER_LABELS: Record<EnquiryFilterColumn, string> = {
+  Month: "Month",
   "Enquiry status": "Enquiry status",
   "Visit status": "Visit status",
   "Source type": "Source type",
@@ -269,6 +270,21 @@ export function EnquiriesTablePreview({ table }: EnquiriesTablePreviewProps) {
     setFilterSets((prev) => ({ ...prev, [column]: next }));
   }
 
+  const monthOptions = filterOptions.Month;
+  const monthCounts = useMemo(() => {
+    const index = columnIndex(table.headers, "Month");
+    const counts = new Map<string, number>();
+    if (index < 0) return counts;
+    for (const row of table.rows) counts.set(row[index] ?? "", (counts.get(row[index] ?? "") ?? 0) + 1);
+    return counts;
+  }, [table]);
+
+  /** Pill = only that month; clicking the active pill again shows all months (like Projects register pills). */
+  function toggleMonthPill(label: string) {
+    const onlyThis = filterSets.Month.size === 1 && filterSets.Month.has(label);
+    updateFilter("Month", onlyThis ? new Set(monthOptions) : new Set([label]));
+  }
+
   function toggleRow(id: string) {
     setSelectedIds((prev) => {
       const next = new Set(prev);
@@ -320,7 +336,11 @@ export function EnquiriesTablePreview({ table }: EnquiriesTablePreviewProps) {
               <span className="mss-sites-preview-label"> enquiries</span>
             </p>
             <div className="mss-sites-preview-sources">
-              <span className="mss-sites-source-badge mss-sites-source-badge--mss">{table.title.split(" · ")[0]}</span>
+              {monthOptions.map((label) => (
+                <span key={label} className="mss-sites-source-badge mss-sites-source-badge--mss">
+                  {label.slice(0, 3)} {monthCounts.get(label) ?? 0}
+                </span>
+              ))}
             </div>
             {filtersActive ? (
               <button type="button" className="mss-sites-clear-filters" onClick={clearFilters}>
@@ -370,6 +390,33 @@ export function EnquiriesTablePreview({ table }: EnquiriesTablePreviewProps) {
             />
           ))}
         </div>
+
+        {monthOptions.length > 1 ? (
+          <div className="projects-sheet-tab-filter no-print" aria-label="Month">
+            <p className="projects-sheet-tab-filter-title">Month</p>
+            <div className="projects-sheet-tab-filter-groups">
+              <div className="projects-sheet-tab-filter-group">
+                <div className="projects-sheet-tab-filter-chips" role="group" aria-label="Month tabs">
+                  {monthOptions.map((label) => {
+                    const active = filterSets.Month.size === 1 && filterSets.Month.has(label);
+                    return (
+                      <button
+                        key={label}
+                        type="button"
+                        className={`projects-sheet-tab-chip${active ? " projects-sheet-tab-chip--active" : ""}`}
+                        aria-pressed={active}
+                        title={active ? "Show all months" : `Only ${label}`}
+                        onClick={() => toggleMonthPill(label)}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : null}
       </div>
 
       <div className="mss-sites-table-wrap">

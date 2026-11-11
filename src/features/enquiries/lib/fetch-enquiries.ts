@@ -1,5 +1,7 @@
 import {
   canonicalizeEnquiryHeader,
+  ENQUIRY_COLUMNS,
+  ENQUIRY_SHEET_TABS,
   enquiriesSheetCsvUrl,
   getEnquirySheetTab,
   type EnquiryColumn,
@@ -131,5 +133,55 @@ export async function fetchEnquiriesTable(
     rows,
     fetchedAt: new Date().toISOString(),
     tabId: tab.id,
+  };
+}
+
+export interface AllEnquiriesResult {
+  table: EnquiriesTable;
+  /** Month tabs that could not be read (the rest still load). */
+  failedMonths: Array<{ label: string; message: string }>;
+}
+
+/** All month tabs in one table, sheet order (September first), with a Month column. */
+export async function fetchAllEnquiriesTable(): Promise<AllEnquiriesResult> {
+  const results = await Promise.allSettled(ENQUIRY_SHEET_TABS.map((tab) => fetchEnquiriesTable(tab.id)));
+  const loaded: Array<{ label: string; table: EnquiriesTable }> = [];
+  const failedMonths: AllEnquiriesResult["failedMonths"] = [];
+  results.forEach((result, index) => {
+    const tab = ENQUIRY_SHEET_TABS[index];
+    if (result.status === "fulfilled") loaded.push({ label: tab.label, table: result.value });
+    else
+      failedMonths.push({
+        label: tab.label,
+        message: result.reason instanceof Error ? result.reason.message : "Could not load",
+      });
+  });
+  if (loaded.length === 0) {
+    throw new Error(failedMonths.map((month) => `${month.label}: ${month.message}`).join(" · "));
+  }
+
+  const present = new Set<string>(["S No", "Month"]);
+  for (const { table } of loaded) table.headers.forEach((header) => present.add(header));
+  const headers: EnquiryColumn[] = ENQUIRY_COLUMNS.filter((column) => present.has(column));
+
+  const rows: string[][] = [];
+  for (const { label, table } of loaded) {
+    const sourceIndex = headers.map((header) => table.headers.indexOf(header));
+    for (const row of table.rows) {
+      rows.push(
+        headers.map((header, i) => (header === "Month" ? label : sourceIndex[i] >= 0 ? row[sourceIndex[i]] ?? "" : "")),
+      );
+    }
+  }
+
+  return {
+    table: {
+      title: "All months · Enquiries",
+      headers,
+      rows,
+      fetchedAt: new Date().toISOString(),
+      tabId: "all",
+    },
+    failedMonths,
   };
 }

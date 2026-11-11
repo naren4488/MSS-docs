@@ -42,6 +42,9 @@ export type EnquirySheetTabId = (typeof ENQUIRY_SHEET_TABS)[number]["id"];
 /** Default to the latest month tab. */
 export const DEFAULT_ENQUIRY_SHEET_TAB_ID: EnquirySheetTabId = "nov";
 
+/** Month labels in sheet order (September, October, …) — used for the Month filter and pills. */
+export const ENQUIRY_MONTH_LABELS: readonly string[] = ENQUIRY_SHEET_TABS.map((tab) => tab.label);
+
 /** @deprecated Prefer ENQUIRY_SHEET_TABS — kept for older imports. */
 export const ENQUIRIES_SHEET_TAB = ENQUIRY_SHEET_TABS[0].sheetName;
 /** @deprecated Prefer ENQUIRY_SHEET_TABS. */
@@ -69,6 +72,7 @@ export function enquiriesSheetGvizUrl(sheetName = ENQUIRIES_SHEET_TAB, headerRow
 /** Canonical column keys used in the app. */
 export const ENQUIRY_COLUMNS = [
   "S No",
+  "Month",
   "Enquiry date",
   "Enquiry status",
   "Client name",
@@ -102,6 +106,7 @@ export type EnquiryColumn = (typeof ENQUIRY_COLUMNS)[number];
 /** Columns shown in the main table. */
 export const ENQUIRY_VISIBLE_COLUMNS: readonly EnquiryColumn[] = [
   "S No",
+  "Month",
   "Enquiry date",
   "Client name",
   "Contact",
@@ -131,6 +136,7 @@ export const ENQUIRY_MORE_COLUMNS: readonly EnquiryColumn[] = [
 ];
 
 export const ENQUIRY_FILTER_COLUMNS = [
+  "Month",
   "Enquiry status",
   "Visit status",
   "Source type",
