@@ -92,10 +92,16 @@ function parseEnquiriesCsv(
     throw new Error(`Sheet "${tab.sheetName}" has no Client name column`);
   }
 
-  const rows = filterRowsWithEnquiryIdentity(
+  let rows = filterRowsWithEnquiryIdentity(
     headers,
     matrix.slice(1).map((cells) => keepIndices.map((index) => (cells[index] ?? "").trim())),
   );
+
+  // Some month tabs (e.g. "nov update") have no serial column — add one so rows stay numbered.
+  if (!headers.includes("S No")) {
+    headers.unshift("S No");
+    rows = rows.map((row) => ["", ...row]);
+  }
 
   return { headers, rows };
 }

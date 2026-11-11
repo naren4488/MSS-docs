@@ -1,4 +1,4 @@
-/** Sales enquiries workbook — month tabs (Sep Updated, Oct Update, …). */
+/** Sales enquiries workbook — month tabs (Sep Updated, Oct Update, Nov Update, …). */
 export const ENQUIRIES_SPREADSHEET_ID = "1z5xq6xFAdxqgQkmNlTjtPtHVhwYyJUvRauxn_4spwX4";
 
 export interface EnquirySheetTab {
@@ -28,12 +28,19 @@ export const ENQUIRY_SHEET_TABS = [
     title: "Oct Update · Enquiries",
     gid: "2009415886",
   },
+  {
+    id: "nov",
+    sheetName: "nov update",
+    label: "November",
+    title: "Nov Update · Enquiries",
+    gid: "649845617",
+  },
 ] as const satisfies readonly EnquirySheetTab[];
 
 export type EnquirySheetTabId = (typeof ENQUIRY_SHEET_TABS)[number]["id"];
 
 /** Default to the latest month tab. */
-export const DEFAULT_ENQUIRY_SHEET_TAB_ID: EnquirySheetTabId = "oct";
+export const DEFAULT_ENQUIRY_SHEET_TAB_ID: EnquirySheetTabId = "nov";
 
 /** @deprecated Prefer ENQUIRY_SHEET_TABS — kept for older imports. */
 export const ENQUIRIES_SHEET_TAB = ENQUIRY_SHEET_TABS[0].sheetName;

@@ -320,7 +320,7 @@ export function EnquiriesTablePreview({ table }: EnquiriesTablePreviewProps) {
               <span className="mss-sites-preview-label"> enquiries</span>
             </p>
             <div className="mss-sites-preview-sources">
-              <span className="mss-sites-source-badge mss-sites-source-badge--mss">Sep Updated</span>
+              <span className="mss-sites-source-badge mss-sites-source-badge--mss">{table.title.split(" · ")[0]}</span>
             </div>
             {filtersActive ? (
               <button type="button" className="mss-sites-clear-filters" onClick={clearFilters}>
