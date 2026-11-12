@@ -256,6 +256,7 @@
   - Customers with the address in parts (line 1 + state required) and GSTIN; payment terms with a Dues block.
   - Several projects per customer; Mark inactive; history.
   - The same mobile allowed after a warning ("This number already belongs to …") you confirm, with an optional family link shown on both customers; GSTIN stays unique (I1, built 13 Nov).
+  - The quick-create of a customer inside Add enquiry, the project wizard and the quotation start shows the same warning with three choices: **Use that customer** (default: selects the existing customer and closes the quick-create), **Save anyway**, **Link them as family** (one shared handler, `useQuickCreateCustomer`).
   - **Account statement (6.3, built 13 Nov):** the Statement button on the customer page, a date range (default this financial year to today), Download PDF or Print. The PDF has the letterhead (logo, company details), the customer's name / address / GSTIN, the opening balance on the start date, each bill, receipt, advance and credit note in date order with debit, credit and running balance, the closing balance, the dues (overdue / due later) and ageing, and the UPI QR for the amount due when a UPI ID is set. The figures are the customer page's (closing = Outstanding) and agree with the customer's ledger in the books. `GET /customers/{id}/statement?from=&to=` (customer view right).
   - **Share on WhatsApp (6.4, built 13 Nov):** on the statement (and on sale bills and quotations): a short message (company, document number, amount, due date for bills) with a secure link to the PDF; the number and message can be edited, then WhatsApp opens (`wa.me/91…`); Copy link instead; no mobile on file → the number is asked for. The link works 7 days without signing in, can't be guessed or edited, and every open is logged; an expired link shows "This link has expired".
 - **Pending:**
@@ -281,6 +282,7 @@
   - GSTIN in the wrong format: refused; GSTIN of another state than the address: a note, not an error.
   - Same GSTIN as another customer: refused.
   - Same phone as another customer: a warning naming the other customer; "Save anyway" saves it (with "Link them as family"); "Go back" saves nothing.
+  - Same phone in the quick-create (Add enquiry, project wizard, quotation): "Use that customer" selects the existing one and saves nothing; "Save anyway" adds a second customer on the number and selects it.
   - Payment terms Net 15: a new bill gets a due date 15 days ahead; changing the terms later doesn't move old due dates.
   - Very long name / address: saved and printed without breaking the invoice layout.
 
@@ -294,15 +296,15 @@
   - A follow-up person on each follow-up (default the lead owner, changeable in the follow-up list); their alert, My day, task and calendar (E2, built 13 Nov).
   - Documents received: Pending / Partially / Yes + date + note on the enquiry, with a list filter (E3, built 13 Nov).
   - "Different sizes": panel, structure and inverter kW apart (e.g. 3 / 5 / 6); the panel kW is the system size; carried to the quotation and project (E4, built 13 Nov).
+  - Quick-create a customer with a mobile already in use: the I1 warning "This number already belongs to <name> (CUST-…)" with Use that customer (default, selects them), Save anyway, Link them as family (`enquiries_ui` E13 passes again).
 - **Pending:**
   - The import of the Sep–Nov enquiry tabs.
   - The daily enquiry report, planned with the analytics review.
   - Meta Ads leads arriving automatically (7.5, later).
-  - `enquiries_ui` E13 (adding a customer with a used phone selects the existing one) fails since the same-phone warning of 13 Nov (customers I1) — to align with that change.
-- **Tests:** `f_enquiries` 26, `ca_import_prep` 33, `cb_project_fields` 63 (CB01–CB03 enquiry sizes), `m7_enquiries_r2` 51; screens `enquiries_ui` 42 (39 pass, E13 above), `ca_ui` 12, `cb_ui` 26 (CBU01–CBU05), `m7_ui` 34 (1440 and 390).
+- **Tests:** `f_enquiries` 26, `ca_import_prep` 33, `cb_project_fields` 63 (CB01–CB03 enquiry sizes), `m7_enquiries_r2` 51; screens `enquiries_ui` 42 (all pass; E13 checks the same-mobile warning, Use that customer and Save anyway), `ca_ui` 12, `cb_ui` 26 (CBU01–CBU05), `m7_ui` 34 (1440 and 390).
 - **Test by hand, normal use:**
   - Create an enquiry: customer (new or existing), source, owner, kW, phase, budget, address, notes.
-  - Quick-create a new customer from the enquiry form.
+  - Quick-create a new customer from the enquiry form; with a mobile already in use, the warning names that customer and "Use that customer" selects them.
   - Add follow-ups with a date and note; the owner gets the reminder; it shows in My day and the calendar.
   - Change the owner; the new owner gets an "Enquiry assigned to you" alert.
   - Book a site visit from the enquiry.
