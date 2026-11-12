@@ -8,7 +8,7 @@
 - **Test data:** all business data was cleared on 12 Nov 2026, on production and locally. Logins, companies, settings, masters, the ledger list and employees remain. Start by creating a customer (address line 1 and state are required) and a project, then test with those.
 
 ## Overall
-**About 80 % complete.** Every module is built, reviewed once and covered by automatic tests. What's left: the decisions now being built, the access matrix, the teams design, the sheet import and real data, and a few placeholders.
+**About 82 % complete** (the average of the 17 modules below). Every module is built, reviewed once and covered by automatic tests. What's left: the decisions now being built, the access matrix, the teams design, the sheet import and real data, and a few placeholders.
 
 **Last full regression (12 Nov 2026, after the data clear):** 2,518 API checks passed and 1 failed. The failure is V10, which checks the AU letterhead bank account that the data clear removed. The five end-to-end accounts runs passed 194/194.
 
@@ -199,7 +199,7 @@
   - Person with no bank details: shown as a problem before paying.
   - Changing attendance after approval: blocked (see Attendance).
 
-### 6. Customers (85 %)
+### 6. Customers (90 %)
 - **Done:**
   - Customers with the address in parts (line 1 + state required) and GSTIN; payment terms with a Dues block.
   - Several projects per customer; Mark inactive; history.
