@@ -68,7 +68,8 @@
 - Payroll page links to Accounts → Payroll ledgers (for people with the accounts right)
 - Company switcher: search, "Not on payroll here" tag, company per browser tab (`X-Company-Id`), last company remembered
 - Company badge in the company's colour (never covers the title or breadcrumb)
-- Header search **[placeholder]**; header "More actions" **[placeholder]**
+- **Header search** (owner decision 1.1, 13 Nov): one box — a field in the header on desktop, a search icon below that, Ctrl+K / Cmd+K from any page (the sidebar keeps "/"), full-screen on phones. Finds customers, enquiries, projects, quotations, sale bills, purchase bills, vendors and employees by name, phone (the last 10 digits, so "+91 90240 84005" finds 9024084005), document number (CUST-…, enquiry and quotation numbers, PROJ-…, B2B / B2C / INV / SB bill numbers, purchase bill and PO/… numbers) and project K-number (spaces ignored). Results grouped by type, at most 5 each with the number and status on the right, and "See all" opening that list with the search filled in (`?q=` on Customers, Enquiries, Projects, Quotations, Invoices, Vendors, Employees). ↑ / ↓ move, Enter opens, Esc closes. Starts at 2 characters (3 digits for a phone), waits for typing to pause; only the types the person may view are searched, and only in the tab's company
+- No "More actions" header button (removed 13 Nov, decision 1.2)
 - Unauthorized and Not found pages
 
 **Multi-company**
@@ -110,6 +111,7 @@
 ### APIs
 - `/auth/*`: login, refresh, logout, change password
 - `/me/companies`, `/me/last-company`
+- `GET /search?q=` (owner decision 1.1; company-scoped, any signed-in person): groups `customers` (customer.view), `enquiries` (enquiry.view), `projects` (project.view), `quotations` (quotation.view), `sale_bills` (billing.view), `purchase_bills` and `vendors` (inventory.view), `employees` (employee.view); a type without the right is not searched. Each group: `items` [{id, title, subtitle, number, status}] up to 5 and `more`; `too_short: true` and no groups under 2 characters or 3 phone digits. No new table or index
 - `GET /me/preferences`, `PUT /me/preferences` (any signed-in person, own row only, not company-scoped; PUT merges keys, `null` resets one; `sidebar_pins` = up to 5 sidebar paths, no repeats; unknown keys refused) — table `user_preferences` (migration 0136)
 - `/companies` (Super Admin, within their circle): list, create, update (`address_parts`: its state sets `state_code` and the company settings' GST state and address), `GET /companies/{id}/candidates`, `POST /companies/{id}/members`
 - `POST /users/{user_id}/reset-password` (needs `rbac.edit`; only a Super Admin can reset a Super Admin; nobody resets themselves)
@@ -120,7 +122,9 @@
 ### Review status
 **Status:** reviewed and done (7 Nov 2026, migration 0107). Tests: `hr/u_platform.sh` 19/19, `pw/m1_ui` 69/69 at 1440/768/390 px, fresh database M0 40/40.
 
-Sidebar HR section, search, pins and page info (plan step 3, F1–F4, migration 0136, 11 Nov 2026): `hr/f_sidebar_prefs.sh` 28/28, `pw/f_sidebar_ui` 215/215 at 1440/768/390 px as Super Admin and a Sales Executive.
+Sidebar HR section, search, pins and page info (plan step 3, F1–F4, migration 0136, 11 Nov 2026): `hr/f_sidebar_prefs.sh` 31/31, `pw/f_sidebar_ui` 215/215 at 1440/768/390 px as Super Admin and a Sales Executive.
+
+Header search, More actions and two-step removed (owner decisions 1.1–1.3, 13 Nov 2026): `hr/m1_search.sh` 35/35, `pw/m1_search_ui` 38/38 at 1440/390 px.
 
 **Open:**
 - Record-level access (own / team / department) is deferred.
@@ -188,7 +192,7 @@ Sidebar HR section, search, pins and page info (plan step 3, F1–F4, migration 
 
 **Sheet-import masters (owner, 13 Nov; migration 0152):** enquiry source "Social Media" is now **Meta Ads** (same id and code, old enquiries keep it), plus **Data Calling** and **Maintenance & Sales Team**; a **Banks** list under Finance (SBI, Bank of Baroda, PNB, Bank of India, Canara, UCO, Union, Indian Bank, Central Bank of India, Rajasthan Gramin Bank, HDFC, ICICI, Axis, Other) for the project bank field to come; DISCOM **JVVNL** with its sub-divisions as DISCOM areas (Jobner, Hathoj, Jhotwara, Kalwar, Sambhar, Renwal, Amber, Binayaka, Bagru, Govindgarh, Badpeepli, Phulera, Chomu, Sanganer, Dudu). In every company and in new ones.
 
-**Other:** password, two-factor setup (placeholder, Module 1), settings audit log.
+**Other:** password, settings audit log. (The two-step sign-in placeholder was removed from Settings → Security, decision 1.3.)
 
 **Automatic:** every master change goes to a history log.
 

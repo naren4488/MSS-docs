@@ -14,7 +14,7 @@
 
 | # | Module | Done | Status |
 |---|---|---|---|
-| 1 | Platform: sign-in, companies, users, access | 85 % | Working; placeholders and access by own / team / department pending |
+| 1 | Platform: sign-in, companies, users, access | 90 % | Working; header search built 13 Nov; access by own / team / department pending |
 | 2 | Settings and masters | 85 % | Working; Meta Ads source, banks list and JVVNL DISCOM areas added 13 Nov |
 | 3 | People: employees, teams | 75 % | Working; teams design and small HR gaps pending |
 | 4 | Attendance and leave | 85 % | Working |
@@ -35,18 +35,18 @@
 
 ## Module by module
 
-### 1. Platform: sign-in, companies, users, access (85 %)
+### 1. Platform: sign-in, companies, users, access (90 %)
 - **Done:**
   - Phone + password sign-in; forced password change on first sign-in; admin password reset; 7-day idle sign-out.
   - Multi-company, with the company chosen per browser tab and the data kept apart per company.
   - Companies page, designations and departments, the designation access matrix.
   - Sidebar with an HR section, search, up to 5 pins, and a page ⓘ on every page.
+  - Header search (13 Nov, decision 1.1): one box finds customers, enquiries, projects, quotations, sale bills, purchase bills, vendors and employees by name, phone, document number or K-number; grouped by type, 5 each with "see all"; only types the person may view; Ctrl+K / Cmd+K from anywhere; full-screen on phones.
+  - The "More actions" header button and the two-step sign-in placeholder are removed (13 Nov, decisions 1.2 / 1.3).
 - **Pending:**
-  - The header search and the "More actions" button are placeholders.
-  - Two-factor sign-in is a placeholder.
   - Access by own / team / department records.
   - The full access-matrix review.
-- **Tests:** `u_platform` 19, `f_sidebar_prefs` 28; screens `m1_ui` 69, `f_sidebar_ui` 215.
+- **Tests:** `u_platform` 19, `f_sidebar_prefs` 31, `m1_search` 35; screens `m1_ui` 69, `f_sidebar_ui` 215, `m1_search_ui` 38.
 - **Test by hand, normal use:**
   - Sign in with a 10-digit phone, and with +91 in front; show / hide the password.
   - Sign out from the header; the back button doesn't reopen the app.
@@ -60,6 +60,11 @@
   - Add an existing person to a company (designation, on payroll here, track attendance here); they see the company in the switcher.
   - Departments and designations: add, edit, deactivate, delete an unused one.
   - Designation access matrix: switch off one right (e.g. Customers → create) for a designation; sign in as that person: the button / page is gone and the API refuses.
+  - Header search: press Ctrl+K (Cmd+K on a Mac) on any page, or click the search field; type a customer's name: results come grouped (Customers, Enquiries, Projects, …) with the number on the right; ↑ / ↓ move, Enter opens, Esc closes.
+  - Header search by phone: type the mobile as "+91 90240 84005", "919024084005" or just "84005": the customer, their enquiries, quotations, projects and bills appear.
+  - Header search by number: a customer number (CUST-…), enquiry and quotation numbers, a project number (PROJ-…), a sale bill (B2B/2026-27/…, B2C/…), a purchase bill number or its PO (PO/…), and a project's K-number (also typed with spaces).
+  - Header search "see all": with more than 5 matches of a type, "See all" opens that list with the search already filled in.
+  - The header has no "More actions" button; Settings → Security shows only the password form, without a two-step sign-in block.
 - **Test by hand, edge cases:**
   - Wrong password, unknown phone, 9 digits, letters: clear errors, no crash.
   - Temporary password: trying to open any page before changing it sends you back to Settings → Security.
@@ -70,6 +75,11 @@
   - Company not in your circle: not in the switcher, and its URL / data can't be reached.
   - GSTIN or PAN in the wrong format: refused with the field named.
   - Phone width (390 px): menu, pins, search and the company switcher all work.
+  - Header search with 1 letter, 2 digits or only spaces: just the hint, no results; "%" or "_" find nothing rather than everything.
+  - Header search as a person without the enquiries right (e.g. a site engineer): no Enquiries group even for an exact enquiry number; types they can view still appear.
+  - Header search in company A never shows company B's customers, vendors, employees or projects, even with the same name, phone or K-number; switch the company and search again.
+  - Header search on a phone (390 px): the search icon in the top bar opens a full-screen search; the close button returns to the page.
+  - "/" still jumps to the sidebar search, and Ctrl+K still opens the header search while typing in the sidebar search.
 
 ### 2. Settings and masters (85 %)
 - **Done:**
@@ -193,7 +203,7 @@
 - **Pending:**
   - The import of the Sep–Nov enquiry tabs.
   - The daily enquiry report, planned with the analytics review.
-- **Tests:** `f_enquiries` 26, `ca_import_prep` 33, `cb_project_fields` 52 (CB01–CB03 enquiry sizes); screens `enquiries_ui` 42, `ca_ui` 12, `cb_ui` 18 (CBU01–CBU05).
+- **Tests:** `f_enquiries` 26, `ca_import_prep` 33, `cb_project_fields` 63 (CB01–CB03 enquiry sizes); screens `enquiries_ui` 42, `ca_ui` 12, `cb_ui` 26 (CBU01–CBU05).
 - **Test by hand, normal use:**
   - Create an enquiry: customer (new or existing), source, owner, kW, phase, budget, address, notes.
   - Quick-create a new customer from the enquiry form.
@@ -241,7 +251,7 @@
   - Subsidy options; expiry after 15 days; approval with the final amount, which becomes the project contract.
   - "Different sizes" on the version (from the enquiry, kept on revisions), shown on the print line (E4, built 13 Nov).
 - **Pending:** nothing new.
-- **Tests:** `qt_quotations` 40, `cb_project_fields` 52 (CB04–CB08); screens `quotations_ui`, `qf_form` 47, `cb_ui` 18 (CBU06–CBU07).
+- **Tests:** `qt_quotations` 40, `cb_project_fields` 63 (CB04–CB08); screens `quotations_ui`, `qf_form` 47, `cb_ui` 26 (CBU06–CBU07).
 - **Test by hand, normal use:**
   - Create a quotation from a template: items, kW, price, subsidy (none / central / central + state), terms.
   - Preview and download the PDF; company details, customer address and "Stock Items" heading look right.
