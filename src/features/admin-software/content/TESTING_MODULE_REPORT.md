@@ -89,7 +89,7 @@
   - Masters → Enquiry → Lost Reasons (7.4): Price too high, Not interested, Trust / thinks it's fraud, Roof not suitable, Loan not possible, Went to a competitor, Not reachable, Other.
   - Approval limits: "Late follow-up alert (sales)" in days (7.6, default 2, 1–30).
   - Company settings; master lists with "in use" protection (a value in use can only be deactivated).
-  - Payment modes, bank ledgers, Approval limits (PO / SO / extra-quantity %), Number series (19 series).
+  - Payment modes, bank ledgers, Approval limits (PO / SO / extra-quantity %), Number series (20 series; Purchase bills added 13 Nov, 11.1).
   - Number series: up to 3 series per document kind (12 Nov, owner; migration 0162) — name, own format and counter, one default pre-filled on create forms, the others pickable; bills / SO / PO keep the series picked on the draft until Issue / Confirm / Send. Tested: 25 API checks on a copy of the test database (add, rename, next number, default switch, 4th refused, used or default series kept, unused removed, picked vs default numbering, unknown series 422, PO numbered from the draft's series) and in the browser (add a series in Settings, pick it on a new customer → its prefix).
   - Enquiry sources: "Social Media" renamed Meta Ads (same code), Data Calling and Maintenance & Sales Team added; a Banks list (14 banks); DISCOM JVVNL with 15 sub-division areas (built 13 Nov, migration 0152).
   - Each team edits its own master lists (13 Nov, decision 2.1, migration 0154): one right per master group (`masterdata_<group>`, create / edit / delete) in the designation access matrix; Accounts → finance, GST & tax and books lists; CA → GST & tax and books lists; HR → HR & team and employee data lists (new Leave Types list); Stores → stock lists; Sales manager → enquiry and quotation lists; Project admin → project lists; Super Admin and `masterdata` keep every group. The server checks the group of the item or category; the Masters page shows Add / Edit / Delete only on the person's groups and "View only" elsewhere.
@@ -102,7 +102,7 @@
 - **Pending:**
   - Leave Types are a list for now; leave requests still use paid / unpaid.
   - The rest of the access-matrix review.
-- **Tests:** `v_settings` 29 (V10 on a test-company bank ledger), `h1a4_master_conversion` 39, `ns_number_series` 25, `ca_import_prep` 33 (CA01–CA08 are the masters), `m2_settings_round2` 46, `m7_enquiries_r2` M7-00–M7-10 (merge and duplicate block); screens `m2_round2_ui` 26 (1440).
+- **Tests:** `v_settings` 29 (V10 on a test-company bank ledger), `h1a4_master_conversion` 39, `ns_number_series` 25 (N01 now 20 series), `ca_import_prep` 33 (CA01–CA08 are the masters), `m2_settings_round2` 46, `m7_enquiries_r2` M7-00–M7-10 (merge and duplicate block); screens `m2_round2_ui` 26 (1440).
 - **Test by hand, normal use:**
   - Masters: add a value to a list (unit, category, payment mode …), edit it, deactivate it, reactivate it.
   - Use a value on a record, then try to delete it: refused ("in use" with counts); Deactivate works and the old record still shows the value.
@@ -113,6 +113,7 @@
   - Settings → Approval limits: change the PO limit, SO limit and extra-quantity % as Super Admin or Director; others see them read-only; the change shows in Activity.
   - Settings → Number series → **+ Add series** on Sale bills – B2B (e.g. name AMC, prefix AMC): the preview shows AMC/2026-27/0001. New sale bill (B2B): the **Series** picker shows Main (default) and AMC; pick AMC, save the draft, issue → AMC/2026-27/0001; a second bill left on the default gets B2B/…. Make AMC the default: new forms pre-fill it. Try Remove on AMC: refused (used).
   - Settings → Number series: change prefix, year part, digits and next number; the preview updates; create that document and check the number.
+  - Settings → Number series → Purchase bills (our number, PUR/2026-27/0001): change the prefix to MSPUR → the next purchase bill is MSPUR/2026-27/0001… (11.1).
   - Masters as an HR person: HR & Team → Leave Types → Add item "Comp off"; open Stock & Tools: "View only", no Add / Edit / Delete. As an accountant: add a payment mode; as a stores manager: add a unit.
   - Settings → Company: upload a logo, reload the page — the logo is still there; the sidebar shows it at the top. Remove logo → the box and the sidebar go back to the icon / initials.
   - Upload a signature and a stamp; write default invoice terms; enter the UPI ID (e.g. mahisolar@okaxis); Save.
@@ -429,11 +430,14 @@
   - Vendors (B2B / B2C / General, terms).
   - Purchase bills with approval and goods received; purchase orders (approval limit, 2 % extra, Create PO from Need-to-get, dashboard tiles).
   - Sale orders (reserve, deliver, challan print, advances, cancel challan); damage and scrap; tools.
+  - Our own number on every purchase bill (13 Nov, decision 11.1, migration 0163): PUR/2026-27/0001 per company and financial year (of the bill date, else today), given when the bill is saved, drafts too; a cancelled or rejected bill keeps it and numbers are never reused. Existing bills were numbered in bill-date order. "Our no." column in the vendor's bill list, "Our number" on the bill, the "Our number series" picker on Add purchase bill (when a 2nd series exists); searchable in the list and the header search. The vendor's number stays the GST and duplicate-check reference.
 - **Pending:**
+  - Reverse-charge self-invoice (11.1a): parked until the owner asks the CA.
+  - There is no print of a purchase bill yet; our number will go on it when one is made.
   - Whether a PO can be cancelled after goods came in (parked).
   - No item-code box on the Tools form.
   - Stores staff can't use Create PO (access matrix).
-- **Tests:** `w_warehouse` 71, `b2_purchases` 74, `d1_purchase_orders` 71, `d2_sale_orders` 79, `e2_bill_units` 55, `e34_inline_items` 40, `a1a3_stock_rates` 42, `q11_codes_units` 23; screens `w_materials_ui`, `d1_po_ui` 84, `d2_so_ui` 78, `e34_inline_ui` 105, `e2_units_ui` 86.
+- **Tests:** `m11_purchase_no` 14, `w_warehouse` 71, `b2_purchases` 74, `d1_purchase_orders` 71, `d2_sale_orders` 79, `e2_bill_units` 55, `e34_inline_items` 40, `a1a3_stock_rates` 42, `q11_codes_units` 23; screens `m11_ui` 6 (1440), `w_materials_ui`, `d1_po_ui` 84, `d2_so_ui` 78, `e34_inline_ui` 105, `e2_units_ui` 86.
 - **Test by hand, normal use:**
   - Stock: add an item bought in coils (1 coil = 90 m), sold per metre; purchase and sale rate per coil; the form shows "= ₹ per metre"; stock details show both units, value, reserved and free.
   - Item code: give "DCC-4"; search it on a bill line.
@@ -443,10 +447,13 @@
   - Need-to-get → tick items → Create PO: one draft PO per vendor.
   - Sale order: create (B2B / B2C) → approve → confirm (SO number, stock reserved) → deliver (challan, print) → bill from the SO → completed; record an advance.
   - Damage & scrap, tools, templates.
+  - Our number: add a purchase bill → the toast and the list show PUR/2026-27/0001 in "Our no."; the next is 0002; open it → "Our number"; type "0002" in the list search or "PUR/2026-27/0002" in the header search → found.
+  - Settings → Number series → Purchase bills → + Add series (e.g. SPUR) → Add purchase bill shows "Our number series"; pick SPUR → SPUR/2026-27/0001.
 - **Test by hand, edge cases:**
+  - Our number: a draft with no vendor number or date still gets a number (this year); cancel a bill → it keeps its number and the next bill does not reuse it; a bill dated in March counts in the previous year (PUR/2025-26/…); a second company starts at 0001 of its own.
   - Conversion factor missing or 0: refused.
   - Changing a conversion when stock exists: needs the approve right and a reason; quantities are restated.
-  - Same vendor bill number twice: refused.
+  - Same vendor bill number twice (any capitals or spaces): refused, naming our number of the first bill; another vendor may use the same number.
   - Paying an unapproved bill: refused; paying more than due becomes the vendor's advance.
   - PO above the limit: maker can't approve (Super Admin can); receiving 2 % extra is free, 2.1 % needs approval and a reason; billing more than received refused.
   - Cancelling a PO after goods came in: refused, Close instead.
