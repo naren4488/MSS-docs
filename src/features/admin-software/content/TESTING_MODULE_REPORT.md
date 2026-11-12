@@ -376,10 +376,12 @@
   - Subsidy options; expiry after 15 days; approval with the final amount, which becomes the project contract.
   - "Different sizes" on the version (from the enquiry, kept on revisions), shown on the print line (E4, built 13 Nov).
   - Default bank details carry the branch: AU Small Finance Bank, Vaishali Nagar Jaipur (from IFSC AUBL0002206, 12 Nov).
+  - Client section (13 Nov, owner; 0165): Edit customer in a side panel (changes show on the quotation at once); project site address in parts, pre-filled from the customer, editable, printed on the quotation; Reference explained as an internal note. Tested in the browser on a test-DB copy: prefill, edit customer from the quotation, change and save the site, reopen, preview prints the site; 390 px fits.
   - **Share on WhatsApp with a secure PDF link (6.4, built 13 Nov):** opening Share stores the preview PDF and puts a 7-day link in the message ("View the quotation PDF: …"); Copy link; the link opens without signing in. `POST /quotations/{id}/share` (quotation view right).
 - **Pending:** nothing new.
 - **Tests:** `qt_quotations` 40, `cb_project_fields` 63 (CB04–CB08), `m6_statement_share` M6-32–M6-35; screens `quotations_ui`, `qf_form` 47, `cb_ui` 26 (CBU06–CBU07).
 - **Test by hand, normal use:**
+  - Quotation → Client Information: the site address shows the customer's address ("same as the customer"); Edit customer → change the email and address line 2 → Save: the quotation shows the new email and the site follows. Change the site to another village, Save Quotation, reopen: it stays; Preview prints the site; "Use customer address" puts the customer's back.
   - Create a quotation from a template: items, kW, price, subsidy (none / central / central + state), terms.
   - Preview and download the PDF; company details, customer address and "Stock Items" heading look right; the bank block shows branch Vaishali Nagar Jaipur.
   - Send it: the version is locked; change → new revision → send again.
