@@ -264,11 +264,12 @@
   - Progress steps (file login, bank file, work, DISCOM, payment, DCR, subsidy), the checklist, team, stock sent, GPS photo proof.
   - Change requests, completion rules.
   - Built 13 Nov (chunk B): different sizes; loan bank (Banks list) + branch; bank quotation (from the quotation, editable) and loan sanctioned beside the deal; From bank / From client cash expected, received, due (receipts marked bank or cash, loan tranches as bank, cash expected editable); "File issue" blockage with its reason and File: Clear / Some issue in the header; subsidy Applied → Disbursed (date, central, state) or Rejected (reason), not in the books; inverter app / login / password; list filters for bank, cash / bank due and waiting for subsidy.
+  - Gaps closed after chunk B: one list of every open File Issue (project, customer, reason, who is fixing it, days open; Projects → File: Some issue, also `?file=issue`) with File: Some issue / Clear filters; the wizard's "Different sizes" tick, prefilled from the quotation or enquiry (panel kW = capacity); bank / cash on the Finance invoice payment form feeds the project's bank and cash due.
 - **Pending:**
   - Open questions from section P: GST on the client amount, setting the partner's bill off against our charge, GSTIN for code firms, the per-watt vendorship fee, whether money owed to a partner blocks completion.
   - GST on partner / vendor-code / I&C charges.
   - The import of sites from the MSS and Arkshakti sheets.
-- **Tests:** `pm_projects_money` 41, `pe_projects_exec` 68, `pt_project_types` 37, `p_vendor_code_billing` 44, `cb_project_fields` 52 (CB09–CB52); screens `pt_create_ui` 189, `pt_details_ui` 162, `p_vc_ui` 42, `cb_ui` 18 (CBU08–CBU18).
+- **Tests:** `pm_projects_money` 41, `pe_projects_exec` 68, `pt_project_types` 37, `p_vendor_code_billing` 44, `cb_project_fields` 63 (CB09–CB63); screens `pt_create_ui` 189, `pt_details_ui` 162, `p_vc_ui` 42, `cb_ui` 26 (CBU08–CBU26).
 - **Test by hand, normal use:**
   - Wizard: create an Own (EPC) project from an approved quotation; check customer, kW, contract and site address.
   - Create a Partner, a Vendor code only and an I&C only project; the rate comes from the partner (else the default) and can be edited.
@@ -281,6 +282,8 @@
   - Complete the project; cancel another one with a reason.
   - Loan project (deal ₹1,90,000): pick the bank and branch, enter loan sanctioned ₹1,50,000; the card shows From bank 1,50,000 and From client cash 40,000; record ₹1,00,000 "from Bank (loan)" and ₹25,000 from the client: bank due 50,000, cash due 15,000.
   - Add a blockage "File Issue" → "Wrong K-number": the header reads File: Some issue; resolve it: File: Clear.
+  - Projects → File: Some issue: the Open file issues list shows each issue with its reason, who is fixing it and days open; the project link opens it; once resolved it leaves the list.
+  - Wizard from a quotation with sizes 3 / 5 / 6: the Commercials step has Different sizes ticked with 5 / 6; empty the inverter kW and Next is refused; the project saves 3 / 5 / 6 with capacity 3.
   - Subsidy Applied → the list's "Waiting for subsidy" shows it; Disbursed with date and amounts → it leaves that list. Save the inverter app, login ID and password and read them back.
 - **Test by hand, edge cases:**
   - Loan above the deal (₹3,50,000 on ₹3,00,000): cash expected 0, never negative; a typed cash expected replaces deal − loan until cleared.
@@ -329,15 +332,17 @@
 - **Done:**
   - One sale document with B2B / B2C series; due dates from terms; credit notes; receipts.
   - Partners and agents with commission; place of supply from the site state on project bills.
+  - Payment on a project's invoice asks "Money from": From client (cash) by default or From bank (loan); the project's bank / cash received and due follow (P4 gap, closed after chunk B).
 - **Pending:**
   - Dues figures and a dues filter on the partner list.
   - The section P open questions.
-- **Tests:** `bl_billing` 81, `bp_parties` 99, `e1_sale_document` 39, `a2_sales` 75, `b_terms` 89, `q12_gst_terms` 30; screens `bl_invoices_ui` 52, `bp_parties_ui` 201, `b_terms_ui` 144.
+- **Tests:** `bl_billing` 81, `bp_parties` 99, `e1_sale_document` 39, `a2_sales` 75, `b_terms` 89, `q12_gst_terms` 30, `cb_project_fields` CB57–CB60; screens `bl_invoices_ui` 52, `bp_parties_ui` 201, `b_terms_ui` 144, `cb_ui` CBU21–CBU23.
 - **Test by hand, normal use:**
   - New sale bill: choose B2B (party must have a GSTIN) or B2C; lines from stock / services or typed; any unit; GST per line.
   - Issue it: number B2B/2026-27/0001 or B2C/2026-27/0001; print / PDF ("TAX INVOICE", B2B / B2C sale bill).
   - Due date from the customer's terms; overdue tag after the date.
   - Record a receipt (cash / bank / UPI); partial payment; the bill shows paid and due.
+  - On a loan project's invoice, record ₹10,000 "From bank (loan)": the project's bank received goes up by 10,000 and bank due down; without a choice it counts as the client's cash.
   - Credit note against a bill: returns stock in the right unit and reduces what's due.
   - Bill to a partner; partner page shows terms, dues and both sides of the money.
   - Agents and commission approval.
