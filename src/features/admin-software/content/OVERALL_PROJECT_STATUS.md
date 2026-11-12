@@ -332,7 +332,7 @@ Header search, More actions and two-step removed (owner decisions 1.1–1.3, 13 
 - For team leaders (link on My day: "Mark crew attendance at the site", and on the Attendance page); HR / Super Admin see and may mark every crew
 - Day picker (today or earlier); one card per crew they lead: today's assigned sites, each member with today's status and every site mark (time · present / half day · project or note, other crew in brackets)
 - Tick members (Select all), Present or Half day, time (now by default), project (today's sites, or none with a site note), site note; the phone's location is taken when marking and shown
-- A person marked anywhere counts as present for the day (present beats half day); marks at several sites the same day are all kept; the day is the normal attendance and feeds payroll
+- A person marked anywhere counts as present for the day (present beats half day); **two half-day marks at two sites (or two times) make a full present day**, one half-day mark stays a half day (13 Nov); marks at several sites the same day are all kept; the day is the normal attendance and feeds payroll
 - Refused: no location, a future day, a time that isn't HH:MM, someone outside the crew (named in the result), a team they don't lead, more than 7 days back (leaders), a member on leave that day (HR changes leave)
 
 **Holidays (drawer)**
@@ -366,6 +366,7 @@ Header search, More actions and two-step removed (owner decisions 1.1–1.3, 13 
 ### Review status
 **Status:** reviewed and done (7 Nov 2026, migrations 0110–0112). Tests: `hr/x_attendance.sh` 28/28 and `hr/b_attendance.sh` 29/29 (both in `regress.sh`), `pw/attendance_ui` 63/63 at 1440/768/390 px, full regression A–X, fresh database M0 40/40. Plan and findings: [MODULE_REVIEW_PLAN.md](./MODULE_REVIEW_PLAN.md#module-4-attendance-and-leave).
 **Round 2, 13 Nov 2026 (migration 0155):** crew attendance at the site. Tests: `hr/m3_teams_people.sh` (M3-20–M3-34), `pw/m3_ui` (C01–C09) at 1440 / 390 px.
+**Follow-up, 13 Nov 2026 (BE 102888b, no migration):** two half-day crew marks = a present day. Tests: `hr/m3_teams_people.sh` M3-35–M3-37 (73/73).
 
 ## 5. Payroll and advances
 
@@ -382,6 +383,7 @@ Header search, More actions and two-step removed (owner decisions 1.1–1.3, 13 
 - Search by name; table on wide screens, cards on phones and tablets: payable days, gross, leave deduction, extra pay, other deductions, advance recovery, attendance corrections, net, paid status
 - Adjust a line (draft only, unpaid): **extra pay** — overtime, bonus, incentive, what it's for (needed with extra pay); other deduction; advance recovery automatic or a chosen amount
 - **Final settlement** tag on the line of someone who left in that month (days up to the leaving date; advance recovered up to the net pay, the rest stays a recoverable advance)
+- **No pay between leaving and rejoining** (13 Nov, from the exit and rejoin history): the leaving month pays up to the leaving date, a month wholly in the gap leaves the person off the run, the rejoining month pays from the rejoining date
 - Extra pay lines: incentives, referrals and **salary arrears** ("Salary arrears — <month> (paid ₹…, due ₹… at the salary from …)") from an approved back-dated salary change, once per month
 - Pay (opens the Pay salary drawer on that month); Payslip download
 - Advance approval limit (advance approve right; default ₹10,000)
@@ -424,6 +426,7 @@ Header search, More actions and two-step removed (owner decisions 1.1–1.3, 13 
 ### Review status
 **Status:** reviewed and done (7 Nov 2026, migration 0113). Tests: `hr/y_payroll.sh` 38/38 and `hr/c_payroll.sh` 27/27 (in `regress.sh`), `pw/payroll_ui` 75/75 at 1440/768/390 px plus HR's view, `pw/people_ui` 60/60 and `pw/attendance_ui` 63/63 rerun, full regression A–Y, fresh database through 0113 and 0113 down/up. Plan and findings: [MODULE_REVIEW_PLAN.md](./MODULE_REVIEW_PLAN.md#module-5-payroll-and-advances).
 **Round 2, 13 Nov 2026 (migration 0156):** final settlement and salary arrears. Tests: `hr/m3_teams_people.sh` (M3-70–M3-91); reruns `y_payroll` 38/38, `c2_payroll` 72/72.
+**Follow-up, 13 Nov 2026 (BE 102888b, no migration):** no pay in the gap between leaving and rejoining. Tests: `hr/m3_teams_people.sh` M3-100–M3-103 (73/73); reruns `y_payroll` 38/38, `c2_payroll` 72/72, `a_employees` 41/41.
 
 **Later (agreed):** statutory deductions (PF, ESI, professional tax, TDS); bank transfer file for bulk salary in net banking (format not final); project commission for employees in specific conditions (to discuss).
 
