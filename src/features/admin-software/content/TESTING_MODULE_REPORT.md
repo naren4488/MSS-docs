@@ -8,7 +8,7 @@
 - **Test data:** all business data was cleared on 12 Nov 2026, on production and locally. Logins, companies, settings, masters, the ledger list and employees remain. Start by creating a customer (address line 1 and state are required) and a project, then test with those.
 
 ## Overall
-**About 82 % complete** (the average of the 17 modules below). Every module is built, reviewed once and covered by automatic tests. What's left: the decisions now being built, the access matrix, the teams design, the sheet import and real data, and a few placeholders.
+**About 83 % complete** (the average of the 17 modules below). Every module is built, reviewed once and covered by automatic tests. What's left: the decisions now being built, the access matrix, the teams design, the sheet import and real data, and a few placeholders.
 
 **Last full regression (12 Nov 2026, after the data clear):** 2,518 API checks passed and 1 failed. The failure is V10, which checks the AU letterhead bank account that the data clear removed. The five end-to-end accounts runs passed 194/194.
 
@@ -16,9 +16,9 @@
 |---|---|---|---|
 | 1 | Platform: sign-in, companies, users, access | 90 % | Working; header search built 13 Nov; access by own / team / department pending |
 | 2 | Settings and masters | 90 % | Working; round-2 decisions 2.1–2.4 built 13 Nov (team master rights, signature / stamp / terms / UPI QR on prints, vendorship switch only, template editor with preview); company logo fixed and shown in the sidebar; MSS logo from `Mahi2.svg` set locally, production pending |
-| 3 | People: employees, teams | 75 % | Working; teams design and small HR gaps pending |
-| 4 | Attendance and leave | 85 % | Working |
-| 5 | Payroll and advances | 75 % | Working; incentive / commission and bank file pending |
+| 3 | People: employees, teams | 85 % | Working; round-2 decisions 3.1–3.6 built 13 Nov (crews, crew week board, exit checklist and history, final settlement, PAN + emergency contact, back-dated salary with approval); month-card formula and photo access pending |
+| 4 | Attendance and leave | 90 % | Working; crew attendance at the site by team leaders (GPS, several sites a day) built 13 Nov |
+| 5 | Payroll and advances | 80 % | Working; final settlement and salary arrears built 13 Nov; AU bank file sample and CA check pending |
 | 6 | Customers | 90 % | Working; same mobile with a warning and family link added 13 Nov; sheet import pending |
 | 7 | Enquiries | 85 % | Working; sheet import and the daily report pending |
 | 8 | Site visits, fees, calendar | 75 % | Working; three known issues pending |
@@ -133,71 +133,87 @@
   - A person with project view only: Document templates opens read-only (no Save, no Advanced).
   - A company without a logo: initials on the badge colour; a logo of an odd shape stays inside 40–48 px.
 
-### 3. People: employees, teams (75 %)
-- **Done:** employees with salary, bank details and address (current + permanent); teams per company; exit; employee pages.
+### 3. People: employees, teams (85 %)
+- **Done:**
+  - Employees with salary, bank details, address (current + permanent), **PAN** (format checked, unique per company, optional) and an **emergency contact** (name, relation, phone).
+  - Teams are **installation crews**: a person can be in several teams; the leader is always a member; past memberships are kept.
+  - A team assigned to a project's site work shows in **every member's My day and calendar**, following who is in the team on each day (someone added later gets it from that day; someone removed drops off from that day).
+  - **Crew week board** on Employees (replaces the Site Deployment Board): rows per team and member, a column per day, the project in each cell (✓ when marked at the site), "2 sites" as a hint.
+  - **Exit checklist** in the Mark as left dialog: advance outstanding, tools with them, open tasks and site visits, leave waiting, days without attendance, unpaid salary, crews they lead, final salary preview. It only blocks while an advance is outstanding and no recovery is chosen.
+  - **Exit and rejoin history** on the employee page (joined / left / rejoined, date, reason, who did it), backfilled from the old records; rejoining asks for the date and reason.
+  - **Back-dated salary changes** wait for a Director's (or Super Admin's) approval on the salary tab; future-dated changes work as before.
+  - Crew pay is not project cost (nothing books it to a project).
 - **Pending:**
-  - The teams design: how teams link to projects, tasks and attendance.
   - The formula behind the profile month cards.
-  - Exit history.
-  - Who can see employee photos (today any signed-in member of the company sees colleagues' photos on avatars; access matrix).
-- **Tests:** `a_employees` 41; screens `people_ui` 60.
+  - Who can see employee photos (access matrix).
+  - "Stock with them": only tools are tracked per person; materials are not.
+- **Tests:** `m3_teams_people` 66 (with Modules 4 and 5), `a_employees` 41 (A13 and A33–A38 need the QA designations, which the production copy doesn't have), `w_people` 43; screens `m3_ui` 50 at 1440 / 390, `people_ui` 20 at 1440 (60 at three widths).
 - **Test by hand, normal use:**
-  - Add an employee: name, phone, designation, department, joining date, salary, bank details, current address, permanent address ("same as current" tick).
-  - Edit an employee; the change shows in their history.
-  - Upload a photo and documents; the photo then shows (instead of initials) on the Employees list, Site Deployment Board, the attendance board and Analytics → top performers.
-  - Teams: create a team, add and remove members; the team shows on each member's page.
-  - Employee in two companies: separate employee record and attendance in each.
-  - Mark an employee as exited with a date; they drop out of pickers for new work but their past records stay.
+  - Add an employee with PAN (lower case is fine, it's saved in capitals) and an emergency contact; they show on the profile.
+  - Make two teams and put the same person in both; the team page says "also in …".
+  - Assign a team to a project (project → Assigned team, with dates); each member sees "Site work — <project>" in My day and the days in their calendar.
+  - Employees → Crew week board: the crew, its members and the project each day; previous / next week.
+  - Mark as left: the checklist lists the advance, tasks, visits, leave and final salary; tick "Recover the advance from the final salary" and confirm; the history card shows Left with the reason.
+  - Take them back with a date and reason; the history shows Rejoined.
+  - Change a salary from a past date: it says it waits for a Director; sign in as a Director and approve on the salary tab; the arrears per month are listed.
 - **Test by hand, edge cases:**
-  - Same phone as another employee in the company: refused.
-  - Salary 0: allowed only when "not on payroll".
-  - Permanent address untick "same as current": both addresses required separately; PIN must be 6 digits.
-  - Exited employee: can't be assigned new tasks, visits or attendance after the exit date.
-  - Phone width: the employee page and its tabs work.
+  - Same PAN on a second person in the company: refused; a wrong PAN (ABCD1234F): refused on the form.
+  - A leader can't be removed from their team until another leader is set.
+  - Add someone to a crew mid-assignment: earlier days stay off their calendar.
+  - Someone at two sites on one day: the board shows both with "2 sites", never a block.
+  - Leave with an advance outstanding and no recovery ticked: Confirm stays disabled (the API refuses too).
+  - HR (not a Director) can ask for a back-dated change but not approve it; a second back-dated change while one waits is refused.
+  - Phone width: the checklist dialog scrolls inside; the week board scrolls inside its card.
 
-### 4. Attendance and leave (85 %)
+### 4. Attendance and leave (90 %)
 - **Done:**
   - Daily attendance, half days, leave requests and approvals with an alert.
   - Leave balances, attendance locked after payroll, separate records per company.
-- **Pending:** links to teams and projects (comes with the teams design).
-- **Tests:** screens `attendance_ui` 63, plus the attendance checks inside the payroll suites.
+  - **Crew attendance at the site** (`/crew-attendance`, linked from My day for leaders and from Attendance): a team leader ticks crew members and marks present or half day, with a time and the phone's location; the project is optional (today's assigned sites are offered). Every mark is kept, several sites a day; the day itself is the normal attendance (present beats half day) and feeds payroll as usual. HR / Super Admin may mark any crew.
+- **Pending:** nothing from the decisions.
+- **Tests:** `m3_teams_people` (M3-20 to M3-34), screens `m3_ui` (C01–C09 at 1440 / 390), `attendance_ui` 63, plus the attendance checks inside the payroll suites.
 - **Test by hand, normal use:**
   - Mark attendance for today: present, absent, half day, paid leave, half paid leave.
   - Mark for a whole team or many people at once.
   - Apply for leave as an employee (dates, type, reason); the approver gets an alert; approve; balance goes down.
   - Reject a leave with a reason; the employee sees it.
   - Attendance page: month view per person with totals.
+  - As a crew leader on a phone: My day → Mark crew attendance; tick members, Present, the time, the project; allow location; each member shows "09:15 · Present · <project>". Mark one of them again at a second site as half day: they stay present, both marks are listed.
 - **Test by hand, edge cases:**
   - Leave longer than the balance: warning or refusal as set.
   - Overlapping leave requests: refused.
-  - Attendance for a future date: refused.
-  - After payroll for a month is approved, that month's attendance can't be changed; unlocking needs HR / Super Admin with a reason.
+  - Attendance for a future date: refused (also for crew marks).
+  - Crew mark without location, for someone outside the crew, or by someone who doesn't lead the team: refused (the person outside the crew is named).
+  - A crew member on leave that day isn't marked by the leader (HR changes leave).
+  - A leader can mark up to 7 days back; HR any day.
+  - After payroll for a month is paid, that month's attendance can't be changed by a leader; unlocking needs HR / Super Admin with a reason.
   - Sunday is a normal working day (not auto-off).
   - Someone without the approve right can't approve leave.
 
-### 5. Payroll and advances (75 %)
+### 5. Payroll and advances (80 %)
 - **Done:**
-  - Build → review → approve → pay, payslip PDF, extra pay (OT / bonus / incentive).
+  - Build → review → approve → pay, payslip PDF, extra pay (OT / bonus / incentive), incentive / referral rules.
   - Advances with a limit and a second approver; statutory deductions; payroll in the books.
+  - **Final settlement:** the leaving month's line pays the days up to the leaving date and recovers the advance up to the net pay; the rest stays a recoverable advance. The line is tagged "Final settlement" and the payslip says so.
+  - **Salary arrears:** when a Director approves a back-dated change, the difference for each month already approved or paid is added to the next payroll as "Salary arrears — <month> (paid ₹…, due ₹…)" lines; a lower salary becomes a correction instead.
 - **Pending:**
-  - Incentive / commission per converted project for sales staff.
   - The salary bank file, which needs an AU bank sample.
   - CA check of the FY 2026-27 statutory figures.
-- **Tests:** `y_payroll` 38, `c2_payroll` 72; screens `payroll_ui` 75.
+- **Tests:** `m3_teams_people` (M3-70 to M3-91), `y_payroll` 38, `c2_payroll` 72; screens `payroll_ui` 75.
 - **Test by hand, normal use:**
   - Build payroll for last month: everyone on payroll is listed with days, earnings, deductions, net.
   - Review → approve → pay; download a payslip PDF; the books get the salary entries.
-  - Add extra pay (OT / bonus / incentive) to one person; it shows on their payslip.
+  - Someone left mid-month with an advance: their line says Final settlement, pays the days worked and recovers the advance.
+  - After an approved back-dated raise, build the next month: the person's line shows the arrears lines per month.
   - Salary advance: request, approve, pay; it's deducted in the next payroll.
   - Payroll settings: components and statutory deductions.
 - **Test by hand, edge cases:**
-  - Advance above ₹10,000 needs a second approver.
-  - Approver can't approve their own advance.
+  - Advance bigger than the final salary: net ₹0, the rest stays outstanding on the advance.
+  - Advance above ₹10,000 needs a second approver; nobody approves their own advance.
+  - Recalculating the run doesn't add the arrears twice.
   - Building payroll for the current (unfinished) month: refused.
   - Approving payroll twice / paying twice (double click): only once.
-  - Employee who joined or exited mid-month: pro-rated pay.
   - Person with no bank details: shown as a problem before paying.
-  - Changing attendance after approval: blocked (see Attendance).
 
 ### 6. Customers (90 %)
 - **Done:**

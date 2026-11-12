@@ -227,6 +227,7 @@ Header search, More actions and two-step removed (owner decisions 1.1–1.3, 13 
 
 ### Review status
 **Status:** reviewed and done (7 Nov 2026, migration 0108). Tests: `hr/v_settings.sh` 28/28, `pw/m2_ui` 42/42 at 1440/768/390 px, full regression A–V, fresh database M0 40/40.
+**Round 2, 13 Nov 2026 (migrations 0155, 0156):** owner decisions 3.1a–3.6 built. Tests: `hr/m3_teams_people.sh` 66/66, `pw/m3_ui` 50/50 at 1440 / 390 px; reruns `a_employees`, `w_people` 43/43, `pw/people_ui` 20/20 at 1440.
 **Plan step 4 (C), 11 Nov 2026 (migration 0137):** company address in parts shared by both screens, GST state from the address state, address placeholders in document templates. Tests: `hr/c_addresses.sh` (C60–C61, C93–C94), `pw/c_addresses_ui` (SC01–SC04) at 1440/768/390 px, `pw/m1_ui`.
 **Owner decisions round 2, 13 Nov 2026 (2.1–2.4, migration 0154):** team master rights, signature / stamp / terms / UPI QR on prints, vendorship switch only (code numbers dropped), template editor with preview, leftover templates removed; plus the company-logo fix and the sidebar logo. Tests: `hr/m2_settings_round2.sh` 46/46, `pw/m2_round2_ui` 26/26 (1440); `v_settings` 28/29 (V10 legacy), `h1a4_master_conversion` 39/39, `bl_billing` 81/81.
 **Plan step 0 (H1), 10 Nov 2026:** master values in use (refusal with counts, Deactivate in the dialog, inactive values readable). Tests: `hr/h1a4_master_conversion.sh` (H1 part, with A4: 39/39), `pw/h1a4_ui` 73/73 at 1440/768/390 px.
@@ -238,25 +239,28 @@ Header search, More actions and two-step removed (owner decisions 1.1–1.3, 13 
 ### Features
 
 **Employees list (`/employees`)**
-- Tabs: Payroll, Site Deployment Board
+- Tabs: Payroll, Crew week board
 - Search by name, phone, email or Aadhaar
 - Filters: department, designation, status (Active / Inactive / All)
 - Stats bar: whole-company total, active and designations (`GET /employees/summary`)
 - Pagination with rows per page; the table scrolls sideways on narrow screens so Actions stay reachable
-- Add New Employee: name, phone (stored as 10 digits), alternate phone, email (stored lower-case), date of birth (18+), Aadhaar (12 digits, spaces allowed), current address in parts and permanent (home) address with a "same as current" tick (ticked for a new person), department + designation (more than one allowed), monthly salary (more than 0; 0 only when not on payroll — outside CA, owner, director), joining date, "on payroll here" and "track attendance here" switches. First password is the phone number; the person must change it at first sign-in
+- Add New Employee: name, phone (stored as 10 digits), alternate phone, email (stored lower-case), date of birth (18+), Aadhaar (12 digits, spaces allowed), PAN (optional, like ABCDE1234F, saved in capitals, unique in the company), emergency contact (name, relation, 10-digit phone), current address in parts and permanent (home) address with a "same as current" tick (ticked for a new person), department + designation (more than one allowed), monthly salary (more than 0; 0 only when not on payroll — outside CA, owner, director), joining date, "on payroll here" and "track attendance here" switches. First password is the phone number; the person must change it at first sign-in
 - Row buttons: Pay (Module 5), Task (assign a task)
-- Row ⋮: Edit profile, Deactivate / Reactivate, Reset password, View details
-- Site Deployment Board: week view of who is deployed where, previous / next 7 days
-- **Profile photos as avatars** (13 Nov): each person's photo, or their initials, on the Employees list, Site Deployment Board, the employee panel, the attendance board and Analytics → top performers; from `GET /employees/photos` (any signed-in member of the company; only people with a photo, 15-minute links, refreshed every 10 minutes and right after a photo is uploaded or removed)
+- Row ⋮: Edit profile, Deactivate (Mark as left, with the exit checklist) / Reactivate (Take back: rejoining date and reason), Reset password, View details
+- **Crew week board** (13 Nov, replaces the Site Deployment Board): rows per team and its members, a column per day (Mon–Sun, previous / next / this week), the project in each cell linked to the project (✓ = marked at the site by the crew leader), team and member names link to their pages; a person at two sites on a day gets a "2 sites" hint, never a block; scrolls inside its card on phones
+- **Profile photos as avatars** (13 Nov): each person's photo, or their initials, on the Employees list, the employee panel, the attendance board and Analytics → top performers; from `GET /employees/photos` (any signed-in member of the company; only people with a photo, 15-minute links, refreshed every 10 minutes and right after a photo is uploaded or removed)
 
 **Edit employee drawer**
-- Profile: name, email, alternate phone, joining date, current address in parts, permanent (home) address or "same as current" (off for people added before), Aadhaar, date of birth (phone can't change); an address split from old text shows a note to check it
+- Profile: name, email, alternate phone, joining date, current address in parts, permanent (home) address or "same as current" (off for people added before), Aadhaar, PAN, emergency contact (name, relation, phone; an empty box clears it), date of birth (phone can't change); an address split from old text shows a note to check it
 - Role & designation: add designations, set primary, remove, save (exactly one primary)
-- Salary: record a change from a future date (once a month, never back-dated), with reason; salary history table (effective dates)
+- Salary: record a change with reason (once a month, after the latest change); a future date is saved at once; **a past date waits for a Director's (or Super Admin's) approval** — the "Back-dated salary changes" list shows old → new, who asked, the status, Approve / Reject for Directors, and once approved the arrears per month and the payroll that pays them; salary history table (effective dates)
 - Bank: add an account (bank name from the Indian bank list, holder, account number 9–18 digits, IFSC checked live); the first account is primary; Remove (needs delete right) makes the next account primary
 
 **Employee details (`/employees/:employeeId`)**
-- Header: Edit Profile, Deactivate (leaving date, reason) / Activate
+- Header: Edit Profile, Deactivate / Activate
+- **Mark as left (exit checklist, 13 Nov):** leaving date and reason, then what is still open: advance outstanding, tools with them, open tasks, open site visits, leave waiting, days this month without attendance, unpaid salary months, crews they lead, and the final salary (days paid, advance recovered, to pay before PF / ESI / TDS, advance still to recover). Warnings only; Confirm stays disabled while an advance is outstanding until "Recover the advance from the final salary" is ticked (or a cash repayment is recorded first)
+- **Exit and rejoin history** card: every join, leave and rejoin with its date, reason and who did it (older records backfilled)
+- Profile rows include PAN and the emergency contact
 - Profile card (photo not shown yet): current address (with a **Check address** chip while it is the split old text) and permanent address ("Same as current address" when ticked)
 - Documents: upload PDF, JPG, PNG or WebP up to 15 MB with a type and notes; view, download, delete
 - HR & Finance tabs:
@@ -268,11 +272,12 @@ Header search, More actions and two-step removed (owner decisions 1.1–1.3, 13 
 
 **Teams list (`/teams`)** (each company has its own teams)
 - Stats; search (name and notes); status filter; sort; pagination
+- Teams are installation crews (a leader and helpers). A person can be in several teams; the leader is always a member
 - Create team: name, notes, members (at least 2), leader from the members
 - Edit, deactivate / activate (buttons follow the team rights)
 
 **Team details (`/teams/:teamId`)**
-- Overview; Manage members; change leader (replace the leader before removing them)
+- Overview; members show "also in <other teams>"; Manage members; change leader (replace the leader before removing them); past memberships are kept (joined / left dates)
 - Tabs: Projects worked on, Scheduled installations, Work history, Tasks assigned (team calendar work and tasks given to current members, with who has each)
 
 **Moved elsewhere:** Agents are in the Finance menu (Module 12); the task catalog is in the mss-nk portal (Tasks: who does what).
@@ -280,20 +285,25 @@ Header search, More actions and two-step removed (owner decisions 1.1–1.3, 13 
 **Automatic**
 - Names (people, parties, items) saved with single spaces everywhere
 - Deactivating someone takes them off their teams (and clears them as leader)
+- A team assigned to a project's site work (project → Assigned team, from / to dates) puts the work in every member's **My day** ("Site work — <project>", with the crew and "you lead") and **calendar** (installations, one entry per day, linked to the project), following who is in the team each day: someone added later gets it from that day, someone removed drops off from that day. Without the project view right a person still sees their own crew work. The leader marks work items done with GPS photos as before
+- Crew pay is not project cost: salaries are never booked to a project
 
 ### APIs
 - `/employees` (list, summary, create, update — `current_address_parts`, `permanent_address_parts`, `permanent_same_as_current` (the server copies the current parts); assignments, salary history, salary by month, documents, bank accounts, deactivate / reactivate, attendance summary)
 - `GET /employees/photos`: employee id, user id and a 15-minute link for everyone in the company with a profile photo (avatars; any signed-in member, 13 Nov)
-- `/teams` (members, leader, tasks)
+- `/teams` (members with `other_teams`, leader, tasks)
+- `GET /crew/week-board?from=` (team view): 7 days, teams, members, per-day sites (`assigned` / `marked`, time) and `several_sites`
+- `GET /employees/{id}/exit-checklist?leaving_date=`, `GET /employees/{id}/service-history`; `POST /employees/{id}/deactivate` takes `advance_action` (`deduct_from_final_salary`, needed while an advance is outstanding); `POST /employees/{id}/reactivate` takes `rejoin_date`, `reason`
+- Employee create / update take `pan`, `emergency_contact_name`, `emergency_contact_relation`, `emergency_contact_phone`
+- `GET /salary-changes?status=&employee_id=`, `POST /salary-changes/{id}/approve | reject` (Director / Super Admin); `POST /employees/{id}/salary-history` with a past date returns `status: pending_approval`
 
 ### Review status
 **Status:** reviewed and done (7 Nov 2026, migration 0109). Tests: `hr/w_people.sh` 43/43 (in `regress.sh`), `pw/people_ui` 60/60 at 1440/768/390 px, full regression A–W.
 **Plan step 4 (C), 11 Nov 2026 (migration 0137):** current and permanent address in parts (Q7). Tests: `hr/c_addresses.sh` (C50–C53), `pw/c_addresses_ui` (EM01–EM06) at 1440/768/390 px, `hr/a_employees.sh` 41/41, `pw/people_ui`.
 
 **Later, with the module that owns it**
-- **Teams end to end:** how teams work with Projects, Tasks, Attendance and other modules — to discuss after the main modules are done.
 - Departments and designations shared by all companies → access-control redesign.
-- Profile photo and exit history display → Documents (17).
+- Profile photo access → access matrix.
 - Leave requests and attendance dates (UTC vs IST) → Attendance (4).
 - Site visit "Complete" saving only file names → Site visits (8).
 - Team project overview loading every project → Projects (10).
@@ -317,6 +327,13 @@ Header search, More actions and two-step removed (owner decisions 1.1–1.3, 13 
 - **Sunday is a normal working day** (decision 7 Nov 2026): it can be marked like any day; leave over a Sunday uses it
 - Without attendance edit: only your own row; salary, payable and advances only with payroll rights
 - Work-log and "also assigned" hints; empty states
+
+**Crew attendance at the site (`/crew-attendance`, 13 Nov)**
+- For team leaders (link on My day: "Mark crew attendance at the site", and on the Attendance page); HR / Super Admin see and may mark every crew
+- Day picker (today or earlier); one card per crew they lead: today's assigned sites, each member with today's status and every site mark (time · present / half day · project or note, other crew in brackets)
+- Tick members (Select all), Present or Half day, time (now by default), project (today's sites, or none with a site note), site note; the phone's location is taken when marking and shown
+- A person marked anywhere counts as present for the day (present beats half day); marks at several sites the same day are all kept; the day is the normal attendance and feeds payroll
+- Refused: no location, a future day, a time that isn't HH:MM, someone outside the crew (named in the result), a team they don't lead, more than 7 days back (leaders), a member on leave that day (HR changes leave)
 
 **Holidays (drawer)**
 - Company holidays per company; list by source (Company / Calendar)
@@ -343,10 +360,12 @@ Header search, More actions and two-step removed (owner decisions 1.1–1.3, 13 
 ### APIs
 - `/attendance/board` (mark, autofill, clear), `/attendance` (filters: employee, team, status, dates, search), `/attendance/statuses`, `/attendance/leave-balances`, `/attendance/employees`, `/attendance/post-salary`
 - `/holidays`, `/leave-requests` (approve / reject / revoke / dismiss need attendance → approve)
+- `GET /crew/teams?date=` (crews the person leads, or all for attendance edit, with members, day status, marks and today's sites), `POST /crew/attendance` (team_id, employee_ids, date, status, time, latitude, longitude, accuracy_m, project_id, site_note; per-person results), `GET /crew/attendance?date=&employee_id=`
 - **Backend only:** `/attendance/post-salary` (the Pay drawer's "Prepare salary" button calls it; it no longer runs when the drawer opens)
 
 ### Review status
 **Status:** reviewed and done (7 Nov 2026, migrations 0110–0112). Tests: `hr/x_attendance.sh` 28/28 and `hr/b_attendance.sh` 29/29 (both in `regress.sh`), `pw/attendance_ui` 63/63 at 1440/768/390 px, full regression A–X, fresh database M0 40/40. Plan and findings: [MODULE_REVIEW_PLAN.md](./MODULE_REVIEW_PLAN.md#module-4-attendance-and-leave).
+**Round 2, 13 Nov 2026 (migration 0155):** crew attendance at the site. Tests: `hr/m3_teams_people.sh` (M3-20–M3-34), `pw/m3_ui` (C01–C09) at 1440 / 390 px.
 
 ## 5. Payroll and advances
 
@@ -362,6 +381,8 @@ Header search, More actions and two-step removed (owner decisions 1.1–1.3, 13 
 - "Out of date" banner with Recalculate when attendance or salary changed after building; Approve (payroll approve; waits for recalculation); Cancel payroll with a reason (only while nobody is paid)
 - Search by name; table on wide screens, cards on phones and tablets: payable days, gross, leave deduction, extra pay, other deductions, advance recovery, attendance corrections, net, paid status
 - Adjust a line (draft only, unpaid): **extra pay** — overtime, bonus, incentive, what it's for (needed with extra pay); other deduction; advance recovery automatic or a chosen amount
+- **Final settlement** tag on the line of someone who left in that month (days up to the leaving date; advance recovered up to the net pay, the rest stays a recoverable advance)
+- Extra pay lines: incentives, referrals and **salary arrears** ("Salary arrears — <month> (paid ₹…, due ₹… at the salary from …)") from an approved back-dated salary change, once per month
 - Pay (opens the Pay salary drawer on that month); Payslip download
 - Advance approval limit (advance approve right; default ₹10,000)
 
@@ -377,7 +398,7 @@ Header search, More actions and two-step removed (owner decisions 1.1–1.3, 13 
 - Give advance: HR or the employee asks; within the limit (and not your own) it's approved and paid at once; above it, or without approve rights, it's sent as a request
 - Advance history: status (waiting for approval, approved, rejected, …); Approve / Reject (approve right; nobody approves their own; above the limit someone other than the requester); Pay advance; recovered from salary or Record repayment in cash (advance edit)
 
-**Payslip PDF** (per person per month): earnings, extra pay, deductions, advance recovered, payments, advance left. Statutory deductions are not included yet.
+**Payslip PDF** (per person per month): earnings ("Final settlement: salary for N of M days (left on …)" in the leaving month), extra pay with arrears lines, deductions, advance recovered, payments, advance left. Statutory deductions are not included yet.
 
 **Add / Edit employee**
 - "On payroll here" and "Track attendance here" switches; salary needed only when on payroll (staff with no salary: outside CA, owner, director)
@@ -389,17 +410,20 @@ Header search, More actions and two-step removed (owner decisions 1.1–1.3, 13 
 - Attendance, leave or salary changes re-price unpaid lines, or flag the month "out of date" if that fails
 - After a month is paid, attendance changes (HR / Super Admin with a reason) add a correction at that day's rate to the next salary (see Module 4)
 - Salary, advance recovery, advances and repayments post to the books; when something can't be posted a warning shows, with "Post to books"
+- A Director's approval of a back-dated salary change records the arrears of every month already approved or paid since the effective date; the next payroll pays them (a lower salary becomes a correction there); draft months from the effective date are flagged for recalculation
 
 **Added in Accounts round 2 (0133):** salary structure on the employee (basic %, HRA %, allowances, PF / ESI on-off, UAN, ESIC no., PAN, tax regime and old-regime deductions, month preview); PF (12 %, EPS / EPF split, ₹15,000 ceiling, admin, EDLI), ESI (0.75 % / 3.25 % up to ₹21,000), TDS on salary from the yearly estimate with a monthly override; payslip, payroll register (CSV), PF (CSV + ECR), ESI and TDS files; employer PF / ESI expense and PF / ESI / TDS payable in the books; incentive / referral rules per employee (per converted project with monthly threshold, per project brought, per watt brought) as editable extra pay, each project once; AU Small Finance Bank bulk salary file (CSV / Excel, columns in Payroll settings, missing bank details listed); Payroll settings page (rates, slabs, bank file); HR approves, paying needs the pay right; nobody approves a payroll they built.
 
 ### APIs
 - `/payroll/runs` (generate, recalculate, approve, cancel), `/payroll/items` (adjust, pay, payslip), `/payroll/employee-items`, `/payroll/payments` (undo), `/payroll/books-status`
+- `/payroll/items` and `/payroll/runs/{id}/items` carry `final_settlement` and `leaving_date`; extra lines may be `kind: arrears`
 - `/advances` (submit, approve, reject, pay, repay, cancel, deductions), `/advances/settings` (approval limit)
 - `/accounts/payroll-ledgers`
 - **Backend only:** cancel an advance; advance deductions list
 
 ### Review status
 **Status:** reviewed and done (7 Nov 2026, migration 0113). Tests: `hr/y_payroll.sh` 38/38 and `hr/c_payroll.sh` 27/27 (in `regress.sh`), `pw/payroll_ui` 75/75 at 1440/768/390 px plus HR's view, `pw/people_ui` 60/60 and `pw/attendance_ui` 63/63 rerun, full regression A–Y, fresh database through 0113 and 0113 down/up. Plan and findings: [MODULE_REVIEW_PLAN.md](./MODULE_REVIEW_PLAN.md#module-5-payroll-and-advances).
+**Round 2, 13 Nov 2026 (migration 0156):** final settlement and salary arrears. Tests: `hr/m3_teams_people.sh` (M3-70–M3-91); reruns `y_payroll` 38/38, `c2_payroll` 72/72.
 
 **Later (agreed):** statutory deductions (PF, ESI, professional tax, TDS); bank transfer file for bulk salary in net banking (format not final); project commission for employees in specific conditions (to discuss).
 
