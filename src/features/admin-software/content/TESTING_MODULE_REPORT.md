@@ -15,7 +15,7 @@
 | # | Module | Done | Status |
 |---|---|---|---|
 | 1 | Platform: sign-in, companies, users, access | 90 % | Working; header search built 13 Nov; access by own / team / department pending |
-| 2 | Settings and masters | 91 % | Working; duplicate master values merged and blocked (7.1, 13 Nov); round-2 decisions 2.1–2.4 built 13 Nov (team master rights, signature / stamp / terms / UPI QR on prints, vendorship switch only, template editor with preview); company logo fixed and shown in the sidebar; MSS logo from `Mahi2.svg` set on production and locally |
+| 2 | Settings and masters | 91 % | Working; duplicate master values merged and blocked (7.1, 13 Nov); round-2 decisions 2.1–2.4 built 13 Nov (team master rights, signature / stamp / terms / UPI QR on prints, vendorship switch only, template editor with preview); company logo fixed and shown in the sidebar; MSS logo from `Mahi2.svg` set on production and locally; up to 3 number series per document (12 Nov) |
 | 3 | People: employees, teams | 85 % | Working; round-2 decisions 3.1–3.6 built 13 Nov (crews, crew week board, exit checklist and history, final settlement, PAN + emergency contact, back-dated salary with approval); month-card formula and photo access pending; Teams switched off (Coming soon) 12 Nov |
 | 4 | Attendance and leave | 95 % | Working; round-2 decisions 4.1–4.8 all built or decided 13 Nov (crew attendance at the site, paid-leave carry-forward with a 6-day cap, worked on a company holiday) |
 | 5 | Payroll and advances | 82 % | Working; final settlement, salary arrears and holiday-work pay built 13 Nov; AU bank file sample and CA check pending |
@@ -90,6 +90,7 @@
   - Approval limits: "Late follow-up alert (sales)" in days (7.6, default 2, 1–30).
   - Company settings; master lists with "in use" protection (a value in use can only be deactivated).
   - Payment modes, bank ledgers, Approval limits (PO / SO / extra-quantity %), Number series (19 series).
+  - Number series: up to 3 series per document kind (12 Nov, owner; migration 0162) — name, own format and counter, one default pre-filled on create forms, the others pickable; bills / SO / PO keep the series picked on the draft until Issue / Confirm / Send. Tested: 25 API checks on a copy of the test database (add, rename, next number, default switch, 4th refused, used or default series kept, unused removed, picked vs default numbering, unknown series 422, PO numbered from the draft's series) and in the browser (add a series in Settings, pick it on a new customer → its prefix).
   - Enquiry sources: "Social Media" renamed Meta Ads (same code), Data Calling and Maintenance & Sales Team added; a Banks list (14 banks); DISCOM JVVNL with 15 sub-division areas (built 13 Nov, migration 0152).
   - Each team edits its own master lists (13 Nov, decision 2.1, migration 0154): one right per master group (`masterdata_<group>`, create / edit / delete) in the designation access matrix; Accounts → finance, GST & tax and books lists; CA → GST & tax and books lists; HR → HR & team and employee data lists (new Leave Types list); Stores → stock lists; Sales manager → enquiry and quotation lists; Project admin → project lists; Super Admin and `masterdata` keep every group. The server checks the group of the item or category; the Masters page shows Add / Edit / Delete only on the person's groups and "View only" elsewhere.
   - Prints (decision 2.2): signature and stamp images (PNG / JPG ≤ 1 MB) in Settings → Company, printed as "For <legal name> / stamp + signature / Authorised Signatory" on sale bills (print + PDF), quotations, purchase orders, sale orders and delivery challans (text only without images); default invoice terms that fill a new sale bill (editable per bill, printed at the bottom); company UPI ID (name@bank) giving a "Scan to pay ₹X" QR on issued invoices for the amount due (hidden with no UPI ID or nothing due).
@@ -110,6 +111,7 @@
   - Settings → Company: logo, address, bank details printed on invoices.
   - MSS company: the logo is the new MSS mark (sun, solar-panel “MSS”, “MAHI SOLAR SOLUTION”) in the Settings box, the sidebar and on PDFs; it stays sharp and inside 40–48 px in the sidebar.
   - Settings → Approval limits: change the PO limit, SO limit and extra-quantity % as Super Admin or Director; others see them read-only; the change shows in Activity.
+  - Settings → Number series → **+ Add series** on Sale bills – B2B (e.g. name AMC, prefix AMC): the preview shows AMC/2026-27/0001. New sale bill (B2B): the **Series** picker shows Main (default) and AMC; pick AMC, save the draft, issue → AMC/2026-27/0001; a second bill left on the default gets B2B/…. Make AMC the default: new forms pre-fill it. Try Remove on AMC: refused (used).
   - Settings → Number series: change prefix, year part, digits and next number; the preview updates; create that document and check the number.
   - Masters as an HR person: HR & Team → Leave Types → Add item "Comp off"; open Stock & Tools: "View only", no Add / Edit / Delete. As an accountant: add a payment mode; as a stores manager: add a unit.
   - Settings → Company: upload a logo, reload the page — the logo is still there; the sidebar shows it at the top. Remove logo → the box and the sidebar go back to the icon / initials.
@@ -124,7 +126,7 @@
 - **Test by hand, edge cases:**
   - Two values with the same name in one list: refused — also "META ADS", " meta  ads " or renaming "BRD calling" to "ai chatbots"; renaming a value to a new casing of its own name ("BRD Calling") is fine; a same-named switched-off value says "switch it back on instead".
   - DISCOM areas: the same area name under two different DISCOMs is allowed.
-  - Number series: next number below the last one used is refused; two series with the same prefix (e.g. B2B and B2C) refused.
+  - Number series: next number below the last one used is refused; two series with the same prefix (e.g. B2B and B2C, or series 1 and 2 of one kind) refused; a 4th series refused; the default or a series that already gave numbers can't be removed.
   - Year part off: one running count; on: restarts every 1 April.
   - Shared series (customers, projects, enquiries …) can only be changed by a Super Admin.
   - A person without the settings right: masters and settings are read-only, edit buttons hidden, API refuses.
@@ -140,6 +142,7 @@
 
 ### 3. People: employees, teams (85 %)
 - **Done:**
+  - **Employee documents** (13 Nov, owner): one current file per type, a new upload replaces it and the old one is kept as a previous version ("Other" keeps every file; deleting the current brings back the previous); every upload form says **Max 1 MB** and warns before sending a bigger file (production proxy limit; the cause of the "Network error" on a 2.2 MB PDF).
   - Employees with salary, bank details, address (current + permanent), **PAN** (format checked, unique per company, optional) and an **emergency contact** (name, relation, phone).
   - Teams are **installation crews**: a person can be in several teams; the leader is always a member; past memberships are kept.
   - A team assigned to a project's site work shows in **every member's My day and calendar**, following who is in the team on each day (someone added later gets it from that day; someone removed drops off from that day).
@@ -154,7 +157,7 @@
   - The formula behind the profile month cards.
   - Who can see employee photos (access matrix).
   - "Stock with them": only tools are tracked per person; materials are not.
-- **Tests:** `m3_teams_people` 73 (with Modules 4 and 5), `a_employees` 41/41 on the production copy (the suite makes its own QA designations and removes them), `w_people` 43; screens `m3_ui` 50 at 1440 / 390, `people_ui` 20 at 1440 (60 at three widths).
+- **Tests:** `m3_teams_people` 73 (with Modules 4 and 5), `a_employees` 41/41 on the production copy (the suite makes its own QA designations and removes them), `w_people` 43; screens `m3_ui` 50 at 1440 / 390, `people_ui` 20 at 1440 (60 at three widths); `md_doc_versions` 12, screens `md_ui` 21.
 - **Test by hand, normal use:**
   - Employee page → Documents → Upload: the file picker is off until a type is chosen; Passport Photo offers only JPG / PNG / WebP / HEIC and refuses a PDF; Aadhaar takes a PDF or a photo; Offer Letter also a Word file. Upload, then **View** opens the file in a new tab and **Download** saves it under its name — on the live site (S3).
   - Add an employee with PAN (lower case is fine, it's saved in capitals) and an emergency contact; they show on the profile.
@@ -164,7 +167,9 @@
   - Mark as left: the checklist lists the advance, tasks, visits, leave and final salary; tick "Recover the advance from the final salary" and confirm; the history card shows Left with the reason.
   - Take them back with a date and reason; the history shows Rejoined. Payroll pays nothing for the days in between (follow-up, 13 Nov).
   - Change a salary from a past date: it says it waits for a Director; sign in as a Director and approve on the salary tab; the arrears per month are listed.
+  - Employee → Documents: upload an Aadhaar, then upload Aadhaar again: the form says it replaces the first; the list shows one Aadhaar and "Show previous versions (1)".
 - **Test by hand, edge cases:**
+  - Pick a file over 1 MB on any upload form: a warning shows under the picker and the file isn't sent.
   - Same PAN on a second person in the company: refused; a wrong PAN (ABCD1234F): refused on the form.
   - A leader can't be removed from their team until another leader is set.
   - Add someone to a crew mid-assignment: earlier days stay off their calendar.
