@@ -15,7 +15,7 @@
 | # | Module | Done | Status |
 |---|---|---|---|
 | 1 | Platform: sign-in, companies, users, access | 90 % | Working; header search built 13 Nov; access by own / team / department pending |
-| 2 | Settings and masters | 85 % | Working; Meta Ads source, banks list and JVVNL DISCOM areas added 13 Nov |
+| 2 | Settings and masters | 90 % | Working; round-2 decisions 2.1–2.4 built 13 Nov (team master rights, signature / stamp / terms / UPI QR on prints, vendorship switch only, template editor with preview); company logo fixed and shown in the sidebar |
 | 3 | People: employees, teams | 75 % | Working; teams design and small HR gaps pending |
 | 4 | Attendance and leave | 85 % | Working |
 | 5 | Payroll and advances | 75 % | Working; incentive / commission and bank file pending |
@@ -81,14 +81,21 @@
   - Header search on a phone (390 px): the search icon in the top bar opens a full-screen search; the close button returns to the page.
   - "/" still jumps to the sidebar search, and Ctrl+K still opens the header search while typing in the sidebar search.
 
-### 2. Settings and masters (85 %)
+### 2. Settings and masters (90 %)
 - **Done:**
   - Company settings; master lists with "in use" protection (a value in use can only be deactivated).
   - Payment modes, bank ledgers, Approval limits (PO / SO / extra-quantity %), Number series (19 series).
   - Enquiry sources: "Social Media" renamed Meta Ads (same code), Data Calling and Maintenance & Sales Team added; a Banks list (14 banks); DISCOM JVVNL with 15 sub-division areas (built 13 Nov, migration 0152).
+  - Each team edits its own master lists (13 Nov, decision 2.1, migration 0154): one right per master group (`masterdata_<group>`, create / edit / delete) in the designation access matrix; Accounts → finance, GST & tax and books lists; CA → GST & tax and books lists; HR → HR & team and employee data lists (new Leave Types list); Stores → stock lists; Sales manager → enquiry and quotation lists; Project admin → project lists; Super Admin and `masterdata` keep every group. The server checks the group of the item or category; the Masters page shows Add / Edit / Delete only on the person's groups and "View only" elsewhere.
+  - Prints (decision 2.2): signature and stamp images (PNG / JPG ≤ 1 MB) in Settings → Company, printed as "For <legal name> / stamp + signature / Authorised Signatory" on sale bills (print + PDF), quotations, purchase orders, sale orders and delivery challans (text only without images); default invoice terms that fill a new sale bill (editable per bill, printed at the bottom); company UPI ID (name@bank) giving a "Scan to pay ₹X" QR on issued invoices for the amount due (hidden with no UPI ID or nothing due).
+  - Vendorship is an on / off switch only (decision 2.3): the vendorship code number is gone from Settings → Company, the code companies (no DISCOM registration code) and the project screens ("Vendorship", "Our vendorship" / "Another firm's vendorship"); a request with a code number is refused, `null` is ignored; the columns `vendorship_code_number`, `partner_code_reference` and `discom_registration_code` are dropped.
+  - Settings → Document templates (decision 2.4): formatted-text editor in a frame with the template's own CSS, "Insert field" buttons for the placeholders, live preview filled from a chosen project, raw HTML under "Advanced" for a Super Admin; the test leftovers "WCR PE" / "WCR address parts" are removed (switched off where a generated document uses them).
+  - Company logo fix (owner bug): the logo box shows the stored logo through its signed link after a reload (the picked file shows only while uploading); "Remove logo"; the same for signature and stamp.
+  - Sidebar logo: the active company's logo at the top of the sidebar and the phone menu (≈ 40 px, short name beside it), initials on the company colour without a logo; follows the company of the tab.
 - **Pending:**
-  - Who may edit which masters (access matrix).
-- **Tests:** `v_settings` 28 / 29 (V10 needs rewriting), `h1a4_master_conversion` 39, `ns_number_series` 25, `ca_import_prep` 33 (CA01–CA08 are the masters).
+  - Leave Types are a list for now; leave requests still use paid / unpaid.
+  - The rest of the access-matrix review.
+- **Tests:** `v_settings` 28 / 29 (V10 needs rewriting), `h1a4_master_conversion` 39, `ns_number_series` 25, `ca_import_prep` 33 (CA01–CA08 are the masters), `m2_settings_round2` 46; screens `m2_round2_ui` 26 (1440).
 - **Test by hand, normal use:**
   - Masters: add a value to a list (unit, category, payment mode …), edit it, deactivate it, reactivate it.
   - Use a value on a record, then try to delete it: refused ("in use" with counts); Deactivate works and the old record still shows the value.
@@ -97,12 +104,29 @@
   - Settings → Company: logo, address, bank details printed on invoices.
   - Settings → Approval limits: change the PO limit, SO limit and extra-quantity % as Super Admin or Director; others see them read-only; the change shows in Activity.
   - Settings → Number series: change prefix, year part, digits and next number; the preview updates; create that document and check the number.
+  - Masters as an HR person: HR & Team → Leave Types → Add item "Comp off"; open Stock & Tools: "View only", no Add / Edit / Delete. As an accountant: add a payment mode; as a stores manager: add a unit.
+  - Settings → Company: upload a logo, reload the page — the logo is still there; the sidebar shows it at the top. Remove logo → the box and the sidebar go back to the icon / initials.
+  - Upload a signature and a stamp; write default invoice terms; enter the UPI ID (e.g. mahisolar@okaxis); Save.
+  - New sale bill: the terms are already filled; change them for this bill; issue; Print and PDF show the terms, "For <legal name>", stamp, signature, "Authorised Signatory" and a QR "Scan to pay ₹…" — scan it with a phone UPI app: payee, amount and bill number are filled.
+  - Quotation preview / PDF, purchase order print, sale order print and delivery challan print show the same signature block.
+  - Settings → Company → Vendorship: only the on / off switch; Finance → Vendorship Code Co. → add a company: no code number field; project edit drawer: "Under whose vendorship".
+  - Settings → Document templates: pick Meter Test Application, click at the end of a paragraph, Insert field → customer.mobile, Save; choose a project → Preview: the document is filled; Generate the document on that project — it uses the new text.
+  - Switch company in the header: the sidebar logo changes to that company's.
 - **Test by hand, edge cases:**
   - Two values with the same name in one list: refused.
   - Number series: next number below the last one used is refused; two series with the same prefix (e.g. B2B and B2C) refused.
   - Year part off: one running count; on: restarts every 1 April.
   - Shared series (customers, projects, enquiries …) can only be changed by a Super Admin.
   - A person without the settings right: masters and settings are read-only, edit buttons hidden, API refuses.
+  - An HR person sending an API request to add a unit or switch off a payment mode: 403; a made-up category id: 403.
+  - UPI ID with a space, without "@bank" or with two "@": refused on the page and by the API.
+  - Signature or stamp over 1 MB, or a PDF / text file: refused; logo still takes WebP / HEIC up to 2 MB.
+  - A fully paid bill, a draft or a void bill: no QR; no UPI ID: no QR; no images: "For … / Authorised Signatory" text only.
+  - A bill created with the terms box emptied on purpose: no default terms.
+  - Leave the Settings → Company page open over 15 minutes, then reload: the logo still shows (fresh link).
+  - Template: a misspelt field like {{customer.nmae}} is named under the preview and left as typed; leaving the template unsaved asks before switching.
+  - A person with project view only: Document templates opens read-only (no Save, no Advanced).
+  - A company without a logo: initials on the badge colour; a logo of an odd shape stays inside 40–48 px.
 
 ### 3. People: employees, teams (75 %)
 - **Done:** employees with salary, bank details and address (current + permanent); teams per company; exit; employee pages.
