@@ -4,7 +4,6 @@ import {
   Boxes,
   CheckCircle2,
   CircleDot,
-  Eye,
   Plug,
   Search,
   X,
@@ -240,23 +239,6 @@ export function StatusTab({ doc }: { doc: StatusDoc }) {
           </div>
         )}
       </section>
-
-      {doc.watchList.length > 0 ? (
-          <section className="asw-card">
-            <header className="asw-card-head">
-              <Eye size={18} />
-              <h3>Most likely to matter</h3>
-            </header>
-            {doc.tagLegend ? <Markdown text={doc.tagLegend} className="asw-legend" /> : null}
-            <ul className="asw-watch">
-              {doc.watchList.map((item, i) => (
-                <li key={i}>
-                  <Markdown text={item} inline />
-                </li>
-              ))}
-            </ul>
-          </section>
-        ) : null}
 
       {doc.reviewSteps.length > 0 ? (
         <section className="asw-card">
