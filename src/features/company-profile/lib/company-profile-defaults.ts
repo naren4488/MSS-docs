@@ -340,6 +340,7 @@ export function createDefaultCompanyProfileData(firm: CompanyFirm = "mahi-solar-
     bankName: "AU Small Finance Bank",
     bankAccountNo: "7740889928413501",
     bankIfsc: "AUBL0002206",
+    bankBranch: "Vaishali Nagar Jaipur",
     contactTitle: "Director",
   };
 
