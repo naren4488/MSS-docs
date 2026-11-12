@@ -354,12 +354,13 @@ Header search, More actions and two-step removed (owner decisions 1.1–1.3, 13 
 - Details card; present (half days count ½), absent, paid / unpaid leave, holidays, working days, per-day pay, total payable
 - Month calendar; history table by date range and status; "Request paid leave" on an absent day
 
-**My attendance & leave (`/my-attendance`, every employee; self-service, 13 Nov)**
-- In everyone's menu (HR section), whatever the designation: the person's own record only, in the company the tab works in
-- My leave: paid leave left, the month's balance (opening, credit, used, reserved, available), **Apply leave** from tomorrow onward (reason required; same paid / unpaid split rules), and My leave requests with status, Cancel while pending and "Request cancel" once approved
-- The person's month: details, present / absent / paid leave / holidays / working days, history by date range and status, "Request paid leave" on an absent day
+**My space (`/my-space`, every employee; self-service, 13 Nov)** — one place for everything about yourself, in everyone's menu (HR section) whatever the designation; only the signed-in person's own records in the company the tab works in. `/my-attendance` opens its first tab.
+- **Attendance & leave:** paid leave left and the month's balance; **Apply leave** from tomorrow onward (reason required; same paid / unpaid split rules); my leave requests with Cancel while pending and "Request cancel" once approved; the month day by day with totals and history
+- **Salary:** each month once payroll is approved (never a draft): days paid of the month, gross, extra pay, attendance corrections, deductions (leave, other, PF / ESI / TDS, advance recovered), net pay, paid or not and when; **Download payslip** (PDF)
+- **Advances:** ask for an advance (amount and reason; it always waits for someone else to approve), withdraw a request not yet approved (its reason is kept), each advance's status and what is left to recover, and the total still to recover from salary
+- **Incentives:** the person's rules in words ("₹2,000 for each project you convert, after the first 3 of a month; earned when the project is fully paid"); each project converted, by month, as Earned / Fills the monthly minimum / Waiting for full payment / Cancelled; projects brought (referrals) with their state; incentive and referral lines on salaries (a recovery in red, a month still being prepared marked so)
+- **Documents & details:** the details HR holds (name, phone, email, designation, department, joining date, date of birth, current address, PAN, emergency contact), the salary bank account with only the last 4 digits, the documents on file (open each) and **Upload** a KYC document (Aadhaar, PAN, bank proof …) that HR then sees on the profile
 - My day's attendance tile opens it for anyone without attendance edit ("Not marked yet: HR or your crew lead marks it")
-- Before this, staff without attendance / employee rights (Sales Executive, Project Admin, Accounting, Telecaller, installers, …) could not see their own attendance or apply for leave at all
 
 **Leave requests (`/leave-requests`)**
 - Waiting / Approved / All; search by name
@@ -444,6 +445,7 @@ Header search, More actions and two-step removed (owner decisions 1.1–1.3, 13 
 
 ### APIs
 - `/payroll/runs` (generate, recalculate, approve, cancel), `/payroll/items` (adjust, pay, payslip), `/payroll/employee-items`, `/payroll/payments` (undo), `/payroll/books-status`
+- **My space (self-service):** `GET /me/payroll` (approved / paid months), `GET /me/payroll/items/{id}/payslip`, `GET|POST /me/advances`, `POST /me/advances/{id}/withdraw`, `GET /me/advances/{id}/deductions`, `GET /me/incentives`, `GET|POST /me/documents`, `GET /me/documents/{link_id}/download`, `GET /me/bank-accounts` — any signed-in member, own record only
 - `POST /payroll/extra-lines/{id}/split` `{employee_id, amount, reason}` (payroll edit; draft run, unpaid lines; not the project's own referral amount or a recovery); extra lines carry `source` `rule` / `project` / `attendance` / `split` / `reversal` (reversal amounts are negative)
 - `/payroll/items` and `/payroll/runs/{id}/items` carry `final_settlement` and `leaving_date`; extra lines may be `kind: arrears` or `kind: holiday_work` (source `attendance`)
 - `/advances` (submit, approve, reject, pay, repay, cancel, deductions), `/advances/settings` (approval limit)

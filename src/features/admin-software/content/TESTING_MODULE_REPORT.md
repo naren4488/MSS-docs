@@ -176,7 +176,7 @@
 
 ### 4. Attendance and leave (95 %)
 - **Done:**
-  - **My attendance & leave** (`/my-attendance`, 13 Nov, owner request): every employee sees their own month, leave balance and leave requests, applies for leave (from tomorrow, reason required) and cancels a pending one, without attendance or employee rights; colleagues' records stay closed; HR and Directors keep the full pages.
+  - **My space → Attendance & leave** (`/my-space`, 13 Nov, owner request): every employee sees their own month, leave balance and leave requests, applies for leave (from tomorrow, reason required) and cancels a pending one, without attendance or employee rights; colleagues' records stay closed; HR and Directors keep the full pages.
   - Daily attendance, half days, leave requests and approvals with an alert.
   - Leave balances, attendance locked after payroll, separate records per company.
   - **Crew attendance at the site** (`/crew-attendance`, linked from My day for leaders and from Attendance): a team leader ticks crew members and marks present or half day, with a time and the phone's location; the project is optional (today's assigned sites are offered). Every mark is kept, several sites a day; the day itself is the normal attendance (present beats half day; **two half-day marks at two sites, or at two times, make a full present day**, 13 Nov) and feeds payroll as usual. HR / Super Admin may mark any crew.
@@ -186,7 +186,7 @@
   - Nothing from the round-2 decisions. The access matrix and the teams design are tracked across all modules.
 - **Tests:** `ma_my_attendance` 22, screens `ma_ui` 32 (1440 / 768 / 390), `m4_leave_holiday` 34 (M4-00 to M4-44), screens `m4_ui` 17 (1440), `m3_teams_people` (M3-20 to M3-37), screens `m3_ui` (C01–C09 at 1440 / 390), `attendance_ui` 63, `leave_reason_ui` 14, plus the attendance checks inside the payroll suites.
 - **Test by hand, normal use:**
-  - Sign in as a Sales Executive (no attendance rights): the menu has My attendance & leave; it shows your month, balance and requests; apply for a day of leave with a reason, then cancel it; Attendance and other people's profiles stay closed.
+  - Sign in as a Sales Executive (no attendance rights): the menu has My space; its Attendance & leave tab it shows your month, balance and requests; apply for a day of leave with a reason, then cancel it; Attendance and other people's profiles stay closed.
   - Mark attendance for today: present, absent, half day, paid leave, half paid leave.
   - Mark for a whole team or many people at once.
   - Apply for leave as an employee (dates, type, reason); the approver gets an alert; approve; balance goes down.
@@ -215,6 +215,7 @@
 
 ### 5. Payroll and advances (82 %)
 - **Done:**
+  - **My space** (13 Nov, owner request): every employee sees their own salary for approved months with the payslip PDF, asks for / withdraws an advance and sees what is left to recover, sees their incentive rules, each converted or referred project's state and the lines on their salary, and their details, bank account (last 4 digits) and documents, and uploads their own KYC — without payroll, advance or employee rights; nobody else's records.
   - **Incentives and referrals when fully paid** (13 Nov, 5.1–5.8, migration 0158): earned in the month the project is fully paid (a bank loan included); the monthly minimum counts the month's conversions and the first fully paid fill it; a cancellation recounts and takes money back from the next salary (never more than that month's pay); HR can share a line with someone in the same payroll.
   - Build → review → approve → pay, payslip PDF, extra pay (OT / bonus / incentive), incentive / referral rules.
   - Advances with a limit and a second approver; statutory deductions; payroll in the books.
@@ -225,7 +226,7 @@
 - **Pending:**
   - The salary bank file, which needs an AU bank sample.
   - CA check of the FY 2026-27 statutory figures.
-- **Tests:** `m4_leave_holiday` (M4-25 to M4-30), `m3_teams_people` (M3-70 to M3-91, M3-100 to M3-103), `y_payroll` 38, `c2_payroll` 72, `m5_incentives` 23; screens `payroll_ui` 75, `m5_ui` 23.
+- **Tests:** `m4_leave_holiday` (M4-25 to M4-30), `m3_teams_people` (M3-70 to M3-91, M3-100 to M3-103), `y_payroll` 38, `c2_payroll` 72, `m5_incentives` 23, `ms_my_space` 26; screens `payroll_ui` 75, `m5_ui` 23, `ms_ui` 39 (1440 / 768 / 390).
 - **Test by hand, normal use:**
   - Build payroll for last month: everyone on payroll is listed with days, earnings, deductions, net.
   - Review → approve → pay; download a payslip PDF; the books get the salary entries.
@@ -236,6 +237,7 @@
   - Payroll settings: components and statutory deductions.
   - Sales incentive (rule: ₹2,000 after the first 3): convert 5 projects in one month, fully pay them one by one (one with a bank loan); the 4th and 5th to be fully paid show ₹2,000 in the month they became fully paid, the first 3 show ₹0 ("fills the monthly minimum").
   - Payroll → Adjust → Share an incentive line with another person: their salary gets the share, yours drops.
+  - Sign in as a Sales Executive: My space → Salary shows approved months only, download a payslip; Advances: ask for ₹2,000 with a reason, withdraw it; Incentives: each converted project's state; Documents & details: your details, bank account (last 4 digits), upload your Aadhaar.
 - **Test by hand, edge cases:**
   - A project paid only partly (or only the down payment of a loan project): no incentive yet.
   - Cancel a project whose incentive was already paid and approved: the next payroll shows a red "Incentive reversed" line; with a small salary only that month's pay is taken, the rest next month.
