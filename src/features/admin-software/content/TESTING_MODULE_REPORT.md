@@ -8,19 +8,19 @@
 - **Test data:** all business data was cleared on 12 Nov 2026, on production and locally. Logins, companies, settings, masters, the ledger list and employees remain. Start by creating a customer (address line 1 and state are required) and a project, then test with those.
 
 ## Overall
-**About 83 % complete** (the average of the 17 modules below). Every module is built, reviewed once and covered by automatic tests. What's left: the decisions now being built, the access matrix, the teams design, the sheet import and real data, and a few placeholders.
+**About 84 % complete** (the average of the 17 modules below). Every module is built, reviewed once and covered by automatic tests. What's left: the decisions now being built, the access matrix, the teams design, the sheet import and real data, and a few placeholders.
 
 **Last full regression (13 Nov 2026, on the production copy):** 2,612 API checks passed and 0 failed; the five end-to-end accounts runs passed 194/194; `attendance_ui` 63/63 at 1440 / 768 / 390. The local test database is now an exact copy of production (MSS only, its 23 employees and users, no business data, no MSE, no QA designations or users). Every suite works in its own test company, makes its own QA designations and removes them, and adds nothing to MSS.
 
 | # | Module | Done | Status |
 |---|---|---|---|
 | 1 | Platform: sign-in, companies, users, access | 90 % | Working; header search built 13 Nov; access by own / team / department pending |
-| 2 | Settings and masters | 90 % | Working; round-2 decisions 2.1–2.4 built 13 Nov (team master rights, signature / stamp / terms / UPI QR on prints, vendorship switch only, template editor with preview); company logo fixed and shown in the sidebar; MSS logo from `Mahi2.svg` set on production and locally |
+| 2 | Settings and masters | 91 % | Working; duplicate master values merged and blocked (7.1, 13 Nov); round-2 decisions 2.1–2.4 built 13 Nov (team master rights, signature / stamp / terms / UPI QR on prints, vendorship switch only, template editor with preview); company logo fixed and shown in the sidebar; MSS logo from `Mahi2.svg` set on production and locally |
 | 3 | People: employees, teams | 85 % | Working; round-2 decisions 3.1–3.6 built 13 Nov (crews, crew week board, exit checklist and history, final settlement, PAN + emergency contact, back-dated salary with approval); month-card formula and photo access pending; Teams switched off (Coming soon) 12 Nov |
 | 4 | Attendance and leave | 95 % | Working; round-2 decisions 4.1–4.8 all built or decided 13 Nov (crew attendance at the site, paid-leave carry-forward with a 6-day cap, worked on a company holiday) |
 | 5 | Payroll and advances | 82 % | Working; final settlement, salary arrears and holiday-work pay built 13 Nov; AU bank file sample and CA check pending |
 | 6 | Customers | 93 % | Working; same mobile with a warning and family link added 13 Nov; account statement PDF and Share on WhatsApp (6.3, 6.4) built 13 Nov; sheet import pending |
-| 7 | Enquiries | 85 % | Working; sheet import and the daily report pending |
+| 7 | Enquiries | 92 % | Working; round-2 decisions 7.1–7.4 and 7.6 built 13 Nov (4 main statuses, repeat-lead warning, lost reasons list, overdue follow-ups + manager alert); Meta leads (7.5), sheet import and the daily report pending |
 | 8 | Site visits, fees, calendar | 75 % | Working; three known issues pending |
 | 9 | Quotations | 91 % | Working; Share on WhatsApp with a 7-day secure PDF link built 13 Nov |
 | 10 | Projects | 75 % | Working; open questions on vendor-code billing; sheet import pending |
@@ -83,8 +83,11 @@
   - Header search on a phone (390 px): the search icon in the top bar opens a full-screen search; the close button returns to the page.
   - "/" still jumps to the sidebar search, and Ctrl+K still opens the header search while typing in the sidebar search.
 
-### 2. Settings and masters (90 %)
+### 2. Settings and masters (91 %)
 - **Done:**
+  - Duplicate master values (13 Nov, decision 7.1, migration 0160): per company and list, values whose names differ only by capitals or spaces are merged into the best-cased one ("Meta Ads" over "Meta ads"), else the oldest; every record using the duplicate is moved first, then the duplicate is deleted (or switched off if a record can't move) and logged. MSS: "Meta ads" merged into "Meta Ads" and 18 doubled DISCOM areas merged (same DISCOM only); BRD calling and AI chatbots kept. A new or renamed value equal to an existing one (ignoring capitals and spaces) is refused with the existing name; DISCOM areas are checked within their DISCOM.
+  - Masters → Enquiry → Lost Reasons (7.4): Price too high, Not interested, Trust / thinks it's fraud, Roof not suitable, Loan not possible, Went to a competitor, Not reachable, Other.
+  - Approval limits: "Late follow-up alert (sales)" in days (7.6, default 2, 1–30).
   - Company settings; master lists with "in use" protection (a value in use can only be deactivated).
   - Payment modes, bank ledgers, Approval limits (PO / SO / extra-quantity %), Number series (19 series).
   - Enquiry sources: "Social Media" renamed Meta Ads (same code), Data Calling and Maintenance & Sales Team added; a Banks list (14 banks); DISCOM JVVNL with 15 sub-division areas (built 13 Nov, migration 0152).
@@ -98,7 +101,7 @@
 - **Pending:**
   - Leave Types are a list for now; leave requests still use paid / unpaid.
   - The rest of the access-matrix review.
-- **Tests:** `v_settings` 29 (V10 on a test-company bank ledger), `h1a4_master_conversion` 39, `ns_number_series` 25, `ca_import_prep` 33 (CA01–CA08 are the masters), `m2_settings_round2` 46; screens `m2_round2_ui` 26 (1440).
+- **Tests:** `v_settings` 29 (V10 on a test-company bank ledger), `h1a4_master_conversion` 39, `ns_number_series` 25, `ca_import_prep` 33 (CA01–CA08 are the masters), `m2_settings_round2` 46, `m7_enquiries_r2` M7-00–M7-10 (merge and duplicate block); screens `m2_round2_ui` 26 (1440).
 - **Test by hand, normal use:**
   - Masters: add a value to a list (unit, category, payment mode …), edit it, deactivate it, reactivate it.
   - Use a value on a record, then try to delete it: refused ("in use" with counts); Deactivate works and the old record still shows the value.
@@ -116,8 +119,11 @@
   - Settings → Company → Vendorship: only the on / off switch; Finance → Vendorship Code Co. → add a company: no code number field; project edit drawer: "Under whose vendorship".
   - Settings → Document templates: pick Meter Test Application, click at the end of a paragraph, Insert field → customer.mobile, Save; choose a project → Preview: the document is filled; Generate the document on that project — it uses the new text.
   - Switch company in the header: the sidebar logo changes to that company's.
+  - Masters → Enquiry Sources: only one "Meta Ads"; BRD calling and AI chatbots are there; add "Justdial" — saved.
+  - Masters → Enquiry → Lost Reasons: add "Subsidy delay"; it appears in Mark as lost.
 - **Test by hand, edge cases:**
-  - Two values with the same name in one list: refused.
+  - Two values with the same name in one list: refused — also "META ADS", " meta  ads " or renaming "BRD calling" to "ai chatbots"; renaming a value to a new casing of its own name ("BRD Calling") is fine; a same-named switched-off value says "switch it back on instead".
+  - DISCOM areas: the same area name under two different DISCOMs is allowed.
   - Number series: next number below the last one used is refused; two series with the same prefix (e.g. B2B and B2C) refused.
   - Year part off: one running count; on: restarts every 1 April.
   - Shared series (customers, projects, enquiries …) can only be changed by a Super Admin.
@@ -168,6 +174,7 @@
 
 ### 4. Attendance and leave (95 %)
 - **Done:**
+  - **My attendance & leave** (`/my-attendance`, 13 Nov, owner request): every employee sees their own month, leave balance and leave requests, applies for leave (from tomorrow, reason required) and cancels a pending one, without attendance or employee rights; colleagues' records stay closed; HR and Directors keep the full pages.
   - Daily attendance, half days, leave requests and approvals with an alert.
   - Leave balances, attendance locked after payroll, separate records per company.
   - **Crew attendance at the site** (`/crew-attendance`, linked from My day for leaders and from Attendance): a team leader ticks crew members and marks present or half day, with a time and the phone's location; the project is optional (today's assigned sites are offered). Every mark is kept, several sites a day; the day itself is the normal attendance (present beats half day; **two half-day marks at two sites, or at two times, make a full present day**, 13 Nov) and feeds payroll as usual. HR / Super Admin may mark any crew.
@@ -175,8 +182,9 @@
   - **Worked on a company holiday** (4.4 / 4.5, 13 Nov): on a holiday the board offers "Worked full day", "Worked half day" and "Not worked" per person (the day stays a paid holiday). A crew leader's present mark on a holiday is recorded as worked on holiday (half day → worked half a day). Refused on a normal day and for a future day.
 - **Pending:**
   - Nothing from the round-2 decisions. The access matrix and the teams design are tracked across all modules.
-- **Tests:** `m4_leave_holiday` 34 (M4-00 to M4-44), screens `m4_ui` 17 (1440), `m3_teams_people` (M3-20 to M3-37), screens `m3_ui` (C01–C09 at 1440 / 390), `attendance_ui` 63, `leave_reason_ui` 14, plus the attendance checks inside the payroll suites.
+- **Tests:** `ma_my_attendance` 22, screens `ma_ui` 32 (1440 / 768 / 390), `m4_leave_holiday` 34 (M4-00 to M4-44), screens `m4_ui` 17 (1440), `m3_teams_people` (M3-20 to M3-37), screens `m3_ui` (C01–C09 at 1440 / 390), `attendance_ui` 63, `leave_reason_ui` 14, plus the attendance checks inside the payroll suites.
 - **Test by hand, normal use:**
+  - Sign in as a Sales Executive (no attendance rights): the menu has My attendance & leave; it shows your month, balance and requests; apply for a day of leave with a reason, then cancel it; Attendance and other people's profiles stay closed.
   - Mark attendance for today: present, absent, half day, paid leave, half paid leave.
   - Mark for a whole team or many people at once.
   - Apply for leave as an employee (dates, type, reason); the approver gets an alert; approve; balance goes down.
@@ -272,8 +280,12 @@
   - Payment terms Net 15: a new bill gets a due date 15 days ahead; changing the terms later doesn't move old due dates.
   - Very long name / address: saved and printed without breaking the invoice layout.
 
-### 7. Enquiries (85 %)
+### 7. Enquiries (92 %)
 - **Done:**
+  - Four main statuses (7.2, 13 Nov): New, In progress (follow-up, meetings, notes, quotation draft / sent), Converted, Lost (incl. cancelled) on the list, filters, counts and the enquiry page; the detailed stage (or the lost reason) is a small second line. API: `main_status` on rows, `?main_status=`.
+  - Repeat lead (7.3): picking a customer in Add enquiry (also the quick create from a customer) checks the phone's last 10 digits: "Open enquiry ENQ-… with <owner> (<status>)" with Open / Add follow-up; converted and lost ones are listed as history; a new enquiry can still be created. API: `GET /enquiries/phone-matches`.
+  - Lost reasons (7.4, migration 0160): Mark as lost needs a reason from Masters → Lost Reasons, plus an optional note; enquiries lost before keep their text as the note with no reason; "Lost by reason" counts and a lost reason filter on the list (`?lost_reason_id=`, `GET /enquiries/lost-reasons`).
+  - Overdue follow-ups (7.6): an "Overdue follow-ups" button on Enquiries (with the count); a follow-up more than N days late (Settings → Approval limits, default 2) alerts once in the bell: the lead owner's team leader, else the Sales Managers, else the Directors (no reports-to link exists); a new missed date alerts again; the worker job `followup-escalation` runs hourly.
   - Enquiries with source, owner, status, follow-ups, lost reason and reopen, change requests, conversion to a project.
   - A follow-up person on each follow-up (default the lead owner, changeable in the follow-up list); their alert, My day, task and calendar (E2, built 13 Nov).
   - Documents received: Pending / Partially / Yes + date + note on the enquiry, with a list filter (E3, built 13 Nov).
@@ -281,7 +293,9 @@
 - **Pending:**
   - The import of the Sep–Nov enquiry tabs.
   - The daily enquiry report, planned with the analytics review.
-- **Tests:** `f_enquiries` 26, `ca_import_prep` 33, `cb_project_fields` 63 (CB01–CB03 enquiry sizes); screens `enquiries_ui` 42, `ca_ui` 12, `cb_ui` 26 (CBU01–CBU05).
+  - Meta Ads leads arriving automatically (7.5, later).
+  - `enquiries_ui` E13 (adding a customer with a used phone selects the existing one) fails since the same-phone warning of 13 Nov (customers I1) — to align with that change.
+- **Tests:** `f_enquiries` 26, `ca_import_prep` 33, `cb_project_fields` 63 (CB01–CB03 enquiry sizes), `m7_enquiries_r2` 51; screens `enquiries_ui` 42 (39 pass, E13 above), `ca_ui` 12, `cb_ui` 26 (CBU01–CBU05), `m7_ui` 34 (1440 and 390).
 - **Test by hand, normal use:**
   - Create an enquiry: customer (new or existing), source, owner, kW, phase, budget, address, notes.
   - Quick-create a new customer from the enquiry form.
@@ -292,10 +306,19 @@
   - Mark lost with a reason; reopen with a reason.
   - Convert to a project; the enquiry shows the project link.
   - List: search and filter by status, source, owner, date.
+  - List: the status column says New / In progress / Converted / Lost with a small grey line (Follow-up, Quotation sent, Price too high …); the status filter's In progress shows follow-ups and quotations sent.
+  - Add enquiry for a customer who already has an open enquiry: the yellow warning with the ENQ number, owner and status; Open goes to it; Add follow-up opens its schedule form; Create still makes a second enquiry.
+  - Mark as lost: pick "Trust / thinks it's fraud", type a note; the list shows Lost / Trust …; "Lost by reason" counts it; click the count to filter.
+  - Press "Overdue follow-ups": only enquiries whose follow-up date has passed; press again to clear.
+  - A follow-up 3 days late: the lead owner's team leader (or the Sales Manager) gets "Follow-up 3 days late: ENQ-…" in the bell, once.
   - Tick "Different sizes" on a 3 kW enquiry, enter structure 5 and inverter 6; the enquiry page shows "3 kW panels · 5 kW structure · 6 kW inverter"; a quotation made from it starts with the same sizes.
 - **Test by hand, edge cases:**
   - "Different sizes" ticked with the structure or inverter kW empty or 0: refused; unticking clears both.
   - Enquiry for a customer who already has an open enquiry: allowed, but check you see both.
+  - A phone stored as +91 98290 12345 and typed as 098290 12345: still matched (last 10 digits); fewer than 10 digits: no warning.
+  - Mark as lost without a reason: "Pick why the enquiry was lost", nothing saved; reopening clears the reason and note.
+  - Settings → Approval limits: 0 or 31 days refused; with 5 days a 4-day-late follow-up raises no alert.
+  - Changing the follow-up date hides the old alert; the alert never repeats for the same date.
   - Lost enquiry: its quotations stay cancelled when reopened.
   - Name change request at deal time (documents in another name): approve / reject once.
   - Follow-up date in the past: refused or warned.
@@ -495,6 +518,7 @@
 - **Done:** a dashboard with tiles by rights (Sales, Money received, Stock, PO tiles); one Analytics page.
 - **Pending:** an analytics review, including the daily enquiry report by source (leads, interested, visits, conversions).
 - **Tests:** `db_dashboard_be` 64, `dx` 35.
+- **13 Nov (Module 7):** enquiry counts use the four main statuses (New = new only); the dashboard's "Follow-ups overdue" tile opens the same list as the new Overdue follow-ups button.
 - **Test by hand, normal use:**
   - Dashboard: tiles change with the person's rights (Sales, Money received, Stock, PO tiles); each tile opens its filtered list.
   - My day: tasks, follow-ups and visits for today.

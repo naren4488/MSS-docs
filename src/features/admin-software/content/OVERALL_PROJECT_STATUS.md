@@ -136,6 +136,10 @@ Header search, More actions and two-step removed (owner decisions 1.1–1.3, 13 
 
 ### Features
 
+**Master lists: no duplicates (13 Nov, 7.1, 0160)**
+- A new or renamed value equal to another of the same list ignoring capitals and spaces is refused, naming the existing value (a switched-off one: "switch it back on instead"); DISCOM areas are checked within their DISCOM. Existing duplicates were merged per company: the best-cased value kept (else the oldest), every record moved to it, the duplicate deleted or switched off, logged in `master_item_merge_log` (`app_merge_duplicate_master_items()`)
+- **Lost Reasons** list in the Enquiry group (7.4): Price too high, Not interested, Trust / thinks it's fraud, Roof not suitable, Loan not possible, Went to a competitor, Not reachable, Other
+
 **Settings → Profile (`/settings/profile`)**
 - Edit first and last name, email, phone; role shown
 - Profile photo upload (JPG/PNG/GIF/WebP, up to 2 MB; needs a linked employee)
@@ -156,6 +160,7 @@ Header search, More actions and two-step removed (owner decisions 1.1–1.3, 13 
 
 **Settings → Approval limits (`/settings/approval-limits`; owner rows 22 and 35c, 0148)**
 - The PO approval limit, the SO approval limit (each ₹50,000 by default, the total with GST) and the over-receipt tolerance (2 % of each PO line by default)
+- **Late follow-up alert (sales)** (13 Nov, 7.6, 0160): days a follow-up may be late before the lead owner's manager is alerted (default 2, 1–30)
 - Everyone signed in sees them read-only; only a Super Admin or a Director can change them (server-enforced); each change is in Activity
 
 **Settings → Number series (`/settings/number-series`; owner row 10, 0150)**
@@ -347,6 +352,13 @@ Header search, More actions and two-step removed (owner decisions 1.1–1.3, 13 
 - Details card; present (half days count ½), absent, paid / unpaid leave, holidays, working days, per-day pay, total payable
 - Month calendar; history table by date range and status; "Request paid leave" on an absent day
 
+**My attendance & leave (`/my-attendance`, every employee; self-service, 13 Nov)**
+- In everyone's menu (HR section), whatever the designation: the person's own record only, in the company the tab works in
+- My leave: paid leave left, the month's balance (opening, credit, used, reserved, available), **Apply leave** from tomorrow onward (reason required; same paid / unpaid split rules), and My leave requests with status, Cancel while pending and "Request cancel" once approved
+- The person's month: details, present / absent / paid leave / holidays / working days, history by date range and status, "Request paid leave" on an absent day
+- My day's attendance tile opens it for anyone without attendance edit ("Not marked yet: HR or your crew lead marks it")
+- Before this, staff without attendance / employee rights (Sales Executive, Project Admin, Accounting, Telecaller, installers, …) could not see their own attendance or apply for leave at all
+
 **Leave requests (`/leave-requests`)**
 - Waiting / Approved / All; search by name
 - Each request: person, dates, days, paid or unpaid, reason, status, when asked
@@ -522,16 +534,17 @@ Header search, More actions and two-step removed (owner decisions 1.1–1.3, 13 
 ### Features
 
 **Enquiries list (`/enquiries`)**
-- Figures for the whole company: total, new (every stage before a quotation is sent), in progress (quotation sent), converted, lost (incl. cancelled), follow-ups overdue
-- Search name, phone or ENQ number (debounced; rows stay while typing); filters: status group (New / In progress / Converted / Lost / **Archived**), priority, source, system size
+- **Four main statuses (7.2, 13 Nov):** New (new only), In progress (follow-up, meetings, notes, quotation draft / sent), Converted, Lost (lost + cancelled); the status column shows the main status with the detailed stage (or the lost reason) as a small second line; API rows carry `main_status`, the list takes `?main_status=`
+- Figures for the whole company by main status, plus follow-ups overdue; **Lost by reason** counts (click one to filter)
+- Search name, phone or ENQ number (debounced; rows stay while typing); filters: status (Open / New / In progress / Converted / Lost / **Archived**), priority, documents, source, **lost reason**, **Overdue follow-ups** (button with the count), system size
 - Shared links (`?view=`, `?create=1`)
 - Export CSV: every row matching the current filters; Excel-safe (typed formulas neutralised, Hindi and ₹ kept)
-- Add enquiry: customer (server search of all active customers by name, phone or GSTIN — no 100-customer limit — or + new; a used phone or GSTIN selects the existing customer), source type and source, source note, referred by, expected referral commission, requirements, budget and capacity (more than 0), phase, address, priority, follow-up date, assignee (active employee of this company)
+- Add enquiry: customer (server search of all active customers by name, phone or GSTIN — no 100-customer limit — or + new; a used phone or GSTIN selects the existing customer), **repeat-lead warning (7.3):** a customer whose phone (last 10 digits) has an open enquiry shows "Open enquiry ENQ-… with <owner> (<status>)" with Open / Add follow-up, converted and lost ones as history, and a new enquiry can still be made; source type and source, source note, referred by, expected referral commission, requirements, budget and capacity (more than 0), phase, address, priority, follow-up date, assignee (active employee of this company)
 
 **Status flow (enforced on the server)**
 - Working stages: New, Follow-up, Meeting, Note, Quotation draft / sent
 - **Converted** only by creating a project from the enquiry (once, for its own customer)
-- Or **Lost** (with a reason and a note) / Cancelled
+- Or **Lost** (a reason from Masters → Lost Reasons is required, plus an optional note — 7.4, migration 0160; enquiries lost before keep their text as the note) / Cancelled
 - A lost enquiry can be **reopened** by anyone who edits enquiries, with a reason recorded in its history; it goes back to Follow-up and its old quotations stay cancelled
 - Archived or converted enquiries keep their status
 - No new quotation for a lost, cancelled, archived or converted enquiry, or for an inactive customer
@@ -541,7 +554,7 @@ Header search, More actions and two-step removed (owner decisions 1.1–1.3, 13 
 - Assign / reassign to an active employee of this company only, with history; the new assignee gets an "Enquiry assigned to you" notification (not when you assign yourself)
 - Book a site visit in one save (visit + task for the person + optional fee; see Module 8), edit or cancel it from the Site visit box; schedule or reschedule a follow-up
 - Follow-up note; edit follow-up date
-- Mark lost (reason list + note kept); reopen (back to Follow-up, with a reason); archive / unarchive
+- Mark lost (Lost Reasons list + note; the page shows "Reason: …" and "Note: …"); reopen (back to Follow-up, with a reason); archive / unarchive
 - Create quotation, view quotation, mark sent
 - Share: copy link, email, WhatsApp, PDF
 - **Site-visit change request** (finalised name, capacity, budget): approve (renames the customer and its books account and updates the enquiry, all together) or reject, once, by anyone who edits enquiries
@@ -554,6 +567,12 @@ Header search, More actions and two-step removed (owner decisions 1.1–1.3, 13 
 **Different sizes (E4, 13 Nov; migration 0153)**
 - One size by default (kW = panels, structure and inverter). The **Different sizes** tick on the enquiry form shows structure kW and inverter kW (e.g. 3 / 5 / 6); the capacity then reads "Panel kW (system size)" — the size used for subsidy, DISCOM and bank papers
 - The enquiry page shows "3 kW panels · 5 kW structure · 6 kW inverter"; the sizes carry to its quotation and project
+
+**Late follow-ups (7.6, 13 Nov; migration 0160)**
+- A follow-up more than N days late (Settings → Approval limits → "Late follow-up alert (sales)", default 2, 1–30) raises one bell alert "Follow-up N days late: ENQ-…" for the lead owner's team leader, else the company's Sales Managers, else the Directors (there is no reports-to link on people). Once per enquiry and follow-up date (a new missed date alerts again); the alert goes away when the date changes or the enquiry closes. Worker job `followup-escalation` (hourly)
+
+**Duplicate master values (7.1, 13 Nov; migration 0160)**
+- Values of one list whose names differ only by capitals or spaces were merged (best casing kept, records moved, logged); MSS "Meta ads" → "Meta Ads", doubled DISCOM areas merged; BRD calling and AI chatbots kept. New duplicates are refused in every master list (see Module 2)
 
 **Automatic:** pending site-visit approvals raise a notification (with the customer's name); an assignment by someone else raises "Enquiry assigned to you" for the assignee; a project created from an enquiry (directly, in the wizard or from its approved quotation) marks it converted in the same save.
 
