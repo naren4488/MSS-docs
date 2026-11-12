@@ -10,7 +10,7 @@
 ## Overall
 **About 83 % complete** (the average of the 17 modules below). Every module is built, reviewed once and covered by automatic tests. What's left: the decisions now being built, the access matrix, the teams design, the sheet import and real data, and a few placeholders.
 
-**Last full regression (12 Nov 2026, after the data clear):** 2,518 API checks passed and 1 failed. The failure is V10, which checks the AU letterhead bank account that the data clear removed. The five end-to-end accounts runs passed 194/194.
+**Last full regression (13 Nov 2026, on the production copy):** 2,612 API checks passed and 0 failed; the five end-to-end accounts runs passed 194/194; `attendance_ui` 63/63 at 1440 / 768 / 390. The local test database is now an exact copy of production (MSS only, its 23 employees and users, no business data, no MSE, no QA designations or users). Every suite works in its own test company, makes its own QA designations and removes them, and adds nothing to MSS.
 
 | # | Module | Done | Status |
 |---|---|---|---|
@@ -98,7 +98,7 @@
 - **Pending:**
   - Leave Types are a list for now; leave requests still use paid / unpaid.
   - The rest of the access-matrix review.
-- **Tests:** `v_settings` 28 / 29 (V10 needs rewriting), `h1a4_master_conversion` 39, `ns_number_series` 25, `ca_import_prep` 33 (CA01–CA08 are the masters), `m2_settings_round2` 46; screens `m2_round2_ui` 26 (1440).
+- **Tests:** `v_settings` 29 (V10 on a test-company bank ledger), `h1a4_master_conversion` 39, `ns_number_series` 25, `ca_import_prep` 33 (CA01–CA08 are the masters), `m2_settings_round2` 46; screens `m2_round2_ui` 26 (1440).
 - **Test by hand, normal use:**
   - Masters: add a value to a list (unit, category, payment mode …), edit it, deactivate it, reactivate it.
   - Use a value on a record, then try to delete it: refused ("in use" with counts); Deactivate works and the old record still shows the value.
@@ -204,6 +204,7 @@
 
 ### 5. Payroll and advances (82 %)
 - **Done:**
+  - **Incentives and referrals when fully paid** (13 Nov, 5.1–5.8, migration 0158): earned in the month the project is fully paid (a bank loan included); the monthly minimum counts the month's conversions and the first fully paid fill it; a cancellation recounts and takes money back from the next salary (never more than that month's pay); HR can share a line with someone in the same payroll.
   - Build → review → approve → pay, payslip PDF, extra pay (OT / bonus / incentive), incentive / referral rules.
   - Advances with a limit and a second approver; statutory deductions; payroll in the books.
   - **Final settlement:** the leaving month's line pays the days up to the leaving date and recovers the advance up to the net pay; the rest stays a recoverable advance. The line is tagged "Final settlement" and the payslip says so.
@@ -213,7 +214,7 @@
 - **Pending:**
   - The salary bank file, which needs an AU bank sample.
   - CA check of the FY 2026-27 statutory figures.
-- **Tests:** `m4_leave_holiday` (M4-25 to M4-30), `m3_teams_people` (M3-70 to M3-91, M3-100 to M3-103), `y_payroll` 38, `c2_payroll` 72; screens `payroll_ui` 75.
+- **Tests:** `m4_leave_holiday` (M4-25 to M4-30), `m3_teams_people` (M3-70 to M3-91, M3-100 to M3-103), `y_payroll` 38, `c2_payroll` 72, `m5_incentives` 23; screens `payroll_ui` 75, `m5_ui` 23.
 - **Test by hand, normal use:**
   - Build payroll for last month: everyone on payroll is listed with days, earnings, deductions, net.
   - Review → approve → pay; download a payslip PDF; the books get the salary entries.
@@ -222,7 +223,11 @@
   - Someone marked "Worked full day" on a holiday: that month's line shows "Holiday work – <date>" for one day's pay (₹31,000 in a 31-day month → ₹1,000) and the payslip prints it.
   - Salary advance: request, approve, pay; it's deducted in the next payroll.
   - Payroll settings: components and statutory deductions.
+  - Sales incentive (rule: ₹2,000 after the first 3): convert 5 projects in one month, fully pay them one by one (one with a bank loan); the 4th and 5th to be fully paid show ₹2,000 in the month they became fully paid, the first 3 show ₹0 ("fills the monthly minimum").
+  - Payroll → Adjust → Share an incentive line with another person: their salary gets the share, yours drops.
 - **Test by hand, edge cases:**
+  - A project paid only partly (or only the down payment of a loan project): no incentive yet.
+  - Cancel a project whose incentive was already paid and approved: the next payroll shows a red "Incentive reversed" line; with a small salary only that month's pay is taken, the rest next month.
   - Advance bigger than the final salary: net ₹0, the rest stays outstanding on the advance.
   - Advance above ₹10,000 needs a second approver; nobody approves their own advance.
   - Recalculating the run doesn't add the arrears twice (nor the holiday-work line).
@@ -507,7 +512,7 @@
 - **Separate production and development databases:** before real data goes in.
 - **Sheet import tool:** enquiries, MSS and Arkshakti sites, tab by tab with a preview. See [CUSTOMER_DATA_IMPORT_REPORT.md](./CUSTOMER_DATA_IMPORT_REPORT.md).
 - **Real data load:** the Tally ledger list, opening balances, bank statements.
-- **Housekeeping:** regenerate Swagger; stop the old API copy on port 8090; rewrite test V10.
+- **Housekeeping:** regenerate Swagger; stop the old API copy on port 8090.
 
 ## How the automatic tests run
 - **API suites:** `docs/test-suites/hr/*.sh`, run together by `regress.sh` against the local test database (`mahi_test`, API on :8080). Each suite creates its own data.

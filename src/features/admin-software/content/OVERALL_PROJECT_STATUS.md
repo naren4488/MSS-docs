@@ -391,6 +391,8 @@ Header search, More actions and two-step removed (owner decisions 1.1–1.3, 13 
 - Adjust a line (draft only, unpaid): **extra pay** — overtime, bonus, incentive, what it's for (needed with extra pay); other deduction; advance recovery automatic or a chosen amount
 - **Final settlement** tag on the line of someone who left in that month (days up to the leaving date; advance recovered up to the net pay, the rest stays a recoverable advance)
 - **No pay between leaving and rejoining** (13 Nov, from the exit and rejoin history): the leaving month pays up to the leaving date, a month wholly in the gap leaves the person off the run, the rejoining month pays from the rejoining date
+- **Incentives and referrals when the project is fully paid** (Module 5 round 2, 5.1–5.8, 13 Nov, migration 0158): a conversion incentive or a referral is earned in the month the project becomes fully paid — everything received, a bank loan included (the day the received total reaches the contract). The monthly minimum counts the projects converted in a month: the first ones fully paid fill it ("fills the monthly minimum of 3 (Aug 2026), not paid"), each one fully paid after that earns. A cancelled project leaves the count; money already paid for a project that no longer earns (cancelled, recount, no longer fully paid) comes back as a red "Incentive / Referral reversed — project … (why)" line on the next salary, no more than that month's pay (the rest in later months); HR can remove it with a reason to let it go
+- **Share** an incentive or referral line (HR, draft payroll, before approval): choose someone in the same payroll, an amount (up to the line) and a reason; the line drops by that amount and the other person gets an "Incentive share from <name>" line. Shares are recovered from each holder if the project is cancelled
 - Extra pay lines: incentives, referrals, **holiday work** ("Holiday work – 02 Oct 2026 (Gandhi Jayanti)": one day's pay, monthly salary ÷ days in the month, for each full day worked on a company holiday; 4.4, 13 Nov) and **salary arrears** ("Salary arrears — <month> (paid ₹…, due ₹… at the salary from …)") from an approved back-dated salary change, once per month
 - Pay (opens the Pay salary drawer on that month); Payslip download
 - Advance approval limit (advance approve right; default ₹10,000)
@@ -426,6 +428,7 @@ Header search, More actions and two-step removed (owner decisions 1.1–1.3, 13 
 
 ### APIs
 - `/payroll/runs` (generate, recalculate, approve, cancel), `/payroll/items` (adjust, pay, payslip), `/payroll/employee-items`, `/payroll/payments` (undo), `/payroll/books-status`
+- `POST /payroll/extra-lines/{id}/split` `{employee_id, amount, reason}` (payroll edit; draft run, unpaid lines; not the project's own referral amount or a recovery); extra lines carry `source` `rule` / `project` / `attendance` / `split` / `reversal` (reversal amounts are negative)
 - `/payroll/items` and `/payroll/runs/{id}/items` carry `final_settlement` and `leaving_date`; extra lines may be `kind: arrears` or `kind: holiday_work` (source `attendance`)
 - `/advances` (submit, approve, reject, pay, repay, cancel, deductions), `/advances/settings` (approval limit)
 - `/accounts/payroll-ledgers`
