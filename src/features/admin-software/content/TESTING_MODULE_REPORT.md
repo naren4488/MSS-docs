@@ -15,7 +15,7 @@
 | # | Module | Done | Status |
 |---|---|---|---|
 | 1 | Platform: sign-in, companies, users, access | 90 % | Working; header search built 13 Nov; access by own / team / department pending |
-| 2 | Settings and masters | 90 % | Working; round-2 decisions 2.1–2.4 built 13 Nov (team master rights, signature / stamp / terms / UPI QR on prints, vendorship switch only, template editor with preview); company logo fixed and shown in the sidebar; MSS logo from `Mahi2.svg` set locally, production pending |
+| 2 | Settings and masters | 90 % | Working; round-2 decisions 2.1–2.4 built 13 Nov (team master rights, signature / stamp / terms / UPI QR on prints, vendorship switch only, template editor with preview); company logo fixed and shown in the sidebar; MSS logo from `Mahi2.svg` set on production and locally |
 | 3 | People: employees, teams | 85 % | Working; round-2 decisions 3.1–3.6 built 13 Nov (crews, crew week board, exit checklist and history, final settlement, PAN + emergency contact, back-dated salary with approval); month-card formula and photo access pending |
 | 4 | Attendance and leave | 90 % | Working; crew attendance at the site by team leaders (GPS, several sites a day) built 13 Nov |
 | 5 | Payroll and advances | 80 % | Working; final settlement and salary arrears built 13 Nov; AU bank file sample and CA check pending |
@@ -94,9 +94,8 @@
   - Settings → Document templates (decision 2.4): formatted-text editor in a frame with the template's own CSS, "Insert field" buttons for the placeholders, live preview filled from a chosen project, raw HTML under "Advanced" for a Super Admin; the test leftovers "WCR PE" / "WCR address parts" are removed (switched off where a generated document uses them).
   - Company logo fix (owner bug): the logo box shows the stored logo through its signed link after a reload (the picked file shows only while uploading); "Remove logo"; the same for signature and stamp.
   - Sidebar logo: the active company's logo at the top of the sidebar and the phone menu (≈ 40 px, short name beside it), initials on the company colour without a logo; follows the company of the tab.
-  - MSS logo (12 Nov): `Mahi2.svg` from MSS-docs as a transparent PNG (SVG uploads are refused), uploaded and set as the MSS logo on the local test database.
+  - MSS logo (12 Nov): `Mahi2.svg` from MSS-docs as a transparent PNG (SVG uploads are refused), uploaded and set as the MSS logo on production (S3) and on the local test database.
 - **Pending:**
-  - Set the MSS logo on production: Settings → Company → Change logo in MSS with `mss-logo-mahi2.png`, or the same API calls with an admin login.
   - Leave Types are a list for now; leave requests still use paid / unpaid.
   - The rest of the access-matrix review.
 - **Tests:** `v_settings` 28 / 29 (V10 needs rewriting), `h1a4_master_conversion` 39, `ns_number_series` 25, `ca_import_prep` 33 (CA01–CA08 are the masters), `m2_settings_round2` 46; screens `m2_round2_ui` 26 (1440).
@@ -174,11 +173,12 @@
 - **Pending:**
   - Unused paid leave: carry forward up to 6 days at 31 Mar, the rest lapse (decision 4.3, 13 Nov).
   - A full day worked on a company holiday earns one extra day's pay; half a day earns nothing extra (decisions 4.4 / 4.5, 13 Nov).
-- **Tests:** `m3_teams_people` (M3-20 to M3-37), screens `m3_ui` (C01–C09 at 1440 / 390), `attendance_ui` 63, plus the attendance checks inside the payroll suites.
+- **Tests:** `m3_teams_people` (M3-20 to M3-37), screens `m3_ui` (C01–C09 at 1440 / 390), `attendance_ui` 63, `leave_reason_ui` 14, plus the attendance checks inside the payroll suites.
 - **Test by hand, normal use:**
   - Mark attendance for today: present, absent, half day, paid leave, half paid leave.
   - Mark for a whole team or many people at once.
   - Apply for leave as an employee (dates, type, reason); the approver gets an alert; approve; balance goes down.
+  - Apply leave without a reason: Submit stays off and says a reason is required (13 Nov).
   - Reject a leave with a reason; the employee sees it.
   - Attendance page: month view per person with totals.
   - As a crew leader on a phone: My day → Mark crew attendance; tick members, Present, the time, the project; allow location; each member shows "09:15 · Present · <project>". Mark one of them again at a second site as half day: they stay present, both marks are listed.
