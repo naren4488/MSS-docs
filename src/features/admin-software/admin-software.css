@@ -1151,9 +1151,263 @@
   gap: 8px;
 }
 
+/* ── Testing: ring, bars, module cards ── */
+.asw-hero-side {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 18px;
+  align-items: center;
+}
+.asw-stats--tight {
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+}
+.asw-ring-track {
+  stroke: rgba(255, 255, 255, 0.16);
+}
+.asw-ring-value {
+  stroke: var(--asw-yellow);
+}
+.asw-ring-num {
+  fill: #ffffff;
+  font-family: "Poppins", sans-serif;
+  font-weight: 700;
+}
+.asw-ring-label {
+  fill: rgba(255, 255, 255, 0.75);
+  font-family: "Raleway", sans-serif;
+}
+.asw-detail .asw-ring-track {
+  stroke: #ece6f0;
+}
+.asw-detail .asw-ring-value {
+  stroke: var(--asw-purple);
+}
+.asw-detail .asw-ring-num {
+  fill: var(--asw-navy);
+}
+.asw-detail .asw-ring-label {
+  fill: var(--asw-muted);
+}
+.asw-detail-head--ring {
+  align-items: center;
+}
+.asw-detail-kicker {
+  margin: 0;
+  font: 600 11px "Poppins", sans-serif;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--asw-purple);
+}
+.asw-detail-status {
+  color: var(--asw-muted);
+  font-size: 14px;
+}
+.asw-overall,
+.asw-regression {
+  font-size: 15px;
+  line-height: 1.6;
+}
+.asw-regression {
+  border-left: 4px solid var(--asw-purple);
+}
+
+.asw-bars {
+  display: grid;
+  gap: 6px;
+  position: sticky;
+  top: 140px;
+  max-height: calc(100vh - 160px);
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.asw-bar {
+  display: grid;
+  gap: 6px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  color: var(--asw-text);
+}
+.asw-bar:hover {
+  background: #faf8fb;
+}
+.asw-bar--on {
+  background: var(--asw-navy);
+  color: #ffffff;
+}
+.asw-bar--on:hover {
+  background: var(--asw-navy);
+}
+.asw-bar--on .asw-module-num {
+  background: var(--asw-yellow);
+  color: var(--asw-navy);
+}
+.asw-bar-top {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+}
+.asw-bar-name {
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 1.3;
+}
+.asw-bar-pct {
+  font: 700 14px "Poppins", sans-serif;
+}
+.asw-bar-track {
+  display: block;
+  height: 8px;
+  border-radius: 999px;
+  background: #ece6f0;
+  overflow: hidden;
+}
+.asw-bar--on .asw-bar-track {
+  background: rgba(255, 255, 255, 0.18);
+}
+.asw-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+}
+.asw-bar-fill--high {
+  background: var(--asw-purple);
+}
+.asw-bar-fill--mid {
+  background: var(--asw-purple-soft);
+}
+.asw-bar-fill--low {
+  background: var(--asw-yellow);
+}
+.asw-bar--on .asw-bar-fill--high,
+.asw-bar--on .asw-bar-fill--mid {
+  background: var(--asw-yellow);
+}
+.asw-bar-ticks {
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+.asw-tt-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+.asw-tt-card,
+.asw-tt-tests,
+.asw-tt-hand {
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: #ffffff;
+  border: 1px solid var(--asw-line);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.asw-tt-card h4,
+.asw-tt-tests h4,
+.asw-tt-hand h4 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 8px;
+  font-size: 15px;
+  font-weight: 600;
+}
+.asw-tt-card ul,
+.asw-tt-tests ul {
+  margin: 0;
+  padding-left: 18px;
+}
+.asw-tt-card li {
+  margin: 4px 0;
+}
+.asw-tt-card--done {
+  border-top: 3px solid var(--asw-purple);
+}
+.asw-tt-card--done h4 svg {
+  color: var(--asw-purple);
+}
+.asw-tt-card--pending {
+  border-top: 3px solid var(--asw-yellow);
+  background: #fffef3;
+}
+.asw-tt-tests,
+.asw-tt-hand {
+  margin-top: 12px;
+}
+.asw-tt-tests h4 svg,
+.asw-tt-hand h4 svg {
+  color: var(--asw-purple);
+}
+.asw-tt-chiprow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+}
+.asw-tt-chiplabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 74px;
+  font: 600 11px "Poppins", sans-serif;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--asw-muted);
+}
+.asw-chip--pass strong {
+  color: var(--asw-purple);
+  margin-left: 2px;
+}
+.asw-tt-hand header {
+  display: grid;
+  grid-template-columns: auto auto minmax(60px, 160px);
+  justify-content: start;
+  align-items: center;
+  gap: 12px;
+}
+.asw-tt-hand header h4 {
+  margin: 0;
+}
+.asw-across {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+.asw-across-card {
+  position: relative;
+  padding: 16px;
+  border-radius: 14px;
+  background: #faf8fb;
+  border: 1px solid var(--asw-line);
+  font-size: 14px;
+  line-height: 1.55;
+}
+.asw-across-card h4 {
+  margin: 0 0 6px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--asw-navy);
+}
+.asw-across-num {
+  float: right;
+  font: 700 22px "Poppins", sans-serif;
+  color: var(--asw-purple-soft);
+}
+
 /* ── Responsive ── */
 @media (max-width: 1100px) {
   .asw-hero {
+    grid-template-columns: 1fr;
+  }
+  .asw-tt-grid {
     grid-template-columns: 1fr;
   }
 }
@@ -1181,6 +1435,21 @@
   .asw-module-meta {
     display: none;
   }
+  .asw-bars {
+    position: static;
+    max-height: none;
+    display: flex;
+    overflow-x: auto;
+    padding-bottom: 6px;
+  }
+  .asw-bar {
+    flex: none;
+    width: 210px;
+    border-color: var(--asw-line);
+  }
+  .asw-bar-ticks {
+    display: none;
+  }
   .asw-two-col {
     grid-template-columns: 1fr;
   }
@@ -1197,6 +1466,19 @@
   }
   .asw-stats {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .asw-hero-side {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+  .asw-hero-side .asw-stats {
+    width: 100%;
+  }
+  .asw-tt-hand header {
+    grid-template-columns: 1fr auto;
+  }
+  .asw-tt-hand header .asw-progress {
+    grid-column: 1 / -1;
   }
   .asw-stat-value {
     font-size: 22px;
@@ -1217,6 +1499,9 @@
   }
   .asw-section-btn svg {
     display: none;
+  }
+  .asw-sections {
+    position: static;
   }
   .asw-group-head {
     grid-template-columns: minmax(0, 1fr) auto auto;
@@ -1249,4 +1534,8 @@
     justify-content: center;
     padding: 10px 8px;
   }
+}
+
+.asw-hero .asw-doc-ref {
+  color: var(--asw-purple-soft);
 }

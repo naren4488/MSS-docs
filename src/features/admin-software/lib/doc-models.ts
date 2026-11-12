@@ -170,184 +170,164 @@ export function buildStatusDoc(markdown: string = statusMarkdown): StatusDoc {
   };
 }
 
-/* ───────────── Testing report ───────────── */
-
-export type ProblemTone = "broken" | "real" | "missing" | "fine";
-
-export interface ProblemGroup {
-  id: string;
-  title: string;
-  tone: ProblemTone;
-  intro: string;
-  rows: Array<{ where: string; problem: string; seen: string }>;
-  bullets: string[];
-}
+/* ───────────── Module status and testing report ───────────── */
 
 export interface CheckRow {
   id: string;
-  check: string;
-  pass: string;
-  note: string;
+  text: string;
 }
 
-export interface CheckGroup {
-  id: string;
-  title: string;
-  intro: string;
-  rows: CheckRow[];
+export interface TestChip {
+  name: string;
+  count: string;
+  screen: boolean;
 }
 
-export interface TimelineEntry {
+export interface ModuleTest {
   id: string;
-  title: string;
-  date: string;
-  sortKey: number;
-  automated: string;
-  intro: string;
-  checks: CheckRow[];
+  number: number;
+  name: string;
+  percent: number;
+  status: string;
+  done: string[];
+  pending: string[];
+  testsText: string;
+  tests: TestChip[];
+  handChecks: CheckRow[];
+  /** Any other labelled bullet (kept so nothing in the doc is lost). */
+  extra: Array<{ label: string; items: string[] }>;
 }
 
 export interface TestingDoc {
   title: string;
   updatedDate: string;
-  changes: string[];
-  headline: string;
+  whatThisIs: string;
   setup: string[];
-  problemsIntro: string;
-  problems: ProblemGroup[];
-  checksIntro: string;
-  checks: CheckGroup[];
-  pathTitle: string;
-  pathIntro: string;
-  pathSteps: string[];
-  pathStop: string;
-  timeline: TimelineEntry[];
+  overallPercent: number;
+  overallLead: string;
+  regression: string;
+  regressionLabel: string;
+  modules: ModuleTest[];
+  acrossStatus: string;
+  across: string[];
+  howTitle: string;
+  how: string[];
 }
 
-function toneFor(title: string): ProblemTone {
-  if (/broken/i.test(title)) return "broken";
-  if (/not built/i.test(title)) return "missing";
-  if (/not a problem/i.test(title)) return "fine";
-  return "real";
+interface LabelledBullet {
+  label: string;
+  inline: string;
+  items: string[];
 }
 
-function columnFinder(headers: string[]) {
-  const lower = headers.map((header) => header.toLowerCase());
-  return (...tests: RegExp[]) => lower.findIndex((header) => tests.some((test) => test.test(header)));
+/** "- **Done:** text" bullets with optional indented sub-bullets. */
+function labelledBullets(body: string): LabelledBullet[] {
+  const out: LabelledBullet[] = [];
+  for (const line of body.split("\n")) {
+    const top = /^[-*]\s+\*\*([^*]+?):?\*\*:?\s*(.*)$/.exec(line);
+    if (top) {
+      out.push({ label: top[1].replace(/:$/, "").trim(), inline: top[2].trim(), items: [] });
+      continue;
+    }
+    const sub = /^\s{2,}[-*]\s+(.*)$/.exec(line);
+    if (sub && out.length > 0) {
+      out[out.length - 1].items.push(sub[1].trim());
+      continue;
+    }
+    const deeper = /^\s{4,}\S/.test(line);
+    if (deeper && out.length > 0) {
+      const last = out[out.length - 1];
+      if (last.items.length > 0) last.items[last.items.length - 1] += `\n${line}`;
+    }
+  }
+  return out;
 }
 
-function checkRows(table: MdTable | undefined, prefix: string): CheckRow[] {
-  if (!table) return [];
-  const find = columnFinder(table.headers);
-  const checkCol = Math.max(0, find(/what to check/, /^check$/, /check/));
-  const passCol = find(/pass when/, /expected/);
-  const noteCol = find(/problem/, /note/);
-  return table.rows.map((row) => {
-    const check = row[checkCol] ?? "";
-    return {
-      id: `${prefix}:${slugify(plainText(check)).slice(0, 80)}`,
-      check,
-      pass: passCol >= 0 ? row[passCol] ?? "" : "",
-      note: noteCol >= 0 ? row[noteCol] ?? "" : "",
-    };
-  });
+function listOf(bullet: LabelledBullet | undefined): string[] {
+  if (!bullet) return [];
+  if (bullet.items.length > 0) return bullet.inline ? [bullet.inline, ...bullet.items] : bullet.items;
+  return bullet.inline ? [bullet.inline] : [];
 }
 
-/** Turns "x.sh 39/39, y_ui 73/73 at …" into a readable sentence (kept as markdown). */
-function automatedLine(body: string): string {
-  const match = /^Automated:\s*(.*)$/im.exec(body);
-  return match?.[1]?.trim() ?? "";
+function parseTestChips(text: string): TestChip[] {
+  const chips: TestChip[] = [];
+  const screensAt = text.search(/screens?\b/i);
+  for (const match of text.matchAll(/`([^`]+)`\s*(\d[\d,]*(?:\/\d[\d,]*)?)?/g)) {
+    chips.push({ name: match[1], count: (match[2] ?? "").replace(/,$/, ""), screen: screensAt >= 0 && (match.index ?? 0) > screensAt });
+  }
+  return chips;
 }
 
 export function buildTestingDoc(markdown: string = testingMarkdown): TestingDoc {
   const root = parseSections(markdown);
   const top = root.children[0] ?? root;
-  const updatedRaw = /^\*\*Updated\s+([^*]+)\*\*\s*(.*)$/im.exec(top.body);
-  const updated = splitUpdatedNote(updatedRaw ? `${updatedRaw[1]} ${updatedRaw[2]}` : "");
-  const regressionNote = updated.items.find((item) => /[\d,]+ passed/.test(item)) ?? "";
-  const headline =
-    /([\d,]+ passed(?:,\s*only [^,;)]+|[^,;)]*))/.exec(regressionNote)?.[1]?.replace(/\*\*/g, "").trim() ?? "";
+  const handSection = findSection(top, /^Testing by hand/i);
+  const overall = findSection(top, /^Overall/i);
+  const byModule = findSection(top, /^Module by module/i);
+  const across = findSection(top, /^Across all/i);
+  const how = findSection(top, /^How the automatic/i);
 
-  const setup = top.body
-    .split("\n")
-    .slice(1)
-    .map((line) => line.replace(/\s+$/, "").trim())
-    .filter((line) => line && !/^---$/.test(line) && !/^Two lists below/i.test(line));
+  const overallBody = overall?.body ?? "";
+  const statusRows = new Map<number, string[]>();
+  let acrossStatus = "";
+  for (const row of parseTables(overallBody)[0]?.rows ?? []) {
+    const n = Number(row[0]);
+    if (Number.isFinite(n) && row[0].trim()) statusRows.set(n, row);
+    else if (/across/i.test(row[1] ?? "")) acrossStatus = row[3] ?? "";
+  }
+  const paragraphs = withoutTables(overallBody)
+    .split(/\n\s*\n/)
+    .map((block) => block.trim())
+    .filter(Boolean);
+  const leadBlock = paragraphs.find((block) => /complete/i.test(block)) ?? paragraphs[0] ?? "";
+  const regressionBlock = paragraphs.find((block) => /regression/i.test(block)) ?? "";
+  const regressionMatch = /^\*\*([^*]+?):?\*\*:?\s*(.*)$/s.exec(regressionBlock);
 
-  const problems = findSection(top, /^Problems/i);
-  const checks = findSection(top, /^What to check/i);
-  const path = findSection(top, /^One path/i);
-  const newOnly = findSection(top, /^New problems/i);
-
-  const problemGroups: ProblemGroup[] = (problems?.children ?? []).map((child) => {
-    const table = parseTables(child.body)[0];
-    const find = table ? columnFinder(table.headers) : () => -1;
-    const where = Math.max(0, find(/where/));
-    const problem = find(/problem/);
-    const seen = find(/what you will see/, /see/);
-    return {
-      id: slugify(child.title),
-      title: child.title,
-      tone: toneFor(child.title),
-      intro: withoutTables(child.body)
-        .split("\n")
-        .filter((line) => !/^[-*]\s/.test(line))
-        .join(" ")
-        .trim(),
-      rows: (table?.rows ?? []).map((row) => ({
-        where: row[where] ?? "",
-        problem: problem >= 0 ? row[problem] ?? "" : "",
-        seen: seen >= 0 ? row[seen] ?? "" : "",
-      })),
-      bullets: topLevelBullets(child.body),
-    };
-  });
-
-  const checkGroups: CheckGroup[] = (checks?.children ?? []).map((child) => ({
-    id: slugify(child.title),
-    title: child.title,
-    intro: withoutTables(child.body),
-    rows: checkRows(parseTables(child.body)[0], slugify(child.title)),
-  }));
-
-  const timeline: TimelineEntry[] = (newOnly?.children ?? [])
+  const modules: ModuleTest[] = (byModule?.children ?? [])
     .map((child) => {
-      const date = findDate(child.title);
-      const intro = withoutTables(child.body)
-        .split("\n")
-        .filter((line) => !/^Automated:/i.test(line))
-        .join("\n")
-        .trim();
+      const match = /^(\d+)\.\s+(.*?)\s*(?:\((\d+)\s*%\))?$/.exec(child.title);
+      if (!match) return null;
+      const number = Number(match[1]);
+      const bullets = labelledBullets(child.body);
+      const get = (re: RegExp) => bullets.find((bullet) => re.test(bullet.label));
+      const tests = get(/^tests?$/i);
+      const hand = get(/test by hand/i);
+      const row = statusRows.get(number) ?? [];
+      const known = [/^done$/i, /^pending$/i, /^tests?$/i, /test by hand/i];
       return {
-        id: slugify(child.title),
-        title: child.title
-          .replace(/\s*[—–-]\s*\d{1,2}\s+\w{3}\s+\d{4}\s*$/, "")
-          .replace(/\s*\(\d{1,2}\s+\w{3}\s+\d{4}\)\s*$/, "")
-          .trim(),
-        date: date?.label ?? "",
-        sortKey: date?.sortKey ?? 0,
-        automated: automatedLine(child.body),
-        intro,
-        checks: checkRows(parseTables(child.body)[0], slugify(child.title)),
-      };
+        id: `t${number}`,
+        number,
+        name: match[2].trim(),
+        percent: Number(match[3] ?? /\d+/.exec(row[2] ?? "")?.[0] ?? 0),
+        status: row[3] ?? "",
+        done: listOf(get(/^done$/i)),
+        pending: listOf(get(/^pending$/i)),
+        testsText: tests ? [tests.inline, ...tests.items].join(" ") : "",
+        tests: tests ? parseTestChips([tests.inline, ...tests.items].join(" ")) : [],
+        handChecks: listOf(hand).map((text) => ({ id: `m${number}:${slugify(plainText(text)).slice(0, 80)}`, text })),
+        extra: bullets
+          .filter((bullet) => !known.some((re) => re.test(bullet.label)))
+          .map((bullet) => ({ label: bullet.label, items: listOf(bullet) })),
+      } satisfies ModuleTest;
     })
-    .sort((a, b) => b.sortKey - a.sortKey);
+    .filter((module): module is ModuleTest => module !== null);
 
-  const pathBody = path?.body ?? "";
+  const percentFromLead = /(\d+)\s*%/.exec(leadBlock)?.[1];
+  const average = modules.length ? Math.round(modules.reduce((sum, m) => sum + m.percent, 0) / modules.length) : 0;
+
   return {
     title: top.title,
-    updatedDate: updated.date,
-    changes: updated.items,
-    headline,
-    setup,
-    problemsIntro: problems?.body ?? "",
-    problems: problemGroups,
-    checksIntro: checks?.body ?? "",
-    checks: checkGroups,
-    pathTitle: path?.title ?? "One path",
-    pathIntro: pathBody.split("\n").find((line) => line.trim() && !/^\d+\./.test(line) && !/^\*\*Stop/.test(line))?.trim() ?? "",
-    pathSteps: numberedItems(pathBody),
-    pathStop: /^\*\*Stop[^*]*\*\*\s*(.*)$/im.exec(pathBody)?.[0] ?? "",
-    timeline,
+    updatedDate: boldField(top.body, "Updated"),
+    whatThisIs: capitalize(boldField(top.body, "What this is")),
+    setup: topLevelBullets(handSection?.body ?? ""),
+    overallPercent: percentFromLead ? Number(percentFromLead) : average,
+    overallLead: leadBlock,
+    regression: regressionMatch ? regressionMatch[2].trim() : regressionBlock,
+    regressionLabel: regressionMatch ? regressionMatch[1].trim() : "",
+    modules,
+    acrossStatus,
+    across: topLevelBullets(across?.body ?? ""),
+    howTitle: how?.title ?? "How the automatic tests run",
+    how: topLevelBullets(how?.body ?? ""),
   };
 }

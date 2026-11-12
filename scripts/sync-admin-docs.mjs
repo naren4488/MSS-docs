@@ -14,7 +14,9 @@ for (const name of files) {
     // This site has no login — never publish sign-in details.
     .split("\n")
     .filter((line) => !/^\s*Login:/i.test(line))
-    .join("\n");
+    .join("\n")
+    .replace(/\s*Sign in as [^.]*?\(phone \+ password\)\.?/gi, "")
+    .replace(/`[6-9]\d{9}`/g, "(test login)");
   writeFileSync(resolve(target, name), text);
   console.log(`synced ${name} (${text.split("\n").length} lines)`);
 }
