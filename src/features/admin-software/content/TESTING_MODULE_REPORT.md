@@ -302,14 +302,17 @@
   - A follow-up person on each follow-up (default the lead owner, changeable in the follow-up list); their alert, My day, task and calendar (E2, built 13 Nov).
   - Documents received: Pending / Partially / Yes + date + note on the enquiry, with a list filter (E3, built 13 Nov).
   - "Different sizes": panel, structure and inverter kW apart (e.g. 3 / 5 / 6); the panel kW is the system size; carried to the quotation and project (E4, built 13 Nov).
+  - Requested visit on a new enquiry (7.7, built 13 Nov, migration 0167): Add enquiry (also from a customer, agent, partner or quotation) asks for "Visit date (requested)" (today or later) and "Visit note" (up to 200 characters) instead of a follow-up date; Edit enquiry keeps the follow-up date. The list and the enquiry show "Visit requested 15 Nov · after 5 pm · not assigned"; a "Visits to assign" filter with its count (`?visit_request=to_assign`, `counts.visits_to_assign`). Assign visit on the enquiry (site-visit booking right) opens the booking form prefilled; booking marks the request assigned. A request on an enquiry that already has an open visit shows as covered; lost / converted / archived ones drop out.
   - Quick-create a customer with a mobile already in use: the I1 warning "This number already belongs to <name> (CUST-…)" with Use that customer (default, selects them), Save anyway, Link them as family (`enquiries_ui` E13 passes again).
 - **Pending:**
   - The import of the Sep–Nov enquiry tabs.
   - The daily enquiry report, planned with the analytics review.
   - Meta Ads leads arriving automatically (7.5, later).
-- **Tests:** `f_enquiries` 26, `ca_import_prep` 33, `cb_project_fields` 63 (CB01–CB03 enquiry sizes), `m7_enquiries_r2` 51; screens `enquiries_ui` 42 (all pass; E13 checks the same-mobile warning, Use that customer and Save anyway), `ca_ui` 12, `cb_ui` 26 (CBU01–CBU05), `m7_ui` 34 (1440 and 390).
+- **Tests:** `f_enquiries` 26, `ca_import_prep` 33, `cb_project_fields` 63 (CB01–CB03 enquiry sizes), `m7_enquiries_r2` 51, `m7_visit_request` 29 (7.7: to assign, past date and note-without-date refused, bell to bookers only, assign → visit + task + assigned, no right → 403, filter, covered / closed, other company, 0167 down/up); screens `enquiries_ui` 42 (all pass; E13 checks the same-mobile warning, Use that customer and Save anyway; rerun 13 Nov at 1440: 16/16), `ca_ui` 12, `cb_ui` 26 (CBU01–CBU05), `m7_ui` 34 (1440 and 390), `m7_visit_ui` 38 (7.7 at 1440 and 390: the form's visit fields and no follow-up date, list line and filter, To assign tab, Assign → booked, a viewer sees no Assign).
 - **Test by hand, normal use:**
   - Create an enquiry: customer (new or existing), source, owner, kW, phase, budget, address, notes.
+  - Create an enquiry with Visit date = the day after tomorrow and Visit note "after 5 pm": the list shows "Visit requested <date> · after 5 pm · not assigned"; "Visits to assign" lists it; people who can book visits get "New visit to assign: <customer>, <date> (after 5 pm)" in the bell.
+  - Open the enquiry → Assign visit: the booking form has the date, "Customer asked: after 5 pm" in the notes and as a hint under Time; pick the sales person, add 17:30 and save: the visit gets its SV number and task, the sales person gets the alert, the enquiry says "… · assigned".
   - Quick-create a new customer from the enquiry form; with a mobile already in use, the warning names that customer and "Use that customer" selects them.
   - Add follow-ups with a date and note; the owner gets the reminder; it shows in My day and the calendar.
   - Change the owner; the new owner gets an "Enquiry assigned to you" alert.
@@ -325,6 +328,11 @@
   - A follow-up 3 days late: the lead owner's team leader (or the Sales Manager) gets "Follow-up 3 days late: ENQ-…" in the bell, once.
   - Tick "Different sizes" on a 3 kW enquiry, enter structure 5 and inverter 6; the enquiry page shows "3 kW panels · 5 kW structure · 6 kW inverter"; a quotation made from it starts with the same sizes.
 - **Test by hand, edge cases:**
+  - Visit date yesterday: "The visit date can't be in the past" (the API refuses it too); a visit note without a date: refused; a note over 200 characters: refused.
+  - No visit date: no request, no alert (the enquiry looks as before).
+  - An enquiry with a request that already has an open visit: shows "a visit is already booked" (covered), no alert, not in To assign.
+  - Mark an enquiry with a waiting request as lost: it leaves To assign and the bell.
+  - The requested date has passed before anyone assigns it: still in To assign (in red); Assign prefills today.
   - "Different sizes" ticked with the structure or inverter kW empty or 0: refused; unticking clears both.
   - Enquiry for a customer who already has an open enquiry: allowed, but check you see both.
   - A phone stored as +91 98290 12345 and typed as 098290 12345: still matched (last 10 digits); fewer than 10 digits: no warning.
@@ -341,14 +349,16 @@
 - **Done:**
   - A visit as its own record (scheduled → travelled → completed / not completed / cancelled), visit fees and receipts, the calendar.
   - Optional companions (8.2, built 13 Nov): a visit keeps one required person (the task, Travelled / Complete); other active staff can be added at booking or on Edit site visit. Companions see the visit in their My day ("companion"), their calendar and Site visits → My visits (tagged Companion, no Update menu); the card says "With …". Without site-visit edit they can't act on it (403). One open visit per enquiry and cancel-and-rebook stay as they were.
+  - Site visits → **To assign** (7.7, 13 Nov): visits asked for on new enquiries, earliest date first, with the note, address and lead owner (`GET /site-visit-requests`, site-visit view). **Assign visit** (site-visit booking right) opens the enquiry's booking form prefilled; the bell alert "New visit to assign" opens this tab. Without the right the list shows, no Assign button.
   - A follow-up shows once in the calendar (8.0, 13 Nov): while the enquiry has an open follow-up task, only the task shows, whatever its date (moving the task or the follow-up used to show it twice).
   - Timeline (8.0, 13 Nov): one feed call (since the Module 10 review); a fresh load now makes 6–9 API requests (was 11; ~83 before the feed).
 - **Pending:**
   - The visit cost / money staff spend is not booked in the accounts (8.1, parked for the CA).
   - Who may book / complete / see all visits: the access-matrix review at the end.
-- **Tests:** `sv_sitevisits` 54, `m8_visits_r2` 34; screens `sitevisits_ui` 33, `visit_fees_ui` 47, `m8_ui` 36 (1440 and 390).
+- **Tests:** `sv_sitevisits` 54, `m8_visits_r2` 34 (both rerun 13 Nov with 7.7: all pass), `m7_visit_request` 29 (To assign and assign); screens `sitevisits_ui` 33, `visit_fees_ui` 47, `m8_ui` 36 (1440 and 390), `m7_visit_ui` 38 (To assign tab and Assign → booked, 1440 and 390).
 - **Test by hand, normal use:**
   - Book a site visit: date, time, visitor, address, optional fee.
+  - Site visits → To assign: a visit requested on a new enquiry is listed; Assign visit → pick the person, add a time, a fee and a companion → saved; it leaves To assign and shows under To do.
   - Book a site visit with two companions: the chips show in the form, the enquiry card says "With A, B"; each companion sees it in My day (if today), the calendar and Site visits → My visits.
   - Edit site visit: remove a companion; they no longer see it; add another, they do.
   - Mark travelled → completed with location and notes; or not completed with a reason.
@@ -359,6 +369,7 @@
   - Schedule a follow-up, then move its task to another day on the calendar: the calendar shows it once, on the new day.
   - Open Timeline: it loads in one go (one feed call).
 - **Test by hand, edge cases:**
+  - Someone with site-visit view but no booking right: sees To assign and the request on the enquiry, no Assign button; booking through the API is refused (403).
   - A companion (no site-visit edit) tries Travelled / Complete: not offered on Site visits; refused if tried another way.
   - The required person chosen again as a companion, or the same companion twice: dropped, not an error.
   - A companion made the required person on edit: they stop being a companion and get the task.

@@ -576,6 +576,12 @@ Header search, More actions and two-step removed (owner decisions 1.1–1.3, 13 
 - One size by default (kW = panels, structure and inverter). The **Different sizes** tick on the enquiry form shows structure kW and inverter kW (e.g. 3 / 5 / 6); the capacity then reads "Panel kW (system size)" — the size used for subsidy, DISCOM and bank papers
 - The enquiry page shows "3 kW panels · 5 kW structure · 6 kW inverter"; the sizes carry to its quotation and project
 
+**Requested visit on a new enquiry (7.7, owner request 13 Nov; migration 0167)**
+- Add enquiry (from Enquiries, a customer, an agent, a partner or a quotation) asks for **Visit date (requested)** (optional, today or later) and **Visit note** ("morning", "after 5 pm", "call before coming"; up to 200 characters) instead of a follow-up date. Edit enquiry keeps the follow-up date; follow-ups are still added on the enquiry
+- The request is not a booked visit: the list and the enquiry show "Visit requested 15 Nov · after 5 pm · not assigned"; **Visits to assign** filter on the list, with its count
+- People with the site-visit booking right get one bell alert "New visit to assign: <customer>, 15 Nov (after 5 pm)" (opens Site visits → To assign) and an **Assign visit** button on the enquiry: the normal booking form, prefilled with the date and the note (in the notes and as a hint under Time). Booking marks the request assigned. Others see the request, no button
+- One open visit per enquiry stays: a request on an enquiry that already has an open visit shows as covered (no alert); lost, converted or archived enquiries drop out
+
 **Late follow-ups (7.6, 13 Nov; migration 0160)**
 - A follow-up more than N days late (Settings → Approval limits → "Late follow-up alert (sales)", default 2, 1–30) raises one bell alert "Follow-up N days late: ENQ-…" for the lead owner's team leader, else the company's Sales Managers, else the Directors (there is no reports-to link on people). Once per enquiry and follow-up date (a new missed date alerts again); the alert goes away when the date changes or the enquiry closes. Worker job `followup-escalation` (hourly)
 
@@ -590,6 +596,7 @@ Header search, More actions and two-step removed (owner decisions 1.1–1.3, 13 
 - E2: `POST /enquiries/{id}/activities` takes `assigned_to_user_id` or `assigned_to_employee_id`; `PATCH /enquiries/{id}/activities/{activity_id}` {assigned_to_user_id}; enquiries return `followup_user_id`, `followup_user_name`; activities `assigned_to_user_id`, `assigned_to_name`
 - E3: `PATCH /enquiries/{id}/documents` {docs_status pending|partial|yes, docs_received_on, docs_note}; list filter `docs_status`
 - E4: create / edit take and return `different_sizes`, `structure_kw`, `inverter_kw` (omitted keeps; false clears)
+- 7.7: create (also `POST /customers/{id}/enquiries`) takes `visit_requested_on` (YYYY-MM-DD, today or later) and `visit_request_note`; enquiries return those plus `visit_request_status` (to_assign | covered | assigned | closed) and `visit_request_site_visit_id`; list filter `visit_request`, `counts.visits_to_assign`
 - **Backend only:** close an activity; `PATCH loss-reason`; convert to project from the enquiry endpoint; assignment history list
 
 ### Review status
@@ -612,6 +619,7 @@ Header search, More actions and two-step removed (owner decisions 1.1–1.3, 13 
 
 **Site visits page (`/site-visits`, menu under Calendar)**
 - My visits (the signed-in person's) for anyone who can view visits; Everyone for those who edit visits
+- **To assign** (7.7, 13 Nov; `?tab=to_assign`): visits asked for on new enquiries and not booked yet, earliest date first, with the note, address and lead owner (`GET /site-visit-requests`); **Assign visit** (site-visit booking right) opens the enquiry's booking form prefilled; booking moves it to To do and marks the request assigned
 - To do / Done / Cancelled; cards on phones, table on wider screens; long addresses wrap
 - Travelled to site (task goes in progress)
 - Couldn't do the visit: reason, optional follow-up date (goes on the enquiry), notes
