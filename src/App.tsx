@@ -11,6 +11,7 @@ import { AllEmployeeDirectories, EmployeeDirectoryMaker } from "@/features/emplo
 import { SiteDiagramListPage, SiteDiagramProjectPage } from "@/features/site-diagram";
 import { EnquiriesPage } from "@/features/enquiries";
 import { MssSitesPage } from "@/features/mss-sites";
+import { AdminSoftwarePage } from "@/features/admin-software";
 
 export default function App() {
   const location = useLocation();
@@ -54,6 +55,7 @@ export default function App() {
         <Route path="/mss-sites" element={<Navigate replace to="/projects" />} />
         <Route path="/projects" element={<MssSitesPage />} />
         <Route path="/enquiries" element={<EnquiriesPage />} />
+        <Route path="/admin-software" element={<AdminSoftwarePage />} />
         <Route path="/site-diagram" element={<SiteDiagramListPage />} />
         <Route path="/site-diagram/:projectId" element={<SiteDiagramProjectPage />} />
       </Routes>

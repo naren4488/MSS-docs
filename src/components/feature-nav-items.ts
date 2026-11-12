@@ -5,6 +5,7 @@ import {
   FolderKanban,
   Handshake,
   Map,
+  MonitorCog,
   PhoneCall,
   Receipt,
   ReceiptIndianRupee,
@@ -94,5 +95,12 @@ export const FEATURE_NAV_ITEMS: FeatureNavItem[] = [
     icon: Users,
     matchList: (pathname) => pathname === "/employees",
     matchMaker: (pathname) => pathname.startsWith("/employee-directory") || pathname === "/employees",
+  },
+  {
+    path: "/admin-software",
+    label: "Admin Software",
+    icon: MonitorCog,
+    matchList: (pathname) => pathname === "/admin-software",
+    matchMaker: (pathname) => pathname === "/admin-software",
   },
 ];
