@@ -1,13 +1,10 @@
 import { useMemo, useState } from "react";
 import {
   ArrowRight,
-  BookOpen,
   Boxes,
   CheckCircle2,
-  ChevronDown,
   CircleDot,
   Eye,
-  Handshake,
   Plug,
   Search,
   X,
@@ -33,33 +30,6 @@ function StatTile({ value, label, hint }: { value: string; label: string; hint?:
       <span className="asw-stat-label">{label}</span>
       {hint ? <span className="asw-stat-hint">{hint}</span> : null}
     </div>
-  );
-}
-
-function ChangesList({ changes }: { changes: string[] }) {
-  const [open, setOpen] = useState(false);
-  if (changes.length === 0) return null;
-  const shown = open ? changes : changes.slice(0, 4);
-  return (
-    <section className="asw-card asw-changes">
-      <header className="asw-card-head">
-        <h3>Latest changes</h3>
-        <span className="asw-count">{changes.length}</span>
-      </header>
-      <ol className="asw-changes-list">
-        {shown.map((change, index) => (
-          <li key={index}>
-            <Markdown text={change} inline />
-          </li>
-        ))}
-      </ol>
-      {changes.length > 4 ? (
-        <button type="button" className="asw-link-button" onClick={() => setOpen((value) => !value)}>
-          {open ? "Show fewer" : `Show all ${changes.length} changes`}
-          <ChevronDown size={14} className={open ? "asw-rotate" : ""} />
-        </button>
-      ) : null}
-    </section>
   );
 }
 
@@ -218,8 +188,6 @@ export function StatusTab({ doc }: { doc: StatusDoc }) {
         </div>
       </section>
 
-      <ChangesList changes={doc.changes} />
-
       <section className="asw-card asw-explorer">
         <header className="asw-explorer-head">
           <div>
@@ -273,24 +241,7 @@ export function StatusTab({ doc }: { doc: StatusDoc }) {
         )}
       </section>
 
-      <div className="asw-two-col">
-        {doc.agreements.length > 0 ? (
-          <section className="asw-card">
-            <header className="asw-card-head">
-              <Handshake size={18} />
-              <h3>{doc.agreementsTitle}</h3>
-            </header>
-            <div className="asw-agreements">
-              {doc.agreements.map((item, i) => (
-                <div key={i} className="asw-agreement">
-                  <Markdown text={item} />
-                </div>
-              ))}
-            </div>
-          </section>
-        ) : null}
-
-        {doc.watchList.length > 0 ? (
+      {doc.watchList.length > 0 ? (
           <section className="asw-card">
             <header className="asw-card-head">
               <Eye size={18} />
@@ -306,7 +257,6 @@ export function StatusTab({ doc }: { doc: StatusDoc }) {
             </ul>
           </section>
         ) : null}
-      </div>
 
       {doc.reviewSteps.length > 0 ? (
         <section className="asw-card">
@@ -335,23 +285,6 @@ export function StatusTab({ doc }: { doc: StatusDoc }) {
         </section>
       ) : null}
 
-      {doc.related && doc.related.rows.length > 0 ? (
-        <section className="asw-card">
-          <header className="asw-card-head">
-            <BookOpen size={18} />
-            <h3>Related documents</h3>
-          </header>
-          <div className="asw-docs-grid">
-            {doc.related.rows.map((row, i) => (
-              <div key={i} className="asw-doc">
-                <Markdown text={row[0] ?? ""} inline className="asw-doc-name" />
-                <Markdown text={row[1] ?? ""} inline className="asw-doc-about" />
-              </div>
-            ))}
-          </div>
-          <p className="asw-muted asw-small">These documents live in the admin app repositories.</p>
-        </section>
-      ) : null}
     </div>
   );
 }
