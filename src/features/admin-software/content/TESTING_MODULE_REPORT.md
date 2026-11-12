@@ -15,15 +15,15 @@
 | # | Module | Done | Status |
 |---|---|---|---|
 | 1 | Platform: sign-in, companies, users, access | 85 % | Working; placeholders and access by own / team / department pending |
-| 2 | Settings and masters | 85 % | Working; new master values in build |
+| 2 | Settings and masters | 85 % | Working; Meta Ads source, banks list and JVVNL DISCOM areas added 13 Nov |
 | 3 | People: employees, teams | 75 % | Working; teams design and small HR gaps pending |
 | 4 | Attendance and leave | 85 % | Working |
 | 5 | Payroll and advances | 75 % | Working; incentive / commission and bank file pending |
-| 6 | Customers | 85 % | Working; same mobile with a warning in build |
-| 7 | Enquiries | 80 % | Working; follow-up person, documents status and different sizes in build |
+| 6 | Customers | 90 % | Working; same mobile with a warning and family link added 13 Nov; sheet import pending |
+| 7 | Enquiries | 85 % | Working; sheet import and the daily report pending |
 | 8 | Site visits, fees, calendar | 75 % | Working; three known issues pending |
-| 9 | Quotations | 85 % | Working; different sizes in build |
-| 10 | Projects | 70 % | Working; loan / cash / subsidy fields in build; open questions on vendor-code billing |
+| 9 | Quotations | 90 % | Working |
+| 10 | Projects | 75 % | Working; open questions on vendor-code billing; sheet import pending |
 | 11 | Warehouse and procurement | 85 % | Working; one parked question, small gaps |
 | 12 | Billing and finance parties | 85 % | Working; partner dues figures pending |
 | 13 | Accounts (books) | 80 % | Working; CA confirmations and real opening balances pending |
@@ -184,16 +184,16 @@
   - Payment terms Net 15: a new bill gets a due date 15 days ahead; changing the terms later doesn't move old due dates.
   - Very long name / address: saved and printed without breaking the invoice layout.
 
-### 7. Enquiries (80 %)
+### 7. Enquiries (85 %)
 - **Done:**
   - Enquiries with source, owner, status, follow-ups, lost reason and reopen, change requests, conversion to a project.
   - A follow-up person on each follow-up (default the lead owner, changeable in the follow-up list); their alert, My day, task and calendar (E2, built 13 Nov).
   - Documents received: Pending / Partially / Yes + date + note on the enquiry, with a list filter (E3, built 13 Nov).
+  - "Different sizes": panel, structure and inverter kW apart (e.g. 3 / 5 / 6); the panel kW is the system size; carried to the quotation and project (E4, built 13 Nov).
 - **Pending:**
-  - **In build:** different panel / structure / inverter sizes.
   - The import of the Sep–Nov enquiry tabs.
   - The daily enquiry report, planned with the analytics review.
-- **Tests:** `f_enquiries` 26, `ca_import_prep` 33; screens `enquiries_ui` 42, `ca_ui` 12.
+- **Tests:** `f_enquiries` 26, `ca_import_prep` 33, `cb_project_fields` 52 (CB01–CB03 enquiry sizes); screens `enquiries_ui` 42, `ca_ui` 12, `cb_ui` 18 (CBU01–CBU05).
 - **Test by hand, normal use:**
   - Create an enquiry: customer (new or existing), source, owner, kW, phase, budget, address, notes.
   - Quick-create a new customer from the enquiry form.
@@ -204,7 +204,9 @@
   - Mark lost with a reason; reopen with a reason.
   - Convert to a project; the enquiry shows the project link.
   - List: search and filter by status, source, owner, date.
+  - Tick "Different sizes" on a 3 kW enquiry, enter structure 5 and inverter 6; the enquiry page shows "3 kW panels · 5 kW structure · 6 kW inverter"; a quotation made from it starts with the same sizes.
 - **Test by hand, edge cases:**
+  - "Different sizes" ticked with the structure or inverter kW empty or 0: refused; unticking clears both.
   - Enquiry for a customer who already has an open enquiry: allowed, but check you see both.
   - Lost enquiry: its quotations stay cancelled when reopened.
   - Name change request at deal time (documents in another name): approve / reject once.
@@ -233,37 +235,40 @@
   - Same visitor booked twice at the same time: warning.
   - Known: a follow-up can appear twice in the calendar; the timeline page loads slowly.
 
-### 9. Quotations (85 %)
+### 9. Quotations (90 %)
 - **Done:**
   - Templates; versions (sending locks a version, a change makes a revision).
   - Subsidy options; expiry after 15 days; approval with the final amount, which becomes the project contract.
-- **Pending:** **in build:** different panel / structure / inverter sizes.
-- **Tests:** `qt_quotations` 40; screens `quotations_ui`, `qf_form` 47.
+  - "Different sizes" on the version (from the enquiry, kept on revisions), shown on the print line (E4, built 13 Nov).
+- **Pending:** nothing new.
+- **Tests:** `qt_quotations` 40, `cb_project_fields` 52 (CB04–CB08); screens `quotations_ui`, `qf_form` 47, `cb_ui` 18 (CBU06–CBU07).
 - **Test by hand, normal use:**
   - Create a quotation from a template: items, kW, price, subsidy (none / central / central + state), terms.
   - Preview and download the PDF; company details, customer address and "Stock Items" heading look right.
   - Send it: the version is locked; change → new revision → send again.
   - Approve with the final client amount (prefilled with the price before subsidy); it becomes the project contract.
   - Reject / cancel with a reason.
+  - Tick "Different sizes" (3 kW panels, 5 structure, 6 inverter), save, preview: the size line reads "3 kW panels · 5 kW structure · 6 kW inverter"; the subsidy still follows the 3 kW.
 - **Test by hand, edge cases:**
+  - Revise a quotation with different sizes: the new version keeps them.
   - Editing a sent version directly: refused (make a revision).
   - Quotation 15 days after sending: expired, can't be approved.
   - Subsidy above the slab (central max ₹78,000; state ₹17,000 default): capped or refused.
   - Approving a quotation of a lost enquiry: refused.
   - Very many items: PDF pages break cleanly.
 
-### 10. Projects (70 %)
+### 10. Projects (75 %)
 - **Done:**
   - Four project types and rates.
   - Who bills the client by vendor code (section P), the partner's bill to MSS.
   - Progress steps (file login, bank file, work, DISCOM, payment, DCR, subsidy), the checklist, team, stock sent, GPS photo proof.
   - Change requests, completion rules.
+  - Built 13 Nov (chunk B): different sizes; loan bank (Banks list) + branch; bank quotation (from the quotation, editable) and loan sanctioned beside the deal; From bank / From client cash expected, received, due (receipts marked bank or cash, loan tranches as bank, cash expected editable); "File issue" blockage with its reason and File: Clear / Some issue in the header; subsidy Applied → Disbursed (date, central, state) or Rejected (reason), not in the books; inverter app / login / password; list filters for bank, cash / bank due and waiting for subsidy.
 - **Pending:**
-  - **Next chunk:** loan bank + branch; bank quotation and loan sanctioned; bank due vs cash due; "File issue" blockage; subsidy disbursed / rejected; inverter login.
   - Open questions from section P: GST on the client amount, setting the partner's bill off against our charge, GSTIN for code firms, the per-watt vendorship fee, whether money owed to a partner blocks completion.
   - GST on partner / vendor-code / I&C charges.
   - The import of sites from the MSS and Arkshakti sheets.
-- **Tests:** `pm_projects_money` 41, `pe_projects_exec` 68, `pt_project_types` 37, `p_vendor_code_billing` 44; screens `pt_create_ui` 189, `pt_details_ui` 162, `p_vc_ui` 42.
+- **Tests:** `pm_projects_money` 41, `pe_projects_exec` 68, `pt_project_types` 37, `p_vendor_code_billing` 44, `cb_project_fields` 52 (CB09–CB52); screens `pt_create_ui` 189, `pt_details_ui` 162, `p_vc_ui` 42, `cb_ui` 18 (CBU08–CBU18).
 - **Test by hand, normal use:**
   - Wizard: create an Own (EPC) project from an approved quotation; check customer, kW, contract and site address.
   - Create a Partner, a Vendor code only and an I&C only project; the rate comes from the partner (else the default) and can be edited.
@@ -274,7 +279,12 @@
   - Money: receipts, loan tranches, partner bills and payouts, the Financials tab totals.
   - Change request for a contract change; approve it; the contract updates.
   - Complete the project; cancel another one with a reason.
+  - Loan project (deal ₹1,90,000): pick the bank and branch, enter loan sanctioned ₹1,50,000; the card shows From bank 1,50,000 and From client cash 40,000; record ₹1,00,000 "from Bank (loan)" and ₹25,000 from the client: bank due 50,000, cash due 15,000.
+  - Add a blockage "File Issue" → "Wrong K-number": the header reads File: Some issue; resolve it: File: Clear.
+  - Subsidy Applied → the list's "Waiting for subsidy" shows it; Disbursed with date and amounts → it leaves that list. Save the inverter app, login ID and password and read them back.
 - **Test by hand, edge cases:**
+  - Loan above the deal (₹3,50,000 on ₹3,00,000): cash expected 0, never negative; a typed cash expected replaces deal − loan until cleared.
+  - Subsidy Disbursed without a date or with a future date, Rejected without a reason: refused. A File Issue blockage without its reason: refused.
   - Partner project without a partner or rate: refused.
   - Contract change below what's already received or invoiced: refused.
   - Complete while money is still owed: refused unless a Director / Super Admin gives a reason.
