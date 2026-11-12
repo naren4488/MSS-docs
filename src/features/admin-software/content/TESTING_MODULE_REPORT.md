@@ -15,7 +15,7 @@
 | # | Module | Done | Status |
 |---|---|---|---|
 | 1 | Platform: sign-in, companies, users, access | 90 % | Working; header search built 13 Nov; access by own / team / department pending |
-| 2 | Settings and masters | 90 % | Working; round-2 decisions 2.1–2.4 built 13 Nov (team master rights, signature / stamp / terms / UPI QR on prints, vendorship switch only, template editor with preview); company logo fixed and shown in the sidebar |
+| 2 | Settings and masters | 90 % | Working; round-2 decisions 2.1–2.4 built 13 Nov (team master rights, signature / stamp / terms / UPI QR on prints, vendorship switch only, template editor with preview); company logo fixed and shown in the sidebar; MSS logo from `Mahi2.svg` set locally, production pending |
 | 3 | People: employees, teams | 75 % | Working; teams design and small HR gaps pending |
 | 4 | Attendance and leave | 85 % | Working |
 | 5 | Payroll and advances | 75 % | Working; incentive / commission and bank file pending |
@@ -43,10 +43,11 @@
   - Sidebar with an HR section, search, up to 5 pins, and a page ⓘ on every page.
   - Header search (13 Nov, decision 1.1): one box finds customers, enquiries, projects, quotations, sale bills, purchase bills, vendors and employees by name, phone, document number or K-number; grouped by type, 5 each with "see all"; only types the person may view; Ctrl+K / Cmd+K from anywhere; full-screen on phones.
   - The "More actions" header button and the two-step sign-in placeholder are removed (13 Nov, decisions 1.2 / 1.3).
+  - Your profile photo in the header (13 Nov); on phones it opens a menu with Your profile, Dark / Light theme and Log out.
 - **Pending:**
   - Access by own / team / department records.
   - The full access-matrix review.
-- **Tests:** `u_platform` 19, `f_sidebar_prefs` 31, `m1_search` 35; screens `m1_ui` 69, `f_sidebar_ui` 215, `m1_search_ui` 38.
+- **Tests:** `u_platform` 19, `f_sidebar_prefs` 31, `m1_search` 35; screens `m1_ui` 69, `f_sidebar_ui` 215, `m1_search_ui` 38, `avatar_ui` 34.
 - **Test by hand, normal use:**
   - Sign in with a 10-digit phone, and with +91 in front; show / hide the password.
   - Sign out from the header; the back button doesn't reopen the app.
@@ -55,6 +56,7 @@
   - Sidebar: search "salary" (→ Payroll), "gst", "stock" and the old word "materials"; ↑ ↓ Enter opens, Esc clears, "/" jumps to the search box.
   - Pins: pin 5 pages (order kept), a 6th asks which to replace; unpin; pins stay after sign-out and on another device.
   - ⓘ after the breadcrumb explains the page; on a phone it sits after the title.
+  - Settings → Profile: upload a photo; it shows in the header at once. On a phone, tap the photo: Your profile, Dark / Light theme and Log out all work.
   - Company switcher: search, switch, open a second tab in another company; each tab keeps its company; reload keeps it.
   - Settings → Companies: add a company (code, names, GSTIN, PAN, address with state, badge colour, books start); the GST state comes from the address; edit; switch Active off and on.
   - Add an existing person to a company (designation, on payroll here, track attendance here); they see the company in the switcher.
@@ -92,7 +94,9 @@
   - Settings → Document templates (decision 2.4): formatted-text editor in a frame with the template's own CSS, "Insert field" buttons for the placeholders, live preview filled from a chosen project, raw HTML under "Advanced" for a Super Admin; the test leftovers "WCR PE" / "WCR address parts" are removed (switched off where a generated document uses them).
   - Company logo fix (owner bug): the logo box shows the stored logo through its signed link after a reload (the picked file shows only while uploading); "Remove logo"; the same for signature and stamp.
   - Sidebar logo: the active company's logo at the top of the sidebar and the phone menu (≈ 40 px, short name beside it), initials on the company colour without a logo; follows the company of the tab.
+  - MSS logo (12 Nov): `Mahi2.svg` from MSS-docs as a transparent PNG (SVG uploads are refused), uploaded and set as the MSS logo on the local test database.
 - **Pending:**
+  - Set the MSS logo on production: Settings → Company → Change logo in MSS with `mss-logo-mahi2.png`, or the same API calls with an admin login.
   - Leave Types are a list for now; leave requests still use paid / unpaid.
   - The rest of the access-matrix review.
 - **Tests:** `v_settings` 28 / 29 (V10 needs rewriting), `h1a4_master_conversion` 39, `ns_number_series` 25, `ca_import_prep` 33 (CA01–CA08 are the masters), `m2_settings_round2` 46; screens `m2_round2_ui` 26 (1440).
@@ -102,6 +106,7 @@
   - An inactive value is hidden in pickers for new records but still shown on records that have it.
   - Payment modes: each points to a cash or bank ledger; a receipt with that mode lands in that ledger.
   - Settings → Company: logo, address, bank details printed on invoices.
+  - MSS company: the logo is the new MSS mark (sun, solar-panel “MSS”, “MAHI SOLAR SOLUTION”) in the Settings box, the sidebar and on PDFs; it stays sharp and inside 40–48 px in the sidebar.
   - Settings → Approval limits: change the PO limit, SO limit and extra-quantity % as Super Admin or Director; others see them read-only; the change shows in Activity.
   - Settings → Number series: change prefix, year part, digits and next number; the preview updates; create that document and check the number.
   - Masters as an HR person: HR & Team → Leave Types → Add item "Comp off"; open Stock & Tools: "View only", no Add / Edit / Delete. As an accountant: add a payment mode; as a stores manager: add a unit.
@@ -134,12 +139,12 @@
   - The teams design: how teams link to projects, tasks and attendance.
   - The formula behind the profile month cards.
   - Exit history.
-  - Who can see employee photos.
+  - Who can see employee photos (today any signed-in member of the company sees colleagues' photos on avatars; access matrix).
 - **Tests:** `a_employees` 41; screens `people_ui` 60.
 - **Test by hand, normal use:**
   - Add an employee: name, phone, designation, department, joining date, salary, bank details, current address, permanent address ("same as current" tick).
   - Edit an employee; the change shows in their history.
-  - Upload a photo and documents.
+  - Upload a photo and documents; the photo then shows (instead of initials) on the Employees list, Site Deployment Board, the attendance board and Analytics → top performers.
   - Teams: create a team, add and remove members; the team shows on each member's page.
   - Employee in two companies: separate employee record and attendance in each.
   - Mark an employee as exited with a date; they drop out of pickers for new work but their past records stay.
@@ -274,11 +279,12 @@
   - Templates; versions (sending locks a version, a change makes a revision).
   - Subsidy options; expiry after 15 days; approval with the final amount, which becomes the project contract.
   - "Different sizes" on the version (from the enquiry, kept on revisions), shown on the print line (E4, built 13 Nov).
+  - Default bank details carry the branch: AU Small Finance Bank, Vaishali Nagar Jaipur (from IFSC AUBL0002206, 12 Nov).
 - **Pending:** nothing new.
 - **Tests:** `qt_quotations` 40, `cb_project_fields` 63 (CB04–CB08); screens `quotations_ui`, `qf_form` 47, `cb_ui` 26 (CBU06–CBU07).
 - **Test by hand, normal use:**
   - Create a quotation from a template: items, kW, price, subsidy (none / central / central + state), terms.
-  - Preview and download the PDF; company details, customer address and "Stock Items" heading look right.
+  - Preview and download the PDF; company details, customer address and "Stock Items" heading look right; the bank block shows branch Vaishali Nagar Jaipur.
   - Send it: the version is locked; change → new revision → send again.
   - Approve with the final client amount (prefilled with the price before subsidy); it becomes the project contract.
   - Reject / cancel with a reason.
