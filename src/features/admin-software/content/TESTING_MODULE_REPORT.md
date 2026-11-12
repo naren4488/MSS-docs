@@ -431,13 +431,13 @@
   - Purchase bills with approval and goods received; purchase orders (approval limit, 2 % extra, Create PO from Need-to-get, dashboard tiles).
   - Sale orders (reserve, deliver, challan print, advances, cancel challan); damage and scrap; tools.
   - Our own number on every purchase bill (13 Nov, decision 11.1, migration 0163): PUR/2026-27/0001 per company and financial year (of the bill date, else today), given when the bill is saved, drafts too; a cancelled or rejected bill keeps it and numbers are never reused. Existing bills were numbered in bill-date order. "Our no." column in the vendor's bill list, "Our number" on the bill, the "Our number series" picker on Add purchase bill (when a 2nd series exists); searchable in the list and the header search. The vendor's number stays the GST and duplicate-check reference.
+  - Purchase bill print / PDF (13 Nov, owner): Print and PDF on the bill detail (for anyone who can view the bill); letterhead, "PURCHASE BILL", our number and the vendor's bill number, bill / entry / due dates, vendor address, GSTIN and category, lines with HSN and "= N <issue unit>", freight / other charges, CGST + SGST or IGST, round-off, total, goods received, approved by or "Waiting for approval", PO number, notes, "For <company> – Authorised Signatory".
 - **Pending:**
   - Reverse-charge self-invoice (11.1a): parked until the owner asks the CA.
-  - There is no print of a purchase bill yet; our number will go on it when one is made.
   - Whether a PO can be cancelled after goods came in (parked).
   - No item-code box on the Tools form.
   - Stores staff can't use Create PO (access matrix).
-- **Tests:** `m11_purchase_no` 14, `w_warehouse` 71, `b2_purchases` 74, `d1_purchase_orders` 71, `d2_sale_orders` 79, `e2_bill_units` 55, `e34_inline_items` 40, `a1a3_stock_rates` 42, `q11_codes_units` 23; screens `m11_ui` 6 (1440), `w_materials_ui`, `d1_po_ui` 84, `d2_so_ui` 78, `e34_inline_ui` 105, `e2_units_ui` 86.
+- **Tests:** `m11_purchase_no` 19 (print, PDF, 403 without the view right), `w_warehouse` 71, `b2_purchases` 74, `d1_purchase_orders` 71, `d2_sale_orders` 79, `e2_bill_units` 55, `e34_inline_items` 40, `a1a3_stock_rates` 42, `q11_codes_units` 23; screens `m11_ui` 8 (1440; Print opens with our number, PDF downloads), `w_materials_ui`, `d1_po_ui` 84, `d2_so_ui` 78, `e34_inline_ui` 105, `e2_units_ui` 86.
 - **Test by hand, normal use:**
   - Stock: add an item bought in coils (1 coil = 90 m), sold per metre; purchase and sale rate per coil; the form shows "= ₹ per metre"; stock details show both units, value, reserved and free.
   - Item code: give "DCC-4"; search it on a bill line.
@@ -449,6 +449,7 @@
   - Damage & scrap, tools, templates.
   - Our number: add a purchase bill → the toast and the list show PUR/2026-27/0001 in "Our no."; the next is 0002; open it → "Our number"; type "0002" in the list search or "PUR/2026-27/0002" in the header search → found.
   - Settings → Number series → Purchase bills → + Add series (e.g. SPUR) → Add purchase bill shows "Our number series"; pick SPUR → SPUR/2026-27/0001.
+  - Print: open a purchase bill → Print → a new tab shows "PURCHASE BILL" with PUR/2026-27/0001 and the vendor's number, "Waiting for approval" until approved, then "Approved by"; PDF downloads PUR-2026-27-0001.pdf.
 - **Test by hand, edge cases:**
   - Our number: a draft with no vendor number or date still gets a number (this year); cancel a bill → it keeps its number and the next bill does not reuse it; a bill dated in March counts in the previous year (PUR/2025-26/…); a second company starts at 0001 of its own.
   - Conversion factor missing or 0: refused.
