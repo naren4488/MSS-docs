@@ -16,7 +16,7 @@
 |---|---|---|---|
 | 1 | Platform: sign-in, companies, users, access | 90 % | Working; header search built 13 Nov; access by own / team / department pending |
 | 2 | Settings and masters | 90 % | Working; round-2 decisions 2.1–2.4 built 13 Nov (team master rights, signature / stamp / terms / UPI QR on prints, vendorship switch only, template editor with preview); company logo fixed and shown in the sidebar; MSS logo from `Mahi2.svg` set on production and locally |
-| 3 | People: employees, teams | 85 % | Working; round-2 decisions 3.1–3.6 built 13 Nov (crews, crew week board, exit checklist and history, final settlement, PAN + emergency contact, back-dated salary with approval); month-card formula and photo access pending |
+| 3 | People: employees, teams | 85 % | Working; round-2 decisions 3.1–3.6 built 13 Nov (crews, crew week board, exit checklist and history, final settlement, PAN + emergency contact, back-dated salary with approval); month-card formula and photo access pending; Teams switched off (Coming soon) 12 Nov |
 | 4 | Attendance and leave | 95 % | Working; round-2 decisions 4.1–4.8 all built or decided 13 Nov (crew attendance at the site, paid-leave carry-forward with a 6-day cap, worked on a company holiday) |
 | 5 | Payroll and advances | 82 % | Working; final settlement, salary arrears and holiday-work pay built 13 Nov; AU bank file sample and CA check pending |
 | 6 | Customers | 93 % | Working; same mobile with a warning and family link added 13 Nov; account statement PDF and Share on WhatsApp (6.3, 6.4) built 13 Nov; sheet import pending |
@@ -27,7 +27,7 @@
 | 11 | Warehouse and procurement | 85 % | Working; one parked question, small gaps |
 | 12 | Billing and finance parties | 86 % | Working; Share on WhatsApp for sale bills (7-day secure PDF link) built 13 Nov; partner dues figures pending |
 | 13 | Accounts (books) | 80 % | Working; CA confirmations and real opening balances pending |
-| 14 | Tasks | 85 % | Working; teams view and access pending |
+| 14 | Tasks | 85 % | Built, **switched off 12 Nov** (Coming soon) until Teams and Tasks are designed together at the end; teams view and access pending |
 | 15 | Dashboard and analytics | 70 % | Working; analytics review (daily enquiry report) pending |
 | 16 | Audit and reports | 85 % | Working |
 | 17 | Notifications, documents, background jobs | 70 % | Bell alerts working; WhatsApp / email not started |
@@ -143,6 +143,7 @@
   - **Back-dated salary changes** wait for a Director's (or Super Admin's) approval on the salary tab; future-dated changes work as before.
   - Crew pay is not project cost (nothing books it to a project).
 - **Pending:**
+  - Teams page switched off (12 Nov, owner): People → Teams shows **Soon** and `/teams`, `/teams/:id` show Coming soon until Teams and Tasks are designed at the end.
   - The formula behind the profile month cards.
   - Who can see employee photos (access matrix).
   - "Stock with them": only tools are tracked per person; materials are not.
@@ -475,9 +476,11 @@
 
 ### 14. Tasks (85 %)
 - **Done:** tasks with assignee, due date, reopen with a reason, automation rules, My day.
-- **Pending:** a teams view (teams design); who can see or close others' tasks (access matrix).
+- **Switched off (12 Nov, owner):** Pipeline → Tasks, Settings → Task templates / Task automations and the employee **Tasks** tab show Coming soon; the code stays for the end.
+- **Pending:** a teams view (teams design); who can see or close others' tasks (access matrix); switching the module back on.
 - **Tests:** `tk` 61, `tx` 19.
 - **Test by hand, normal use:**
+  - While switched off: Pipeline → Tasks (greyed, **Soon**), `/tasks`, Settings → Task templates / Task automations and an employee's **Tasks · Soon** tab all show Coming soon, at 1440 and 390 px.
   - Create a task: title, assignee, due date, priority; it shows in their My day.
   - Assignee marks it done; it moves to done.
   - Reopen a done task (Director, admin or the assignee) with a reason.
