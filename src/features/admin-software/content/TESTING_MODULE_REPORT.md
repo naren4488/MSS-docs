@@ -148,6 +148,7 @@
   - **Exit and rejoin history** on the employee page (joined / left / rejoined, date, reason, who did it), backfilled from the old records; rejoining asks for the date and reason.
   - **Back-dated salary changes** wait for a Director's (or Super Admin's) approval on the salary tab; future-dated changes work as before.
   - Crew pay is not project cost (nothing books it to a project).
+  - Employee documents (12 Nov, owner bug): View and Download work on production (fresh S3 link opened in a tab; Download saves under the file's own name); each document type takes its own formats (Passport Photo: photo only; ID / bank / address / certificate copies: photo or PDF; letters, agreements, résumés, Other: also Word), checked in the form and on the server.
 - **Pending:**
   - Teams page switched off (12 Nov, owner): People → Teams shows **Soon** and `/teams`, `/teams/:id` show Coming soon until Teams and Tasks are designed at the end.
   - The formula behind the profile month cards.
@@ -155,6 +156,7 @@
   - "Stock with them": only tools are tracked per person; materials are not.
 - **Tests:** `m3_teams_people` 73 (with Modules 4 and 5), `a_employees` 41/41 on the production copy (the suite makes its own QA designations and removes them), `w_people` 43; screens `m3_ui` 50 at 1440 / 390, `people_ui` 20 at 1440 (60 at three widths).
 - **Test by hand, normal use:**
+  - Employee page → Documents → Upload: the file picker is off until a type is chosen; Passport Photo offers only JPG / PNG / WebP / HEIC and refuses a PDF; Aadhaar takes a PDF or a photo; Offer Letter also a Word file. Upload, then **View** opens the file in a new tab and **Download** saves it under its name — on the live site (S3).
   - Add an employee with PAN (lower case is fine, it's saved in capitals) and an emergency contact; they show on the profile.
   - Make two teams and put the same person in both; the team page says "also in …".
   - Assign a team to a project (project → Assigned team, with dates); each member sees "Site work — <project>" in My day and the days in their calendar.
