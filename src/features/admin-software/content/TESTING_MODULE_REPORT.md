@@ -17,8 +17,8 @@
 | 1 | Platform: sign-in, companies, users, access | 90 % | Working; header search built 13 Nov; access by own / team / department pending |
 | 2 | Settings and masters | 90 % | Working; round-2 decisions 2.1–2.4 built 13 Nov (team master rights, signature / stamp / terms / UPI QR on prints, vendorship switch only, template editor with preview); company logo fixed and shown in the sidebar; MSS logo from `Mahi2.svg` set on production and locally |
 | 3 | People: employees, teams | 85 % | Working; round-2 decisions 3.1–3.6 built 13 Nov (crews, crew week board, exit checklist and history, final settlement, PAN + emergency contact, back-dated salary with approval); month-card formula and photo access pending |
-| 4 | Attendance and leave | 90 % | Working; crew attendance at the site by team leaders (GPS, several sites a day) built 13 Nov |
-| 5 | Payroll and advances | 80 % | Working; final settlement and salary arrears built 13 Nov; AU bank file sample and CA check pending |
+| 4 | Attendance and leave | 95 % | Working; round-2 decisions 4.1–4.8 all built or decided 13 Nov (crew attendance at the site, paid-leave carry-forward with a 6-day cap, worked on a company holiday) |
+| 5 | Payroll and advances | 82 % | Working; final settlement, salary arrears and holiday-work pay built 13 Nov; AU bank file sample and CA check pending |
 | 6 | Customers | 90 % | Working; same mobile with a warning and family link added 13 Nov; sheet import pending |
 | 7 | Enquiries | 85 % | Working; sheet import and the daily report pending |
 | 8 | Site visits, fees, calendar | 75 % | Working; three known issues pending |
@@ -165,15 +165,16 @@
   - Phone width: the checklist dialog scrolls inside; the week board scrolls inside its card.
   - Rejoin date on or before the leaving date, or in the future: refused.
 
-### 4. Attendance and leave (90 %)
+### 4. Attendance and leave (95 %)
 - **Done:**
   - Daily attendance, half days, leave requests and approvals with an alert.
   - Leave balances, attendance locked after payroll, separate records per company.
   - **Crew attendance at the site** (`/crew-attendance`, linked from My day for leaders and from Attendance): a team leader ticks crew members and marks present or half day, with a time and the phone's location; the project is optional (today's assigned sites are offered). Every mark is kept, several sites a day; the day itself is the normal attendance (present beats half day; **two half-day marks at two sites, or at two times, make a full present day**, 13 Nov) and feeds payroll as usual. HR / Super Admin may mark any crew.
+  - **Paid-leave year end** (4.3, 13 Nov): unused paid leave on 31 Mar carries into April up to a cap (company setting, default **6 days**); the rest lapses. Each person gets a "carried" and a "lapsed" history entry with the reason ("Year end 31 Mar 2027: 8 unused, 6 carried into Apr 2027 (cap 6)"). The worker runs it in April for the year just ended; HR / Super Admin can run it on the Leave requests page ("Run year-end for 31 Mar <year>"), which also shows the cap, each person's unused / carried / lapsed days and the runs. Running it again changes nothing for people already done.
+  - **Worked on a company holiday** (4.4 / 4.5, 13 Nov): on a holiday the board offers "Worked full day", "Worked half day" and "Not worked" per person (the day stays a paid holiday). A crew leader's present mark on a holiday is recorded as worked on holiday (half day → worked half a day). Refused on a normal day and for a future day.
 - **Pending:**
-  - Unused paid leave: carry forward up to 6 days at 31 Mar, the rest lapse (decision 4.3, 13 Nov).
-  - A full day worked on a company holiday earns one extra day's pay; half a day earns nothing extra (decisions 4.4 / 4.5, 13 Nov).
-- **Tests:** `m3_teams_people` (M3-20 to M3-37), screens `m3_ui` (C01–C09 at 1440 / 390), `attendance_ui` 63, `leave_reason_ui` 14, plus the attendance checks inside the payroll suites.
+  - Nothing from the round-2 decisions. The access matrix and the teams design are tracked across all modules.
+- **Tests:** `m4_leave_holiday` 34 (M4-00 to M4-44), screens `m4_ui` 17 (1440), `m3_teams_people` (M3-20 to M3-37), screens `m3_ui` (C01–C09 at 1440 / 390), `attendance_ui` 63, `leave_reason_ui` 14, plus the attendance checks inside the payroll suites.
 - **Test by hand, normal use:**
   - Mark attendance for today: present, absent, half day, paid leave, half paid leave.
   - Mark for a whole team or many people at once.
@@ -182,6 +183,9 @@
   - Reject a leave with a reason; the employee sees it.
   - Attendance page: month view per person with totals.
   - As a crew leader on a phone: My day → Mark crew attendance; tick members, Present, the time, the project; allow location; each member shows "09:15 · Present · <project>". Mark one of them again at a second site as half day: they stay present, both marks are listed.
+  - Leave requests page → Paid-leave year end: pick "31 Mar 2026", press Run: the table lists each person's unused, carried and lapsed days; someone with 8 unused shows 6 carried and 2 lapsed; their April balance opens at 6.
+  - Attendance board on a company holiday: press "Worked full day" for one person and "Worked half day" for another; the rows say "+1 day's pay" and "no extra pay".
+  - Crew attendance on a holiday: the page says the day is a holiday; marking present records "Worked on holiday".
 - **Test by hand, edge cases:**
   - Leave longer than the balance: warning or refusal as set.
   - Overlapping leave requests: refused.
@@ -193,29 +197,37 @@
   - After payroll for a month is paid, that month's attendance can't be changed by a leader; unlocking needs HR / Super Admin with a reason.
   - Sunday is a normal working day (not auto-off).
   - Someone without the approve right can't approve leave.
+  - Run the year end twice: the second run says nothing changed. Change the cap to 4 and add someone not yet carried: they get 4, the others keep what they had.
+  - Year end for a 31 Mar that hasn't come yet: refused. A negative cap: refused. Staff without attendance edit can't run it.
+  - Someone with 3 unused: all 3 carried, no lapse entry.
+  - "Worked on holiday" on a normal day or a future day: refused. "Not worked" puts the day back to a plain holiday.
 
-### 5. Payroll and advances (80 %)
+### 5. Payroll and advances (82 %)
 - **Done:**
   - Build → review → approve → pay, payslip PDF, extra pay (OT / bonus / incentive), incentive / referral rules.
   - Advances with a limit and a second approver; statutory deductions; payroll in the books.
   - **Final settlement:** the leaving month's line pays the days up to the leaving date and recovers the advance up to the net pay; the rest stays a recoverable advance. The line is tagged "Final settlement" and the payslip says so.
   - **No pay between leaving and rejoining** (13 Nov): the leaving month pays up to the leaving date, a month wholly in the gap leaves the person off the run, and the rejoining month pays from the rejoining date.
+  - **Holiday work pay** (4.4 / 4.5, 13 Nov): each full day worked on a company holiday adds one day's pay (monthly salary ÷ days in the month, the same rate as the month's pay) as its own line, "Holiday work – 02 Oct 2026 (Gandhi Jayanti)", on that month's salary and payslip. A half day adds nothing. Once the month is approved, a later holiday-work mark becomes a correction on the next payroll (the usual lock).
   - **Salary arrears:** when a Director approves a back-dated change, the difference for each month already approved or paid is added to the next payroll as "Salary arrears — <month> (paid ₹…, due ₹…)" lines; a lower salary becomes a correction instead.
 - **Pending:**
   - The salary bank file, which needs an AU bank sample.
   - CA check of the FY 2026-27 statutory figures.
-- **Tests:** `m3_teams_people` (M3-70 to M3-91, M3-100 to M3-103), `y_payroll` 38, `c2_payroll` 72; screens `payroll_ui` 75.
+- **Tests:** `m4_leave_holiday` (M4-25 to M4-30), `m3_teams_people` (M3-70 to M3-91, M3-100 to M3-103), `y_payroll` 38, `c2_payroll` 72; screens `payroll_ui` 75.
 - **Test by hand, normal use:**
   - Build payroll for last month: everyone on payroll is listed with days, earnings, deductions, net.
   - Review → approve → pay; download a payslip PDF; the books get the salary entries.
   - Someone left mid-month with an advance: their line says Final settlement, pays the days worked and recovers the advance.
   - After an approved back-dated raise, build the next month: the person's line shows the arrears lines per month.
+  - Someone marked "Worked full day" on a holiday: that month's line shows "Holiday work – <date>" for one day's pay (₹31,000 in a 31-day month → ₹1,000) and the payslip prints it.
   - Salary advance: request, approve, pay; it's deducted in the next payroll.
   - Payroll settings: components and statutory deductions.
 - **Test by hand, edge cases:**
   - Advance bigger than the final salary: net ₹0, the rest stays outstanding on the advance.
   - Advance above ₹10,000 needs a second approver; nobody approves their own advance.
-  - Recalculating the run doesn't add the arrears twice.
+  - Recalculating the run doesn't add the arrears twice (nor the holiday-work line).
+  - Half day worked on a holiday: no extra line.
+  - Holiday work marked after the month is approved: the line isn't changed; one day's pay is added to the next payroll as a correction.
   - Left 10 Nov, rejoined 20 Jan: November pays 10 days, December has no line for them, January pays 12 of 31 days.
   - Building payroll for the current (unfinished) month: refused.
   - Approving payroll twice / paying twice (double click): only once.

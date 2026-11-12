@@ -30,7 +30,7 @@
 | 1 | Platform: sign-in, companies, users, access | Login, company switcher, Settings | users, companies, roles, designations, features | ~45 |
 | 2 | Settings and masters | Settings & data | master_*, company_settings, document templates | ~45 |
 | 3 | People: employees, teams | HR → Employees, Teams | employees, employee_assignments, teams | ~30 |
-| 4 | Attendance and leave | HR → Attendance, Leave requests | attendance, leave_requests, holidays | ~25 |
+| 4 | Attendance and leave | HR → Attendance, Leave requests | attendance, leave_requests, holidays, leave_year_end_runs | ~29 |
 | 5 | Payroll and advances | HR → Payroll, Payroll settings; Employees → Pay; Accounts → Payroll ledgers | payroll_runs, payroll_items, payroll_payments, employee_advances | ~25 |
 | 6 | Customers | Finance → Customers | customers, customer_* | 18 |
 | 7 | Enquiries | Pipeline → Enquiries | enquiries, enquiry_activities | 17 |
@@ -319,6 +319,7 @@ Header search, More actions and two-step removed (owner decisions 1.1–1.3, 13 
 - Date: previous, next, picker, Today; the day is kept in the link; search name, code or phone
 - Show All / Marked / Unmarked; filter by status
 - Statuses: present, absent, half day (½ day deducted), half paid leave (½ paid-leave day used), paid leave, unpaid leave, holiday, fun day
+- **Worked on a company holiday** (4.4 / 4.5, 13 Nov): on a holiday each row offers Worked full day / Worked half day / Not worked (the day stays a paid holiday); the row says "+1 day's pay" or "no extra pay". A full day adds one day's pay to that month's salary (Module 5); a half day adds nothing. Refused on a normal day and on a future day
 - Mark Present, Absent, Half Day, Paid Leave (Unpaid Leave for future days); Edit drawer adds Half Paid Leave and Clear
 - Paid leave confirmation with the month's balance; "Mark Present instead of leave?" when a pending leave covers the day
 - Absence → paid leave only within 7 days, then with a reason by a Super Admin
@@ -334,6 +335,7 @@ Header search, More actions and two-step removed (owner decisions 1.1–1.3, 13 
 - Tick members (Select all), Present or Half day, time (now by default), project (today's sites, or none with a site note), site note; the phone's location is taken when marking and shown
 - A person marked anywhere counts as present for the day (present beats half day); **two half-day marks at two sites (or two times) make a full present day**, one half-day mark stays a half day (13 Nov); marks at several sites the same day are all kept; the day is the normal attendance and feeds payroll
 - Refused: no location, a future day, a time that isn't HH:MM, someone outside the crew (named in the result), a team they don't lead, more than 7 days back (leaders), a member on leave that day (HR changes leave)
+- **On a company holiday** (13 Nov): the page says so; a present mark records "Worked on holiday" (a full day, one extra day's pay), a half-day mark "Worked half day on holiday" (nothing extra); two half-day marks make a full day
 
 **Holidays (drawer)**
 - Company holidays per company; list by source (Company / Calendar)
@@ -349,17 +351,21 @@ Header search, More actions and two-step removed (owner decisions 1.1–1.3, 13 
 - Approve / Reject; for a cancel request, Approve cancel / Keep leave; not on your own request
 - Approving leave needs attendance → approve (HR and Director by default)
 - Approvers get a "Leave request waiting" notification
+- **Paid-leave year end** card (HR / Super Admin, 4.3, 13 Nov): carry-forward cap in days (company setting, default 6; half days allowed); "Run year-end for 31 Mar <year>" for the last three year ends; per person: unused on 31 Mar, carried to April, lapsed; the list of runs (who, when, cap, totals; "by the system on 1 April" for the worker's run). Running again changes nothing for people already carried
 
 **Leave (on the employee profile)**
 - Balance: opening, credit, used, available, reserved; grant days, edit default credit, edit a month (attendance edit only)
 - Apply leave with a month-by-month paid / unpaid split preview; **a reason is required** (13 Nov: Submit stays off until it's typed; the API refuses a request without one, except the board's own entries)
 - Requests: approve, reject, request cancel, approve cancel, dismiss, revoke (approve right; not your own)
 
-**Automatic:** monthly paid-leave credit; every attendance change re-prices the month's payroll (or adds a correction to a later payroll); deactivating someone cancels their later leave.
+**Automatic:** monthly paid-leave credit; every attendance change re-prices the month's payroll (or adds a correction to a later payroll); deactivating someone cancels their later leave; **the paid-leave year end runs in the worker during April** for the year that ended on 31 Mar (each company in its own scope; unused leave up to the cap carries into April, the rest lapses, both as history entries with the reason; April's balance starts from the carry and later months follow on).
 
 ### APIs
 - `/attendance/board` (mark, autofill, clear), `/attendance` (filters: employee, team, status, dates, search), `/attendance/statuses`, `/attendance/leave-balances`, `/attendance/employees`, `/attendance/post-salary`
 - `/holidays`, `/leave-requests` (approve / reject / revoke / dismiss need attendance → approve)
+- `/attendance/board/mark` also takes `status_code: holiday_worked | holiday_worked_half` (holiday only); the board card has `holiday_work` (full / half)
+- `GET /attendance/leave-year-end?year_end=` (cap, last year end, runs, each person's carry / lapse), `PUT /attendance/leave-year-end/settings` (`cap`), `POST /attendance/leave-year-end/run` (`year_end`; attendance edit), `GET /attendance/leave-adjustments?employee_id=` (balance history: edits, grants, year-end carry and lapse)
+- `GET /crew/teams` has `holiday_name` when the day is a company holiday
 - `GET /crew/teams?date=` (crews the person leads, or all for attendance edit, with members, day status, marks and today's sites), `POST /crew/attendance` (team_id, employee_ids, date, status, time, latitude, longitude, accuracy_m, project_id, site_note; per-person results), `GET /crew/attendance?date=&employee_id=`
 - **Backend only:** `/attendance/post-salary` (the Pay drawer's "Prepare salary" button calls it; it no longer runs when the drawer opens)
 
@@ -367,6 +373,7 @@ Header search, More actions and two-step removed (owner decisions 1.1–1.3, 13 
 **Status:** reviewed and done (7 Nov 2026, migrations 0110–0112). Tests: `hr/x_attendance.sh` 28/28 and `hr/b_attendance.sh` 29/29 (both in `regress.sh`), `pw/attendance_ui` 63/63 at 1440/768/390 px, full regression A–X, fresh database M0 40/40. Plan and findings: [MODULE_REVIEW_PLAN.md](./MODULE_REVIEW_PLAN.md#module-4-attendance-and-leave).
 **Round 2, 13 Nov 2026 (migration 0155):** crew attendance at the site. Tests: `hr/m3_teams_people.sh` (M3-20–M3-34), `pw/m3_ui` (C01–C09) at 1440 / 390 px.
 **Follow-up, 13 Nov 2026 (BE 102888b, no migration):** two half-day crew marks = a present day. Tests: `hr/m3_teams_people.sh` M3-35–M3-37 (73/73).
+**Round 2, decisions 4.3–4.5, 13 Nov 2026 (BE 572d33c, FE 14545fb, migration 0157):** paid-leave carry-forward with a 6-day cap, worked on a company holiday. Tests: `hr/m4_leave_holiday.sh` 34/34, `pw/m4_ui` 17/17 at 1440; reruns `m3_teams_people` 73/73, `pw/attendance_ui` 1440 all passed.
 
 ## 5. Payroll and advances
 
@@ -384,7 +391,7 @@ Header search, More actions and two-step removed (owner decisions 1.1–1.3, 13 
 - Adjust a line (draft only, unpaid): **extra pay** — overtime, bonus, incentive, what it's for (needed with extra pay); other deduction; advance recovery automatic or a chosen amount
 - **Final settlement** tag on the line of someone who left in that month (days up to the leaving date; advance recovered up to the net pay, the rest stays a recoverable advance)
 - **No pay between leaving and rejoining** (13 Nov, from the exit and rejoin history): the leaving month pays up to the leaving date, a month wholly in the gap leaves the person off the run, the rejoining month pays from the rejoining date
-- Extra pay lines: incentives, referrals and **salary arrears** ("Salary arrears — <month> (paid ₹…, due ₹… at the salary from …)") from an approved back-dated salary change, once per month
+- Extra pay lines: incentives, referrals, **holiday work** ("Holiday work – 02 Oct 2026 (Gandhi Jayanti)": one day's pay, monthly salary ÷ days in the month, for each full day worked on a company holiday; 4.4, 13 Nov) and **salary arrears** ("Salary arrears — <month> (paid ₹…, due ₹… at the salary from …)") from an approved back-dated salary change, once per month
 - Pay (opens the Pay salary drawer on that month); Payslip download
 - Advance approval limit (advance approve right; default ₹10,000)
 
@@ -400,7 +407,7 @@ Header search, More actions and two-step removed (owner decisions 1.1–1.3, 13 
 - Give advance: HR or the employee asks; within the limit (and not your own) it's approved and paid at once; above it, or without approve rights, it's sent as a request
 - Advance history: status (waiting for approval, approved, rejected, …); Approve / Reject (approve right; nobody approves their own; above the limit someone other than the requester); Pay advance; recovered from salary or Record repayment in cash (advance edit)
 
-**Payslip PDF** (per person per month): earnings ("Final settlement: salary for N of M days (left on …)" in the leaving month), extra pay with arrears lines, deductions, advance recovered, payments, advance left. Statutory deductions are not included yet.
+**Payslip PDF** (per person per month): earnings ("Final settlement: salary for N of M days (left on …)" in the leaving month), extra pay with arrears and holiday-work lines, deductions, advance recovered, payments, advance left. Statutory deductions are not included yet.
 
 **Add / Edit employee**
 - "On payroll here" and "Track attendance here" switches; salary needed only when on payroll (staff with no salary: outside CA, owner, director)
@@ -411,6 +418,7 @@ Header search, More actions and two-step removed (owner decisions 1.1–1.3, 13 
 **Automatic**
 - Attendance, leave or salary changes re-price unpaid lines, or flag the month "out of date" if that fails
 - After a month is paid, attendance changes (HR / Super Admin with a reason) add a correction at that day's rate to the next salary (see Module 4)
+- Holiday work: the month's line keeps one "Holiday work" line per full day worked on a holiday (removed if the mark is taken back; a hand-edited amount is kept); once the month is approved, a later mark becomes a correction of one day's pay on the next payroll
 - Salary, advance recovery, advances and repayments post to the books; when something can't be posted a warning shows, with "Post to books"
 - A Director's approval of a back-dated salary change records the arrears of every month already approved or paid since the effective date; the next payroll pays them (a lower salary becomes a correction there); draft months from the effective date are flagged for recalculation
 
@@ -418,7 +426,7 @@ Header search, More actions and two-step removed (owner decisions 1.1–1.3, 13 
 
 ### APIs
 - `/payroll/runs` (generate, recalculate, approve, cancel), `/payroll/items` (adjust, pay, payslip), `/payroll/employee-items`, `/payroll/payments` (undo), `/payroll/books-status`
-- `/payroll/items` and `/payroll/runs/{id}/items` carry `final_settlement` and `leaving_date`; extra lines may be `kind: arrears`
+- `/payroll/items` and `/payroll/runs/{id}/items` carry `final_settlement` and `leaving_date`; extra lines may be `kind: arrears` or `kind: holiday_work` (source `attendance`)
 - `/advances` (submit, approve, reject, pay, repay, cancel, deductions), `/advances/settings` (approval limit)
 - `/accounts/payroll-ledgers`
 - **Backend only:** cancel an advance; advance deductions list
@@ -427,6 +435,7 @@ Header search, More actions and two-step removed (owner decisions 1.1–1.3, 13 
 **Status:** reviewed and done (7 Nov 2026, migration 0113). Tests: `hr/y_payroll.sh` 38/38 and `hr/c_payroll.sh` 27/27 (in `regress.sh`), `pw/payroll_ui` 75/75 at 1440/768/390 px plus HR's view, `pw/people_ui` 60/60 and `pw/attendance_ui` 63/63 rerun, full regression A–Y, fresh database through 0113 and 0113 down/up. Plan and findings: [MODULE_REVIEW_PLAN.md](./MODULE_REVIEW_PLAN.md#module-5-payroll-and-advances).
 **Round 2, 13 Nov 2026 (migration 0156):** final settlement and salary arrears. Tests: `hr/m3_teams_people.sh` (M3-70–M3-91); reruns `y_payroll` 38/38, `c2_payroll` 72/72.
 **Follow-up, 13 Nov 2026 (BE 102888b, no migration):** no pay in the gap between leaving and rejoining. Tests: `hr/m3_teams_people.sh` M3-100–M3-103 (73/73); reruns `y_payroll` 38/38, `c2_payroll` 72/72, `a_employees` 41/41.
+**Round 2, decision 4.4 / 4.5, 13 Nov 2026 (BE 572d33c, FE 14545fb, migration 0157):** holiday-work pay line. Tests: `hr/m4_leave_holiday.sh` M4-25–M4-30; reruns `y_payroll` 38/38, `c2_payroll` 72/72.
 
 **Later (agreed):** statutory deductions (PF, ESI, professional tax, TDS); bank transfer file for bulk salary in net banking (format not final); project commission for employees in specific conditions (to discuss).
 
