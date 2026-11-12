@@ -22,11 +22,11 @@
 | 4 | Attendance and leave | 95 % | Working; round-2 decisions 4.1–4.8 all built or decided 13 Nov (crew attendance at the site, paid-leave carry-forward with a 6-day cap, worked on a company holiday); every employee sees their own attendance and leave and applies for leave in **My space** (13 Nov) |
 | 5 | Payroll and advances | 82 % | Working; final settlement, salary arrears and holiday-work pay built 13 Nov; AU bank file sample and CA check pending; incentives and referrals earned when the project is fully paid, recovery on cancellation and HR share (5.1–5.8, 13 Nov); **My space**: own salary, payslips, advance requests and incentives (13 Nov) |
 | 6 | Customers | 93 % | Working; same mobile with a warning and family link added 13 Nov; account statement PDF and Share on WhatsApp (6.3, 6.4) built 13 Nov; sheet import pending |
-| 7 | Enquiries | 92 % | Working; round-2 decisions 7.1–7.4 and 7.6 built 13 Nov (4 main statuses, repeat-lead warning, lost reasons list, overdue follow-ups + manager alert); Meta leads (7.5), sheet import and the daily report pending |
+| 7 | Enquiries | 93 % | Working; round-2 decisions 7.1–7.4, 7.6 and 7.7 built 13 Nov (4 main statuses, repeat-lead warning, lost reasons list, overdue follow-ups + manager alert, a requested visit date and note on new enquiries that **only managers assign**); required fields marked `*`; Meta leads (7.5), sheet import and the daily report pending |
 | 8 | Site visits, fees, calendar | 85 % | Working; round-2 decisions 8.0 and 8.2 built 13 Nov (Timeline under 10 requests, follow-up once in the calendar, optional visit companions); visit cost (8.1) parked for the CA |
-| 9 | Quotations | 91 % | Working; Share on WhatsApp with a 7-day secure PDF link built 13 Nov |
+| 9 | Quotations | 91 % | Working; Share on WhatsApp with a 7-day secure PDF link (13 Nov); quotation document reworked from the MSS-docs version (site address in parts, quantity text, terms; 13 Nov); bank copy and discount control not yet discussed |
 | 10 | Projects | 75 % | Working; open questions on vendor-code billing; sheet import pending |
-| 11 | Warehouse and procurement | 85 % | Working; one parked question, small gaps |
+| 11 | Warehouse and procurement | 87 % | Working; every purchase bill has our own number (PUR/<fy>/0001) and a print / PDF (13 Nov); PO cancel after goods in (parked), Tools item code and stores' Create PO right pending; reverse-charge self-invoice waits for the CA |
 | 12 | Billing and finance parties | 86 % | Working; Share on WhatsApp for sale bills (7-day secure PDF link) built 13 Nov; partner dues figures pending |
 | 13 | Accounts (books) | 80 % | Working; CA confirmations and real opening balances pending |
 | 14 | Tasks | 85 % | Built, **switched off 12 Nov** (Coming soon) until Teams and Tasks are designed together at the end; teams view and access pending |
