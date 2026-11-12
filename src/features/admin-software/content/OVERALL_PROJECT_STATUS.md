@@ -32,7 +32,7 @@
 | 3 | People: employees, teams | HR → Employees, Teams | employees, employee_assignments, teams | ~30 |
 | 4 | Attendance and leave | HR → Attendance, Leave requests | attendance, leave_requests, holidays, leave_year_end_runs | ~29 |
 | 5 | Payroll and advances | HR → Payroll, Payroll settings; Employees → Pay; Accounts → Payroll ledgers | payroll_runs, payroll_items, payroll_payments, employee_advances | ~25 |
-| 6 | Customers | Finance → Customers | customers, customer_* | 18 |
+| 6 | Customers | Finance → Customers | customers, customer_*, document_share_links | 20 |
 | 7 | Enquiries | Pipeline → Enquiries | enquiries, enquiry_activities | 17 |
 | 8 | Site visits, fees, calendar | Calendar, enquiry/project pages | site_visit_*, calendar_events | ~36 |
 | 9 | Quotations | Pipeline → Quotations | quotations, quotation_versions, templates | ~51 |
@@ -474,6 +474,16 @@ Header search, More actions and two-step removed (owner decisions 1.1–1.3, 13 
 - Customer page: **Family** (the link both ways) and **Same mobile** lines with links; Link family / Change / Remove link
 - The GSTIN stays unique in a company; the enquiry customer picker lists every customer on a searched mobile to pick from
 
+**Account statement (6.3, 13 Nov)** — Statement button on the customer page (customer view right)
+- A date range, default the current financial year (1 April) to today; Download PDF, Print (the PDF in a new tab), Share on WhatsApp
+- The PDF on the letterhead (company logo, name, address, GSTIN, PAN, website): the customer's name, address, phone and GSTIN; the period; the **opening balance** on the start date; one row per sale bill, receipt (with the mode, reference and any TDS), advance and credit note in date order with date, document number, description, debit, credit and **running balance** (Dr = due from the customer, Cr = advance); the **closing balance**; the dues on the end date (open, overdue, due later) and the ageing buckets; the **UPI QR** for the amount due when Settings has a UPI ID
+- The figures are the customer page's: bills = issued sale documents to the customer, credits = everything counted in Received (bill receipts incl. TDS, project receipts, sub-vendor, bank loan, visit fee, code company) and issued credit notes, so the closing balance on today = Outstanding (less any advance) and the running balances agree with the customer's ledger in the books
+
+**Share on WhatsApp (6.4, 13 Nov; migration 0159)** — on the statement, sale bills and quotations
+- The dialog makes a **secure link** to the PDF and fills a short message: company, document number, amount (balance due after a part payment), due date for bills, the link and its expiry. The customer's mobile (10 digits; +91 / spaces / a leading 0 accepted) and the message can be edited; **Open WhatsApp** opens `https://wa.me/91<mobile>?text=…`; **Copy link** copies just the link. No mobile on file (e.g. a landline) → the field asks for one and WhatsApp waits
+- The link works **7 days** without signing in and opens only that PDF; it is the link id plus an HMAC signature (server secret), so it can't be guessed or edited. Bills and statements are made fresh when opened; a quotation's PDF (made in the browser) is stored when the link is made. Every open is logged (served / expired / error) and each link is in Activity. An expired link shows "This link has expired", an edited one "This link is not valid"
+- Shown only to people who can view the document (customer view for statements, billing view for bills, quotation view for quotations); drafts can't be shared
+
 **Automatic**
 - Each customer gets a ledger under Sundry Debtors on their first posted invoice or payment; renaming the customer renames it; deleting an unused customer removes an unused ledger
 - Inactive customers are hidden from lists and pickers and can't get new enquiries, quotations, projects or invoices (payments still allowed); "Make active" brings them back
@@ -482,6 +492,7 @@ Header search, More actions and two-step removed (owner decisions 1.1–1.3, 13 
 - `/customers` (list with `status`, `dues=overdue|due_week` and whole-company `counts` incl. `overdue`, `overdue_amount`, `due_week`, `due_week_amount`; each row has `dues` {open, overdue, overdue_count, due_week, due_week_count}; search incl. city and PIN, create, edit incl. `is_active` and clearing fields, delete); `payment_terms` in and out ({type, credit_days, due_basis, advance_percent, note, label}; omitted keeps, `{"type":""}` clears; 422 names the part, e.g. `payment_terms.note`); `address_parts` in and out (`address` stays the one-line text; an old client's `address` text is split and marked `unchecked`)
 - `/customers/{id}/…` (enquiries, quotations, projects, invoices — every sale document since E1, payments, site-visit-fees, notes, timeline — incl. `payment_terms_changed`, financial-summary — with `total_b2b_amount` / `total_b2c_amount` since E1); **backend only:** `/customers/{id}/sale-bills` (the old SB series)
 - `GET /customers/{id}/dues` [customer.view]: the Dues block (open / overdue / due_week / not_due with counts, oldest overdue days, `buckets`, `bills[]` with due date, source, days overdue, state); `GET /customers/{id}/history`: payment-terms changes
+- **6.3 / 6.4 (13 Nov):** `GET /customers/{id}/statement?from=&to=` [customer.view] — the PDF (`statement-<from>-to-<to>.pdf`; `inline=1` to open in the browser; `format=json` for the figures: opening, lines[], totals, closing, dues); `POST /customers/{id}/statement/share` {from, to} [customer.view]; public `GET /api/v1/share/{token}` (no sign-in: the PDF, 410 expired page, 404 not valid page)
 - Removed (0137, Q8): `/customers/{id}/addresses` and the unused `customer_addresses` table
 - I1 (0152): create / edit take `confirm_same_phone` and `related_customer_id` ("" clears); a shared mobile without the confirmation → 409 `CUSTOMER_PHONE_SHARED` (message names the customers; `data.errors[]` `existing_customer_id`); detail / create / edit return `related_customer_id`, `family[]`, `same_phone_customers[]`
 
@@ -497,6 +508,8 @@ Header search, More actions and two-step removed (owner decisions 1.1–1.3, 13 
 **Plan step 8 (E1), 11 Nov 2026 (migration 0140):** one "Sales bills" list on the customer page with the type of each bill, B2B / B2C figures, "Create sale bill". Tests: `hr/e1_sale_document.sh` (E30–E31), `pw/e1_sale_doc_ui` (C01–C02), `pw/customers_ui`, `hr/z_customers.sh` 25/25.
 
 **Plan step 5 (B2–B3), 11 Nov 2026 (migration 0138):** payment terms on the customer, due dates of new invoices from them, Dues block, list figures and filter. Tests: `hr/b_terms.sh` (B80–B103), `pw/b_terms_ui` (CL01–CL03, CD01–CD02, CA01–CA02) at 1440/768/390 px, `pw/customers_ui` 71/71, `hr/z_customers.sh` 25/25.
+
+**Owner decisions 13 Nov, 6.3 and 6.4 (migration 0159):** account statement PDF and Share on WhatsApp with a 7-day secure link. Tests: `hr/m6_statement_share.sh` 36/36, `pw/m6_ui` 30/30 at 1440/390, `hr/z_customers.sh` 25/25, `hr/bl_billing.sh` 81/81, `hr/qt_quotations.sh` 40/40.
 
 **Later (agreed / noted):** site-visit fees on the customer page come with Module 8.
 
@@ -632,7 +645,7 @@ Header search, More actions and two-step removed (owner decisions 1.1–1.3, 13 
 
 **Quotation drawer:** overview, valid until / expired, approved amount, lost reason, materials; actions as in the list; Create project (approved); View project (converted).
 
-**Preview / share:** preview, print, download PDF (subsidy lines follow the scheme; "Valid until" in the summary and terms); share on WhatsApp (opens WhatsApp with the message) or email (opens the mail app) — either records the send; or mark sent (in person, etc.).
+**Preview / share:** preview, print, download PDF (subsidy lines follow the scheme; "Valid until" in the summary and terms); share on WhatsApp (opens WhatsApp with the message) or email (opens the mail app) — either records the send; or mark sent (in person, etc.). **Secure PDF link (6.4, 13 Nov):** opening Share stores the preview PDF and puts a 7-day link in the message ("View the quotation PDF: …", replacing "find the PDF attached") with Copy link; the link opens without signing in (see Module 6).
 
 **Status flow:** draft → sent (version locked, valid 15 days, India date) → negotiating → approved (final client-agreed amount, incl. GST before subsidy) → converted when the project is created (once). Revise a sent / negotiating / expired quotation → new draft version (the sent one stays). Lost needs a reason; cancel anything not converted. Expired ones can't be approved.
 
@@ -647,9 +660,11 @@ Header search, More actions and two-step removed (owner decisions 1.1–1.3, 13 
 - `/quotation-templates` (+ material / service rows, apply)
 - E4: versions (create, edit, `PUT …/draft`) take and return `different_sizes`, `structure_kw`, `inverter_kw`; the preview's `system_details` has them and `size_line`
 - `POST /projects/from-quotation/{id}` (contract = agreed amount; once)
+- **6.4 (0159):** `POST /quotations/{id}/share` [quotation.view] multipart `pdf` (the browser-made PDF, at most 15 MB, must be a PDF) + `amount` → a 7-day link (`token`, `path`, `expires_at`, `document_no`, `phone`, `amount`)
 - **Backend only:** clone, version delete, price breakdown, bulk items, loan details / gap approval, preview, activities, server-side template apply
 
 ### Review status
+**Owner decision 13 Nov, 6.4 (migration 0159):** Share on WhatsApp with a secure 7-day PDF link. Tests: `hr/m6_statement_share.sh` M6-32–M6-35, `hr/qt_quotations.sh` 40/40.
 **Status:** reviewed 8 Nov 2026 (migration 0117) — see MODULE_REVIEW_PLAN.md Module 9. Tests: `hr/qt_quotations.sh` 40/40, `pw/quotations_ui` 26/26, `pw/qf_form` 47/47.
 **Plan step 2 (Q1), 11 Nov 2026:** the Add material item drawer is typed entry only (the "From Inventory" tab and its stock-rate mapping are gone). Tests: `pw/a1a3_ui` (QT01–02), `pw/quotations_ui`, `pw/qf_form`.
 
@@ -899,9 +914,12 @@ Header search, More actions and two-step removed (owner decisions 1.1–1.3, 13 
 - `GET /service-presets?search=` (plan E4): every word in the name or description (any order) or the start of the SAC; `POST /service-presets` [billing.create] is what "+ New service" calls (409 on a name already in the list, any case / spacing)
 - `/billing-documents` (+ issue, cancel, void, payments, lines, summary, pdf, print; create without `due_date` fills it from the billed party's terms (the partner's on a partner bill, 0146), `due_date_reason` when a typed date is later than the terms (422 otherwise; an earlier date needs none), PATCH `due_date: ""` = back to the terms; documents carry `due_date_source`, `due_date_reason`; `billing_address_parts` / `company_address_parts` kept with the text snapshots and refreshed at issue; `place_of_supply_state` may be left out: on a project's bill the project site's state, else the billed party's GSTIN state, else its address state), `/payment-receipts` (+ apply, reverse), `/loans` (+ repayments, reverse, close, schedule)
 - `/partners` (+ account — with the partner's bills to MSS, 0147 —, vendor (the partner's own vendor record, 0147), investments, repayments, ledger, adjustments), `/agents` (+ commissions approve / cancel, payments, reverse, ledger), `/vendorship-code-owners` (+ account, payables approve / cancel, payments, code-giver-receipts, reverse), `/subcontractors` (+ work-orders transition / approve, payouts, reverse, ledger) — each takes `address_parts`; `/sub-vendors` and `/inc-work-sources` remain server-side only
+- **6.4 (0159):** `POST /billing-documents/{id}/share` [billing.view] → a 7-day public link to the bill's PDF (422 `not_issued` for a draft) with `document_no`, `phone`, `amount` / `amount_label` (balance due after a part payment), `due_date`; opened at `GET /api/v1/share/{token}`
 - **Backend only:** partner agreements; agent payment allocate
 
 ### Review status
+**Owner decision 13 Nov, 6.4 (migration 0159):** Share on WhatsApp on issued sale bills (bill number, balance due, due date, 7-day secure PDF link, Copy link). Tests: `hr/m6_statement_share.sh` 36/36, `pw/m6_ui` W*-20–21, `hr/bl_billing.sh` 81/81.
+
 **Section P, who bills the client (owner answer 28; 12 Nov 2026, migration 0147):** the firm whose vendor code the project uses bills the client — "Vendor code used: ours / another firm" (the existing vendorship mode and code company list) in the wizard, edit drawer and header; client amount on partner / vendor code projects on our code; MSS bills the client, the code company (through its own customer record) or the partner; the partner bills MSS through a purchase bill from its own vendor record, capped at what MSS owes (margin or full amount); our charge billed to the partner on vendor code projects, net shown; received, outstanding, the completion check, economics and the books follow the billed party; payouts to partners read-only (POST 410). Tests: `hr/p_vendor_code_billing.sh` 44/44, `pw/p_vc_ui` 42/42 at 1440/390, `hr/pt_project_types.sh` 37/37, `hr/pm_projects_money.sh` 41/41, `hr/pe_projects_exec.sh` 68/68, `hr/bp_parties.sh` 99/99, `hr/bl_billing.sh` 81/81, `hr/b2_purchases.sh` 74/74, `hr/q12_gst_terms.sh` 30/30.
 
 **Owner answers 11 Nov, rows 6, 26, 9 and 31 (12 Nov 2026, migration 0146):** B2C for a GSTIN customer without a warning; place of supply on project bills from the site's state (form and server; GSTR-1 follows the stored value); payment terms, due dates and a Dues block for partners; only a later due date than the terms needs a reason (sale and purchase bills, issued-bill due date). Tests: `hr/q12_gst_terms.sh` 30/30, `pw/q12_ui` 34/34 at 1440/390, `hr/b_terms.sh` 89/89, `hr/e1_sale_document.sh` 39/39, `hr/bl_billing.sh` 81/81, `hr/gs_gst.sh` 57/57, `hr/bp_parties.sh` 99/99.

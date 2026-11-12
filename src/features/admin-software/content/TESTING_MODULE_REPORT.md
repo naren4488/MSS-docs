@@ -19,13 +19,13 @@
 | 3 | People: employees, teams | 85 % | Working; round-2 decisions 3.1–3.6 built 13 Nov (crews, crew week board, exit checklist and history, final settlement, PAN + emergency contact, back-dated salary with approval); month-card formula and photo access pending |
 | 4 | Attendance and leave | 95 % | Working; round-2 decisions 4.1–4.8 all built or decided 13 Nov (crew attendance at the site, paid-leave carry-forward with a 6-day cap, worked on a company holiday) |
 | 5 | Payroll and advances | 82 % | Working; final settlement, salary arrears and holiday-work pay built 13 Nov; AU bank file sample and CA check pending |
-| 6 | Customers | 90 % | Working; same mobile with a warning and family link added 13 Nov; sheet import pending |
+| 6 | Customers | 93 % | Working; same mobile with a warning and family link added 13 Nov; account statement PDF and Share on WhatsApp (6.3, 6.4) built 13 Nov; sheet import pending |
 | 7 | Enquiries | 85 % | Working; sheet import and the daily report pending |
 | 8 | Site visits, fees, calendar | 75 % | Working; three known issues pending |
-| 9 | Quotations | 90 % | Working |
+| 9 | Quotations | 91 % | Working; Share on WhatsApp with a 7-day secure PDF link built 13 Nov |
 | 10 | Projects | 75 % | Working; open questions on vendor-code billing; sheet import pending |
 | 11 | Warehouse and procurement | 85 % | Working; one parked question, small gaps |
-| 12 | Billing and finance parties | 85 % | Working; partner dues figures pending |
+| 12 | Billing and finance parties | 86 % | Working; Share on WhatsApp for sale bills (7-day secure PDF link) built 13 Nov; partner dues figures pending |
 | 13 | Accounts (books) | 80 % | Working; CA confirmations and real opening balances pending |
 | 14 | Tasks | 85 % | Working; teams view and access pending |
 | 15 | Dashboard and analytics | 70 % | Working; analytics review (daily enquiry report) pending |
@@ -238,14 +238,16 @@
   - Approving payroll twice / paying twice (double click): only once.
   - Person with no bank details: shown as a problem before paying.
 
-### 6. Customers (90 %)
+### 6. Customers (93 %)
 - **Done:**
   - Customers with the address in parts (line 1 + state required) and GSTIN; payment terms with a Dues block.
   - Several projects per customer; Mark inactive; history.
   - The same mobile allowed after a warning ("This number already belongs to …") you confirm, with an optional family link shown on both customers; GSTIN stays unique (I1, built 13 Nov).
+  - **Account statement (6.3, built 13 Nov):** the Statement button on the customer page, a date range (default this financial year to today), Download PDF or Print. The PDF has the letterhead (logo, company details), the customer's name / address / GSTIN, the opening balance on the start date, each bill, receipt, advance and credit note in date order with debit, credit and running balance, the closing balance, the dues (overdue / due later) and ageing, and the UPI QR for the amount due when a UPI ID is set. The figures are the customer page's (closing = Outstanding) and agree with the customer's ledger in the books. `GET /customers/{id}/statement?from=&to=` (customer view right).
+  - **Share on WhatsApp (6.4, built 13 Nov):** on the statement (and on sale bills and quotations): a short message (company, document number, amount, due date for bills) with a secure link to the PDF; the number and message can be edited, then WhatsApp opens (`wa.me/91…`); Copy link instead; no mobile on file → the number is asked for. The link works 7 days without signing in, can't be guessed or edited, and every open is logged; an expired link shows "This link has expired".
 - **Pending:**
   - The import of old customers from the sheets.
-- **Tests:** `z_customers` 25, `c_addresses` 51, `ca_import_prep` 33; screens `customers_ui` 71, `c_addresses_ui` 99, `ca_ui` 12.
+- **Tests:** `z_customers` 25, `c_addresses` 51, `ca_import_prep` 33, `m6_statement_share` 36; screens `customers_ui` 71, `c_addresses_ui` 99, `ca_ui` 12, `m6_ui` 30 (1440 and 390).
 - **Test by hand, normal use:**
   - Create a customer: name, phone, email, address (line 1, line 2, city, state, PIN), GSTIN, type, payment terms.
   - Edit the customer; rename it (the ledger name follows); the change shows in history.
@@ -253,7 +255,14 @@
   - Search the list by name, phone, city, PIN; filter by dues.
   - Mark inactive: hidden from pickers for new work; Mark active again.
   - Delete a customer with nothing linked; one with records only offers Mark inactive.
+  - Statement: open a customer with a bill, a part payment and a credit note → Statement → Download PDF: logo and company on top, opening balance, the three lines with a running balance, closing = the page's Outstanding, dues and ageing, UPI QR. Print opens the PDF in a new tab.
+  - Statement → Share on WhatsApp: the customer's mobile is filled in, the message has the balance and the link; Open WhatsApp; open the link on a phone without signing in.
 - **Test by hand, edge cases:**
+  - Statement for a period after the bill: the bill is in the opening balance, not a line; a period with nothing in it: "No bills, receipts or credit notes", opening = closing.
+  - Statement end date before the start date: the buttons are disabled.
+  - Customer who paid ahead: the closing balance shows "Cr" (advance) and there is no QR.
+  - Customer with only a landline: Share asks for a 10-digit mobile before WhatsApp opens.
+  - Open a share link after 7 days (or an edited link): a clear "link has expired" / "not valid" page, no PDF.
   - No state or no line 1: refused (state is needed for GST).
   - PIN with 5 digits or starting with 0: refused.
   - GSTIN in the wrong format: refused; GSTIN of another state than the address: a note, not an error.
@@ -313,14 +322,15 @@
   - Same visitor booked twice at the same time: warning.
   - Known: a follow-up can appear twice in the calendar; the timeline page loads slowly.
 
-### 9. Quotations (90 %)
+### 9. Quotations (91 %)
 - **Done:**
   - Templates; versions (sending locks a version, a change makes a revision).
   - Subsidy options; expiry after 15 days; approval with the final amount, which becomes the project contract.
   - "Different sizes" on the version (from the enquiry, kept on revisions), shown on the print line (E4, built 13 Nov).
   - Default bank details carry the branch: AU Small Finance Bank, Vaishali Nagar Jaipur (from IFSC AUBL0002206, 12 Nov).
+  - **Share on WhatsApp with a secure PDF link (6.4, built 13 Nov):** opening Share stores the preview PDF and puts a 7-day link in the message ("View the quotation PDF: …"); Copy link; the link opens without signing in. `POST /quotations/{id}/share` (quotation view right).
 - **Pending:** nothing new.
-- **Tests:** `qt_quotations` 40, `cb_project_fields` 63 (CB04–CB08); screens `quotations_ui`, `qf_form` 47, `cb_ui` 26 (CBU06–CBU07).
+- **Tests:** `qt_quotations` 40, `cb_project_fields` 63 (CB04–CB08), `m6_statement_share` M6-32–M6-35; screens `quotations_ui`, `qf_form` 47, `cb_ui` 26 (CBU06–CBU07).
 - **Test by hand, normal use:**
   - Create a quotation from a template: items, kW, price, subsidy (none / central / central + state), terms.
   - Preview and download the PDF; company details, customer address and "Stock Items" heading look right; the bank block shows branch Vaishali Nagar Jaipur.
@@ -328,7 +338,9 @@
   - Approve with the final client amount (prefilled with the price before subsidy); it becomes the project contract.
   - Reject / cancel with a reason.
   - Tick "Different sizes" (3 kW panels, 5 structure, 6 inverter), save, preview: the size line reads "3 kW panels · 5 kW structure · 6 kW inverter"; the subsidy still follows the 3 kW.
+  - Share to Client: after "Preparing a secure PDF link…" the link shows with Copy link and is in the message; Share on WhatsApp opens WhatsApp with it; the link opens the same PDF on a phone.
 - **Test by hand, edge cases:**
+  - Share a quotation whose client has no mobile: WhatsApp asks for the number; the link can still be copied.
   - Revise a quotation with different sizes: the new version keeps them.
   - Editing a sent version directly: refused (make a revision).
   - Quotation 15 days after sending: expired, can't be approved.
@@ -407,7 +419,7 @@
   - Double click on approve / receive / deliver: happens once.
   - Selling more than free stock: a warning.
 
-### 12. Billing and finance parties (85 %)
+### 12. Billing and finance parties (86 %)
 - **Done:**
   - One sale document with B2B / B2C series; due dates from terms; credit notes; receipts.
   - Partners and agents with commission; place of supply from the site state on project bills.
@@ -415,7 +427,8 @@
 - **Pending:**
   - Dues figures and a dues filter on the partner list.
   - The section P open questions.
-- **Tests:** `bl_billing` 81, `bp_parties` 99, `e1_sale_document` 39, `a2_sales` 75, `b_terms` 89, `q12_gst_terms` 30, `cb_project_fields` CB57–CB60; screens `bl_invoices_ui` 52, `bp_parties_ui` 201, `b_terms_ui` 144, `cb_ui` CBU21–CBU23.
+- **Share on WhatsApp (6.4, built 13 Nov):** on an issued sale bill: message with the bill number, the amount (balance due after a part payment) and the due date, plus a 7-day secure PDF link; Copy link; drafts can't be shared. `POST /billing-documents/{id}/share` (billing view right); public `GET /api/v1/share/{token}`.
+- **Tests:** `bl_billing` 81, `m6_statement_share` M6-17, M6-20–M6-27, M6-40–M6-41, `bp_parties` 99, `e1_sale_document` 39, `a2_sales` 75, `b_terms` 89, `q12_gst_terms` 30, `cb_project_fields` CB57–CB60; screens `bl_invoices_ui` 52, `m6_ui` W*-20–21, `bp_parties_ui` 201, `b_terms_ui` 144, `cb_ui` CBU21–CBU23.
 - **Test by hand, normal use:**
   - New sale bill: choose B2B (party must have a GSTIN) or B2C; lines from stock / services or typed; any unit; GST per line.
   - Issue it: number B2B/2026-27/0001 or B2C/2026-27/0001; print / PDF ("TAX INVOICE", B2B / B2C sale bill).
@@ -425,7 +438,10 @@
   - Credit note against a bill: returns stock in the right unit and reduces what's due.
   - Bill to a partner; partner page shows terms, dues and both sides of the money.
   - Agents and commission approval.
+  - Issued bill → Share on WhatsApp: the number, balance due and due date are in the message; Open WhatsApp; Copy link; open the link signed out.
 - **Test by hand, edge cases:**
+  - A draft bill has no Share button; a person without the billing view right can't make a link.
+  - Change one letter of a shared link: "This link is not valid".
   - B2B for a customer without a GSTIN: refused (also at issue if the GSTIN was removed from the draft).
   - B2C for a customer with a GSTIN: allowed, no GSTIN printed.
   - Due date later than the terms needs a reason; earlier doesn't.
