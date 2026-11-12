@@ -175,6 +175,8 @@ export function buildStatusDoc(markdown: string = statusMarkdown): StatusDoc {
 export interface CheckRow {
   id: string;
   text: string;
+  /** Sub-list label, e.g. "Normal use" or "Edge cases" ("" when the doc has one list). */
+  kind: string;
 }
 
 export interface TestChip {
@@ -291,7 +293,7 @@ export function buildTestingDoc(markdown: string = testingMarkdown): TestingDoc 
       const bullets = labelledBullets(child.body);
       const get = (re: RegExp) => bullets.find((bullet) => re.test(bullet.label));
       const tests = get(/^tests?$/i);
-      const hand = get(/test by hand/i);
+      const handLists = bullets.filter((bullet) => /test by hand/i.test(bullet.label));
       const row = statusRows.get(number) ?? [];
       const known = [/^done$/i, /^pending$/i, /^tests?$/i, /test by hand/i];
       return {
@@ -304,7 +306,10 @@ export function buildTestingDoc(markdown: string = testingMarkdown): TestingDoc 
         pending: listOf(get(/^pending$/i)),
         testsText: tests ? [tests.inline, ...tests.items].join(" ") : "",
         tests: tests ? parseTestChips([tests.inline, ...tests.items].join(" ")) : [],
-        handChecks: listOf(hand).map((text) => ({ id: `m${number}:${slugify(plainText(text)).slice(0, 80)}`, text })),
+        handChecks: handLists.flatMap((bullet) => {
+          const kind = capitalize(bullet.label.replace(/^test by hand,?\s*/i, "").trim());
+          return listOf(bullet).map((text) => ({ id: `m${number}:${slugify(plainText(text)).slice(0, 80)}`, text, kind }));
+        }),
         extra: bullets
           .filter((bullet) => !known.some((re) => re.test(bullet.label)))
           .map((bullet) => ({ label: bullet.label, items: listOf(bullet) })),

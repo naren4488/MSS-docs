@@ -47,27 +47,52 @@
   - Access by own / team / department records.
   - The full access-matrix review.
 - **Tests:** `u_platform` 19, `f_sidebar_prefs` 28; screens `m1_ui` 69, `f_sidebar_ui` 215.
-- **Test by hand:**
-  - Sign in with your phone, with and without +91; a wrong password shows an error.
-  - Employees → ⋮ → Reset password: the temporary password is shown once; at sign-in the person must change it.
-  - Sidebar: search "salary" (→ Payroll) and "gst"; pin 5 pages, a 6th asks which to replace; click ⓘ next to a page title.
-  - Header company switcher: open two browser tabs in two companies; each keeps its own data.
-  - Settings → Companies: add a company with an address; its state becomes the GST state (e.g. Rajasthan (08)); add an existing person to it.
-  - Settings → Designation access matrix: remove one right from a designation, sign in as that person, and the page or button is gone.
+- **Test by hand, normal use:**
+  - Sign in with a 10-digit phone, and with +91 in front; show / hide the password.
+  - Sign out from the header; the back button doesn't reopen the app.
+  - Settings → Security: change your password (old password needed); last sign-in and last change are shown.
+  - Employees → ⋮ → Reset password: the temporary password shows once with Copy; the person must change it at sign-in and is signed out on their other devices.
+  - Sidebar: search "salary" (→ Payroll), "gst", "stock" and the old word "materials"; ↑ ↓ Enter opens, Esc clears, "/" jumps to the search box.
+  - Pins: pin 5 pages (order kept), a 6th asks which to replace; unpin; pins stay after sign-out and on another device.
+  - ⓘ after the breadcrumb explains the page; on a phone it sits after the title.
+  - Company switcher: search, switch, open a second tab in another company; each tab keeps its company; reload keeps it.
+  - Settings → Companies: add a company (code, names, GSTIN, PAN, address with state, badge colour, books start); the GST state comes from the address; edit; switch Active off and on.
+  - Add an existing person to a company (designation, on payroll here, track attendance here); they see the company in the switcher.
+  - Departments and designations: add, edit, deactivate, delete an unused one.
+  - Designation access matrix: switch off one right (e.g. Customers → create) for a designation; sign in as that person: the button / page is gone and the API refuses.
+- **Test by hand, edge cases:**
+  - Wrong password, unknown phone, 9 digits, letters: clear errors, no crash.
+  - Temporary password: trying to open any page before changing it sends you back to Settings → Security.
+  - New password same as the old one, or too short: refused.
+  - Nobody can reset their own password; only a Super Admin can reset a Super Admin.
+  - Session: leave the app idle (or change the clock) past 7 days → signed out; normal use keeps you signed in.
+  - A person with no right to a page who types its URL: the Unauthorized page, not a blank screen.
+  - Company not in your circle: not in the switcher, and its URL / data can't be reached.
+  - GSTIN or PAN in the wrong format: refused with the field named.
+  - Phone width (390 px): menu, pins, search and the company switcher all work.
 
 ### 2. Settings and masters (85 %)
 - **Done:**
   - Company settings; master lists with "in use" protection (a value in use can only be deactivated).
   - Payment modes, bank ledgers, Approval limits (PO / SO / extra-quantity %), Number series (19 series).
+  - Enquiry sources: "Social Media" renamed Meta Ads (same code), Data Calling and Maintenance & Sales Team added; a Banks list (14 banks); DISCOM JVVNL with 15 sub-division areas (built 13 Nov, migration 0152).
 - **Pending:**
-  - **In build:** sources Meta Ads, Data Calling and Maintenance & Sales Team; the banks list; JVVNL DISCOM areas.
   - Who may edit which masters (access matrix).
-- **Tests:** `v_settings` 28 / 29 (V10 needs rewriting), `h1a4_master_conversion` 39, `ns_number_series` 25.
-- **Test by hand:**
-  - Masters: add a value, use it on a record, then try to delete it: refused ("in use"), Deactivate works; the old record still shows the value.
-  - Settings → Approval limits: change the PO limit as Super Admin; a normal user sees it read-only.
-  - Settings → Number series: change a prefix and the next number, create that document, check the number; a next number below the last used is refused.
+- **Tests:** `v_settings` 28 / 29 (V10 needs rewriting), `h1a4_master_conversion` 39, `ns_number_series` 25, `ca_import_prep` 33 (CA01–CA08 are the masters).
+- **Test by hand, normal use:**
+  - Masters: add a value to a list (unit, category, payment mode …), edit it, deactivate it, reactivate it.
+  - Use a value on a record, then try to delete it: refused ("in use" with counts); Deactivate works and the old record still shows the value.
+  - An inactive value is hidden in pickers for new records but still shown on records that have it.
   - Payment modes: each points to a cash or bank ledger; a receipt with that mode lands in that ledger.
+  - Settings → Company: logo, address, bank details printed on invoices.
+  - Settings → Approval limits: change the PO limit, SO limit and extra-quantity % as Super Admin or Director; others see them read-only; the change shows in Activity.
+  - Settings → Number series: change prefix, year part, digits and next number; the preview updates; create that document and check the number.
+- **Test by hand, edge cases:**
+  - Two values with the same name in one list: refused.
+  - Number series: next number below the last one used is refused; two series with the same prefix (e.g. B2B and B2C) refused.
+  - Year part off: one running count; on: restarts every 1 April.
+  - Shared series (customers, projects, enquiries …) can only be changed by a Super Admin.
+  - A person without the settings right: masters and settings are read-only, edit buttons hidden, API refuses.
 
 ### 3. People: employees, teams (75 %)
 - **Done:** employees with salary, bank details and address (current + permanent); teams per company; exit; employee pages.
@@ -77,10 +102,19 @@
   - Exit history.
   - Who can see employee photos.
 - **Tests:** `a_employees` 41; screens `people_ui` 60.
-- **Test by hand:**
-  - Add an employee with a current and a permanent address ("same as current" tick), salary and bank details.
-  - Teams: create a team and add members; the team shows on the employee page.
-  - Mark an employee as exited; they no longer appear for new work.
+- **Test by hand, normal use:**
+  - Add an employee: name, phone, designation, department, joining date, salary, bank details, current address, permanent address ("same as current" tick).
+  - Edit an employee; the change shows in their history.
+  - Upload a photo and documents.
+  - Teams: create a team, add and remove members; the team shows on each member's page.
+  - Employee in two companies: separate employee record and attendance in each.
+  - Mark an employee as exited with a date; they drop out of pickers for new work but their past records stay.
+- **Test by hand, edge cases:**
+  - Same phone as another employee in the company: refused.
+  - Salary 0: allowed only when "not on payroll".
+  - Permanent address untick "same as current": both addresses required separately; PIN must be 6 digits.
+  - Exited employee: can't be assigned new tasks, visits or attendance after the exit date.
+  - Phone width: the employee page and its tabs work.
 
 ### 4. Attendance and leave (85 %)
 - **Done:**
@@ -88,10 +122,19 @@
   - Leave balances, attendance locked after payroll, separate records per company.
 - **Pending:** links to teams and projects (comes with the teams design).
 - **Tests:** screens `attendance_ui` 63, plus the attendance checks inside the payroll suites.
-- **Test by hand:**
-  - Mark attendance for a day, including a half day.
-  - Apply for leave as an employee; the approver gets an alert; approve it; the balance goes down.
-  - After payroll is approved for a month, that month's attendance is locked; unlocking needs a reason.
+- **Test by hand, normal use:**
+  - Mark attendance for today: present, absent, half day, paid leave, half paid leave.
+  - Mark for a whole team or many people at once.
+  - Apply for leave as an employee (dates, type, reason); the approver gets an alert; approve; balance goes down.
+  - Reject a leave with a reason; the employee sees it.
+  - Attendance page: month view per person with totals.
+- **Test by hand, edge cases:**
+  - Leave longer than the balance: warning or refusal as set.
+  - Overlapping leave requests: refused.
+  - Attendance for a future date: refused.
+  - After payroll for a month is approved, that month's attendance can't be changed; unlocking needs HR / Super Admin with a reason.
+  - Sunday is a normal working day (not auto-off).
+  - Someone without the approve right can't approve leave.
 
 ### 5. Payroll and advances (75 %)
 - **Done:**
@@ -102,39 +145,72 @@
   - The salary bank file, which needs an AU bank sample.
   - CA check of the FY 2026-27 statutory figures.
 - **Tests:** `y_payroll` 38, `c2_payroll` 72; screens `payroll_ui` 75.
-- **Test by hand:**
-  - Payroll: build last month → review → approve → pay; download a payslip PDF.
-  - Salary advance above ₹10,000 needs a second approver; it is deducted in the next payroll.
-  - Extra pay (OT / bonus / incentive) shows on the payslip.
-  - Accounts → ledgers show the salary entries after payment.
+- **Test by hand, normal use:**
+  - Build payroll for last month: everyone on payroll is listed with days, earnings, deductions, net.
+  - Review → approve → pay; download a payslip PDF; the books get the salary entries.
+  - Add extra pay (OT / bonus / incentive) to one person; it shows on their payslip.
+  - Salary advance: request, approve, pay; it's deducted in the next payroll.
+  - Payroll settings: components and statutory deductions.
+- **Test by hand, edge cases:**
+  - Advance above ₹10,000 needs a second approver.
+  - Approver can't approve their own advance.
+  - Building payroll for the current (unfinished) month: refused.
+  - Approving payroll twice / paying twice (double click): only once.
+  - Employee who joined or exited mid-month: pro-rated pay.
+  - Person with no bank details: shown as a problem before paying.
+  - Changing attendance after approval: blocked (see Attendance).
 
 ### 6. Customers (85 %)
 - **Done:**
   - Customers with the address in parts (line 1 + state required) and GSTIN; payment terms with a Dues block.
   - Several projects per customer; Mark inactive; history.
+  - The same mobile allowed after a warning ("This number already belongs to …") you confirm, with an optional family link shown on both customers; GSTIN stays unique (I1, built 13 Nov).
 - **Pending:**
-  - **In build:** the same mobile allowed with a warning and a family link.
   - The import of old customers from the sheets.
-- **Tests:** `z_customers` 25, `c_addresses` 51; screens `customers_ui` 71, `c_addresses_ui` 99.
-- **Test by hand:**
-  - New customer without a state: refused; with line 1 + state: saved.
-  - GSTIN from another state than the address: a note (not an error).
-  - Payment terms "Net 15": a new sale bill for this customer gets a due date 15 days ahead.
-  - Same mobile as another customer: refused today (after chunk A: a warning you confirm, plus a family link).
-  - Mark inactive: the customer disappears from pickers for new work and can be made active again.
+- **Tests:** `z_customers` 25, `c_addresses` 51, `ca_import_prep` 33; screens `customers_ui` 71, `c_addresses_ui` 99, `ca_ui` 12.
+- **Test by hand, normal use:**
+  - Create a customer: name, phone, email, address (line 1, line 2, city, state, PIN), GSTIN, type, payment terms.
+  - Edit the customer; rename it (the ledger name follows); the change shows in history.
+  - Customer page: details, projects, enquiries, sales bills & payments, Dues block (open / overdue / due in 7 days).
+  - Search the list by name, phone, city, PIN; filter by dues.
+  - Mark inactive: hidden from pickers for new work; Mark active again.
+  - Delete a customer with nothing linked; one with records only offers Mark inactive.
+- **Test by hand, edge cases:**
+  - No state or no line 1: refused (state is needed for GST).
+  - PIN with 5 digits or starting with 0: refused.
+  - GSTIN in the wrong format: refused; GSTIN of another state than the address: a note, not an error.
+  - Same GSTIN as another customer: refused.
+  - Same phone as another customer: a warning naming the other customer; "Save anyway" saves it (with "Link them as family"); "Go back" saves nothing.
+  - Payment terms Net 15: a new bill gets a due date 15 days ahead; changing the terms later doesn't move old due dates.
+  - Very long name / address: saved and printed without breaking the invoice layout.
 
 ### 7. Enquiries (80 %)
-- **Done:** enquiries with source, owner, status, follow-ups, lost reason and reopen, change requests, conversion to a project.
+- **Done:**
+  - Enquiries with source, owner, status, follow-ups, lost reason and reopen, change requests, conversion to a project.
+  - A follow-up person on each follow-up (default the lead owner, changeable in the follow-up list); their alert, My day, task and calendar (E2, built 13 Nov).
+  - Documents received: Pending / Partially / Yes + date + note on the enquiry, with a list filter (E3, built 13 Nov).
 - **Pending:**
-  - **In build:** a follow-up person on each follow-up; documents received (Yes / Partially / Pending + date); different panel / structure / inverter sizes.
+  - **In build:** different panel / structure / inverter sizes.
   - The import of the Sep–Nov enquiry tabs.
   - The daily enquiry report, planned with the analytics review.
-- **Tests:** `f_enquiries` 26; screens `enquiries_ui` 42.
-- **Test by hand:**
-  - Create an enquiry with a source, owner, kW and budget.
-  - Add a follow-up with a date: the owner gets the reminder and it shows in My day / calendar.
-  - Mark lost with a reason, then reopen it (a reason is required).
-  - Convert: a project is created with the customer, kW and amount.
+- **Tests:** `f_enquiries` 26, `ca_import_prep` 33; screens `enquiries_ui` 42, `ca_ui` 12.
+- **Test by hand, normal use:**
+  - Create an enquiry: customer (new or existing), source, owner, kW, phase, budget, address, notes.
+  - Quick-create a new customer from the enquiry form.
+  - Add follow-ups with a date and note; the owner gets the reminder; it shows in My day and the calendar.
+  - Change the owner; the new owner gets an "Enquiry assigned to you" alert.
+  - Book a site visit from the enquiry.
+  - Make a quotation from the enquiry.
+  - Mark lost with a reason; reopen with a reason.
+  - Convert to a project; the enquiry shows the project link.
+  - List: search and filter by status, source, owner, date.
+- **Test by hand, edge cases:**
+  - Enquiry for a customer who already has an open enquiry: allowed, but check you see both.
+  - Lost enquiry: its quotations stay cancelled when reopened.
+  - Name change request at deal time (documents in another name): approve / reject once.
+  - Follow-up date in the past: refused or warned.
+  - kW 0 or negative, budget negative: refused.
+  - Person with view-only rights: no edit, no status change.
 
 ### 8. Site visits, fees, calendar (75 %)
 - **Done:** a visit as its own record (scheduled → travelled → completed / not completed / cancelled), visit fees and receipts, the calendar.
@@ -143,10 +219,19 @@
   - A follow-up shows twice in the calendar.
   - The visit cost is not booked in the accounts.
 - **Tests:** `sv_sitevisits` 54; screens `sitevisits_ui` 33, `visit_fees_ui` 47.
-- **Test by hand:**
-  - Book a site visit with a fee → mark travelled → completed (with location); record the fee receipt.
-  - The calendar shows the visit; reschedule and cancel work and keep their reason.
-  - A follow-up appears once in the calendar (known issue: it can show twice).
+- **Test by hand, normal use:**
+  - Book a site visit: date, time, visitor, address, optional fee.
+  - Mark travelled → completed with location and notes; or not completed with a reason.
+  - Reschedule and cancel (with a reason).
+  - Visit fee: record the receipt (who collected, where the money is); it shows on the customer's Visit fees tab.
+  - Move a fee to the project (adjust against the contract).
+  - Calendar: day / week / month views show visits and follow-ups.
+- **Test by hand, edge cases:**
+  - Completing a visit without location: refused.
+  - Visit for a past date: allowed only as a record, or refused as set.
+  - Fee receipt above the fee: refused.
+  - Same visitor booked twice at the same time: warning.
+  - Known: a follow-up can appear twice in the calendar; the timeline page loads slowly.
 
 ### 9. Quotations (85 %)
 - **Done:**
@@ -154,11 +239,18 @@
   - Subsidy options; expiry after 15 days; approval with the final amount, which becomes the project contract.
 - **Pending:** **in build:** different panel / structure / inverter sizes.
 - **Tests:** `qt_quotations` 40; screens `quotations_ui`, `qf_form` 47.
-- **Test by hand:**
-  - Create a quotation from a template; choose the subsidy (none / central / central + state).
-  - Send it: the version locks; change it → a new revision to send again.
-  - A sent quotation expires after 15 days and can't be approved after that.
-  - Approve with the final client amount: it becomes the project contract value.
+- **Test by hand, normal use:**
+  - Create a quotation from a template: items, kW, price, subsidy (none / central / central + state), terms.
+  - Preview and download the PDF; company details, customer address and "Stock Items" heading look right.
+  - Send it: the version is locked; change → new revision → send again.
+  - Approve with the final client amount (prefilled with the price before subsidy); it becomes the project contract.
+  - Reject / cancel with a reason.
+- **Test by hand, edge cases:**
+  - Editing a sent version directly: refused (make a revision).
+  - Quotation 15 days after sending: expired, can't be approved.
+  - Subsidy above the slab (central max ₹78,000; state ₹17,000 default): capped or refused.
+  - Approving a quotation of a lost enquiry: refused.
+  - Very many items: PDF pages break cleanly.
 
 ### 10. Projects (70 %)
 - **Done:**
@@ -172,12 +264,25 @@
   - GST on partner / vendor-code / I&C charges.
   - The import of sites from the MSS and Arkshakti sheets.
 - **Tests:** `pm_projects_money` 41, `pe_projects_exec` 68, `pt_project_types` 37, `p_vendor_code_billing` 44; screens `pt_create_ui` 189, `pt_details_ui` 162, `p_vc_ui` 42.
-- **Test by hand:**
-  - Create one project of each type: Own, Partner, Vendor code only, I&C only; check the rate fills in.
-  - Vendor code used: ours vs another firm; the bill form picks the right billed party (client / firm / partner).
-  - Progress steps: file login → bank file → work → DISCOM → payment; the status moves on by itself.
-  - Send stock to the site: stock goes down and the project cost goes up.
-  - Contract change only through a change request; completing with money still owed is refused unless a Director gives a reason.
+- **Test by hand, normal use:**
+  - Wizard: create an Own (EPC) project from an approved quotation; check customer, kW, contract and site address.
+  - Create a Partner, a Vendor code only and an I&C only project; the rate comes from the partner (else the default) and can be edited.
+  - Vendor code used: ours / another firm; the bill form then picks the client, the firm or the partner as the billed party.
+  - Progress: file login steps → bank file / cash → work items (with GPS photo proof) → DISCOM → payment → DCR → subsidy type; the status moves on by itself.
+  - Team: assign our team or a subcontractor (Outsource).
+  - Stock sent to site: stock goes down, the project cost goes up; return to the warehouse.
+  - Money: receipts, loan tranches, partner bills and payouts, the Financials tab totals.
+  - Change request for a contract change; approve it; the contract updates.
+  - Complete the project; cancel another one with a reason.
+- **Test by hand, edge cases:**
+  - Partner project without a partner or rate: refused.
+  - Contract change below what's already received or invoiced: refused.
+  - Complete while money is still owed: refused unless a Director / Super Admin gives a reason.
+  - Cancel after money was received: refused unless a Director / Super Admin gives a reason.
+  - Work item without serial / GPS photo where required: can't be marked done.
+  - Partner's bill to MSS above what MSS owes: refused.
+  - Changing the vendor code or client amount after a bill exists: refused.
+  - Stock sent to a closed project: not offered.
 
 ### 11. Warehouse and procurement (85 %)
 - **Done:**
@@ -190,12 +295,25 @@
   - No item-code box on the Tools form.
   - Stores staff can't use Create PO (access matrix).
 - **Tests:** `w_warehouse` 71, `b2_purchases` 74, `d1_purchase_orders` 71, `d2_sale_orders` 79, `e2_bill_units` 55, `e34_inline_items` 40, `a1a3_stock_rates` 42, `q11_codes_units` 23; screens `w_materials_ui`, `d1_po_ui` 84, `d2_so_ui` 78, `e34_inline_ui` 105, `e2_units_ui` 86.
-- **Test by hand:**
-  - Stock item bought in coils of 90 m, sale rate per coil: the form shows the per-metre rate; stock details show both units.
-  - Purchase bill in coils → approve → goods received: stock rises in metres; the vendor's due date comes from their terms.
-  - PO above ₹50,000: the maker can't approve it (Super Admin can); receive 2 % extra without approval; above that needs approval.
-  - Need-to-get → Create PO: one draft PO per vendor.
-  - Sale order: confirm reserves stock (free stock goes down); deliver part → challan print; cancel the challan → stock comes back.
+- **Test by hand, normal use:**
+  - Stock: add an item bought in coils (1 coil = 90 m), sold per metre; purchase and sale rate per coil; the form shows "= ₹ per metre"; stock details show both units, value, reserved and free.
+  - Item code: give "DCC-4"; search it on a bill line.
+  - Vendor: B2B (needs GSTIN), B2C (no GSTIN) or General; payment terms; address.
+  - Purchase bill: lines from the search (add a missing item on the spot), any unit; save → approve → goods received (now or later, in parts); vendor due date from terms; pay the vendor.
+  - Purchase order: create → submit → approve → send (PO number) → receive in parts in another unit → bill from the PO → closed.
+  - Need-to-get → tick items → Create PO: one draft PO per vendor.
+  - Sale order: create (B2B / B2C) → approve → confirm (SO number, stock reserved) → deliver (challan, print) → bill from the SO → completed; record an advance.
+  - Damage & scrap, tools, templates.
+- **Test by hand, edge cases:**
+  - Conversion factor missing or 0: refused.
+  - Changing a conversion when stock exists: needs the approve right and a reason; quantities are restated.
+  - Same vendor bill number twice: refused.
+  - Paying an unapproved bill: refused; paying more than due becomes the vendor's advance.
+  - PO above the limit: maker can't approve (Super Admin can); receiving 2 % extra is free, 2.1 % needs approval and a reason; billing more than received refused.
+  - Cancelling a PO after goods came in: refused, Close instead.
+  - SO: delivering or billing more than ordered refused; only stores can deliver; cancel a challan before billing (stock back), after billing refused.
+  - Double click on approve / receive / deliver: happens once.
+  - Selling more than free stock: a warning.
 
 ### 12. Billing and finance parties (85 %)
 - **Done:**
@@ -205,11 +323,23 @@
   - Dues figures and a dues filter on the partner list.
   - The section P open questions.
 - **Tests:** `bl_billing` 81, `bp_parties` 99, `e1_sale_document` 39, `a2_sales` 75, `b_terms` 89, `q12_gst_terms` 30; screens `bl_invoices_ui` 52, `bp_parties_ui` 201, `b_terms_ui` 144.
-- **Test by hand:**
-  - New sale bill: choose B2B (customer must have a GSTIN) or B2C; issue it → number B2B/2026-27/0001 or B2C/…
-  - Due date comes from the customer's terms; an earlier date needs no reason, a later one does.
-  - Record a receipt; the bill shows paid / due; a credit note returns stock in the right unit.
-  - Project bill: place of supply defaults to the site's state (IGST when the site is in another state).
+- **Test by hand, normal use:**
+  - New sale bill: choose B2B (party must have a GSTIN) or B2C; lines from stock / services or typed; any unit; GST per line.
+  - Issue it: number B2B/2026-27/0001 or B2C/2026-27/0001; print / PDF ("TAX INVOICE", B2B / B2C sale bill).
+  - Due date from the customer's terms; overdue tag after the date.
+  - Record a receipt (cash / bank / UPI); partial payment; the bill shows paid and due.
+  - Credit note against a bill: returns stock in the right unit and reduces what's due.
+  - Bill to a partner; partner page shows terms, dues and both sides of the money.
+  - Agents and commission approval.
+- **Test by hand, edge cases:**
+  - B2B for a customer without a GSTIN: refused (also at issue if the GSTIN was removed from the draft).
+  - B2C for a customer with a GSTIN: allowed, no GSTIN printed.
+  - Due date later than the terms needs a reason; earlier doesn't.
+  - Project bill: place of supply = site state; site in another state → IGST.
+  - Inter-state B2C bill above ₹1,00,000: shows as B2C Large in GSTR-1.
+  - Void a bill: it keeps its number; no number is reused; drafts have no number.
+  - Receipt above the amount due: refused or kept as advance.
+  - Two people issuing bills at the same moment: no duplicate numbers.
 
 ### 13. Accounts (books) (80 %)
 - **Done:**
@@ -219,35 +349,56 @@
   - CA to confirm: partner ledgers under Sundry Debtors, the FY 2026-27 tax figures, material sent to sites at cost.
   - Real opening balances as on 1 Apr 2026 and the Tally ledger list.
 - **Tests:** `ac_books` 66, `gs_gst` 57, five e2e runs 194; screens `gs_gst_ui` 115.
-- **Test by hand:**
-  - Accounts → Ledgers: balances match the bills and receipts entered.
-  - Make a voucher entry; import a bank statement and match lines.
-  - GSTR-1 puts bills in B2B / B2C Large / B2C Small; the Excel export opens.
-  - P&L shows Cost of goods sold for sale-order deliveries; closing stock comes from the warehouse.
+- **Test by hand, normal use:**
+  - Ledgers and groups: balances match bills, receipts and payments.
+  - Voucher entry (payment / receipt / contra / journal) and its number.
+  - Bank statement import: lines match to receipts and payments; unmatched lines stay for review.
+  - Day book, trial balance, P&L, balance sheet.
+  - GSTR-1 (B2B / B2C Large / B2C Small / credit notes / documents issued), GSTR-3B, Excel for the CA.
+  - TDS, debit notes, fixed assets and depreciation; closing stock from the warehouse.
+- **Test by hand, edge cases:**
+  - Voucher that doesn't balance: refused.
+  - Editing a reversed entry: refused.
+  - Entry in a locked period: refused.
+  - Bank line matched twice: refused.
+  - Deactivating a ledger with entries: allowed but history unchanged.
 
 ### 14. Tasks (85 %)
 - **Done:** tasks with assignee, due date, reopen with a reason, automation rules, My day.
 - **Pending:** a teams view (teams design); who can see or close others' tasks (access matrix).
 - **Tests:** `tk` 61, `tx` 19.
-- **Test by hand:**
-  - Create a task for someone: it shows in their My day; they mark it done.
-  - Reopen a done task (Director / admin / assignee) with a reason.
-  - An automation rule creates a task when its event happens.
+- **Test by hand, normal use:**
+  - Create a task: title, assignee, due date, priority; it shows in their My day.
+  - Assignee marks it done; it moves to done.
+  - Reopen a done task (Director, admin or the assignee) with a reason.
+  - Automation rules: an event (e.g. new enquiry, visit completed) creates a task.
+  - Task list filters: mine, team, overdue.
+- **Test by hand, edge cases:**
+  - Task due in the past: shows as overdue.
+  - Reopen without a reason: refused; someone else trying to reopen: refused.
+  - Assigning to an exited employee: not offered.
 
 ### 15. Dashboard and analytics (70 %)
 - **Done:** a dashboard with tiles by rights (Sales, Money received, Stock, PO tiles); one Analytics page.
 - **Pending:** an analytics review, including the daily enquiry report by source (leads, interested, visits, conversions).
 - **Tests:** `db_dashboard_be` 64, `dx` 35.
-- **Test by hand:**
-  - Dashboard: tiles change with the person's rights (Sales, Money received, Stock, PO tiles).
-  - Analytics: the figures match the lists they come from (enquiries, projects, receipts).
+- **Test by hand, normal use:**
+  - Dashboard: tiles change with the person's rights (Sales, Money received, Stock, PO tiles); each tile opens its filtered list.
+  - My day: tasks, follow-ups and visits for today.
+  - Analytics page: figures match the lists (enquiries, projects, receipts) for the same dates.
+- **Test by hand, edge cases:**
+  - A person with few rights sees only their tiles.
+  - Empty company (no data): tiles show 0, no errors.
 
 ### 16. Audit and reports (85 %)
 - **Done:** the Activity page over every history, a trimmed Audit menu, tools as fixed assets in the books.
 - **Pending:** nothing specific; access-matrix rights only.
 - **Tests:** `au_audit` 53.
-- **Test by hand:**
-  - Activity: change a customer or bill; the change shows with who, when and what changed; the filters work.
+- **Test by hand, normal use:**
+  - Activity: edit a customer, a bill and a project; each change shows who, when and what changed.
+  - Filters by date, person and record type.
+- **Test by hand, edge cases:**
+  - A person without the audit right can't open Activity.
 
 ### 17. Notifications, documents, background jobs (70 %)
 - **Done:** bell alerts, documents and templates, a background worker (second container).
@@ -255,9 +406,12 @@
   - WhatsApp and email alerts, which need a WhatsApp Business number and email setup.
   - Clean-up of orphaned S3 files after the data clear.
 - **Tests:** `nt_notify` 52; screens `nt_ui` 68.
-- **Test by hand:**
-  - An action that alerts (leave request, task, PO waiting) shows in the bell; clicking opens the record.
-  - Upload a document to a project; generate a document from a template as PDF.
+- **Test by hand, normal use:**
+  - Bell: leave request, task assigned, enquiry assigned, PO waiting for approval each create an alert; clicking opens the record; mark read.
+  - Documents: upload to a project, open and download; generate a document from a template as PDF.
+- **Test by hand, edge cases:**
+  - Alert for a record the person can no longer see: opens Unauthorized, not an error.
+  - Large upload or a wrong file type: a clear message.
 
 ## Across all modules (not counted in the module %)
 - **Access matrix:** who can see and do what, in every module. The questions logged so far wait here.

@@ -110,6 +110,41 @@ function CheckItem({
   );
 }
 
+function HandList({
+  rows,
+  ticks,
+  onToggle,
+  highlight,
+}: {
+  rows: CheckRow[];
+  ticks: Set<string>;
+  onToggle: (id: string) => void;
+  highlight: string;
+}) {
+  const kinds = [...new Set(rows.map((row) => row.kind))];
+  return (
+    <>
+      {kinds.map((kind) => {
+        const kindRows = rows.filter((row) => row.kind === kind);
+        return (
+          <div key={kind || "all"} className="asw-hand-kind">
+            {kind ? (
+              <p className={`asw-hand-kind-label${/edge/i.test(kind) ? " asw-hand-kind-label--edge" : ""}`}>
+                {kind} <span>{kindRows.length}</span>
+              </p>
+            ) : null}
+            <ul className="asw-checks">
+              {kindRows.map((row) => (
+                <CheckItem key={row.id} row={row} ticked={ticks.has(row.id)} onToggle={onToggle} highlight={highlight} />
+              ))}
+            </ul>
+          </div>
+        );
+      })}
+    </>
+  );
+}
+
 function ModuleTestDetail({
   module,
   ticks,
@@ -223,11 +258,7 @@ function ModuleTestDetail({
             </span>
             <ProgressBar done={done} total={module.handChecks.length} label="Hand tests ticked" />
           </header>
-          <ul className="asw-checks">
-            {module.handChecks.map((row) => (
-              <CheckItem key={row.id} row={row} ticked={ticks.has(row.id)} onToggle={onToggle} highlight="" />
-            ))}
-          </ul>
+          <HandList rows={module.handChecks} ticks={ticks} onToggle={onToggle} highlight="" />
         </section>
       ) : null}
     </article>
@@ -459,11 +490,7 @@ export function TestingTab({ doc }: { doc: TestingDoc }) {
                       {rows.length === 0 ? (
                         <p className="asw-empty">All ticked here.</p>
                       ) : (
-                        <ul className="asw-checks">
-                          {rows.map((row) => (
-                            <CheckItem key={row.id} row={row} ticked={ticks.has(row.id)} onToggle={toggleTick} highlight={query} />
-                          ))}
-                        </ul>
+                        <HandList rows={rows} ticks={ticks} onToggle={toggleTick} highlight={query} />
                       )}
                     </div>
                   ) : null}

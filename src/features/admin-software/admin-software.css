@@ -1539,3 +1539,26 @@
 .asw-hero .asw-doc-ref {
   color: var(--asw-purple-soft);
 }
+
+.asw-hand-kind + .asw-hand-kind {
+  margin-top: 10px;
+}
+.asw-hand-kind-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 12px 0 2px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--asw-purple-tint);
+  color: var(--asw-purple);
+  font: 600 12px "Poppins", sans-serif;
+}
+.asw-hand-kind-label span {
+  opacity: 0.7;
+}
+.asw-hand-kind-label--edge {
+  background: var(--asw-yellow-tint);
+  color: var(--asw-navy);
+  border: 1px solid var(--asw-yellow);
+}

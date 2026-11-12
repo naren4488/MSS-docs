@@ -186,6 +186,8 @@ Sidebar HR section, search, pins and page info (plan step 3, F1–F4, migration 
 
 **Configuration:** document templates (placeholders include the address parts: `{{customer.line1}}`, `{{customer.line2}}`, `{{customer.city}}`, `{{customer.state}}`, `{{customer.pincode}}`, `{{site.state_code}}`, `{{customer_home.*}}` for the customer's own address, `{{company.line1}}` … `{{company.pincode}}`, and `{{vendor.*}}` — the DISCOM-registered vendor: the code company when the project uses another company's code, else our company) and document requirements, service presets, site-visit blocker types, site checklist templates.
 
+**Sheet-import masters (owner, 13 Nov; migration 0152):** enquiry source "Social Media" is now **Meta Ads** (same id and code, old enquiries keep it), plus **Data Calling** and **Maintenance & Sales Team**; a **Banks** list under Finance (SBI, Bank of Baroda, PNB, Bank of India, Canara, UCO, Union, Indian Bank, Central Bank of India, Rajasthan Gramin Bank, HDFC, ICICI, Axis, Other) for the project bank field to come; DISCOM **JVVNL** with its sub-divisions as DISCOM areas (Jobner, Hathoj, Jhotwara, Kalwar, Sambhar, Renwal, Amber, Binayaka, Bagru, Govindgarh, Badpeepli, Phulera, Chomu, Sanganer, Dudu). In every company and in new ones.
+
 **Other:** password, two-factor setup (placeholder, Module 1), settings audit log.
 
 **Automatic:** every master change goes to a history log.
@@ -403,6 +405,11 @@ Sidebar HR section, search, pins and page info (plan step 3, F1–F4, migration 
 - **Sale orders tab** (plan D2, billing view right): the customer's sale orders with the list's figures and filters, "New sale order" for the customer (billing create right)
 - Buttons follow the user's rights (customer create / edit / delete, quotation, project, billing)
 
+**Same mobile, family link (I1, 13 Nov; migration 0152)**
+- Two customers may share a mobile in one company (e.g. Rajesh and his wife Sugan Devi, each with a project). Saving one shows "This number already belongs to <name> (CUST-…)"; **Save anyway** saves it, with **Link them as family** ticked by default; **Go back** saves nothing. The same in every customer form (customers page, enquiry, quotation, project).
+- Customer page: **Family** (the link both ways) and **Same mobile** lines with links; Link family / Change / Remove link
+- The GSTIN stays unique in a company; the enquiry customer picker lists every customer on a searched mobile to pick from
+
 **Automatic**
 - Each customer gets a ledger under Sundry Debtors on their first posted invoice or payment; renaming the customer renames it; deleting an unused customer removes an unused ledger
 - Inactive customers are hidden from lists and pickers and can't get new enquiries, quotations, projects or invoices (payments still allowed); "Make active" brings them back
@@ -412,6 +419,7 @@ Sidebar HR section, search, pins and page info (plan step 3, F1–F4, migration 
 - `/customers/{id}/…` (enquiries, quotations, projects, invoices — every sale document since E1, payments, site-visit-fees, notes, timeline — incl. `payment_terms_changed`, financial-summary — with `total_b2b_amount` / `total_b2c_amount` since E1); **backend only:** `/customers/{id}/sale-bills` (the old SB series)
 - `GET /customers/{id}/dues` [customer.view]: the Dues block (open / overdue / due_week / not_due with counts, oldest overdue days, `buckets`, `bills[]` with due date, source, days overdue, state); `GET /customers/{id}/history`: payment-terms changes
 - Removed (0137, Q8): `/customers/{id}/addresses` and the unused `customer_addresses` table
+- I1 (0152): create / edit take `confirm_same_phone` and `related_customer_id` ("" clears); a shared mobile without the confirmation → 409 `CUSTOMER_PHONE_SHARED` (message names the customers; `data.errors[]` `existing_customer_id`); detail / create / edit return `related_customer_id`, `family[]`, `same_phone_customers[]`
 
 ### Review status
 **Status:** reviewed and done (8 Nov 2026, migration 0114). Tests: `hr/z_customers.sh` 25/25 (in `regress.sh`), `pw/customers_ui` 71/71 at 1440/768/390 px plus a view-only Accounting user, full regression A–Z. Plan and findings: [MODULE_REVIEW_PLAN.md](./MODULE_REVIEW_PLAN.md#module-6-customers).
@@ -460,11 +468,17 @@ Sidebar HR section, search, pins and page info (plan step 3, F1–F4, migration 
 - **Site-visit change request** (finalised name, capacity, budget): approve (renames the customer and its books account and updates the enquiry, all together) or reject, once, by anyone who edits enquiries
 - Buttons follow the user's rights: view-only users see the details and no action buttons
 
+**Follow-up person and documents (E2, E3, 13 Nov; migration 0152)**
+- Each follow-up has its own person, by default the lead owner (the schedule form's person is used). The enquiry page lists the open follow-ups with their person, changeable there; the Follow up box shows "Follow-up person". That person gets "Follow-up given to you", the follow-up in My day and on the calendar, and the day's follow-up task moves to them on a change
+- **Documents received:** Pending / Partially / Yes + date + note on the enquiry page; the list filters by it. The project's detailed document checklist stays as it is
+
 **Automatic:** pending site-visit approvals raise a notification (with the customer's name); an assignment by someone else raises "Enquiry assigned to you" for the assignee; a project created from an enquiry (directly, in the wizard or from its approved quotation) marks it converted in the same save.
 
 ### APIs
 - `/enquiries` (list with status sets and counts, create, edit, status, assign, activities, change request approve / reject, loss reason, archive / unarchive)
 - `/projects/from-enquiry`, `/quotations/from-enquiry/{id}`
+- E2: `POST /enquiries/{id}/activities` takes `assigned_to_user_id` or `assigned_to_employee_id`; `PATCH /enquiries/{id}/activities/{activity_id}` {assigned_to_user_id}; enquiries return `followup_user_id`, `followup_user_name`; activities `assigned_to_user_id`, `assigned_to_name`
+- E3: `PATCH /enquiries/{id}/documents` {docs_status pending|partial|yes, docs_received_on, docs_note}; list filter `docs_status`
 - **Backend only:** close an activity; `PATCH loss-reason`; convert to project from the enquiry endpoint; assignment history list
 
 ### Review status
