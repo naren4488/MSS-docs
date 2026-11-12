@@ -14,11 +14,11 @@
 
 | # | Module | Done | Status |
 |---|---|---|---|
-| 1 | Platform: sign-in, companies, users, access | 90 % | Working; header search built 13 Nov; access by own / team / department pending |
+| 1 | Platform: sign-in, companies, users, access | 90 % | Working; header search built 13 Nov; access by own / team / department pending; profile photos in the header and staff lists, and **My space** for every employee (13 Nov) |
 | 2 | Settings and masters | 91 % | Working; duplicate master values merged and blocked (7.1, 13 Nov); round-2 decisions 2.1–2.4 built 13 Nov (team master rights, signature / stamp / terms / UPI QR on prints, vendorship switch only, template editor with preview); company logo fixed and shown in the sidebar; MSS logo from `Mahi2.svg` set on production and locally; up to 3 number series per document (12 Nov) |
-| 3 | People: employees, teams | 85 % | Working; round-2 decisions 3.1–3.6 built 13 Nov (crews, crew week board, exit checklist and history, final settlement, PAN + emergency contact, back-dated salary with approval); month-card formula and photo access pending; Teams switched off (Coming soon) 12 Nov |
-| 4 | Attendance and leave | 95 % | Working; round-2 decisions 4.1–4.8 all built or decided 13 Nov (crew attendance at the site, paid-leave carry-forward with a 6-day cap, worked on a company holiday) |
-| 5 | Payroll and advances | 82 % | Working; final settlement, salary arrears and holiday-work pay built 13 Nov; AU bank file sample and CA check pending |
+| 3 | People: employees, teams | 85 % | Working; round-2 decisions 3.1–3.6 built 13 Nov (crews, crew week board, exit checklist and history, final settlement, PAN + emergency contact, back-dated salary with approval); month-card formula and photo access pending; Teams switched off (Coming soon) 12 Nov; employee documents keep one current file per type with previous versions, uploads max 1 MB for now (13 Nov) |
+| 4 | Attendance and leave | 95 % | Working; round-2 decisions 4.1–4.8 all built or decided 13 Nov (crew attendance at the site, paid-leave carry-forward with a 6-day cap, worked on a company holiday); every employee sees their own attendance and leave and applies for leave in **My space** (13 Nov) |
+| 5 | Payroll and advances | 82 % | Working; final settlement, salary arrears and holiday-work pay built 13 Nov; AU bank file sample and CA check pending; incentives and referrals earned when the project is fully paid, recovery on cancellation and HR share (5.1–5.8, 13 Nov); **My space**: own salary, payslips, advance requests and incentives (13 Nov) |
 | 6 | Customers | 93 % | Working; same mobile with a warning and family link added 13 Nov; account statement PDF and Share on WhatsApp (6.3, 6.4) built 13 Nov; sheet import pending |
 | 7 | Enquiries | 92 % | Working; round-2 decisions 7.1–7.4 and 7.6 built 13 Nov (4 main statuses, repeat-lead warning, lost reasons list, overdue follow-ups + manager alert); Meta leads (7.5), sheet import and the daily report pending |
 | 8 | Site visits, fees, calendar | 85 % | Working; round-2 decisions 8.0 and 8.2 built 13 Nov (Timeline under 10 requests, follow-up once in the calendar, optional visit companions); visit cost (8.1) parked for the CA |
@@ -586,7 +586,8 @@
 - **Separate production and development databases:** before real data goes in.
 - **Sheet import tool:** enquiries, MSS and Arkshakti sites, tab by tab with a preview. See [CUSTOMER_DATA_IMPORT_REPORT.md](./CUSTOMER_DATA_IMPORT_REPORT.md).
 - **Real data load:** the Tally ledger list, opening balances, bank statements.
-- **Housekeeping:** regenerate Swagger; stop the old API copy on port 8090.
+- **Upload limit on production:** the web proxy (nginx) in front of the API refuses requests over 1 MB, so every upload form says and enforces **max 1 MB** for now. Owner to set `client_max_body_size 16m;` for `api.mahisolarsolution.com` and reload nginx; then the app's limit goes to 15 MB (`VITE_MAX_UPLOAD_MB=15`).
+- **Housekeeping:** regenerate Swagger. (The old API copy on port 8090 is stopped.)
 
 ## How the automatic tests run
 - **API suites:** `docs/test-suites/hr/*.sh`, run together by `regress.sh` against the local test database (`mahi_test`, API on :8080). Each suite creates its own data.
