@@ -608,6 +608,7 @@ Header search, More actions and two-step removed (owner decisions 1.1–1.3, 13 
 - One save creates the visit (SV-…), its task on the person's calendar, the fee (SVF-…) and the enquiry's "visit assigned" mark; one open visit per enquiry, enforced by the server
 - Site visit box on the enquiry: number, status, date and time, who, fee, notes; Edit (date, time, person — moves the visit and its task) and Cancel visit (reason; an unpaid fee is cancelled with it)
 - Blocked for lost, converted or archived enquiries, inactive customers, and while the last visit's outcome waits for approval
+- **Companions (optional, 8.2, 0164):** other active staff with a login can go along — added as chips at booking or on Edit site visit (removing one takes it off their calendar). The required person stays responsible (the task, Travelled / Complete); companions get no task. The box says "With A, B"; repeats and the required person are dropped; a companion made the required person stops being a companion; at most 10; someone who left or another company's employee is refused
 
 **Site visits page (`/site-visits`, menu under Calendar)**
 - My visits (the signed-in person's) for anyone who can view visits; Everyone for those who edit visits
@@ -616,6 +617,7 @@ Header search, More actions and two-step removed (owner decisions 1.1–1.3, 13 
 - Couldn't do the visit: reason, optional follow-up date (goes on the enquiry), notes
 - Site visit complete: site photos (uploaded), what you found, Capture location (GPS); deal done → documents received (uploaded), changed capacity / amount, final customer name → change request waits for approval on the enquiry; deal not done → ask for another visit (date, note) or mark the enquiry lost
 - The person doing a visit can always act on it; others need site visit edit
+- My visits also lists visits you go on as a companion: "Lead with A, B", a Companion tag, no Update menu (unless you have site visit edit); My day shows today's companion visits marked "companion"
 - The same list and actions on the employee profile → Site visits → Scheduled site visits
 
 **Recorded visits (project → Site visit drawer)**
@@ -634,15 +636,18 @@ Header search, More actions and two-step removed (owner decisions 1.1–1.3, 13 
 - Mini month; day or range; category filters (site visits, installations, follow-ups, milestones, tasks, invoice due, EMI, vendor bills); project filter
 - Counters: total, completed, overdue (India date); event list with Complete / Cancel for tasks and your own events
 - A booked visit shows once ("Site visit — customer", number, time, address); clicking opens the enquiry or project
+- Companions (8.2): on a person's own view (filtered to them, or someone without site-visit view, who sees only their own visits) the visit shows once as a read-only "site_visit_companion" row ("With <lead>"); the shared calendar still shows it once
+- An enquiry follow-up shows once: while the enquiry has an open follow-up task (not an automation or visit task), only the task shows, on whatever day it is (8.0, 13 Nov; before, a moved task or follow-up showed twice); when the task is done, the enquiry's follow-up date shows again
 - Add event: task (needs task create) or milestone (needs project edit); a visit's task is changed only on the visit
 
 **Timeline (`/timeline`)**
 - Timeline or calendar view; feed filter (all, project history, payments, site visits); daily / weekly; project filter; stats
+- One `GET /timeline/feed` call per page (Module 10 review); a fresh load makes 6–9 API requests in all (8.0, 13 Nov: one `/auth/me` and one company-list refresh, was 11; ~83 before the feed)
 
 **Automatic:** visit-fee receipts, refunds and adjustments post to the books (Site visit fees ledger: Dr cash/bank or the collector's ledger, Cr fees; refunds reverse; adjustments move the income to the customer, tagged to the project); voided receipts' entries are cancelled; the employee schedule reads the calendar for its date range.
 
 ### APIs
-- `/enquiries/{id}/site-visits` (book); `/site-visit-events` (list with `mine`, `status`, dates; create a recorded visit), `/{id}` (get, edit), `/{id}/schedule|travelled|complete|not-complete|cancel`, items, photos, merge to checklist, link fee, delete / restore
+- `/enquiries/{id}/site-visits` (book; optional `companion_employee_ids`); `/site-visit-events` (list with `mine` — incl. visits as a companion —, `status`, dates; create a recorded visit), `/{id}` (get, edit; visits return `companions` [{employee_id, name}]), `/{id}/schedule` (also `companion_employee_ids`: a list replaces, `[]` removes, left out keeps), `/{id}/travelled|complete|not-complete|cancel`, items, photos, merge to checklist, link fee, delete / restore
 - `/site-visit-fees` (list with dates, summary, create, edit), `/{id}/receipts` (+ `/{rid}/void`), `/waive`, `/cancel`, `/refund`, `/adjust`; `/customers/{id}/site-visit-fees`; `POST /projects/from-enquiry` takes `adjust_visit_fees`
 - `/calendar/events` (range via `range_from`/`range_to` or `date_from`/`date_to`; create, edit, complete, cancel, reopen, status), `/calendar/counters`
 - **Backend only:** visit items / photos / link-fee / delete / restore endpoints, fee create / edit (fees are made at booking)
@@ -651,7 +656,9 @@ Header search, More actions and two-step removed (owner decisions 1.1–1.3, 13 
 **Plan step 4 (C), 0137:** a visit keeps its address text (from the enquiry, D10); the API also returns `site_address_parts` read from it. Test: `hr/c_addresses.sh` C95, `hr/sv_sitevisits.sh` 54/54.
 **Status:** reviewed 8 Nov 2026 (migration 0116) — see MODULE_REVIEW_PLAN.md Module 8. Tests: `hr/sv_sitevisits.sh` 54/54, `pw/sitevisits_ui` 33/33, `pw/visit_fees_ui` 47/47.
 
-**Open / later:** Timeline makes about 83 requests per load (Projects, 10); an enquiry follow-up can show twice in the calendar; visit cost isn't posted as an expense; who may book / complete / see all visits goes to the access-matrix review at the end.
+**Round 2 (owner decisions 13 Nov), built 13 Nov (backend 48e708e, frontend 1ab5061, migration 0164):** 8.0 Timeline under 10 requests and a follow-up once in the calendar; 8.2 optional visit companions. Tests: `hr/m8_visits_r2.sh` 34/34, `pw/m8_ui.mjs` 36/36 (1440 and 390); reruns `hr/sv_sitevisits.sh` 54/54, `pw/sitevisits_ui` 33/33, `pw/visit_fees_ui` 47/47.
+
+**Open / later:** visit cost / money staff spend isn't posted as an expense (8.1, parked for the CA); who may book / complete / see all visits goes to the access-matrix review at the end.
 
 ## 9. Quotations
 

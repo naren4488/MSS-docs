@@ -8,7 +8,7 @@
 - **Test data:** all business data was cleared on 12 Nov 2026, on production and locally. Logins, companies, settings, masters, the ledger list and employees remain. Start by creating a customer (address line 1 and state are required) and a project, then test with those.
 
 ## Overall
-**About 84 % complete** (the average of the 17 modules below). Every module is built, reviewed once and covered by automatic tests. What's left: the decisions now being built, the access matrix, the teams design, the sheet import and real data, and a few placeholders.
+**About 85 % complete** (the average of the 17 modules below). Every module is built, reviewed once and covered by automatic tests. What's left: the decisions now being built, the access matrix, the teams design, the sheet import and real data, and a few placeholders.
 
 **Last full regression (13 Nov 2026, on the production copy):** 2,612 API checks passed and 0 failed; the five end-to-end accounts runs passed 194/194; `attendance_ui` 63/63 at 1440 / 768 / 390. The local test database is now an exact copy of production (MSS only, its 23 employees and users, no business data, no MSE, no QA designations or users). Every suite works in its own test company, makes its own QA designations and removes them, and adds nothing to MSS.
 
@@ -21,7 +21,7 @@
 | 5 | Payroll and advances | 82 % | Working; final settlement, salary arrears and holiday-work pay built 13 Nov; AU bank file sample and CA check pending |
 | 6 | Customers | 93 % | Working; same mobile with a warning and family link added 13 Nov; account statement PDF and Share on WhatsApp (6.3, 6.4) built 13 Nov; sheet import pending |
 | 7 | Enquiries | 92 % | Working; round-2 decisions 7.1–7.4 and 7.6 built 13 Nov (4 main statuses, repeat-lead warning, lost reasons list, overdue follow-ups + manager alert); Meta leads (7.5), sheet import and the daily report pending |
-| 8 | Site visits, fees, calendar | 75 % | Working; three known issues pending |
+| 8 | Site visits, fees, calendar | 85 % | Working; round-2 decisions 8.0 and 8.2 built 13 Nov (Timeline under 10 requests, follow-up once in the calendar, optional visit companions); visit cost (8.1) parked for the CA |
 | 9 | Quotations | 91 % | Working; Share on WhatsApp with a 7-day secure PDF link built 13 Nov |
 | 10 | Projects | 75 % | Working; open questions on vendor-code billing; sheet import pending |
 | 11 | Warehouse and procurement | 85 % | Working; one parked question, small gaps |
@@ -337,26 +337,38 @@
   - kW 0 or negative, budget negative: refused.
   - Person with view-only rights: no edit, no status change.
 
-### 8. Site visits, fees, calendar (75 %)
-- **Done:** a visit as its own record (scheduled → travelled → completed / not completed / cancelled), visit fees and receipts, the calendar.
+### 8. Site visits, fees, calendar (85 %)
+- **Done:**
+  - A visit as its own record (scheduled → travelled → completed / not completed / cancelled), visit fees and receipts, the calendar.
+  - Optional companions (8.2, built 13 Nov): a visit keeps one required person (the task, Travelled / Complete); other active staff can be added at booking or on Edit site visit. Companions see the visit in their My day ("companion"), their calendar and Site visits → My visits (tagged Companion, no Update menu); the card says "With …". Without site-visit edit they can't act on it (403). One open visit per enquiry and cancel-and-rebook stay as they were.
+  - A follow-up shows once in the calendar (8.0, 13 Nov): while the enquiry has an open follow-up task, only the task shows, whatever its date (moving the task or the follow-up used to show it twice).
+  - Timeline (8.0, 13 Nov): one feed call (since the Module 10 review); a fresh load now makes 6–9 API requests (was 11; ~83 before the feed).
 - **Pending:**
-  - The timeline page makes too many server calls.
-  - A follow-up shows twice in the calendar.
-  - The visit cost is not booked in the accounts.
-- **Tests:** `sv_sitevisits` 54; screens `sitevisits_ui` 33, `visit_fees_ui` 47.
+  - The visit cost / money staff spend is not booked in the accounts (8.1, parked for the CA).
+  - Who may book / complete / see all visits: the access-matrix review at the end.
+- **Tests:** `sv_sitevisits` 54, `m8_visits_r2` 34; screens `sitevisits_ui` 33, `visit_fees_ui` 47, `m8_ui` 36 (1440 and 390).
 - **Test by hand, normal use:**
   - Book a site visit: date, time, visitor, address, optional fee.
+  - Book a site visit with two companions: the chips show in the form, the enquiry card says "With A, B"; each companion sees it in My day (if today), the calendar and Site visits → My visits.
+  - Edit site visit: remove a companion; they no longer see it; add another, they do.
   - Mark travelled → completed with location and notes; or not completed with a reason.
   - Reschedule and cancel (with a reason).
   - Visit fee: record the receipt (who collected, where the money is); it shows on the customer's Visit fees tab.
   - Move a fee to the project (adjust against the contract).
   - Calendar: day / week / month views show visits and follow-ups.
+  - Schedule a follow-up, then move its task to another day on the calendar: the calendar shows it once, on the new day.
+  - Open Timeline: it loads in one go (one feed call).
 - **Test by hand, edge cases:**
+  - A companion (no site-visit edit) tries Travelled / Complete: not offered on Site visits; refused if tried another way.
+  - The required person chosen again as a companion, or the same companion twice: dropped, not an error.
+  - A companion made the required person on edit: they stop being a companion and get the task.
+  - Someone who left, or an employee of another company, as a companion: refused.
+  - Cancel a visit with companions: it leaves their calendars; booking again starts without companions.
   - Completing a visit without location: refused.
   - Visit for a past date: allowed only as a record, or refused as set.
   - Fee receipt above the fee: refused.
   - Same visitor booked twice at the same time: warning.
-  - Known: a follow-up can appear twice in the calendar; the timeline page loads slowly.
+  - A follow-up task completed: the enquiry's follow-up date shows again (once).
 
 ### 9. Quotations (91 %)
 - **Done:**
