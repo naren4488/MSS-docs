@@ -5,6 +5,13 @@
 **Required-field marks (13 Nov 2026, owner):** every create / edit form shows one red `*` (shared `Label required` / `RequiredMark`) on the fields it refuses to save without, decided from each form's own checks; conditional fields (e.g. loan tenure unless bullet, GSTIN for B2B vendors, TDS amount once a section is picked) show it only when needed. Checked: type check passes, no old-style stars left, browser — login (phone, password) and Add employee (full name, phone, salary, department, designation) marked, optional fields not; no page errors. To test by hand: open any Add / Edit form, leave a marked field empty and save — it is refused; leave an unmarked field empty — it saves.
 **What this is:** where each module stands today, and the main things to test by hand in each: an estimate of how complete it is, what's done, what's still pending, and how it's tested. Old Q&A logs are dropped; decisions live in [MODULE_WALKTHROUGH_ROUND2.md](./MODULE_WALKTHROUGH_ROUND2.md) and the plan files. The full feature list per module is in [OVERALL_PROJECT_STATUS.md](./OVERALL_PROJECT_STATUS.md).
 
+## Overnight deep test, Modules 1–9 (13–14 Nov 2026)
+Full report: [test-reports/2026-11-14/README.md](./test-reports/2026-11-14/README.md), with one detailed report per module and screenshots of the Blocker and Major bugs.
+
+- **Found:** 105 bugs. **2 Blocker**, which have 1 cause (sales users can't pick a person when booking a visit, adding a follow-up or assigning a visit), **18 Major**, 72 Minor and 13 Cosmetic.
+- **Where they are:** mostly in sessions and security (log-out and password reset don't end sessions; script in templates), in money shown to customers (dues leave out project receipts; quotation subsidy, share price and PDF size; a non-MSS company prints MSS details), and in a few owner decisions that can't be used yet (Director approving a back-dated salary; the attendance lock).
+- **Test suites:** the existing automatic suites passed, except two quotation screen suites broken by the 13 Nov rework.
+
 ## Testing by hand
 - **App:** `http://localhost:5173` (local) or the live site.
 - **Test data:** all business data was cleared on 12 Nov 2026, on production and locally. Logins, companies, settings, masters, the ledger list and employees remain. Start by creating a customer (address line 1 and state are required) and a project, then test with those.
