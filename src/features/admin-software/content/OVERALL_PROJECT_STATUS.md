@@ -65,7 +65,8 @@
 **Login (`/login`)**
 - Sign in with phone number (10 digits, with or without +91, spaces or a leading 0) and password; show or hide the password
 - Access and refresh tokens; the session refreshes automatically; signed out after 7 days without use (`SESSION_IDLE_TIMEOUT`, default 168h)
-- A temporary, reset or first password must be changed first: the app sends you to Settings → Security until you do
+- A temporary, reset or first password must be changed first: the app sends you to Settings → Security until you do, and the server refuses every write until then (M1-07, owner 14 Nov). A person still on their phone-number password is asked at the next sign-in; the phone number can't be chosen as the new password
+- Landing page by rights (M7-12, owner 14 Nov): after sign-in and for "/", the Dashboard (with My day) with dashboard view, else My space; the Dashboard menu item, the breadcrumb Home and the sidebar logo (a link) follow the same rule
 - Log out from the header
 
 **App shell (every page)**
@@ -138,7 +139,7 @@ Sidebar HR section, search, pins and page info (plan step 3, F1–F4, migration 
 
 Header search, More actions and two-step removed (owner decisions 1.1–1.3, 13 Nov 2026): `hr/m1_search.sh` 35/35, `pw/m1_search_ui` 38/38 at 1440/390 px.
 
-Fixes from the 14 Nov overnight report (backend 6d9f455, migration 0171): log-out and an admin reset end sessions on the server (access tokens too: a sign-in session id in the token, `auth_revoked_sessions`, a 15-second cached check); a reset's temporary password is read-only until changed; 6-character passwords everywhere (1.5; replaced on 14 Nov by the owner's two-tier rule, see "Rules across all modules"); switched-off companies stay listed and can be switched on; one GSTIN / PAN validator with the GSTIN state = GST state rule; Settings → Company is Super Admin only in the menu. Tests: `hr/fix_platform.sh` 37/37, `pw/fix_platform_ui.mjs` 18/18.
+Fixes from the 14 Nov overnight report (backend 6d9f455, migration 0171): log-out and an admin reset end sessions on the server (access tokens too: a sign-in session id in the token, `auth_revoked_sessions`, a 15-second cached check); a reset's temporary password is read-only until changed; 6-character passwords everywhere (1.5; replaced on 14 Nov by the owner's two-tier rule, see "Rules across all modules"); switched-off companies stay listed and can be switched on; one GSTIN / PAN validator with the GSTIN state = GST state rule; Settings → Company is Super Admin only in the menu. Tests: `hr/fix_platform.sh` 37/37, `pw/fix_platform_ui.mjs` 18/18. Owner decisions M1-07 / M7-12 (backend 77946df, migration 0176; frontend 0d4c609): `hr/fix_landing.sh` 12/12, `pw/fix_landing.mjs` 20/20 (1440 / 390).
 
 **Open:**
 - Record-level access (own / team / department) is deferred.

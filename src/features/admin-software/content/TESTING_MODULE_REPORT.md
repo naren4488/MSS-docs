@@ -69,6 +69,11 @@ Full report: [test-reports/2026-11-14/README.md](./test-reports/2026-11-14/READM
   - The full access-matrix review.
 - **New company — what to copy (14 Nov 2026, owner; migration 0175):** API on a copy of the test DB: only the ticked parts copied (templates + services → 6 + 5, nothing else), nothing ticked → blank, no choice sent → everything as before, copy from another company works, an unknown part or company is refused; browser at 1440 and 390: the box shows the counts (519 values, 6 quotation templates, 5 document templates, 5 services, 12 task templates), "Copy nothing" shows the blank note, templates without the lists show the note, the company is created; no page errors.
   - By hand: Settings → Companies → New company → What to copy: untick everything except Quotation templates → Create → switch to the new company → Quotation templates shows them; Settings → Masters is empty.
+- **Owner decisions M1-07 / M7-12 (14 Nov; backend 77946df, migration 0176; frontend 0d4c609):**
+  - A new employee's first password must be changed before anything else: the server refuses writes (403 `PASSWORD_CHANGE_REQUIRED`) and the app sends them to Settings → Security, as for a reset. Someone still on their phone-number password is asked at the next sign-in; the phone number can't be the new password.
+  - Landing page: after sign-in and for "/", the Dashboard (with My day) for people with dashboard view, else My space. The Dashboard menu item, the breadcrumb Home and the sidebar logo (now a link) follow the same rule.
+  - Tests (API :8096 / Vite :5196): `fix_landing` 12/12; screens `fix_landing` 20/20 (1440 / 390); re-run with the new rule: `u_platform` 19, `a_employees` 41, `fix_people` 39, `m3_teams_people` 73, `ms_my_space` 26, `fix_platform` 37, `fix_shared` 27, `w_people` 43, `t_matrix` 11, `x_attendance` 28, `f_enquiries` 26, `fix_platform_ui` 18. The suites' `call` helper marks the first password of the people it creates as already changed (`KEEP_FIRST_PASSWORD=1` keeps the rule).
+  - By hand: add an employee, sign in as them: Settings → Security opens and other pages send you back; change the password, then the app works. Sign in as a person without dashboard rights: My space opens, no Dashboard in the menu; the logo and Home open My space.
 - **Fixes from the 14 Nov overnight report (backend 6d9f455, migration 0171):**
   - Log-out ends that session on the server, and an admin password reset ends every session at once: old access tokens get 401 and the other device goes to sign-in (M1-01, M1-02).
   - A temporary password from a reset is read-only until it is changed (M1-07); `/auth/change-password` refuses the same password (M1-08); passwords need 6 characters everywhere (M1-04, decision 1.5).
@@ -97,7 +102,8 @@ Full report: [test-reports/2026-11-14/README.md](./test-reports/2026-11-14/READM
   - The header has no "More actions" button; Settings → Security shows only the password form, without a two-step sign-in block.
 - **Test by hand, edge cases:**
   - Wrong password, unknown phone, 9 digits, letters: clear errors, no crash.
-  - Temporary password: trying to open any page before changing it sends you back to Settings → Security.
+  - Temporary or first password: trying to open any page before changing it sends you back to Settings → Security; the API refuses writes until then; the phone number can't be the new password.
+  - A person without dashboard rights: lands on My space (also from "/", Home and the logo), never on an empty Dashboard.
   - New password same as the old one, or too short: refused.
   - Nobody can reset their own password; only a Super Admin can reset a Super Admin.
   - Session: leave the app idle (or change the clock) past 7 days → signed out; normal use keeps you signed in.
