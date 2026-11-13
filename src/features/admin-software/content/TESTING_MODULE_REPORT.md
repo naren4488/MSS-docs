@@ -17,6 +17,7 @@ Full report: [test-reports/2026-11-14/README.md](./test-reports/2026-11-14/READM
 - **Found:** 105 bugs. **2 Blocker**, which have 1 cause (sales users can't pick a person when booking a visit, adding a follow-up or assigning a visit), **18 Major**, 72 Minor and 13 Cosmetic.
 - **Where they are:** mostly in sessions and security (log-out and password reset don't end sessions; script in templates), in money shown to customers (dues leave out project receipts; quotation subsidy, share price and PDF size; a non-MSS company prints MSS details), and in a few owner decisions that can't be used yet (Director approving a back-dated salary; the attendance lock).
 - **Test suites:** the existing automatic suites passed, except two quotation screen suites broken by the 13 Nov rework.
+- **Fix round (14 Nov):** 105 bugs: 96 fixed, 6 partly (4 of them wait for a decision: M1-07, M1-11, M7-02, M7-12), 2 need a decision (M2-09, M8-07), 1 by design (M9-10). Regression after the fixes: 2,981 / 0. Owner decisions on the way: one phone rule, email check, two-tier passwords. See [the fix round result](./test-reports/2026-11-14/README.md#fix-round-result-14-nov).
 
 ## Testing by hand
 - **App:** `http://localhost:5173` (local) or the live site.
@@ -25,19 +26,21 @@ Full report: [test-reports/2026-11-14/README.md](./test-reports/2026-11-14/READM
 ## Overall
 **About 85 % complete** (the average of the 17 modules below). Every module is built, reviewed once and covered by automatic tests. What's left: the decisions now being built, the access matrix, the teams design, the sheet import and real data, and a few placeholders.
 
-**Last full regression (13 Nov 2026, on the production copy):** 2,612 API checks passed and 0 failed; the five end-to-end accounts runs passed 194/194; `attendance_ui` 63/63 at 1440 / 768 / 390. The local test database is now an exact copy of production (MSS only, its 23 employees and users, no business data, no MSE, no QA designations or users). Every suite works in its own test company, makes its own QA designations and removes them, and adds nothing to MSS.
+**Last full regression (14 Nov 2026, after the Modules 1–9 fix round, on the production copy):** `regress.sh` 2,981 API checks passed and 0 failed (78 suites; before triage 2,983 / 1, a stale `w_warehouse` W05); the five end-to-end accounts runs passed 194/194; `e2e_lifecycle` 120/120; the fix-round suites `fix_platform` 37, `fix_people` 39, `fix_money` 40, `fix_visits` 15, `fix_shared` 27 all green. UI at 1440 (plus their 390 checks), on the bundled headless shell: Modules 1–9 screen suites and the five `fix_*` screen suites all green except `m6_ui` Print ×2 (no PDF viewer in the headless shell). Details: [test-reports/2026-11-14/README.md](./test-reports/2026-11-14/README.md#fix-round-result-14-nov).
+
+**Previous full regression (13 Nov 2026, on the production copy):** 2,612 API checks passed and 0 failed; the five end-to-end accounts runs passed 194/194; `attendance_ui` 63/63 at 1440 / 768 / 390. The local test database is now an exact copy of production (MSS only, its 23 employees and users, no business data, no MSE, no QA designations or users). Every suite works in its own test company, makes its own QA designations and removes them, and adds nothing to MSS.
 
 | # | Module | Done | Status |
 |---|---|---|---|
-| 1 | Platform: sign-in, companies, users, access | 90 % | Working; header search built 13 Nov; access by own / team / department pending; profile photos in the header and staff lists, and **My space** for every employee (13 Nov) |
-| 2 | Settings and masters | 91 % | Working; duplicate master values merged and blocked (7.1, 13 Nov); round-2 decisions 2.1–2.4 built 13 Nov (team master rights, signature / stamp / terms / UPI QR on prints, vendorship switch only, template editor with preview); company logo fixed and shown in the sidebar; MSS logo from `Mahi2.svg` set on production and locally; up to 3 number series per document (12 Nov) |
-| 3 | People: employees, teams | 85 % | Working; round-2 decisions 3.1–3.6 built 13 Nov (crews, crew week board, exit checklist and history, final settlement, PAN + emergency contact, back-dated salary with approval); month-card formula and photo access pending; Teams switched off (Coming soon) 12 Nov; employee documents keep one current file per type with previous versions, uploads max 1 MB for now (13 Nov) |
-| 4 | Attendance and leave | 95 % | Working; round-2 decisions 4.1–4.8 all built or decided 13 Nov (crew attendance at the site, paid-leave carry-forward with a 6-day cap, worked on a company holiday); every employee sees their own attendance and leave and applies for leave in **My space** (13 Nov) |
-| 5 | Payroll and advances | 82 % | Working; final settlement, salary arrears and holiday-work pay built 13 Nov; AU bank file sample and CA check pending; incentives and referrals earned when the project is fully paid, recovery on cancellation and HR share (5.1–5.8, 13 Nov); **My space**: own salary, payslips, advance requests and incentives (13 Nov) |
-| 6 | Customers | 93 % | Working; same mobile with a warning and family link added 13 Nov; account statement PDF and Share on WhatsApp (6.3, 6.4) built 13 Nov; sheet import pending |
-| 7 | Enquiries | 93 % | Working; round-2 decisions 7.1–7.4, 7.6 and 7.7 built 13 Nov (4 main statuses, repeat-lead warning, lost reasons list, overdue follow-ups + manager alert, a requested visit date and note on new enquiries that **only managers assign**); required fields marked `*`; Meta leads (7.5), sheet import and the daily report pending |
-| 8 | Site visits, fees, calendar | 85 % | Working; round-2 decisions 8.0 and 8.2 built 13 Nov (Timeline under 10 requests, follow-up once in the calendar, optional visit companions); visit cost (8.1) parked for the CA |
-| 9 | Quotations | 91 % | Working; Share on WhatsApp with a 7-day secure PDF link (13 Nov); quotation document reworked from the MSS-docs version (site address in parts, quantity text, terms; 13 Nov); bank copy and discount control not yet discussed |
+| 1 | Platform: sign-in, companies, users, access | 92 % | Working; header search built 13 Nov; access by own / team / department pending; profile photos in the header and staff lists, and **My space** for every employee (13 Nov); 14 Nov report fixed (see the fix round result) |
+| 2 | Settings and masters | 93 % | Working; duplicate master values merged and blocked (7.1, 13 Nov); round-2 decisions 2.1–2.4 built 13 Nov (team master rights, signature / stamp / terms / UPI QR on prints, vendorship switch only, template editor with preview); company logo fixed and shown in the sidebar; MSS logo from `Mahi2.svg` set on production and locally; up to 3 number series per document (12 Nov); 14 Nov report fixed (see the fix round result) |
+| 3 | People: employees, teams | 88 % | Working; round-2 decisions 3.1–3.6 built 13 Nov (crews, crew week board, exit checklist and history, final settlement, PAN + emergency contact, back-dated salary with approval); month-card formula and photo access pending; Teams switched off (Coming soon) 12 Nov; employee documents keep one current file per type with previous versions, uploads max 1 MB for now (13 Nov); 14 Nov report fixed (see the fix round result) |
+| 4 | Attendance and leave | 96 % | Working; round-2 decisions 4.1–4.8 all built or decided 13 Nov (crew attendance at the site, paid-leave carry-forward with a 6-day cap, worked on a company holiday); every employee sees their own attendance and leave and applies for leave in **My space** (13 Nov); 14 Nov report fixed (see the fix round result) |
+| 5 | Payroll and advances | 85 % | Working; final settlement, salary arrears and holiday-work pay built 13 Nov; AU bank file sample and CA check pending; incentives and referrals earned when the project is fully paid, recovery on cancellation and HR share (5.1–5.8, 13 Nov); **My space**: own salary, payslips, advance requests and incentives (13 Nov); 14 Nov report fixed (see the fix round result) |
+| 6 | Customers | 95 % | Working; same mobile with a warning and family link added 13 Nov; account statement PDF and Share on WhatsApp (6.3, 6.4) built 13 Nov; sheet import pending; 14 Nov report fixed (see the fix round result) |
+| 7 | Enquiries | 94 % | Working; round-2 decisions 7.1–7.4, 7.6 and 7.7 built 13 Nov (4 main statuses, repeat-lead warning, lost reasons list, overdue follow-ups + manager alert, a requested visit date and note on new enquiries that **only managers assign**); required fields marked `*`; Meta leads (7.5), sheet import and the daily report pending; 14 Nov report fixed (see the fix round result) |
+| 8 | Site visits, fees, calendar | 88 % | Working; round-2 decisions 8.0 and 8.2 built 13 Nov (Timeline under 10 requests, follow-up once in the calendar, optional visit companions); visit cost (8.1) parked for the CA; 14 Nov report fixed (see the fix round result) |
+| 9 | Quotations | 93 % | Working; Share on WhatsApp with a 7-day secure PDF link (13 Nov); quotation document reworked from the MSS-docs version (site address in parts, quantity text, terms; 13 Nov); bank copy and discount control not yet discussed; 14 Nov report fixed (see the fix round result) |
 | 10 | Projects | 75 % | Working; open questions on vendor-code billing; sheet import pending |
 | 11 | Warehouse and procurement | 87 % | Working; every purchase bill has our own number (PUR/<fy>/0001) and a print / PDF (13 Nov); PO cancel after goods in (parked), Tools item code and stores' Create PO right pending; reverse-charge self-invoice waits for the CA |
 | 12 | Billing and finance parties | 86 % | Working; Share on WhatsApp for sale bills (7-day secure PDF link) built 13 Nov; partner dues figures pending |
@@ -50,7 +53,7 @@ Full report: [test-reports/2026-11-14/README.md](./test-reports/2026-11-14/READM
 
 ## Module by module
 
-### 1. Platform: sign-in, companies, users, access (90 %)
+### 1. Platform: sign-in, companies, users, access (92 %)
 - **Done:**
   - Phone + password sign-in; forced password change on first sign-in; admin password reset; 7-day idle sign-out.
   - Multi-company, with the company chosen per browser tab and the data kept apart per company.
@@ -70,7 +73,7 @@ Full report: [test-reports/2026-11-14/README.md](./test-reports/2026-11-14/READM
   - A switched-off company stays in Settings → Companies, marked Inactive, and can be switched on again (M1-03).
   - GSTIN / PAN format and "GSTIN state = GST state" are checked on the server for companies (M1-05, M1-06).
   - Settings for people without the rights: no Company link (Unauthorized page if typed), no TEAM / ACTIVE strip and no refused `/employees` calls (M1-10, M1-14); the breadcrumb isn't cut at 1440 (M1-12); one ✕ in search boxes (M1-13); last sign-in stored with its time zone (M1-11).
-- **Tests:** `u_platform` 19, `f_sidebar_prefs` 31, `m1_search` 35, `fix_platform` 37 (with Module 2); screens `m1_ui` 69, `f_sidebar_ui` 215, `m1_search_ui` 38, `avatar_ui` 34, `fix_platform_ui` 18 (1440 / 390).
+- **Tests:** `u_platform` 19, `f_sidebar_prefs` 31, `m1_search` 35, `fix_platform` 37 (with Module 2); screens `m1_ui` 69, `f_sidebar_ui` 215, `m1_search_ui` 38, `avatar_ui` 34, `fix_platform_ui` 18 (1440 / 390). Shared pass (14 Nov): `fix_shared` 27 (phone rule, email, two-tier passwords, IST timelines) and screens `fix_shared` 29 (1440 / 390).
 - **Test by hand, normal use:**
   - Sign in with a 10-digit phone, and with +91 in front; show / hide the password.
   - Sign out from the header; the back button doesn't reopen the app.
@@ -106,7 +109,7 @@ Full report: [test-reports/2026-11-14/README.md](./test-reports/2026-11-14/READM
   - Header search on a phone (390 px): the search icon in the top bar opens a full-screen search; the close button returns to the page.
   - "/" still jumps to the sidebar search, and Ctrl+K still opens the header search while typing in the sidebar search.
 
-### 2. Settings and masters (91 %)
+### 2. Settings and masters (93 %)
 - **Done:**
   - Duplicate master values (13 Nov, decision 7.1, migration 0160): per company and list, values whose names differ only by capitals or spaces are merged into the best-cased one ("Meta Ads" over "Meta ads"), else the oldest; every record using the duplicate is moved first, then the duplicate is deleted (or switched off if a record can't move) and logged. MSS: "Meta ads" merged into "Meta Ads" and 18 doubled DISCOM areas merged (same DISCOM only); BRD calling and AI chatbots kept. A new or renamed value equal to an existing one (ignoring capitals and spaces) is refused with the existing name; DISCOM areas are checked within their DISCOM.
   - Masters → Enquiry → Lost Reasons (7.4): Price too high, Not interested, Trust / thinks it's fraud, Roof not suitable, Loan not possible, Went to a competitor, Not reachable, Other.
@@ -131,7 +134,7 @@ Full report: [test-reports/2026-11-14/README.md](./test-reports/2026-11-14/READM
   - Settings → Company: GSTIN / PAN format, the GSTIN's state must be the address state, a contradicting GST state is refused, default GST % must be a GST rate; the bill's seller state comes from the GSTIN first, so a Rajasthan bill is never IGST by mistake (M2-04, M2-05). Customers, vendors and partners use the same check.
   - "metaads" / "Just dial" are duplicates of "Meta Ads" / "Justdial" (M2-06); the company logo prints on sale bills (M2-07); approval limits accept 1,25,000 (M2-08); file sizes round up (1.1 MB, M2-10).
   - Open: M2-09 (junk master values copied from MSS's own lists) needs the owner to clean MSS's masters.
-- **Tests:** `v_settings` 29 (V10 on a test-company bank ledger), `h1a4_master_conversion` 39, `ns_number_series` 25 (N01 now 20 series), `ca_import_prep` 33 (CA01–CA08 are the masters), `m2_settings_round2` 46 (M2-38 now counts images other than the logo), `m7_enquiries_r2` M7-00–M7-10 (merge and duplicate block), `fix_platform` 37; screens `m2_round2_ui` 26 (1440), `fix_platform_ui` 18.
+- **Tests:** `v_settings` 29 (V10 on a test-company bank ledger), `h1a4_master_conversion` 39, `ns_number_series` 25 (N01 now 20 series), `ca_import_prep` 33 (CA01–CA08 are the masters), `m2_settings_round2` 46 (M2-38 now counts images other than the logo), `m7_enquiries_r2` M7-00–M7-10 (merge and duplicate block), `fix_platform` 37; screens `m2_round2_ui` 26 (1440), `fix_platform_ui` 18. Shared pass: `fix_shared` (email and phone rule on parties).
 - **Test by hand, normal use:**
   - Masters: add a value to a list (unit, category, payment mode …), edit it, deactivate it, reactivate it.
   - Use a value on a record, then try to delete it: refused ("in use" with counts); Deactivate works and the old record still shows the value.
@@ -170,7 +173,7 @@ Full report: [test-reports/2026-11-14/README.md](./test-reports/2026-11-14/READM
   - A person with project view only: Document templates opens read-only (no Save, no Advanced).
   - A company without a logo: initials on the badge colour; a logo of an odd shape stays inside 40–48 px.
 
-### 3. People: employees, teams (85 %)
+### 3. People: employees, teams (88 %)
 - **Done:**
   - **Fix round 14 Nov (report 2026-11-14, M3-01…M3-11):** Directors approve / reject salary changes from a block on the employee page and the "Salary changes waiting for approval" list on Employees, with a bell alert; a change to your own salary always waits for someone else (a Super Admin, or a Director other than you); approved changes keep "old → new"; duplicate bank accounts refused; date-picker month / year lists open on click; salary history end dates (day before the next change, "Not started yet"); employee list / summary filtered by company explicitly. Phone / Aadhaar normalising (M3-04…06) and the crew double-click (M3-07) are left to the shared pass. Tests: `hr/fix_people.sh`, `pw/fix_people.mjs`; `a_employees` 41/41, `w_people` 43/43, `m3_teams_people` 73/73, `pw/m3_ui` 50/50.
   - **Employee documents** (13 Nov, owner): one current file per type, a new upload replaces it and the old one is kept as a previous version ("Other" keeps every file; deleting the current brings back the previous); every upload form says **Max 1 MB** and warns before sending a bigger file (production proxy limit; the cause of the "Network error" on a 2.2 MB PDF).
@@ -188,7 +191,7 @@ Full report: [test-reports/2026-11-14/README.md](./test-reports/2026-11-14/READM
   - The formula behind the profile month cards.
   - Who can see employee photos (access matrix).
   - "Stock with them": only tools are tracked per person; materials are not.
-- **Tests:** `m3_teams_people` 73 (with Modules 4 and 5), `a_employees` 41/41 on the production copy (the suite makes its own QA designations and removes them), `w_people` 43; screens `m3_ui` 50 at 1440 / 390, `people_ui` 20 at 1440 (60 at three widths); `md_doc_versions` 12, screens `md_ui` 21.
+- **Tests:** `m3_teams_people` 73 (with Modules 4 and 5), `a_employees` 41/41 on the production copy (the suite makes its own QA designations and removes them), `w_people` 43; screens `m3_ui` 50 at 1440 / 390, `people_ui` 20 at 1440 (60 at three widths); `md_doc_versions` 12, screens `md_ui` 21. Shared pass: `fix_shared` S10–S13 (Add employee with +91 / spaced Aadhaar, search) and screens U07, U10–U12.
 - **Test by hand, normal use:**
   - Employee page → Documents → Upload: the file picker is off until a type is chosen; Passport Photo offers only JPG / PNG / WebP / HEIC and refuses a PDF; Aadhaar takes a PDF or a photo; Offer Letter also a Word file. Upload, then **View** opens the file in a new tab and **Download** saves it under its name — on the live site (S3).
   - Add an employee with PAN (lower case is fine, it's saved in capitals) and an emergency contact; they show on the profile.
@@ -210,7 +213,7 @@ Full report: [test-reports/2026-11-14/README.md](./test-reports/2026-11-14/READM
   - Phone width: the checklist dialog scrolls inside; the week board scrolls inside its card.
   - Rejoin date on or before the leaving date, or in the future: refused.
 
-### 4. Attendance and leave (95 %)
+### 4. Attendance and leave (96 %)
 - **Done:**
   - **Fix round 14 Nov (report 2026-11-14, M4-01…M4-11):** a holiday added over Present / Half day becomes worked on holiday (full / half); the reason for changing a locked month is kept (correction + Activity); Reject asks for a reason the employee sees, with bell alerts on approve / reject; crew marks in a locked month need a reason; no self-service leave for today or the past; paid-leave dialogs show the month's used days and "N days available"; unmarked day reads "Not marked"; mark-all preview labels. Tests: `hr/fix_people.sh` 39/39, `pw/fix_people.mjs` 17/17; `m4_leave_holiday` 34/34 (M4-30 now sends a reason), `x_attendance` 28/28, `b_attendance` 29/29, `pw/m4_ui` 17/17.
   - **My space → Attendance & leave** (`/my-space`, 13 Nov, owner request): every employee sees their own month, leave balance and leave requests, applies for leave (from tomorrow, reason required) and cancels a pending one, without attendance or employee rights; colleagues' records stay closed; HR and Directors keep the full pages.
@@ -221,7 +224,7 @@ Full report: [test-reports/2026-11-14/README.md](./test-reports/2026-11-14/READM
   - **Worked on a company holiday** (4.4 / 4.5, 13 Nov): on a holiday the board offers "Worked full day", "Worked half day" and "Not worked" per person (the day stays a paid holiday). A crew leader's present mark on a holiday is recorded as worked on holiday (half day → worked half a day). Refused on a normal day and for a future day.
 - **Pending:**
   - Nothing from the round-2 decisions. The access matrix and the teams design are tracked across all modules.
-- **Tests:** `ma_my_attendance` 22, screens `ma_ui` 32 (1440 / 768 / 390), `m4_leave_holiday` 34 (M4-00 to M4-44), screens `m4_ui` 17 (1440), `m3_teams_people` (M3-20 to M3-37), screens `m3_ui` (C01–C09 at 1440 / 390), `attendance_ui` 63, `leave_reason_ui` 14, plus the attendance checks inside the payroll suites.
+- **Tests:** `ma_my_attendance` 22, screens `ma_ui` 32 (1440 / 768 / 390), `m4_leave_holiday` 34 (M4-00 to M4-44), screens `m4_ui` 17 (1440), `m3_teams_people` (M3-20 to M3-37), screens `m3_ui` (C01–C09 at 1440 / 390), `attendance_ui` 63, `leave_reason_ui` 14, plus the attendance checks inside the payroll suites. Shared pass: double-click guard on crew Mark (shared Button / `useSubmitGuard`).
 - **Test by hand, normal use:**
   - Sign in as a Sales Executive (no attendance rights): the menu has My space; its Attendance & leave tab it shows your month, balance and requests; apply for a day of leave with a reason, then cancel it; Attendance and other people's profiles stay closed.
   - Mark attendance for today: present, absent, half day, paid leave, half paid leave.
@@ -250,7 +253,7 @@ Full report: [test-reports/2026-11-14/README.md](./test-reports/2026-11-14/READM
   - Someone with 3 unused: all 3 carried, no lapse entry.
   - "Worked on holiday" on a normal day or a future day: refused. "Not worked" puts the day back to a plain holiday.
 
-### 5. Payroll and advances (82 %)
+### 5. Payroll and advances (85 %)
 - **Done:**
   - **Fix round 14 Nov (report 2026-11-14, M5-01…M5-07; owner decisions 1 and 2):** attendance locks when the month's payroll is **approved** (HR / Super Admin with a reason, correction in the next payroll; attendance-only users refused); Accounts sees "No bank account on file" in the Pay drawer (`GET /payroll/employees/{id}/bank-status`, presence only); advance dates at most 31 days ahead; extra pay needs a note in the API too; My space advance text and named extra-pay lines. Accounts still approve and pay (decision 2). Double-click guards (M5-03 / M5-04) are left to the shared pass. Tests: `hr/fix_people.sh`, `pw/fix_people.mjs`; `y_payroll` 38/38, `c2_payroll` 72/72, `m5_incentives` 23/23, `ms_my_space` 26/26, `pw/m5_ui` 23/23.
   - **My space** (13 Nov, owner request): every employee sees their own salary for approved months with the payslip PDF, asks for / withdraws an advance and sees what is left to recover, sees their incentive rules, each converted or referred project's state and the lines on their salary, and their details, bank account (last 4 digits) and documents, and uploads their own KYC — without payroll, advance or employee rights; nobody else's records.
@@ -264,7 +267,7 @@ Full report: [test-reports/2026-11-14/README.md](./test-reports/2026-11-14/READM
 - **Pending:**
   - The salary bank file, which needs an AU bank sample.
   - CA check of the FY 2026-27 statutory figures.
-- **Tests:** `m4_leave_holiday` (M4-25 to M4-30), `m3_teams_people` (M3-70 to M3-91, M3-100 to M3-103), `y_payroll` 38, `c2_payroll` 72, `m5_incentives` 23, `ms_my_space` 26; screens `payroll_ui` 75, `m5_ui` 23, `ms_ui` 39 (1440 / 768 / 390).
+- **Tests:** `m4_leave_holiday` (M4-25 to M4-30), `m3_teams_people` (M3-70 to M3-91, M3-100 to M3-103), `y_payroll` 38, `c2_payroll` 72, `m5_incentives` 23, `ms_my_space` 26; screens `payroll_ui` 75, `m5_ui` 23, `ms_ui` 39 (1440 / 768 / 390). Shared pass: screens `fix_shared` U15–U16 (Send request once on a double-click).
 - **Test by hand, normal use:**
   - Build payroll for last month: everyone on payroll is listed with days, earnings, deductions, net.
   - Review → approve → pay; download a payslip PDF; the books get the salary entries.
@@ -289,7 +292,7 @@ Full report: [test-reports/2026-11-14/README.md](./test-reports/2026-11-14/READM
   - Approving payroll twice / paying twice (double click): only once.
   - Person with no bank details: shown as a problem before paying.
 
-### 6. Customers (93 %)
+### 6. Customers (95 %)
 - **Done:**
   - Customers with the address in parts (line 1 + state required) and GSTIN; payment terms with a Dues block.
   - Several projects per customer; Mark inactive; history.
@@ -299,7 +302,7 @@ Full report: [test-reports/2026-11-14/README.md](./test-reports/2026-11-14/READM
   - **Share on WhatsApp (6.4, built 13 Nov):** on the statement (and on sale bills and quotations): a short message (company, document number, amount, due date for bills) with a secure link to the PDF; the number and message can be edited, then WhatsApp opens (`wa.me/91…`); Copy link instead; no mobile on file → the number is asked for. The link works 7 days without signing in, can't be guessed or edited, and every open is logged; an expired link shows "This link has expired".
 - **Pending:**
   - The import of old customers from the sheets.
-- **Tests:** `z_customers` 25, `c_addresses` 51, `ca_import_prep` 33, `m6_statement_share` 36; screens `customers_ui` 71, `c_addresses_ui` 99, `ca_ui` 12, `m6_ui` 30 (1440 and 390).
+- **Tests:** `z_customers` 25, `c_addresses` 51, `ca_import_prep` 33, `m6_statement_share` 36; screens `customers_ui` 71, `c_addresses_ui` 99, `ca_ui` 12, `m6_ui` 30 (1440 and 390). Shared pass: `fix_shared` S01–S06, S17–S18, S25 and screens U02–U05, U13 (+91 / 0 phones saved and found, email check, History date after 18:30 IST).
 - **Fix round 14 Nov (overnight report):** dues now include project receipts (one calculation for the Dues block, statement and list: Open = Outstanding = ledger); rename with a project works; family link removable from both sides; search kept in `?q=`; History dates in IST. Phone +91 / spaces left for the shared pass. Tests `hr/fix_money.sh`, `pw/fix_money.mjs`. Details: `test-reports/2026-11-14/module-6.md` → Fix status.
 - **Test by hand, normal use:**
   - Create a customer: name, phone, email, address (line 1, line 2, city, state, PIN), GSTIN, type, payment terms.
@@ -325,7 +328,7 @@ Full report: [test-reports/2026-11-14/README.md](./test-reports/2026-11-14/READM
   - Payment terms Net 15: a new bill gets a due date 15 days ahead; changing the terms later doesn't move old due dates.
   - Very long name / address: saved and printed without breaking the invoice layout.
 
-### 7. Enquiries (92 %)
+### 7. Enquiries (94 %)
 - **Done:**
   - Four main statuses (7.2, 13 Nov): New, In progress (follow-up, meetings, notes, quotation draft / sent), Converted, Lost (incl. cancelled) on the list, filters, counts and the enquiry page; the detailed stage (or the lost reason) is a small second line. API: `main_status` on rows, `?main_status=`.
   - Repeat lead (7.3): picking a customer in Add enquiry (also the quick create from a customer) checks the phone's last 10 digits: "Open enquiry ENQ-… with <owner> (<status>)" with Open / Add follow-up; converted and lost ones are listed as history; a new enquiry can still be created. API: `GET /enquiries/phone-matches`.
@@ -342,7 +345,7 @@ Full report: [test-reports/2026-11-14/README.md](./test-reports/2026-11-14/READM
   - The daily enquiry report, planned with the analytics review.
   - Meta Ads leads arriving automatically (7.5, later).
 - **Fix round 14 Nov (test report Modules 1–9, M7-01 … M7-13):** people pickers from `GET /people-picker` (sales staff book, follow up and assign from the screens), lead owner / follow-up person need enquiry edit, past follow-up refused by the API, docs Pending clears the date, kW / budget caps on the API, long visit note wraps, no Add Note for viewers, Add follow-up opens Follow up with the owner as person, DialogTitle warnings gone, "Website" label (0170). New suites `hr/fix_visits.sh` 15/15 and `pw/fix_visits.mjs` 37/37 (1440 and 390). Deferred to the shared pass: phone search / +91 (M7-03, M7-04). Needs decision: server-side required address / kW / budget on create (M7-02), dashboard landing for view-only users (M7-12). Details: test-reports/2026-11-14/module-7.md.
-- **Tests:** `f_enquiries` 26, `ca_import_prep` 33, `cb_project_fields` 63 (CB01–CB03 enquiry sizes), `m7_enquiries_r2` 51, `m7_visit_request` 35 (7.7: to assign, past date and note-without-date refused, bell to managers only, Sales Manager assigns → visit + task + assigned, sales executive / plain booker 403 on To assign and assign, executive still books from the enquiry (request covered), filter, covered / closed, other company, 0167 and 0168 down/up; rerun 13 Nov: all pass); screens `enquiries_ui` 42 (all pass; E13 checks the same-mobile warning, Use that customer and Save anyway; rerun 13 Nov at 1440: 16/16), `ca_ui` 12, `cb_ui` 26 (CBU01–CBU05), `m7_ui` 34 (1440 and 390), `m7_visit_ui` 48 (7.7 at 1440 and 390: the form's visit fields and no follow-up date, list line and filter, To assign tab, Assign → booked, a viewer sees no To assign; at 1440 a sales executive sees no To assign / Assign visit, a Sales Manager sees both, the filter stays for both, the matrix shows "Assign requested visits"; 13 Nov: all pass).
+- **Tests:** `f_enquiries` 26, `ca_import_prep` 33, `cb_project_fields` 63 (CB01–CB03 enquiry sizes), `m7_enquiries_r2` 51, `m7_visit_request` 35 (7.7: to assign, past date and note-without-date refused, bell to managers only, Sales Manager assigns → visit + task + assigned, sales executive / plain booker 403 on To assign and assign, executive still books from the enquiry (request covered), filter, covered / closed, other company, 0167 and 0168 down/up; rerun 13 Nov: all pass); screens `enquiries_ui` 42 (all pass; E13 checks the same-mobile warning, Use that customer and Save anyway; rerun 13 Nov at 1440: 16/16), `ca_ui` 12, `cb_ui` 26 (CBU01–CBU05), `m7_ui` 34 (1440 and 390), `m7_visit_ui` 48 (7.7 at 1440 and 390: the form's visit fields and no follow-up date, list line and filter, To assign tab, Assign → booked, a viewer sees no To assign; at 1440 a sales executive sees no To assign / Assign visit, a Sales Manager sees both, the filter stays for both, the matrix shows "Assign requested visits"; 13 Nov: all pass). Shared pass: `fix_shared` S07, S26–S27 and screens U06 (enquiry search by +91, timeline times with their real offset).
 - **Test by hand, normal use:**
   - Create an enquiry: customer (new or existing), source, owner, kW, phase, budget, address, notes.
   - Create an enquiry with Visit date = the day after tomorrow and Visit note "after 5 pm": the list shows "Visit requested <date> · after 5 pm · not assigned"; "Visits to assign" lists it; people who can book visits get "New visit to assign: <customer>, <date> (after 5 pm)" in the bell.
@@ -379,7 +382,7 @@ Full report: [test-reports/2026-11-14/README.md](./test-reports/2026-11-14/READM
   - kW 0 or negative, budget negative: refused.
   - Person with view-only rights: no edit, no status change.
 
-### 8. Site visits, fees, calendar (85 %)
+### 8. Site visits, fees, calendar (88 %)
 - **Done:**
   - A visit as its own record (scheduled → travelled → completed / not completed / cancelled), visit fees and receipts, the calendar.
   - Optional companions (8.2, built 13 Nov): a visit keeps one required person (the task, Travelled / Complete); other active staff can be added at booking or on Edit site visit. Companions see the visit in their My day ("companion"), their calendar and Site visits → My visits (tagged Companion, no Update menu); the card says "With …". Without site-visit edit they can't act on it (403). One open visit per enquiry and cancel-and-rebook stay as they were.
@@ -389,7 +392,7 @@ Full report: [test-reports/2026-11-14/README.md](./test-reports/2026-11-14/READM
 - **Pending:**
   - The visit cost / money staff spend is not booked in the accounts (8.1, parked for the CA).
   - Who may book / complete / see all visits: the access-matrix review at the end.
-- **Tests:** `sv_sitevisits` 54, `m8_visits_r2` 34 (both rerun 13 Nov with 7.7 and again with assign = managers only: all pass), `m7_visit_request` 35 (To assign and assign, managers only); screens `sitevisits_ui` 33, `visit_fees_ui` 47, `m8_ui` 36 (1440 and 390), `m7_visit_ui` 48 (To assign tab and Assign → booked, 1440 and 390; executive vs Sales Manager at 1440).
+- **Tests:** `sv_sitevisits` 54, `m8_visits_r2` 34 (both rerun 13 Nov with 7.7 and again with assign = managers only: all pass), `m7_visit_request` 35 (To assign and assign, managers only); screens `sitevisits_ui` 33, `visit_fees_ui` 47, `m8_ui` 36 (1440 and 390), `m7_visit_ui` 48 (To assign tab and Assign → booked, 1440 and 390; executive vs Sales Manager at 1440). `m8_ui` W06 books 23:30 (the form refuses a past time today since M8-10).
 - **Test by hand, normal use:**
   - Book a site visit: date, time, visitor, address, optional fee.
   - Site visits → To assign: a visit requested on a new enquiry is listed; Assign visit → pick the person, add a time, a fee and a companion → saved; it leaves To assign and shows under To do.
@@ -416,7 +419,7 @@ Full report: [test-reports/2026-11-14/README.md](./test-reports/2026-11-14/READM
   - Same visitor booked twice at the same time: warning.
   - A follow-up task completed: the enquiry's follow-up date shows again (once).
 
-### 9. Quotations (91 %)
+### 9. Quotations (93 %)
 - **Done:**
   - Templates; versions (sending locks a version, a change makes a revision).
   - Subsidy options; expiry after 15 days; approval with the final amount, which becomes the project contract.
@@ -428,7 +431,7 @@ Full report: [test-reports/2026-11-14/README.md](./test-reports/2026-11-14/READM
   - Residential templates from MSS-docs (13 Nov, owner; 0169): 3 kW 1PH, 5 kW 1PH / 3PH, 6 / 8 / 10 kW 3PH with prices, ₹78,000 + ₹17,000 subsidy, phase, panels × watt, inverter and the 12-line material table; template editor Package section + "Fill MSS-docs material table"; applying sets the phase too. Tested in the browser (local API, test company): list order and card lines at 1440 / 768 / 390, edit price keeps the package, new 15 kW template filled from the MSS-docs table (28 × 550 Wp, 3PH, 15 kW inverter), 6 kW 3PH applied on a quotation (3PH, 12 panels, 6 kW, ₹3,20,000, 4 core AC cable) at 1440 / 390.
   - **Share on WhatsApp with a secure PDF link (6.4, built 13 Nov):** opening Share stores the preview PDF and puts a 7-day link in the message ("View the quotation PDF: …"); Copy link; the link opens without signing in. `POST /quotations/{id}/share` (quotation view right).
 - **Pending:** nothing new.
-- **Tests:** `qt_quotations` 40, `qd_quotation_draft` 8, `pw/qd_ui` 12, `pw/qt_ui` 22, `pw/qt_apply` 12, `cb_project_fields` 63 (CB04–CB08), `m6_statement_share` M6-32–M6-35; screens `quotations_ui` 28, `qf_form` 47 (both repaired 14 Nov for the 13 Nov layout), `cb_ui` 26 (CBU06–CBU07).
+- **Tests:** `qt_quotations` 40, `qd_quotation_draft` 8, `pw/qd_ui` 12, `pw/qt_ui` 22, `pw/qt_apply` 12, `cb_project_fields` 63 (CB04–CB08), `m6_statement_share` M6-32–M6-35; screens `quotations_ui` 28, `qf_form` 47 (both repaired 14 Nov for the 13 Nov layout), `cb_ui` 26 (CBU06–CBU07). Shared pass: quotation activity times with their real offset (`fix_shared`).
 - **Fix round 14 Nov (overnight report):** central subsidy follows the PM Surya Ghar slab and the server refuses more; Share to Client saves first and always makes the 7-day link; the PDF is about 2.4 MB (JPEG pages); other companies print their own letterhead, bank and name; Hindi validity date; GSTIN / PAN checked; view-only users read-only; lost quotation frees its enquiry; direct-quotation reason kept (0173). Payment type stays on the project (owner decision 3). Tests `hr/fix_money.sh`, `pw/fix_money.mjs`. Details: `test-reports/2026-11-14/module-9.md` → Fix status.
 - **Test by hand, normal use:**
   - Quotation → Client Information: the site address shows the customer's address ("same as the customer"); Edit customer → change the email and address line 2 → Save: the quotation shows the new email and the site follows. Change the site to another village, Save Quotation, reopen: it stays; Preview prints the site; "Use customer address" puts the customer's back.

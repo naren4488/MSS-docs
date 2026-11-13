@@ -23,6 +23,15 @@
 - Placeholders: two-factor auth, header search, project change requests, the materials Damage log, the vendor "To acquire" tab, invoice Duplicate, 8 of 9 Business analytics tabs, the creditors report, bank reconciliation.
 - Backend only: most site-visit fee and visit-event actions; quotation versions / clone / templates / archive / loan; purchase-bill approval and goods-receipt confirmation; payroll run generate / recalculate / cancel; project cost approvals, milestones, procurement links, material damage.
 
+## Rules across all modules (shared pass, 14 Nov 2026; backend 18595cc, frontend f0dc30d)
+- **Phone numbers (owner decision 14 Nov), one rule on the server (`utils.CheckMobile`) and in the app (`src/lib/phone.ts`):** people may type or paste "+91 98290 12345", "098290 12345" or "98290-12345"; +91, a leading 0, spaces and dashes are stripped and only the 10 digits are saved. The 10 digits must start with 6–9; made-up numbers (all one digit, 1234567890, 9876543210) and landlines are refused. Applies to customers (and quick-create), enquiries, employees (phone, alternate, emergency contact), vendors, partners, agents, income sources, code owners, sub-vendors and subcontractors. An unchanged older customer number is kept as it is on edit. Phone boxes no longer cut a pasted "+91 …" at 10 characters.
+- **Search by phone:** every list search (customers, enquiries, employees, vendors, partners, agents, quotations, attendance, users), the customer picker, Settings → Companies → Add existing person and the header search read "+91 94612 34500", "094140 58012" or a partial "+91 98290" as the digits and match the stored number by digits. A name typed with a double space is found too.
+- **Aadhaar:** spaces allowed when typing ("9876 5432 1098"), 12 digits saved.
+- **Email (owner decision 14 Nov):** stays optional; a typed one must look like name@example.com ("a..b@x.com" and "ramesh@gmail" are refused), on the server and in the forms; saved in lower case.
+- **Passwords (owner decision 14 Nov, replaces "6 everywhere"):** Super Admin and anyone with `finance.view_sensitive` (today Director, Accounting and CA): at least 8 characters with a letter and a number. Other staff: at least 6. The same for one's own change, Add employee (worked out from the designations / roles given; the initial password is the phone unless one is typed) and an admin reset (the temporary password always has a letter and a number). Settings → Security shows the rule that applies.
+- **One press = one action:** the shared Button ignores the second click of a double-click, stays disabled while its action runs, and a submit button waits for its form (`useSubmitGuard` for form handlers). Covers create / approve / pay / mark / send / issue buttons, e.g. crew Mark, My space "Send request", payroll Build. The server's own duplicate checks are unchanged.
+- **India dates:** every date and time shown is formatted in Asia/Kolkata; "today" defaults use the India date. Enquiry activities and assignments, the project timeline, quotation activities, customer rows and History, and the Timeline feed send their times with the real offset, so a record made after 18:30 IST shows that day, not the next. (Other `timestamp without time zone` columns are still sent as UTC wall-clock: see "M1-11" in the 14 Nov report, a decision on the live DB's time zone.)
+
 ## Module map
 
 | # | Module | Screens (sidebar) | Main tables | APIs (approx.) |
@@ -54,7 +63,7 @@
 ### Features
 
 **Login (`/login`)**
-- Sign in with phone number (10 digits, with or without +91) and password; show or hide the password
+- Sign in with phone number (10 digits, with or without +91, spaces or a leading 0) and password; show or hide the password
 - Access and refresh tokens; the session refreshes automatically; signed out after 7 days without use (`SESSION_IDLE_TIMEOUT`, default 168h)
 - A temporary, reset or first password must be changed first: the app sends you to Settings → Security until you do
 - Log out from the header
@@ -129,7 +138,7 @@ Sidebar HR section, search, pins and page info (plan step 3, F1–F4, migration 
 
 Header search, More actions and two-step removed (owner decisions 1.1–1.3, 13 Nov 2026): `hr/m1_search.sh` 35/35, `pw/m1_search_ui` 38/38 at 1440/390 px.
 
-Fixes from the 14 Nov overnight report (backend 6d9f455, migration 0171): log-out and an admin reset end sessions on the server (access tokens too: a sign-in session id in the token, `auth_revoked_sessions`, a 15-second cached check); a reset's temporary password is read-only until changed; 6-character passwords everywhere (1.5); switched-off companies stay listed and can be switched on; one GSTIN / PAN validator with the GSTIN state = GST state rule; Settings → Company is Super Admin only in the menu. Tests: `hr/fix_platform.sh` 37/37, `pw/fix_platform_ui.mjs` 18/18.
+Fixes from the 14 Nov overnight report (backend 6d9f455, migration 0171): log-out and an admin reset end sessions on the server (access tokens too: a sign-in session id in the token, `auth_revoked_sessions`, a 15-second cached check); a reset's temporary password is read-only until changed; 6-character passwords everywhere (1.5; replaced on 14 Nov by the owner's two-tier rule, see "Rules across all modules"); switched-off companies stay listed and can be switched on; one GSTIN / PAN validator with the GSTIN state = GST state rule; Settings → Company is Super Admin only in the menu. Tests: `hr/fix_platform.sh` 37/37, `pw/fix_platform_ui.mjs` 18/18.
 
 **Open:**
 - Record-level access (own / team / department) is deferred.
@@ -257,7 +266,7 @@ Fixes from the 14 Nov overnight report (backend 6d9f455, migration 0171): log-ou
 - Filters: department, designation, status (Active / Inactive / All)
 - Stats bar: whole-company total, active and designations (`GET /employees/summary`)
 - Pagination with rows per page; the table scrolls sideways on narrow screens so Actions stay reachable
-- Add New Employee: name, phone (stored as 10 digits), alternate phone, email (stored lower-case), date of birth (18+), Aadhaar (12 digits, spaces allowed), PAN (optional, like ABCDE1234F, saved in capitals, unique in the company), emergency contact (name, relation, 10-digit phone), current address in parts and permanent (home) address with a "same as current" tick (ticked for a new person), department + designation (more than one allowed), monthly salary (more than 0; 0 only when not on payroll — outside CA, owner, director), joining date, "on payroll here" and "track attendance here" switches. First password is the phone number; the person must change it at first sign-in
+- Add New Employee: name, phone ("+91 …", "0…" or spaced accepted; stored as 10 digits starting 6–9), alternate phone, email (stored lower-case), date of birth (18+), Aadhaar (12 digits, spaces allowed), PAN (optional, like ABCDE1234F, saved in capitals, unique in the company), emergency contact (name, relation, 10-digit phone), current address in parts and permanent (home) address with a "same as current" tick (ticked for a new person), department + designation (more than one allowed), monthly salary (more than 0; 0 only when not on payroll — outside CA, owner, director), joining date, "on payroll here" and "track attendance here" switches. First password is the phone number unless another is typed (a Director / Accounts / CA / Super Admin login needs 8+ characters with a letter and a number); the person must change it at first sign-in
 - Row buttons: Pay (Module 5), Task (assign a task)
 - Row ⋮: Edit profile, Deactivate (Mark as left, with the exit checklist) / Reactivate (Take back: rejoining date and reason), Reset password, View details
 - **Crew week board** (13 Nov, replaces the Site Deployment Board): rows per team and its members, a column per day (Mon–Sun, previous / next / this week), the project in each cell linked to the project (✓ = marked at the site by the crew leader), team and member names link to their pages; a person at two sites on a day gets a "2 sites" hint, never a block; scrolls inside its card on phones
