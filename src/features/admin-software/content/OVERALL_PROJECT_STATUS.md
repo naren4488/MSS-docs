@@ -119,6 +119,9 @@
 - An admin resets it; the temporary password is shown once with Copy
 - The person must change it at sign-in and is signed out on their other devices
 
+**Rights from the current company only (14 Nov 2026; backend 2424220)**
+- A person's rights, page access, designation codes and Super Admin status come only from their designations in the company they are working in (a Director in one company is not a Director in another); a platform Super Admin keeps Super Admin in every company
+
 **Automatic:** rights checked on every API call and page; each company's data kept apart (row-level security).
 
 ### APIs
@@ -605,6 +608,9 @@ Fixes from the 14 Nov overnight report (backend 6d9f455, migration 0171): log-ou
 - **Managers only (owner, 13 Nov; migration 0168):** the bell alert, Site visits → To assign and the Assign visit button need the "Assign requested visits" right (Sales Manager, Director, Super Admin). Sales executives get none of them (403) but still book visits from their enquiries as before; such a booking leaves the request covered, not assigned
 - One open visit per enquiry stays: a request on an enquiry that already has an open visit shows as covered (no alert); lost, converted or archived enquiries drop out
 
+**Assigned to me first (owner V1, 14 Nov 2026; backend 2424220, frontend 4c6adf3)**
+- Enquiries opens on **Assigned to me** (you own the lead or are its follow-up person) with a switch to **Everyone**; your choice is remembered (all devices); nothing assigned → an empty state with **Show everyone's**; rights unchanged
+
 **Late follow-ups (7.6, 13 Nov; migration 0160)**
 - A follow-up more than N days late (Settings → Approval limits → "Late follow-up alert (sales)", default 2, 1–30) raises one bell alert "Follow-up N days late: ENQ-…" for the lead owner's team leader, else the company's Sales Managers, else the Directors (there is no reports-to link on people). Once per enquiry and follow-up date (a new missed date alerts again); the alert goes away when the date changes or the enquiry closes. Worker job `followup-escalation` (hourly)
 
@@ -614,7 +620,7 @@ Fixes from the 14 Nov overnight report (backend 6d9f455, migration 0171): log-ou
 **Automatic:** pending site-visit approvals raise a notification (with the customer's name); an assignment by someone else raises "Enquiry assigned to you" for the assignee; a project created from an enquiry (directly, in the wizard or from its approved quotation) marks it converted in the same save.
 
 ### APIs
-- `/enquiries` (list with status sets and counts, create, edit, status, assign, activities, change request approve / reject, loss reason, archive / unarchive)
+- `/enquiries` (list with status sets and counts, `mine=true` = Assigned to me (V1), create, edit, status, assign, activities, change request approve / reject, loss reason, archive / unarchive)
 - `/projects/from-enquiry`, `/quotations/from-enquiry/{id}`
 - E2: `POST /enquiries/{id}/activities` takes `assigned_to_user_id` or `assigned_to_employee_id`; `PATCH /enquiries/{id}/activities/{activity_id}` {assigned_to_user_id}; enquiries return `followup_user_id`, `followup_user_name`; activities `assigned_to_user_id`, `assigned_to_name`
 - E3: `PATCH /enquiries/{id}/documents` {docs_status pending|partial|yes, docs_received_on, docs_note}; list filter `docs_status`
@@ -663,6 +669,11 @@ Fixes from the 14 Nov overnight report (backend 6d9f455, migration 0171): log-ou
 - Move to project (once, up to what's held, same customer) — or at conversion, "Adjust the ₹X visit fee against this project" in the project wizard
 - Fee amount can't go below what was received; rupees only
 
+**Own visits first, accept / can't do, who acts (owner V1–V3, 14 Nov 2026; backend 2424220, frontend 4c6adf3, migration 0178)**
+- Site visits opens on **My visits** (as the person or a companion) with a switch to **Everyone**, remembered per person; the calendar has the same switch for site visits
+- A visit booked for someone else is **Waiting for acceptance** (still booked and on the calendar); they get a bell alert and **Accept** / **Can't do** (reason) on the card and the enquiry's Site visit section; Accept → **Confirmed**; Can't do → the visit is cancelled and goes back to the managers' **To assign** list with the reason (they get the alert); no answer in 2 hours → one reminder to whoever assigned it; booking for yourself is accepted at once
+- The person doing the visit marks Travelled / Complete / Couldn't do; **Edit, Reschedule and Cancel are for managers** (site visit assign: Sales Manager, Director, Super Admin; the server refuses others); companions only view; others see no action icons
+
 **Calendar (`/calendar`)**
 - Mini month; day or range; category filters (site visits, installations, follow-ups, milestones, tasks, invoice due, EMI, vendor bills); project filter
 - Counters: total, on the selected day, today, overdue (India date; 14 Nov); event list with Complete / Cancel for tasks and your own events
@@ -677,12 +688,13 @@ Fixes from the 14 Nov overnight report (backend 6d9f455, migration 0171): log-ou
 - Timeline or calendar view; feed filter (all, project history, payments, site visits); daily / weekly; project filter; stats
 - One `GET /timeline/feed` call per page (Module 10 review); a fresh load makes 6–9 API requests in all (8.0, 13 Nov: one `/auth/me` and one company-list refresh, was 11; ~83 before the feed)
 
-**Automatic:** visit-fee receipts, refunds and adjustments post to the books (Site visit fees ledger: Dr cash/bank or the collector's ledger, Cr fees; refunds reverse; adjustments move the income to the customer, tagged to the project); voided receipts' entries are cancelled; the employee schedule reads the calendar for its date range.
+**Automatic:** an unanswered visit gets one reminder after 2 hours (worker, V2); visit-fee receipts, refunds and adjustments post to the books (Site visit fees ledger: Dr cash/bank or the collector's ledger, Cr fees; refunds reverse; adjustments move the income to the customer, tagged to the project); voided receipts' entries are cancelled; the employee schedule reads the calendar for its date range.
 
 ### APIs
 - `/enquiries/{id}/site-visits` (book; optional `companion_employee_ids`; marks a waiting request assigned only for a booker with site_visit.assign); `POST /enquiries/{id}/visit-request/assign` [site_visit.assign] (same body; books the waiting requested visit, 409 if none); `GET /site-visit-requests` [site_visit.assign]; `/site-visit-events` (list with `mine` — incl. visits as a companion —, `status`, dates; create a recorded visit), `/{id}` (get, edit; visits return `companions` [{employee_id, name}]), `/{id}/schedule` (also `companion_employee_ids`: a list replaces, `[]` removes, left out keeps), `/{id}/travelled|complete|not-complete|cancel`, items, photos, merge to checklist, link fee, delete / restore
 - `/site-visit-fees` (list with dates, summary, create, edit), `/{id}/receipts` (+ `/{rid}/void`), `/waive`, `/cancel`, `/refund`, `/adjust`; `/customers/{id}/site-visit-fees`; `POST /projects/from-enquiry` takes `adjust_visit_fees`
-- `/calendar/events` (range via `range_from`/`range_to` or `date_from`/`date_to`; create, edit, complete, cancel, reopen, status), `/calendar/counters`
+- `POST /site-visit-events/{id}/accept`, `/decline` {reason} (V2, assigned person only); `GET /site-visit-events?mine=true&acceptance=`; schedule / cancel need site_visit.assign (V3)
+- `/calendar/events` (`mine_visits=true`, V1; range via `range_from`/`range_to` or `date_from`/`date_to`; create, edit, complete, cancel, reopen, status), `/calendar/counters`
 - **Backend only:** visit items / photos / link-fee / delete / restore endpoints, fee create / edit (fees are made at booking)
 
 ### Review status
@@ -691,7 +703,9 @@ Fixes from the 14 Nov overnight report (backend 6d9f455, migration 0171): log-ou
 
 **Round 2 (owner decisions 13 Nov), built 13 Nov (backend 48e708e, frontend 1ab5061, migration 0164):** 8.0 Timeline under 10 requests and a follow-up once in the calendar; 8.2 optional visit companions. Tests: `hr/m8_visits_r2.sh` 34/34, `pw/m8_ui.mjs` 36/36 (1440 and 390); reruns `hr/sv_sitevisits.sh` 54/54, `pw/sitevisits_ui` 33/33, `pw/visit_fees_ui` 47/47.
 
-**Open / later:** visit cost / money staff spend isn't posted as an expense (8.1, parked for the CA); who may book / complete / see all visits goes to the access-matrix review at the end.
+**Owner V1–V3 (14 Nov):** built (backend 2424220, frontend 4c6adf3, 0178). Tests: `hr/fix_v123.sh` 40/40, `pw/fix_v123` 34/34 at 1440 / 390.
+
+**Open / later:** visit cost / money staff spend isn't posted as an expense (8.1, parked for the CA); who may book visits goes to the access-matrix review at the end.
 
 ## 9. Quotations
 
