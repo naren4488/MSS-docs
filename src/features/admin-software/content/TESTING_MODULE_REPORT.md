@@ -2,6 +2,8 @@
 
 **Updated:** 13 Nov 2026
 
+**Residential quotation templates from MSS-docs (13 Nov 2026, owner; 0169):** the six MSS-docs packages as templates with prices, subsidy, phase, panels, inverter and the material table; Package section and "Fill MSS-docs material table" in the template editor; phase set when applied. Checked on a local API with a new test company: migration run twice (second run changes nothing), new companies get the six templates in kW order; browser `pw/qt_ui` 20/20 + 2 test-count fixes and `pw/qt_apply` 12/12 at 1440 / 768 / 390; no page errors.
+
 **Required-field marks (13 Nov 2026, owner):** every create / edit form shows one red `*` (shared `Label required` / `RequiredMark`) on the fields it refuses to save without, decided from each form's own checks; conditional fields (e.g. loan tenure unless bullet, GSTIN for B2B vendors, TDS amount once a section is picked) show it only when needed. Checked: type check passes, no old-style stars left, browser — login (phone, password) and Add employee (full name, phone, salary, department, designation) marked, optional fields not; no page errors. To test by hand: open any Add / Edit form, leave a marked field empty and save — it is refused; leave an unmarked field empty — it saves.
 **What this is:** where each module stands today, and the main things to test by hand in each: an estimate of how complete it is, what's done, what's still pending, and how it's tested. Old Q&A logs are dropped; decisions live in [MODULE_WALKTHROUGH_ROUND2.md](./MODULE_WALKTHROUGH_ROUND2.md) and the plan files. The full feature list per module is in [OVERALL_PROJECT_STATUS.md](./OVERALL_PROJECT_STATUS.md).
 
@@ -399,14 +401,16 @@ Full report: [test-reports/2026-11-14/README.md](./test-reports/2026-11-14/READM
   - Client section (13 Nov, owner; 0165): Edit customer in a side panel (changes show on the quotation at once); project site address in parts, pre-filled from the customer, editable, printed on the quotation; Reference explained as an internal note. Tested in the browser on a test-DB copy: prefill, edit customer from the quotation, change and save the site, reopen, preview prints the site; 390 px fits.
   - Document as in MSS-docs (13 Nov, owner; 0166): English / Hindi, kW packages, brand and phase pickers rewrite the stock lines, auto generation, EMI / warranty, notes and signature block, central ₹78,000 pre-filled, customer PAN optional. Tested in the browser on a test-DB copy: 5 kW package (10 × 550 Wp, 3PH, ₹2,85,000), Waaree / Tata pickers, generation 22 units/day ₹63,360, preview in English and Hindi with the price kept, saved settings and quantity text ("50 तक") reloaded; API: bad PAN refused (422), PAN stored in capitals, cleared, copied to a new quotation with the site address; no page errors. (Letterhead logo didn't show on the test copy only — its file isn't in the local test storage; on S3 it serves.)
   - Terms from MSS-docs (13 Nov, owner): 27 terms in English / Hindi by default; an old untouched default set on a draft is replaced, edited and sent ones kept (checked by a script); browser: "Use MSS-docs terms" on a draft, the preview shows Site Survey Confirmation, Non-Polycab Inverter Technical Support, Final Payment & Price Finality, Delayed Payment & Legal Recovery; no page errors.
+  - Residential templates from MSS-docs (13 Nov, owner; 0169): 3 kW 1PH, 5 kW 1PH / 3PH, 6 / 8 / 10 kW 3PH with prices, ₹78,000 + ₹17,000 subsidy, phase, panels × watt, inverter and the 12-line material table; template editor Package section + "Fill MSS-docs material table"; applying sets the phase too. Tested in the browser (local API, test company): list order and card lines at 1440 / 768 / 390, edit price keeps the package, new 15 kW template filled from the MSS-docs table (28 × 550 Wp, 3PH, 15 kW inverter), 6 kW 3PH applied on a quotation (3PH, 12 panels, 6 kW, ₹3,20,000, 4 core AC cable) at 1440 / 390.
   - **Share on WhatsApp with a secure PDF link (6.4, built 13 Nov):** opening Share stores the preview PDF and puts a 7-day link in the message ("View the quotation PDF: …"); Copy link; the link opens without signing in. `POST /quotations/{id}/share` (quotation view right).
 - **Pending:** nothing new.
-- **Tests:** `qt_quotations` 40, `cb_project_fields` 63 (CB04–CB08), `m6_statement_share` M6-32–M6-35; screens `quotations_ui`, `qf_form` 47, `cb_ui` 26 (CBU06–CBU07).
+- **Tests:** `qt_quotations` 40, `pw/qt_ui` 22, `pw/qt_apply` 12, `cb_project_fields` 63 (CB04–CB08), `m6_statement_share` M6-32–M6-35; screens `quotations_ui`, `qf_form` 47, `cb_ui` 26 (CBU06–CBU07).
 - **Test by hand, normal use:**
   - Quotation → Client Information: the site address shows the customer's address ("same as the customer"); Edit customer → change the email and address line 2 → Save: the quotation shows the new email and the site follows. Change the site to another village, Save Quotation, reopen: it stays; Preview prints the site; "Use customer address" puts the customer's back.
   - Quotation → Document: pick the 5 kW package → Apply: kW, panels, price and the stock table change; change the panel brand to Waaree and the AC cable: the table rewrites; switch to Hindi: the text and table are in Hindi; Generation shows units and savings without typing; Preview: cover, tagline, phone, email, sanction load, signature block. Customers → Edit → PAN "abcde1234f" saves as ABCDE1234F; a wrong PAN shows an error; a new quotation for that customer shows the PAN.
   - Quotation → Terms & Conditions: a new quotation has 27 terms; switch to Hindi: the terms are in Hindi; edit a term, then "Use MSS-docs terms" → confirm: the standard terms come back.
   - Create a quotation from a template: items, kW, price, subsidy (none / central / central + state), terms.
+  - Templates: six residential templates in kW order with phase, panels and "after subsidy" on each card. Edit 5 kW 3PH → change the price → save: the card shows the new price. Add template → name, 15 kW, price → "Fill MSS-docs material table": 28 panels, 3PH, 15 kW inverter and the table appear. On a quotation, Apply template "6 kW · 3 Phase": kW 6, 12 panels, inverter 6 kW, phase 3PH, ₹3,20,000 and the table.
   - Preview and download the PDF; company details, customer address and "Stock Items" heading look right; the bank block shows branch Vaishali Nagar Jaipur.
   - Send it: the version is locked; change → new revision → send again.
   - Approve with the final client amount (prefilled with the price before subsidy); it becomes the project contract.
@@ -421,6 +425,9 @@ Full report: [test-reports/2026-11-14/README.md](./test-reports/2026-11-14/READM
   - Subsidy above the slab (central max ₹78,000; state ₹17,000 default): capped or refused.
   - Approving a quotation of a lost enquiry: refused.
   - Very many items: PDF pages break cleanly.
+  - Template with no package fields (an old or hand-made one): applying it leaves phase, price and subsidy as they were.
+  - "Fill MSS-docs material table" with no kW: asks for the kW first; with rows already there: asks before replacing them.
+  - Hindi quotation + residential template: the table comes in English; "Standard table" rebuilds it in Hindi.
 
 ### 10. Projects (75 %)
 - **Done:**
