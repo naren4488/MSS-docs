@@ -71,6 +71,7 @@ Full report: [test-reports/2026-11-14/README.md](./test-reports/2026-11-14/READM
   - Multi-company, with the company chosen per browser tab and the data kept apart per company.
   - Companies page, designations and departments, the designation access matrix.
   - Designation code required and filled from the name (14 Nov, owner); _2, _3 … added when taken. Tests: `fix_codes` (API 9, screens 14).
+  - Designations per company (14 Nov, owner; 0187): each company its own list and rights, copied from MSS for new companies; same code allowed in two companies; another company's designation refused. Tests: `hr/fix_desig_company.sh` 18/18, `pw/fix_desig_company` 10/10 (1440 / 390 px); existing suites a_employees, w_people, t_matrix, u_platform, v_settings, fix_people, tk_tasks, y_payroll, db_dashboard_be, m7_visit_request green (scripts now look up MSS's designations); test helper `desin` maps MSS designation ids into a test company.
   - Sidebar with an HR section, search, up to 5 pins, and a page ⓘ on every page.
   - Header search (13 Nov, decision 1.1): one box finds customers, enquiries, projects, quotations, sale bills, purchase bills, vendors and employees by name, phone, document number or K-number; grouped by type, 5 each with "see all"; only types the person may view; Ctrl+K / Cmd+K from anywhere; full-screen on phones.
   - The "More actions" header button and the two-step sign-in placeholder are removed (13 Nov, decisions 1.2 / 1.3).
