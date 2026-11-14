@@ -24,7 +24,7 @@ Full report: [test-reports/2026-11-14/README.md](./test-reports/2026-11-14/READM
 - **Fix round (14 Nov):** 105 bugs: 96 fixed, 6 partly (4 of them wait for a decision: M1-07, M1-11, M7-02, M7-12), 2 need a decision (M2-09, M8-07), 1 by design (M9-10). Regression after the fixes: 2,981 / 0. Owner decisions on the way: one phone rule, email check, two-tier passwords. See [the fix round result](./test-reports/2026-11-14/README.md#fix-round-result-14-nov).
 
 ## Testing by hand
-- **App:** `http://localhost:5173` (local) or the live site. Sign in as Super Admin `9876543210` (phone + password).
+- **App:** `http://localhost:5173` (local) or the live site.
 - **Test data:** all business data was cleared on 12 Nov 2026, on production and locally. Logins, companies, settings, masters, the ledger list and employees remain. Start by creating a customer (address line 1 and state are required) and a project, then test with those.
 
 ## Overall
@@ -62,6 +62,7 @@ Full report: [test-reports/2026-11-14/README.md](./test-reports/2026-11-14/READM
   - Phone + password sign-in; forced password change on first sign-in; admin password reset; 7-day idle sign-out.
   - Multi-company, with the company chosen per browser tab and the data kept apart per company.
   - Companies page, designations and departments, the designation access matrix.
+  - Designation code required and filled from the name (14 Nov, owner); _2, _3 … added when taken. Tests: `fix_codes` (API 9, screens 14).
   - Sidebar with an HR section, search, up to 5 pins, and a page ⓘ on every page.
   - Header search (13 Nov, decision 1.1): one box finds customers, enquiries, projects, quotations, sale bills, purchase bills, vendors and employees by name, phone, document number or K-number; grouped by type, 5 each with "see all"; only types the person may view; Ctrl+K / Cmd+K from anywhere; full-screen on phones.
   - The "More actions" header button and the two-step sign-in placeholder are removed (13 Nov, decisions 1.2 / 1.3).
@@ -606,6 +607,7 @@ Full report: [test-reports/2026-11-14/README.md](./test-reports/2026-11-14/READM
 ### 13. Accounts (books) (80 %)
 - **Done:**
   - Tally-style ledgers and groups; vouchers; bank import; live stock-in-hand; a Cost of goods sold ledger.
+  - Ledger code required and filled from the name (14 Nov, owner): HDFC Current A/c → HDFC_CURRENT_AC, unique per company with _2, _3 …; tests `fix_codes`.
   - GST (GSTR-1 / 3B with an Excel export for the CA); TDS; debit notes; fixed assets; closing stock.
 - **Pending:**
   - CA to confirm: partner ledgers under Sundry Debtors, the FY 2026-27 tax figures, material sent to sites at cost.
@@ -613,6 +615,7 @@ Full report: [test-reports/2026-11-14/README.md](./test-reports/2026-11-14/READM
 - **Tests:** `ac_books` 66, `gs_gst` 57, five e2e runs 194; screens `gs_gst_ui` 115.
 - **Test by hand, normal use:**
   - Ledgers and groups: balances match bills, receipts and payments.
+  - New ledger: type a name, the code fills itself; type your own code, it stays when you change the name; save two ledgers whose names give the same code: the second gets _2.
   - Voucher entry (payment / receipt / contra / journal) and its number.
   - Bank statement import: lines match to receipts and payments; unmatched lines stay for review.
   - Day book, trial balance, P&L, balance sheet.
