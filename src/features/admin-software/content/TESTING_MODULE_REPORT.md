@@ -607,7 +607,7 @@ Full report: [test-reports/2026-11-14/README.md](./test-reports/2026-11-14/READM
 ### 13. Accounts (books) (80 %)
 - **Done:**
   - Tally-style ledgers and groups; vouchers; bank import; live stock-in-hand; a Cost of goods sold ledger.
-  - Ledger code required and filled from the name (14 Nov, owner): HDFC Current A/c → HDFC_CURRENT_AC, unique per company with _2, _3 …; tests `fix_codes`.
+  - Ledger code required and filled from the name (14 Nov, owner): HDFC Current A/c → HDFC_CURRENT_AC, unique per company with _2, _3 …; existing ledgers filled by migration 0182 (party ledgers wait for the CA's mapping); tests `fix_codes`.
   - GST (GSTR-1 / 3B with an Excel export for the CA); TDS; debit notes; fixed assets; closing stock.
 - **Pending:**
   - CA to confirm: partner ledgers under Sundry Debtors, the FY 2026-27 tax figures, material sent to sites at cost.
