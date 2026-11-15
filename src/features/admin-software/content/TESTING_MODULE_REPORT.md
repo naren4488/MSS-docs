@@ -1,6 +1,10 @@
 # Module status and testing report
 
-**Updated:** 15 Nov 2026
+**Updated:** 15 Nov 2026 (prospects 0198)
+
+**Reports to filled (15 Nov 2026; 0197):** on a copy of the test DB as the app's DB role and through the real server start-up: 27-person company with one manager set by hand → 24 filled, the hand-set one kept, tree Director → Marketing / CA → Accounting / Sales Manager → 5 sales / HR / Field Ops Manager → Liaison, 2 drivers, Inventory, Project Admin, Inc Manager → 2 team leads → 5 installers; Admin and Super Admin left alone; with the team leads, Inc Manager, Sales Manager and CA inactive the installers go to the Field Ops Manager and sales / accounts to the Director; a second run fills nothing.
+
+**Org chart (15 Nov 2026, owner; no migration):** API `GET /org-chart` as an installer without employee rights returns all 28 active people with only name, designation, department, photo and manager (the full employee list stays 403). Playwright `pw/org_chart.mjs` 43/43 at 1440, 768 and 390 on a 27-person hierarchy (Director → Sales / Field ops / Accounts / HR / Marketing → team leads → installers) plus 3 people with no manager: menu item for everyone, 28 people, Director "24 under", designation · department on cards, You on your own card, plain names without the employee right, "No manager set (3)", search "Gopal" shows only his chain and highlights him, no-match message, Collapse all then open the Director shows his 5 direct reports, Super Admin's click on a name opens the profile; no sideways scroll, no page errors.
 
 **Plan L5 — the outsourced team's bill (15 Nov 2026; 0196):** API `hr/l5_subcontract_bill.sh` 33/33 (Labour Charges ledger and slot, subcontractor GSTIN / PAN checks, GST bill CGST/SGST and IGST, bill without GST and no bill, books lines and project tag, GSTR-3B input credit and purchase register, repost on change after approval, payouts up to the bill total, guards); UI `pw/l5_ui` 16/16 at 1440 / 390 (GSTIN on the form → PAN, header, "not recorded yet", Their bill dialog GST bill → row and books, GSTR-3B, change to No bill on a phone → Labour Charges); re-runs `gs_gst` 57/57, `bp_parties` 95/99, `r_books_parties` 18/22, `ca1_gst` 10/13 (failures outside L5).
 
@@ -330,6 +334,7 @@ Full report: [test-reports/2026-11-14/README.md](./test-reports/2026-11-14/READM
 
 ### 6. Customers (95 %)
 - **Done:**
+  - **Prospects (15 Nov, owner; 0198):** a new customer is a Prospect with no ledger; the ledger comes at the first Own project / client-billed project, issued bill or advance, or when accounts pick a group; Prospect label, Prospects / Clients filter and figure. Tests: `hr/fix_prospects.sh` 16/16, `pw/fix_prospects_ui.mjs` 18/18 at 1440 / 390; re-run `z_customers` 25/25 (Z08 now expects no ledger at creation), `l2_entity_ledgers` 54/54 (customer cases made clients by a booking advance), `a2_sales` 75, `bl_billing` 81, `pt_project_types` 37, `q_books_sales` 19, `fix_money` 40, `l4_old_client_referral` 40, `d18_claims` 49 — all passing.
   - L4 (15 Nov, 0193): **Referrals as an old client** on the customer page — projects he referred with an optional reward (due once started and paid; books Dr Commission / Cr his own ledger), Pay / Undo, set off if not paid; "Also an agent" / "Also a customer" links. Test by hand: refer Suresh's enquiry from Mahesh (Reference Old client), make the project, start it and take a payment → Mahesh's page shows the reward due; Pay ₹2,000 → his ledger Cr ₹3,000.
   - **Owner-reported (14 Nov):** (#1) the customer's geo location (saved from the form, `geo_location`) is shown under the address with **Open in Maps** (a map link opens as it is, "lat, lng" opens that point, other text is searched). Tests: `hr/fix_owner1.sh` O14–O15, `pw/fix_owner1.mjs` 22.
   - Customers with the address in parts (line 1 + state required) and GSTIN; payment terms with a Dues block.
@@ -343,6 +348,8 @@ Full report: [test-reports/2026-11-14/README.md](./test-reports/2026-11-14/READM
 - **Tests:** `z_customers` 25, `c_addresses` 51, `ca_import_prep` 33, `m6_statement_share` 36; screens `customers_ui` 71, `c_addresses_ui` 99, `ca_ui` 12, `m6_ui` 30 (1440 and 390). Shared pass: `fix_shared` S01–S06, S17–S18, S25 and screens U02–U05, U13 (+91 / 0 phones saved and found, email check, History date after 18:30 IST).
 - **Fix round 14 Nov (overnight report):** dues now include project receipts (one calculation for the Dues block, statement and list: Open = Outstanding = ledger); rename with a project works; family link removable from both sides; search kept in `?q=`; History dates in IST. Phone +91 / spaces left for the shared pass. Tests `hr/fix_money.sh`, `pw/fix_money.mjs`. Details: `test-reports/2026-11-14/module-6.md` → Fix status.
 - **Test by hand, normal use:**
+  - Add a customer without touching the ledger: the card says Prospect, nothing in Accounts; start an Own project for him (or take a booking advance, or issue a bill): the label goes and his ledger is in Customers – B2C / B2B.
+  - Add a customer with a ledger group picked: a Client at once. Filter Prospects / Clients; the Prospects figure.
   - Create a customer: name, phone, email, address (line 1, line 2, city, state, PIN), GSTIN, type, payment terms.
   - Edit the customer; rename it (the ledger name follows); the change shows in history.
   - Customer page: details, projects, enquiries, sales bills & payments, Dues block (open / overdue / due in 7 days).
