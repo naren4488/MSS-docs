@@ -1,6 +1,8 @@
 # Module status and testing report
 
-**Updated:** 15 Nov 2026 (prospects 0198)
+**Updated:** 15 Nov 2026 (prospects 0198; vendor code / type changes 0199)
+
+**Org chart as a top-down chart (15 Nov 2026, owner):** Playwright `pw/org_chart.mjs` 64/64 at 1440, 768 and 390 — besides the earlier checks: opens fitted to the screen (100 % at 1440 for 27 people), the Director's managers in one row below him, a wide chart scrolls inside its own box starting centred (no page scroll), zoom out narrows it, Fit makes the width fit, List view shows the indented tree and the choice survives a reload.
 
 **Reports to filled (15 Nov 2026; 0197):** on a copy of the test DB as the app's DB role and through the real server start-up: 27-person company with one manager set by hand → 24 filled, the hand-set one kept, tree Director → Marketing / CA → Accounting / Sales Manager → 5 sales / HR / Field Ops Manager → Liaison, 2 drivers, Inventory, Project Admin, Inc Manager → 2 team leads → 5 installers; Admin and Super Admin left alone; with the team leads, Inc Manager, Sales Manager and CA inactive the installers go to the Field Ops Manager and sales / accounts to the Director; a second run fills nothing.
 
@@ -530,6 +532,8 @@ Full report: [test-reports/2026-11-14/README.md](./test-reports/2026-11-14/READM
 
 ### 10. Projects (75 %)
 - **Done:**
+  - **Vendor code and type changes (15 Nov, owner; 0199):** Change vendor code (also after fees / bills; fees move, paid money stays the old firm's advance, issued bills to the old billed party block), Convert I&C → Vendor code only, Filed under another firm (we pay the firm, charge the I&C Client); preview, reason, approval by accounts / Director / Super Admin (not the asker), bell alert. Tests: `hr/fix_type_changes.sh` 34/34 (incl. the books reposting the moved fee), `pw/fix_type_changes_ui.mjs` 11/11 at 1440 and 11/11 at 390; re-run `pt_project_types` 37, `p_vendor_code_billing` 44, `pm_projects_money` 41, `cb_project_fields` 63, `j_projects` 8 — all passing; `pe_projects_exec` 65/68 and `bp_parties` 96/99 (PE28 GST on site damage, PE48 / PE50 blockage, BP27–29 loan ledger names — not touched here).
+  - **Test by hand:** Own project on firm X's code with its fee approved and partly paid → Financials → Change vendor code → firm Y: the preview names the fee move and the advance; send; sign in as Accounting → Approve; Who bills the client shows Y; Code companies → X shows the paid money as advance, Y the fee. I&C project → Convert to vendor code with the client amount → approve as a Director: it is Vendor code only, the I&C Client is also an Associate. I&C project → Filed under… X with a fee and a charge → approve: our charge goes up by the charge, X has the fee.
   - Four project types and rates.
   - Who bills the client by vendor code (section P), the partner's bill to MSS.
   - Progress steps (file login, bank file, work, DISCOM, payment, DCR, subsidy), the checklist, team, stock sent, GPS photo proof.
