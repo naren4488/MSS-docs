@@ -644,7 +644,7 @@ Full report: [test-reports/2026-11-14/README.md](./test-reports/2026-11-14/READM
   - Tally-style ledgers and groups; vouchers; bank import; live stock-in-hand; a Cost of goods sold ledger.
   - Ledger code required and filled from the name (14 Nov, owner): HDFC Current A/c → HDFC_CURRENT_AC, unique per company with _2, _3 …; existing ledgers filled by migration 0182 (party ledgers wait for the CA's mapping); tests `fix_codes`.
   - GST (GSTR-1 / 3B with an Excel export for the CA); TDS; debit notes; fixed assets; closing stock.
-  - L2 (15 Nov, 0192): customer / vendor / agent / subcontractor sub-groups seeded and existing ledgers moved; ledger made with the record in the group chosen on its form (default from GST type / category); use a ledger made in Accounts; Move / Keep on GST type / category change; "This ledger is for" on ledgers; "N ledgers without a record" with Create on the five pages.
+  - L2 (15 Nov, 0192): customer / vendor / agent / subcontractor sub-groups seeded and existing ledgers moved; ledger made with the record in the group chosen on its form (default from GST type / category); use a ledger made in Accounts; Move / Keep on GST type / category change; "This ledger is for" on ledgers; "N ledgers without a record" with Create on the five pages; a matching hand-made ledger (GSTIN / phone / name) is taken over when the record is created, never duplicated.
 - **Pending:**
   - CA to confirm: partner ledgers under Sundry Debtors, the FY 2026-27 tax figures, material sent to sites at cost.
   - Real opening balances as on 1 Apr 2026 and the Tally ledger list.
