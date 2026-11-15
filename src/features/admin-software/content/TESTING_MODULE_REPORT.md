@@ -1,6 +1,14 @@
 # Module status and testing report
 
-**Updated:** 13 Nov 2026
+**Updated:** 15 Nov 2026
+
+**Plan L5 — the outsourced team's bill (15 Nov 2026; 0196):** API `hr/l5_subcontract_bill.sh` 33/33 (Labour Charges ledger and slot, subcontractor GSTIN / PAN checks, GST bill CGST/SGST and IGST, bill without GST and no bill, books lines and project tag, GSTR-3B input credit and purchase register, repost on change after approval, payouts up to the bill total, guards); UI `pw/l5_ui` 16/16 at 1440 / 390 (GSTIN on the form → PAN, header, "not recorded yet", Their bill dialog GST bill → row and books, GSTR-3B, change to No bill on a phone → Labour Charges); re-runs `gs_gst` 57/57, `bp_parties` 95/99, `r_books_parties` 18/22, `ca1_gst` 10/13 (failures outside L5).
+
+**Plan L3 — associate commission and fixed share (15 Nov 2026; 0195):** API `hr/l3_associate_commission.sh` 44/44 (share rate kind and history, share on the project per project / per watt, refused above the client amount, edited on the project and locked by a commission, no own rate needed; commission prefilled from the share, one per project, maker-checker, margin cap, reason for a changed amount, books Dr Commission tagged / Cr associate, payment with 194H TDS Dr associate / Cr cash, Cr TDS payable, TDS report and check, cancel / reverse rules, other company 404); UI `pw/l3_ui` 17/17 at 1440 / 390 (rates dialog "Associate's fixed share", wizard share prefilled and margin, project saved with the share, commission card: added by Accounts, approved by another person, paid with TDS ₹200 of ₹10,000, TDS report); re-runs `pt_project_types` 37/37, `p_vendor_code_billing` 44/44, `ca3_tds_loans_lock` 13/13, `l1_associates_roles` 22/22, `bp_parties` 95/99, `r_books_parties` 19/22 (old loan / overdue failures).
+
+**Plan L1 — Associates and I&C Clients (15 Nov 2026; 0194):** API `hr/l1_associates_roles.sh` 22/22 (role defaults, both roles, no role refused, tabs filter list and totals, role edits, wording of the 422 / 404 / 409 messages, role added when a record is used on the other kind of project, other company 404, backfill rule, posting slot label); UI `pw/l1_ui` 27/27 at 1440 / 390 (sidebar, tabs, both-role row, Role on the form preset from the tab and required, toast, wizard type names, I&C for client picker lists I&C Clients only, Associate projects picker associates only, no sideways scroll); re-runs `pt_project_types` 37/37, `p_vendor_code_billing` 44/44, `bp_parties` 95/99, `r_books_parties` 19/22 (loan-ledger name and overdue-date failures existed before).
+
+**Only MSS kept (14 Nov 2026; 0190):** run on a copy of the local test DB (228 companies, 735 employees, 502 logins) as the app's table-owner role through the real server start-up: 227 companies and 281,651 rows deleted in 5 rounds, 252 extra employee records folded into the person's MSS record, 460 people moved into MSS; after: companies = MSS only, 502 logins kept, no login with two employee records, no Aadhaar lost, no other-company rows in any table, all triggers back on; the former two-company employee (7816043646) applies for their own leave (pending), applying for someone else still FORBIDDEN. 12 test logins shared a PAN with another person and were folded into that person's record (test data reuses PANs).
 
 **CA answers, chunk 4b — expense claims D18 (14 Nov 2026; 0188):** API `hr/d18_claims.sh` 49/49 (Reports to set, loops and self refused; categories from masters; bill upload by the employee; no bill / future date / reused bill refused; EC-0001 waits for Vikram, in his bell; Accounts can't skip the manager, nobody approves their own; manager opens the bill, another employee can't; Vikram approves, can't also give the Accounts step; Accounts bell then approves; Create recommended fills six claim ledgers; books Dr Conveyance (Fuel) / Cr Rakesh; pay-now claim: HR refused, Accounts pays cash, books Dr Travelling / Cr Rakesh then Dr Rakesh / Cr Cash; no manager: Accounts stands in, then the Director; reject needs a reason, claimant's bell; withdraw while waiting only; full list needs the right; October salary carries the fuel claim, ESI on salary only, net 21,100; claim shows on the salary; line can't be edited, claim not paid twice; removed line leaves it off after Recalculate, then pay now; salary paid → payroll journal Dr Rakesh 1,250, claim paid with the salary, on the payslip, Rakesh's ledger square). Playwright `pw/d18_ui.mjs` 24/24 at 1440 and 390 (Rakesh files a claim with a bill photo in My space, Vikram approves it there, Accounts approves and pays it on Expense claims, Reports to on the profile and the drawer; no sideways scroll, no page errors). Regression on the same build (with 0187): d16 26, c2_payroll 72, c_payroll 27, y_payroll 38, m4_leave_holiday 34, a_employees 41, fix_people 39, m5_incentives 23 — all pass.
 
@@ -322,6 +330,7 @@ Full report: [test-reports/2026-11-14/README.md](./test-reports/2026-11-14/READM
 
 ### 6. Customers (95 %)
 - **Done:**
+  - L4 (15 Nov, 0193): **Referrals as an old client** on the customer page — projects he referred with an optional reward (due once started and paid; books Dr Commission / Cr his own ledger), Pay / Undo, set off if not paid; "Also an agent" / "Also a customer" links. Test by hand: refer Suresh's enquiry from Mahesh (Reference Old client), make the project, start it and take a payment → Mahesh's page shows the reward due; Pay ₹2,000 → his ledger Cr ₹3,000.
   - **Owner-reported (14 Nov):** (#1) the customer's geo location (saved from the form, `geo_location`) is shown under the address with **Open in Maps** (a map link opens as it is, "lat, lng" opens that point, other text is searched). Tests: `hr/fix_owner1.sh` O14–O15, `pw/fix_owner1.mjs` 22.
   - Customers with the address in parts (line 1 + state required) and GSTIN; payment terms with a Dues block.
   - Several projects per customer; Mark inactive; history.
@@ -359,6 +368,7 @@ Full report: [test-reports/2026-11-14/README.md](./test-reports/2026-11-14/READM
 
 ### 7. Enquiries (94 %)
 - **Done:**
+  - L4 (15 Nov, 0193): Reference **Old client** (pick a customer), carried to the project; repeat referrer hint with **Make agent** (agent linked to the customer, own agent ledger). Tests `l4_old_client_referral` 40, screens `l4_old_client_ui` 14.
   - **Owner-reported (14 Nov):** (#2) a note added once showed 3 times in Status history and Notes: it was **saved once** (no duplicate rows; no de-duplication migration needed) — the activity list joined the creator's employee rows of every company, and the Super Admin has one per company. The join (and the same join on the enquiry list owner, quotation activities, tasks, task events, calendar, team board, project progress / timeline) now takes the employee row of the record's own company. Add Note waits for the save (button disabled, "Adding…"), so a double press stores one note. (#3) One **History & notes** timeline replaces Status history + Notes: newest first, a type badge and icon per entry (Created, Assigned, Status change, Site visit, Quotation, Follow-up, Note, Updated), who · when on one line, the note text once, an **All / Notes** filter (notes are merged into the timeline, not listed twice), "Show more" after 10, Add note in its header. (#5) The footer button says **Schedule visit** (no visit), **View / edit visit** (a visit is booked — goes to the Site visit section) or **Schedule another visit** (the last one is done); an **Add follow-up** button sits next to it. A **Site visit** section shows the booked visit (number, date + time, person, going along, fee, notes) with Edit, Reschedule and Cancel visit, or the last done visit's outcome (outcome, findings, blockers, documents, location with a map link, photos) with Schedule another visit. (#4) The visitor list (Schedule / Assign / Edit visit) offers only Sales people (Sales department or a sales designation) and managers who assign visits (Sales Manager, Director, Super Admin) — `can_do_visits` on `GET /people-picker`; companions can still be anyone. Tests: `hr/fix_owner1.sh` 17/17, `pw/fix_owner1.mjs` 54/54 (1440 + 390); reruns `f_enquiries` 26, `m7_enquiries_r2` 51, `m7_visit_request` 35, `fix_visits` 15, `a_employees` 41, `w_people` 43, `ms_my_space` 26, `z_customers` 25, `pw/m7_ui`, `pw/fix_visits` (updated: the liaison is now a companion, not a visitor; follow-ups from "Add follow-up").
   - Four main statuses (7.2, 13 Nov): New, In progress (follow-up, meetings, notes, quotation draft / sent), Converted, Lost (incl. cancelled) on the list, filters, counts and the enquiry page; the detailed stage (or the lost reason) is a small second line. API: `main_status` on rows, `?main_status=`.
   - Repeat lead (7.3): picking a customer in Add enquiry (also the quick create from a customer) checks the phone's last 10 digits: "Open enquiry ENQ-… with <owner> (<status>)" with Open / Add follow-up; converted and lost ones are listed as history; a new enquiry can still be created. API: `GET /enquiries/phone-matches`.
@@ -594,7 +604,10 @@ Full report: [test-reports/2026-11-14/README.md](./test-reports/2026-11-14/READM
 ### 12. Billing and finance parties (86 %)
 - **Done:**
   - One sale document with B2B / B2C series; due dates from terms; credit notes; receipts.
-  - Partners and agents with commission; place of supply from the site state on project bills.
+  - Associates (was Partners) and agents with commission; place of supply from the site state on project bills.
+  - Associates / I&C Clients: one list with a Role and two tabs; project pickers by role (L1, 15 Nov).
+  - Associate's fixed share (rate kind with history, our charge = client amount − share) and the associate commission route with TDS (L3, 15 Nov).
+  - Outsourced team's bill on work orders (GST bill / without GST / no bill → Labour Charges), subcontractor GSTIN and PAN, GSTR-3B input credit (L5, 15 Nov).
   - Payment on a project's invoice asks "Money from": From client (cash) by default or From bank (loan); the project's bank / cash received and due follow (P4 gap, closed after chunk B).
 - **Pending:**
   - Dues figures and a dues filter on the partner list.
@@ -608,8 +621,11 @@ Full report: [test-reports/2026-11-14/README.md](./test-reports/2026-11-14/READM
   - Record a receipt (cash / bank / UPI); partial payment; the bill shows paid and due.
   - On a loan project's invoice, record ₹10,000 "From bank (loan)": the project's bank received goes up by 10,000 and bank due down; without a choice it counts as the client's cash.
   - Credit note against a bill: returns stock in the right unit and reduces what's due.
-  - Bill to a partner; partner page shows terms, dues and both sides of the money.
+  - Bill to an associate; the associate page shows terms, dues and both sides of the money.
+  - Associates page: switch to I&C Clients, add one (Role ticked from the tab), open a new I&C for client project: only I&C Clients are offered; an Associate project offers only associates.
   - Agents and commission approval.
+  - Subcontractor with GSTIN: approve a work order, Their bill → GST bill ₹40,000 + ₹7,200: Accounts shows Dr Subcontract Work + Input GST / Cr the team, GST → GSTR-3B input credit; change to No bill: the entry moves to Labour Charges.
+  - Associate with a fixed share: Project rates → Add rate → Associate projects, the associate, "Associate's fixed share" ₹20,000; new project on our code with client amount ₹3,00,000 → our charge ₹2,80,000; Financials → Associate commission: add (₹20,000), approve as another person, pay ₹10,000 with 194H → TDS ₹200, he gets ₹9,800; Accounts → TDS payable shows it.
   - Issued bill → Share on WhatsApp: the number, balance due and due date are in the message; Open WhatsApp; Copy link; open the link signed out.
 - **Test by hand, edge cases:**
   - A draft bill has no Share button; a person without the billing view right can't make a link.
@@ -628,16 +644,19 @@ Full report: [test-reports/2026-11-14/README.md](./test-reports/2026-11-14/READM
   - Tally-style ledgers and groups; vouchers; bank import; live stock-in-hand; a Cost of goods sold ledger.
   - Ledger code required and filled from the name (14 Nov, owner): HDFC Current A/c → HDFC_CURRENT_AC, unique per company with _2, _3 …; existing ledgers filled by migration 0182 (party ledgers wait for the CA's mapping); tests `fix_codes`.
   - GST (GSTR-1 / 3B with an Excel export for the CA); TDS; debit notes; fixed assets; closing stock.
+  - L2 (15 Nov, 0192): customer / vendor / agent / subcontractor sub-groups seeded and existing ledgers moved; ledger made with the record in the group chosen on its form (default from GST type / category); use a ledger made in Accounts; Move / Keep on GST type / category change; "This ledger is for" on ledgers; "N ledgers without a record" with Create on the five pages.
 - **Pending:**
   - CA to confirm: partner ledgers under Sundry Debtors, the FY 2026-27 tax figures, material sent to sites at cost.
   - Real opening balances as on 1 Apr 2026 and the Tally ledger list.
-- **Tests:** `ac_books` 66, `gs_gst` 57, five e2e runs 194; screens `gs_gst_ui` 115.
+- **Tests:** `ac_books` 66, `gs_gst` 57, five e2e runs 194, `l2_entity_ledgers` 53; screens `gs_gst_ui` 115, `l2_ledger_ui` 24.
 - **Test by hand, normal use:**
   - Ledgers and groups: balances match bills, receipts and payments.
   - New ledger: type a name, the code fills itself; type your own code, it stays when you change the name; save two ledgers whose names give the same code: the second gets _2.
   - Voucher entry (payment / receipt / contra / journal) and its number.
   - Bank statement import: lines match to receipts and payments; unmatched lines stay for review.
   - Day book, trial balance, P&L, balance sheet.
+  - New customer (unregistered): its ledger appears at once under Customers – B2C; a GST-registered one under B2B; pick another group on the form and it goes there.
+  - Accounts → New ledger under Vendors – Registered (B2B): "This ledger is for" fills as Vendor; the Vendors page then shows it without a record; Create → the vendor is linked to that ledger (opening balance kept).
   - GSTR-1 (B2B / B2C Large / B2C Small / credit notes / documents issued), GSTR-3B, Excel for the CA.
   - TDS, debit notes, fixed assets and depreciation; closing stock from the warehouse.
 - **Test by hand, edge cases:**
@@ -646,6 +665,8 @@ Full report: [test-reports/2026-11-14/README.md](./test-reports/2026-11-14/READM
   - Entry in a locked period: refused.
   - Bank line matched twice: refused.
   - Deactivating a ledger with entries: allowed but history unchanged.
+  - Customer GST type Regular → Unregistered: the form asks Move / Keep; Save without an answer is stopped; Keep leaves the ledger where it was.
+  - Using a ledger already linked to another record, or a vendor's ledger for a customer: refused.
 
 ### 14. Tasks (85 %)
 - **Done:** tasks with assignee, due date, reopen with a reason, automation rules, My day.
