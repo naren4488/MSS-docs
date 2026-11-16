@@ -1,6 +1,6 @@
 # Module status and testing report
 
-**Updated:** 15 Nov 2026 (profile in My space; prospects 0198; vendor code / type changes 0199; L6 one ledger per associate / code firm 0200); L7 one ledger per employee 0201; L8 shareholders 0202; L10 petty cash 0204; L9 loan lender type 0203; L11 cheque clearing + DISCOM Fee 0205; L13 tool use types 0207; L12 books tidy-up 0206; L14 TDS ledgers by section 0208; Associate Adjustments rename 0209; Open ledger on Vendors / Agents / Subcontractors / Associates / Employees
+**Updated:** 16 Nov 2026 (pipeline ownership plan agreed — plan only, no tests yet; profile in My space; prospects 0198; vendor code / type changes 0199; L6 one ledger per associate / code firm 0200); L7 one ledger per employee 0201; L8 shareholders 0202; L10 petty cash 0204; L9 loan lender type 0203; L11 cheque clearing + DISCOM Fee 0205; L13 tool use types 0207; L12 books tidy-up 0206; L14 TDS ledgers by section 0208; Associate Adjustments rename 0209; Open ledger on Vendors / Agents / Subcontractors / Associates / Employees
 
 **Profile in My space (15 Nov 2026, owner):** Playwright `pw/profile_in_my_space.mjs` 26/26 at 1440 and 390 as an employee and as Super Admin — Settings opens on Appearance with no Profile in its list (Super Admin keeps Company / Companies / System), an old /settings/profile link opens My space → Profile, the header avatar goes there, the camera button on the My space photo uploads a photo that shows in My space and in the header; no sideways scroll, no page errors. Production build (`tsc -b && vite build`) passes.
 
