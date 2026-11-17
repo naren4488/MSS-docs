@@ -49,12 +49,12 @@ export const PROJECT_TABLE_HEADERS = [
   "Final file Ready Or NOT",
   "Quotation prepared",
   "Quotation signed",
-  "Subsidy certificate downloaded",
-  "Subsidy certificate",
+  "WCR downloaded",
+  "WCR",
+  "DCR downloaded",
+  "DCR",
   "Invoice downloaded",
   "Invoice",
-  "Warranty card downloaded",
-  "Warranty card",
   "Amount to us",
   "Amount still with askshakti",
   "Total amount",
@@ -91,12 +91,12 @@ export const HIDDEN_PROJECT_COLUMNS = new Set<string>([
   "Final file Ready Or NOT",
   "Quotation prepared",
   "Quotation signed",
-  "Subsidy certificate downloaded",
-  "Subsidy certificate",
+  "WCR downloaded",
+  "WCR",
+  "DCR downloaded",
+  "DCR",
   "Invoice downloaded",
   "Invoice",
-  "Warranty card downloaded",
-  "Warranty card",
   "Amount to us",
   "Amount still with askshakti",
   "Total amount",
@@ -661,6 +661,34 @@ function sheetCellGpsLink(headers: readonly string[], row: readonly string[]): s
   return sheetCell(headers, row, "GPS / LINK") || sheetCell(headers, row, "LOCATION", 1);
 }
 
+/**
+ * Sheet columns AN–AS were renamed on 17 Nov 2026:
+ * Subsidy certificate → WCR, Invoice → DCR, Warranty card → Invoice.
+ * A tab still on the old names is read by its old headers (same positions).
+ */
+const DOCUMENT_COLUMNS_NEW = [
+  "WCR downloaded",
+  "WCR",
+  "DCR downloaded",
+  "DCR",
+  "Invoice downloaded",
+  "Invoice",
+] as const;
+const DOCUMENT_COLUMNS_OLD = [
+  "Subsidy certificate downloaded",
+  "Subsidy certificate",
+  "Invoice downloaded",
+  "Invoice",
+  "Warranty card downloaded",
+  "Warranty card",
+] as const;
+
+function documentColumns(headers: readonly string[], row: readonly string[]): string[] {
+  const renamed = headers.some((header) => normalizeHeaderKey(header) === normalizeHeaderKey("WCR"));
+  const labels = renamed ? DOCUMENT_COLUMNS_NEW : DOCUMENT_COLUMNS_OLD;
+  return labels.map((label) => sheetCell(headers, row, label));
+}
+
 export function mapSheetRowToProjectRow(
   headers: string[],
   row: string[],
@@ -727,12 +755,7 @@ export function mapSheetRowToProjectRow(
     sheetCell(headers, row, ["Final file Ready Or NOT", "Final file Ready Or Not"]),
     sheetCell(headers, row, "Quotation prepared"),
     sheetCell(headers, row, "Quotation signed"),
-    sheetCell(headers, row, "Subsidy certificate downloaded"),
-    sheetCell(headers, row, "Subsidy certificate"),
-    sheetCell(headers, row, "Invoice downloaded"),
-    sheetCell(headers, row, "Invoice"),
-    sheetCell(headers, row, "Warranty card downloaded"),
-    sheetCell(headers, row, "Warranty card"),
+    ...documentColumns(headers, row),
     sheetCell(headers, row, "Amount to us"),
     sheetCell(headers, row, ["Amount still with askshakti", "Amount still with arkshakti"]),
     sheetCell(headers, row, "Total amount"),
