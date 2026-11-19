@@ -9,6 +9,8 @@ export type QuotationStructureBrand = "Apollo" | "Tata";
 export type QuotationAcCableBrand = "Ramsons" | "Polycab";
 /** Solar PV module brand on the BOM. */
 export type QuotationPanelBrand = "Adani" | "Waaree" | "INA";
+/** ACDB / DCDB make pair on the residential BOM. */
+export type QuotationAcDcDbOption = "HavellsSibass" | "HavellsBoth";
 /** Earthing wire BOM option — single make or Indo/Ramsons either-or. */
 export type QuotationEarthingWireOption = "Polycab25" | "Indo6" | "Ramsons16" | "IndoOrRamsons";
 /** Residential subsidy: MNRE only, or MNRE + state. Hide the block via showSubsidySection. */
@@ -82,6 +84,8 @@ export interface QuotationData {
   panelBrand: QuotationPanelBrand;
   /** AC armoured cable brand — Ramsons or Polycab in the BOM. */
   acCableBrand: QuotationAcCableBrand;
+  /** ACDB / DCDB brands — Havells+Sibass (default) or both Havells. */
+  acDcDb: QuotationAcDcDbOption;
   /** Earthing wire make shown in the BOM. */
   earthingWire: QuotationEarthingWireOption;
   address: string;

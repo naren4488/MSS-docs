@@ -3,6 +3,20 @@
   padding-bottom: 40px;
 }
 
+/* Maker routes: no extra page chrome so pane scrolling can own the viewport */
+.app-root--maker {
+  padding-bottom: 0;
+}
+
+@media (min-width: 1121px) {
+  .app-root--maker {
+    height: 100dvh;
+    max-height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+  }
+}
+
 .feature-nav {
   position: sticky;
   top: 0;
@@ -75,12 +89,12 @@
   padding: 24px 20px 120px;
 }
 
-/* Offer letter creator: full viewport width; editor 40% / preview 60% */
+/* Document makers: full viewport width; editor ~40% / preview ~60% */
 .page-shell--maker {
   max-width: none;
   width: 100%;
   margin: 0;
-  padding-inline: clamp(16px, 2vw, 28px);
+  padding: 16px clamp(16px, 2vw, 28px) 16px;
   box-sizing: border-box;
 }
 
@@ -103,6 +117,55 @@
 .page-shell--maker .preview-shell {
   width: 100%;
   min-width: 0;
+}
+
+/*
+ * Side-by-side makers: lock to the viewport and let each pane scroll on its own
+ * so the editor and preview no longer drag the whole page together.
+ * Stacked / narrow layouts keep normal page scroll (see responsive.css).
+ */
+@media (min-width: 1121px) {
+  .page-shell--maker {
+    height: 100dvh;
+    max-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .page-shell--maker .sticky-topbar {
+    position: relative;
+    top: auto;
+    flex-shrink: 0;
+    margin-bottom: 12px;
+  }
+
+  .page-shell--maker .layout-grid {
+    flex: 1 1 auto;
+    min-height: 0;
+    align-items: stretch;
+    overflow: hidden;
+  }
+
+  .page-shell--maker .editor-shell,
+  .page-shell--maker .preview-shell {
+    min-height: 0;
+    max-height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+
+  .page-shell--maker .editor-shell .panel-header,
+  .page-shell--maker .preview-shell .panel-header {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    margin-bottom: 14px;
+    padding-top: 2px;
+    background: rgba(255, 255, 255, 0.96);
+  }
 }
 
 .hero-card,

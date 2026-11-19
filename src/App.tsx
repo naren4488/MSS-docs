@@ -26,7 +26,7 @@ export default function App() {
     (location.pathname.startsWith("/employee-directory") && location.pathname !== "/employees");
 
   return (
-    <div className="app-root">
+    <div className={`app-root${isMakerRoute ? " app-root--maker" : ""}`}>
       {!isMakerRoute && <FeatureNavigation />}
       <Routes location={location} key={location.pathname}>
         <Route path="/" element={<Navigate replace to="/offer-letters" />} />

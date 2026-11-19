@@ -33,11 +33,17 @@
     padding: 0 !important;
     margin: 0 !important;
     max-width: none !important;
+    height: auto !important;
+    max-height: none !important;
+    display: block !important;
+    overflow: visible !important;
   }
 
   .page-shell--maker .layout-grid {
     display: block !important;
     gap: 0 !important;
+    overflow: visible !important;
+    min-height: 0 !important;
   }
 
   .page-shell--maker .editor-shell {
@@ -51,6 +57,12 @@
     padding: 0 !important;
     border-radius: 0 !important;
     backdrop-filter: none !important;
+    overflow: visible !important;
+    max-height: none !important;
+  }
+
+  .page-shell--maker .preview-shell .panel-header {
+    position: static !important;
   }
 
   .preview-shell.preview-shell--offscreen-screen {

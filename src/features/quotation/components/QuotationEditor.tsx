@@ -10,6 +10,7 @@ import type {
   QuotationIssuer,
   QuotationPhase,
   QuotationAcCableBrand,
+  QuotationAcDcDbOption,
   QuotationEarthingWireOption,
   QuotationPanelBrand,
   QuotationSignatureMode,
@@ -20,6 +21,7 @@ import { CommercialOfferEditor, MaterialItemEditor, TermItemEditor } from "./Quo
 import { stripSyncedCommercialRows, computeEffectivePayable, formatInrGrouped } from "../lib/quotation-formatters";
 import {
   applyAcCableBrandToMaterials,
+  applyAcDcDbToMaterials,
   applyCommercialCapacityToMaterials,
   applyEarthingWireToMaterials,
   applyOffgridCapacityToMaterials,
@@ -31,6 +33,7 @@ import {
   isCommercialQuotation,
   isOffgridQuotation,
   offgridProjectAmount,
+  resolveAcDcDbOption,
   resolveEarthingWireOption,
   resolvePanelBrand,
   resolveQuotationIssuer,
@@ -292,6 +295,7 @@ export function QuotationEditor({ data, onChange }: QuotationEditorProps) {
                               phase,
                               data.language,
                               data.acCableBrand === "Polycab" ? "Polycab" : "Ramsons",
+                              resolveAcDcDbOption(data.acDcDb),
                             ),
                           }),
                     });
@@ -383,6 +387,30 @@ export function QuotationEditor({ data, onChange }: QuotationEditorProps) {
                     <option value="IndoOrRamsons">6 sq mm Indo or 16 sq mm Ramsons</option>
                   </select>
                 </div>
+                {commercial ? null : (
+                  <div className="field">
+                    <label>AC / DC DB</label>
+                    <select
+                      value={resolveAcDcDbOption(data.acDcDb)}
+                      onChange={(event) => {
+                        const acDcDb = event.target.value as QuotationAcDcDbOption;
+                        onChange({
+                          ...data,
+                          acDcDb,
+                          materialItems: applyAcDcDbToMaterials(
+                            data.materialItems,
+                            acDcDb,
+                            data.language,
+                            data.phase,
+                          ),
+                        });
+                      }}
+                    >
+                      <option value="HavellsSibass">AC Havells · DC Sibass</option>
+                      <option value="HavellsBoth">AC Havells · DC Havells</option>
+                    </select>
+                  </div>
+                )}
               </>
             )}
           </div>

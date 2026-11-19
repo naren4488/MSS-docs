@@ -9,6 +9,7 @@ import type {
   QuotationMaterialItem,
   QuotationPhase,
   QuotationAcCableBrand,
+  QuotationAcDcDbOption,
   QuotationEarthingWireOption,
   QuotationPanelBrand,
   QuotationSignatureMode,
@@ -166,8 +167,50 @@ export function acDbDcDbUnit(phase: QuotationPhase): string {
   return phase === "3PH" ? "64 Amp / 1000 V" : "32 Amp / 600 V";
 }
 
-export function acDbDcDbMake(language: QuotationLanguage): string {
-  return language === "hi" ? "AC — हैवेल्स · DC — हैवेल्स" : "AC — Havells · DC — Havells";
+export function resolveAcDcDbOption(
+  value?: QuotationAcDcDbOption | string | null,
+): QuotationAcDcDbOption {
+  if (value === "HavellsBoth" || value === "HavellsSibass") return value;
+  return "HavellsSibass";
+}
+
+export function inferAcDcDbOptionFromMake(make: string): QuotationAcDcDbOption | null {
+  const text = make.trim();
+  if (!text) return null;
+  if (/sibass|सिबास/i.test(text)) return "HavellsSibass";
+  if (/havells\s+or\s+sibass|हैवेल्स या सिबास/i.test(text)) return "HavellsSibass";
+  if (/dc\s*[—\-–]\s*havells|dc\s*[—\-–]\s*हैवेल्स/i.test(text)) return "HavellsBoth";
+  if (/havells|हैवेल्स/i.test(text) && !/sibass|सिबास/i.test(text)) return "HavellsBoth";
+  return null;
+}
+
+export function acDbDcDbMake(
+  language: QuotationLanguage,
+  option: QuotationAcDcDbOption = "HavellsSibass",
+): string {
+  const resolved = resolveAcDcDbOption(option);
+  if (language === "hi") {
+    return resolved === "HavellsBoth"
+      ? "AC — हैवेल्स · DC — हैवेल्स"
+      : "AC — हैवेल्स · DC — सिबास";
+  }
+  return resolved === "HavellsBoth"
+    ? "AC — Havells · DC — Havells"
+    : "AC — Havells · DC — Sibass";
+}
+
+export function applyAcDcDbToMaterials(
+  items: QuotationMaterialItem[],
+  option: QuotationAcDcDbOption,
+  language: QuotationLanguage,
+  phase: QuotationPhase,
+): QuotationMaterialItem[] {
+  const make = acDbDcDbMake(language, option);
+  const unit = acDbDcDbUnit(phase);
+  return items.map((item) => {
+    if (!isAcDbDcDbDescription(item.description)) return item;
+    return { ...item, unit, make };
+  });
 }
 
 function stripPhaseFromCapacity(capacity: string): string {
@@ -365,6 +408,7 @@ export function applyPhaseToMaterialItems(
   phase: QuotationPhase,
   language: QuotationLanguage,
   acCableBrand: QuotationAcCableBrand = "Ramsons",
+  acDcDb: QuotationAcDcDbOption = "HavellsSibass",
 ): QuotationMaterialItem[] {
   return items.map((item) => {
     if (isAcCableDescription(item.description)) {
@@ -374,7 +418,11 @@ export function applyPhaseToMaterialItems(
       return { ...item, unit: inverterUnit(phase, language) };
     }
     if (isAcDbDcDbDescription(item.description)) {
-      return { ...item, unit: acDbDcDbUnit(phase), make: acDbDcDbMake(language) };
+      return {
+        ...item,
+        unit: acDbDcDbUnit(phase),
+        make: acDbDcDbMake(language, acDcDb),
+      };
     }
     return item;
   });
@@ -387,6 +435,7 @@ function defaultMaterialItems(
   acCableBrand: QuotationAcCableBrand = "Ramsons",
   earthingWire: QuotationEarthingWireOption = "IndoOrRamsons",
   panelBrand: QuotationPanelBrand = "Adani",
+  acDcDb: QuotationAcDcDbOption = "HavellsSibass",
 ): QuotationMaterialItem[] {
   const structureQty = language === "hi" ? "आवश्यकतानुसार" : "As per Requirement";
   const structure = material(
@@ -408,7 +457,12 @@ function defaultMaterialItems(
       material("लाइटनिंग अरेस्टर किट", "1 नं.", "1 नं.", "1 मी., कॉपर बाउंड"),
       material("अर्थिंग किट", "3 सेट", "सेट", "3 कॉपर बाउंड रॉड व अर्थिंग केमिकल बैग"),
       material("अर्थिंग वायर", "100 तक", "मी.", earthingMake),
-      material("ACDB / DCDB / MCB डिस्ट्रीब्यूशन बॉक्स", "1, 1 नं.", acDbDcDbUnit(phase), acDbDcDbMake(language)),
+      material(
+        "ACDB / DCDB / MCB डिस्ट्रीब्यूशन बॉक्स",
+        "1, 1 नं.",
+        acDbDcDbUnit(phase),
+        acDbDcDbMake(language, acDcDb),
+      ),
       material("सोलर व नेट मीटर", "1, 1 नं.", "", "Avon मीटर उपलब्धता अनुसार, JVVNL द्वारा टेस्टेड"),
       material("कनेक्शन किट", "आवश्यकतानुसार", "—", "कनेक्टिंग केबल (4 वर्ग मिमी — पॉलीकैब), MC4, जम्पर"),
       material("डिज़ाइनेड इंस्टॉलेशन व कमीशनिंग", "", "साइट आवश्यकतानुसार", "टीम माही सोलर सॉल्यूशन"),
@@ -423,7 +477,12 @@ function defaultMaterialItems(
     material("Lightning Arrestor Kit", "1 No", "1 No", "1 M, Copper bound"),
     material("Earthing Kit", "3 Set", "Set", "3 copper bound rods and earthing chemical bag"),
     material("Earthing Wire", "Upto 100", "Mtr", earthingMake),
-    material("ACDB / DCDB / MCB Distribution Box", "1, 1 No", acDbDcDbUnit(phase), acDbDcDbMake(language)),
+    material(
+      "ACDB / DCDB / MCB Distribution Box",
+      "1, 1 No",
+      acDbDcDbUnit(phase),
+      acDbDcDbMake(language, acDcDb),
+    ),
     material("Solar & Net Meter", "1, 1 No", "", "Avon Meter as per availability, tested by JVVNL"),
     material("Connection Kit", "As per Requirement", "—", "Connecting cable (4 sq mm — Polycab), MC4, jumper"),
     material("Designed Installation & Commissioning", "", "As per site requirement", "Team Mahi Solar Solution"),
@@ -1557,7 +1616,7 @@ export function createDefaultQuotationData(
           phase,
           language,
         )
-      : defaultMaterialItems(language, phase, "Apollo", "Ramsons", "IndoOrRamsons", panelBrand);
+      : defaultMaterialItems(language, phase, "Apollo", "Ramsons", "IndoOrRamsons", panelBrand, "HavellsSibass");
 
   return {
     language: isHindi ? "hi" : "en",
@@ -1575,6 +1634,7 @@ export function createDefaultQuotationData(
     structureBrand: "Apollo",
     panelBrand,
     acCableBrand: "Ramsons",
+    acDcDb: "HavellsSibass",
     earthingWire: "IndoOrRamsons",
     address: "Jaipur",
     proposalDate: today,
@@ -1685,6 +1745,7 @@ export function switchQuotationLanguage(data: QuotationData, language: Quotation
     structureBrand: data.structureBrand === "Tata" ? "Tata" : "Apollo",
     panelBrand: resolvePanelBrand(data.panelBrand ?? (offgrid ? "Waaree" : "Adani")),
     acCableBrand: data.acCableBrand === "Polycab" ? "Polycab" : "Ramsons",
+    acDcDb: resolveAcDcDbOption(data.acDcDb),
     earthingWire: resolveEarthingWireOption(data.earthingWire),
     address: data.address,
     proposalDate: data.proposalDate,
@@ -1695,21 +1756,27 @@ export function switchQuotationLanguage(data: QuotationData, language: Quotation
     company: { ...fresh.company, ...data.company },
     materialItems: applyPanelBrandToMaterials(
       applyEarthingWireToMaterials(
-        applyStructureBrandToMaterials(
-          offgrid
-            ? applyOffgridCapacityToMaterials(fresh.materialItems, data.capacity, data.phase, language)
-            : commercial
-              ? applyCommercialCapacityToMaterials(fresh.materialItems, data.capacity, data.phase, language, {
-                  acCableBrand: data.acCableBrand === "Polycab" ? "Polycab" : "Ramsons",
-                })
-              : applyPhaseToMaterialItems(
-                  fresh.materialItems,
-                  data.phase,
-                  language,
-                  data.acCableBrand === "Polycab" ? "Polycab" : "Ramsons",
-                ),
-          data.structureBrand === "Tata" ? "Tata" : "Apollo",
+        applyAcDcDbToMaterials(
+          applyStructureBrandToMaterials(
+            offgrid
+              ? applyOffgridCapacityToMaterials(fresh.materialItems, data.capacity, data.phase, language)
+              : commercial
+                ? applyCommercialCapacityToMaterials(fresh.materialItems, data.capacity, data.phase, language, {
+                    acCableBrand: data.acCableBrand === "Polycab" ? "Polycab" : "Ramsons",
+                  })
+                : applyPhaseToMaterialItems(
+                    fresh.materialItems,
+                    data.phase,
+                    language,
+                    data.acCableBrand === "Polycab" ? "Polycab" : "Ramsons",
+                    resolveAcDcDbOption(data.acDcDb),
+                  ),
+            data.structureBrand === "Tata" ? "Tata" : "Apollo",
+            language,
+          ),
+          resolveAcDcDbOption(data.acDcDb),
           language,
+          data.phase,
         ),
         resolveEarthingWireOption(data.earthingWire),
         language,
@@ -1810,6 +1877,12 @@ export function normalizeQuotationData(input?: Partial<QuotationData> | null): Q
     input?.panelBrand != null
       ? resolvePanelBrand(input.panelBrand)
       : inferPanelBrandFromMake(inferredPanelMake) ?? (offgrid ? "Waaree" : "Adani");
+  const inferredAcDcDbMake =
+    materialItems.find((item) => isAcDbDcDbDescription(item.description))?.make ?? "";
+  const acDcDb =
+    input?.acDcDb != null
+      ? resolveAcDcDbOption(input.acDcDb)
+      : inferAcDcDbOptionFromMake(inferredAcDcDbMake) ?? "HavellsSibass";
   return {
     ...defaults,
     ...input,
@@ -1821,6 +1894,7 @@ export function normalizeQuotationData(input?: Partial<QuotationData> | null): Q
     structureBrand,
     panelBrand,
     acCableBrand,
+    acDcDb,
     earthingWire,
     subsidyScope,
     capacity: stripPhaseFromCapacity(input?.capacity ?? defaults.capacity) || defaults.capacity,
