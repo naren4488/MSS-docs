@@ -24,9 +24,15 @@
     print-color-adjust: exact;
   }
 
-  .app-root {
+  .app-root,
+  .app-root--maker {
     padding-bottom: 0 !important;
     min-height: 0 !important;
+    /* the side-by-side screen layout locks the app to one screen (100dvh, overflow hidden);
+       a print must never inherit that, or only the first screen would print */
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
   }
 
   .page-shell--maker {
