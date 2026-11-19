@@ -123,6 +123,12 @@
     display: none !important;
   }
 
+  /* iPad / iPhone (owner 19 Nov 2026): Safari keeps its own print margins, so a full-height A4 page
+     overflows onto an empty sheet. Print each page at 90% — fits A4 and US Letter inside those margins. */
+  html.is-ios [data-export-page="true"] {
+    zoom: 0.9;
+  }
+
   /* MSS Sites — spreadsheet-style wide print (page width set dynamically in JS) */
   @page mss-sites-page {
     margin: 4mm;
