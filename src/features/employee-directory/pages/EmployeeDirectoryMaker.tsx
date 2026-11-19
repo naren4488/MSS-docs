@@ -14,6 +14,7 @@ import {
 } from "../lib/employee-directory-storage";
 import { documentDownloadName } from "@/lib/document-filename";
 import type { EmployeeDirectoryData } from "../types/employee-directory";
+import { ask } from "@/lib/confirm-dialog";
 
 function cloneData(data: EmployeeDirectoryData) {
   return JSON.parse(JSON.stringify(data)) as EmployeeDirectoryData;
@@ -95,15 +96,15 @@ export function EmployeeDirectoryMaker() {
     }
   }
 
-  function handleBack() {
-    if (isDirty && !window.confirm("You have unsaved changes. Go back to all employee registers anyway?")) {
+  async function handleBack() {
+    if (isDirty && !await ask("You have unsaved changes. Go back to all employee registers anyway?")) {
       return;
     }
     navigate("/employees");
   }
 
-  function handleReset() {
-    if (!window.confirm("Reset the form to default values? Any unsaved edits will be lost.")) {
+  async function handleReset() {
+    if (!await ask("Reset the form to default values? Any unsaved edits will be lost.")) {
       return;
     }
     setData(createDefaultEmployeeDirectoryData());

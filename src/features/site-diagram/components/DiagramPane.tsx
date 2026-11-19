@@ -3,6 +3,7 @@ import { useCallback, useRef, useState, type CSSProperties, type ReactNode } fro
 import { PANEL_BRAND, PANEL_WP, formatPanelCapacityKw, type SiteLayout } from "../lib/build-site-layout";
 import { downloadSiteDiagramPdf, type SiteDiagramPdfMeta } from "../lib/download-site-diagram-pdf";
 import { SiteDiagramSvg } from "./SiteDiagramSvg";
+import { alertDialog } from "@/lib/confirm-dialog";
 
 const ZOOM_MIN = 0.5;
 const ZOOM_MAX = 2.5;
@@ -235,7 +236,7 @@ function ZoomControls({
       await onDownload();
     } catch (error) {
       console.error("Site diagram PDF download failed", error);
-      window.alert("Could not download this diagram as PDF. Please try again.");
+      void alertDialog("Could not download this diagram as PDF. Please try again.");
     } finally {
       setDownloading(false);
     }

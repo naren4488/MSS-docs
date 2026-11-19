@@ -4,13 +4,14 @@ import { Link } from "react-router-dom";
 import { OFFER_LETTER_TEMPLATES } from "../lib/offer-letter-defaults";
 import { formatRecordDate } from "../lib/offer-letter-formatters";
 import { deleteOfferLetterRecord, listOfferLetters } from "../lib/offer-letter-storage";
+import { ask } from "@/lib/confirm-dialog";
 
 export function AllOfferLetters() {
   const [refreshToken, setRefreshToken] = useState(0);
   const records = useMemo(() => listOfferLetters(), [refreshToken]);
 
-  function handleDelete(id: string) {
-    if (!window.confirm("Delete this saved offer letter?")) {
+  async function handleDelete(id: string) {
+    if (!await ask("Delete this saved offer letter?")) {
       return;
     }
 

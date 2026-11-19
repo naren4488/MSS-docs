@@ -6,6 +6,7 @@ import { HandoverPreview } from "../components/HandoverPreview";
 import { capacityFileLabel, documentDownloadName, phaseFileLabel, plantDocumentName } from "@/lib/document-filename";
 import { createHandoverData, isHandoverKind } from "../lib/handover-defaults";
 import type { HandoverData } from "../types/handover";
+import { ask } from "@/lib/confirm-dialog";
 
 export function HandoverMaker() {
   const [searchParams] = useSearchParams();
@@ -56,13 +57,13 @@ export function HandoverMaker() {
     }
   }
 
-  function handleBack() {
-    if (isDirty && !window.confirm("You have unsaved changes. Go back anyway?")) return;
+  async function handleBack() {
+    if (isDirty && !await ask("You have unsaved changes. Go back anyway?")) return;
     navigate("/handovers");
   }
 
-  function handleReset() {
-    if (!window.confirm("Reset this handover to the template? Your edits will be lost.")) return;
+  async function handleReset() {
+    if (!await ask("Reset this handover to the template? Your edits will be lost.")) return;
     setData(createHandoverData(data.kind));
   }
 

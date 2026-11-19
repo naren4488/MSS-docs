@@ -8,6 +8,7 @@ import type { AgreementCompany, AgreementData, AgreementSection, AgreementWitnes
 import { PartnerRateCardEditor } from "@/features/partner-agreement/components/PartnerRateCardEditor";
 import { PartyEditor } from "./PartyEditor";
 import { SectionEditor } from "./ClauseListEditor";
+import { ask } from "@/lib/confirm-dialog";
 
 interface AgreementEditorProps {
   data: AgreementData;
@@ -82,8 +83,8 @@ export function AgreementEditor({ data, onChange }: AgreementEditorProps) {
     });
   }
 
-  function deleteSection(index: number) {
-    if (!window.confirm("Delete this section and all its clauses?")) {
+  async function deleteSection(index: number) {
+    if (!await ask("Delete this section and all its clauses?")) {
       return;
     }
     onChange({ ...data, sections: data.sections.filter((_, sectionIndex) => sectionIndex !== index) });

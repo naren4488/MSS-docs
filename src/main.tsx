@@ -2,6 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App";
+import { ConfirmHost } from "@/components/ConfirmHost";
 import { seedSampleAgreements } from "@/features/agreement/lib/agreement-storage";
 import { seedEmployeeDirectory } from "@/features/employee-directory/lib/employee-directory-storage";
 import "./styles/index.css";
@@ -20,6 +21,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <BrowserRouter>
       <App />
+      <ConfirmHost />
     </BrowserRouter>
   </React.StrictMode>,
 );

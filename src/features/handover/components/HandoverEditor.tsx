@@ -6,6 +6,7 @@ import { BulletListEditor } from "@/features/offer-letter/components/BulletListE
 import type { AgreementCompany } from "@/features/agreement/types/agreement";
 import { applyHandoverKind } from "../lib/handover-defaults";
 import type { HandoverData, HandoverEquipmentItem, HandoverKind, HandoverTerm } from "../types/handover";
+import { ask } from "@/lib/confirm-dialog";
 
 interface HandoverEditorProps {
   data: HandoverData;
@@ -66,10 +67,10 @@ export function HandoverEditor({ data, onChange }: HandoverEditorProps) {
     );
   }
 
-  function changeKind(kind: HandoverKind) {
+  async function changeKind(kind: HandoverKind) {
     if (kind === data.kind) return;
     if (
-      !window.confirm(
+      !await ask(
         "Switch plant type? Client name, phone, address and dates stay. Equipment, care notes, documents and terms reset to that plant type.",
       )
     ) {

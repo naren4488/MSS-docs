@@ -13,6 +13,7 @@ import type {
   PartnerWitness,
 } from "../types/partner-agreement";
 import { PartnerRateCardEditor } from "./PartnerRateCardEditor";
+import { ask } from "@/lib/confirm-dialog";
 
 interface PartnerAgreementEditorProps {
   data: PartnerAgreementData;
@@ -87,8 +88,8 @@ export function PartnerAgreementEditor({ data, onChange }: PartnerAgreementEdito
     });
   }
 
-  function deleteSection(index: number) {
-    if (!window.confirm("Delete this section and all its clauses?")) {
+  async function deleteSection(index: number) {
+    if (!await ask("Delete this section and all its clauses?")) {
       return;
     }
     onChange({ ...data, sections: data.sections.filter((_, sectionIndex) => sectionIndex !== index) });

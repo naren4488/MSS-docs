@@ -14,6 +14,7 @@ import {
 import { switchQuotationLanguage } from "../lib/quotation-defaults";
 import { capacityFileLabel, documentDownloadName, phaseFileLabel, plantDocumentName } from "@/lib/document-filename";
 import type { QuotationData, QuotationLanguage } from "../types/quotation";
+import { ask } from "@/lib/confirm-dialog";
 
 export function QuotationMaker() {
   const [searchParams] = useSearchParams();
@@ -71,15 +72,15 @@ export function QuotationMaker() {
     }
   }
 
-  function handleBack() {
-    if (isDirty && !window.confirm("You have unsaved changes. Go back to packages anyway?")) {
+  async function handleBack() {
+    if (isDirty && !await ask("You have unsaved changes. Go back to packages anyway?")) {
       return;
     }
     navigate("/quotations");
   }
 
-  function handleReset() {
-    if (!window.confirm("Reset the form to the selected package template? Any unsaved edits will be lost.")) {
+  async function handleReset() {
+    if (!await ask("Reset the form to the selected package template? Any unsaved edits will be lost.")) {
       return;
     }
     setData(createQuotationFromTemplate(activeTemplate, data.language));
@@ -87,10 +88,10 @@ export function QuotationMaker() {
 
   const templateMeta = getQuotationTemplate(activeTemplate);
 
-  function handleLanguageChange(next: QuotationLanguage) {
+  async function handleLanguageChange(next: QuotationLanguage) {
     if (next === data.language) return;
     if (
-      !window.confirm(
+      !await ask(
         next === "hi"
           ? "Switch to Hindi? Template text will be replaced with the Hindi version. Your filled-in details (customer, amounts, company, bank) will be preserved, but any custom edits to materials, terms, and notes will be lost."
           : "Switch to English? Template text will be replaced with the English version. Your filled-in details will be preserved, but any custom edits to materials, terms, and notes will be lost.",

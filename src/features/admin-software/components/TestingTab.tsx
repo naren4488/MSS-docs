@@ -17,6 +17,7 @@ import {
 import { Markdown } from "./Markdown";
 import { plainText } from "../lib/parse-docs";
 import type { CheckRow, ModuleTest, TestingDoc } from "../lib/doc-models";
+import { ask } from "@/lib/confirm-dialog";
 
 type Section = "modules" | "checklist" | "across" | "how";
 
@@ -445,8 +446,8 @@ export function TestingTab({ doc }: { doc: TestingDoc }) {
               type="button"
               className="asw-ghost"
               disabled={doneCount === 0}
-              onClick={() => {
-                if (window.confirm("Clear all your ticks on this device?")) setTicks(new Set());
+              onClick={async () => {
+                if (await ask("Clear all your ticks on this device?")) setTicks(new Set());
               }}
             >
               <RotateCcw size={14} /> Reset ticks

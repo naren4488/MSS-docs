@@ -3,13 +3,14 @@ import { Plus, Trash2, Users } from "lucide-react";
 import { Link } from "react-router-dom";
 import { formatRecordDate } from "../lib/employee-directory-formatters";
 import { deleteEmployeeDirectoryRecord, listEmployeeDirectories } from "../lib/employee-directory-storage";
+import { ask } from "@/lib/confirm-dialog";
 
 export function AllEmployeeDirectories() {
   const [refreshToken, setRefreshToken] = useState(0);
   const records = useMemo(() => listEmployeeDirectories(), [refreshToken]);
 
-  function handleDelete(id: string) {
-    if (!window.confirm("Delete this employee register?")) {
+  async function handleDelete(id: string) {
+    if (!await ask("Delete this employee register?")) {
       return;
     }
     deleteEmployeeDirectoryRecord(id);

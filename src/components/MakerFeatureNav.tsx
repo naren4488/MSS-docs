@@ -1,5 +1,6 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { FEATURE_NAV_ITEMS } from "@/components/feature-nav-items";
+import { ask } from "@/lib/confirm-dialog";
 
 interface MakerFeatureNavProps {
   isDirty?: boolean;
@@ -9,8 +10,8 @@ export function MakerFeatureNav({ isDirty = false }: MakerFeatureNavProps) {
   const location = useLocation();
   const navigate = useNavigate();
 
-  function navigateTo(path: string) {
-    if (isDirty && !window.confirm("You have unsaved changes. Leave this document anyway?")) {
+  async function navigateTo(path: string) {
+    if (isDirty && !await ask("You have unsaved changes. Leave this document anyway?")) {
       return;
     }
     navigate(path);

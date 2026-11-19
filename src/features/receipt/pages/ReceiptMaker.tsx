@@ -6,6 +6,7 @@ import { ReceiptPreview } from "../components/ReceiptPreview";
 import { documentDownloadName } from "@/lib/document-filename";
 import { createReceiptData } from "../lib/receipt-defaults";
 import type { ReceiptData } from "../types/receipt";
+import { ask } from "@/lib/confirm-dialog";
 
 export function ReceiptMaker() {
   const navigate = useNavigate();
@@ -42,13 +43,13 @@ export function ReceiptMaker() {
     }
   }
 
-  function handleBack() {
-    if (isDirty && !window.confirm("You have unsaved changes. Go back anyway?")) return;
+  async function handleBack() {
+    if (isDirty && !await ask("You have unsaved changes. Go back anyway?")) return;
     navigate("/receipts");
   }
 
-  function handleReset() {
-    if (!window.confirm("Reset this receipt? Your edits will be lost.")) return;
+  async function handleReset() {
+    if (!await ask("Reset this receipt? Your edits will be lost.")) return;
     const next = createReceiptData();
     setData(next);
     setSavedSnapshot(JSON.stringify(next));

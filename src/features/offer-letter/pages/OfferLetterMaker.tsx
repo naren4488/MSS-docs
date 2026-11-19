@@ -14,6 +14,7 @@ import { clearDraft, getDraft, getOfferLetter, saveDraft, saveOfferLetterRecord 
 import { documentDownloadName, plantDocumentName } from "@/lib/document-filename";
 import type { OfferLetterData } from "../types/offer-letter";
 import type { OfferLetterTemplate } from "../types/offer-letter";
+import { ask } from "@/lib/confirm-dialog";
 
 const TEMPLATE_VALUES: OfferLetterTemplate[] = ["fresh", "full-time-conversion", "direct-full-time"];
 
@@ -117,8 +118,8 @@ export function OfferLetterMaker() {
     }
   }
 
-  function handleBack() {
-    if (isDirty && !window.confirm("You have unsaved changes. Go back to all letters anyway?")) {
+  async function handleBack() {
+    if (isDirty && !await ask("You have unsaved changes. Go back to all letters anyway?")) {
       return;
     }
 
@@ -128,8 +129,8 @@ export function OfferLetterMaker() {
   const activeTemplate: OfferLetterTemplate =
     explicitTemplate ?? record?.content.templateId ?? data.templateId ?? "direct-full-time";
 
-  function handleReset() {
-    if (!window.confirm("Reset the form to default values? Any unsaved edits will be lost.")) {
+  async function handleReset() {
+    if (!await ask("Reset the form to default values? Any unsaved edits will be lost.")) {
       return;
     }
 

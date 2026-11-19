@@ -21,6 +21,7 @@ import {
   saveCompanyProfileDraft,
 } from "../lib/company-profile-storage";
 import type { CompanyFirm, CompanyProfileData } from "../types/company-profile";
+import { ask, alertDialog } from "@/lib/confirm-dialog";
 
 function companyDocumentName(data: CompanyProfileData): string {
   const brand = isMseFirm(data.firm) ? "MSE" : "MSS";
@@ -103,7 +104,7 @@ export function CompanyProfileMaker() {
       await downloadAnnexureDocx(data);
     } catch (error) {
       console.error(error);
-      window.alert("Could not create the Word file. Try again.");
+      void alertDialog("Could not create the Word file. Try again.");
     } finally {
       setDocxBusy(false);
     }
@@ -113,8 +114,8 @@ export function CompanyProfileMaker() {
     navigate("/company-profiles");
   }
 
-  function handleReset() {
-    if (!window.confirm("Reset the form to default values? Any edits will be lost.")) {
+  async function handleReset() {
+    if (!await ask("Reset the form to default values? Any edits will be lost.")) {
       return;
     }
     setData(createDefaultCompanyProfileData(explicitFirm ?? data.firm));

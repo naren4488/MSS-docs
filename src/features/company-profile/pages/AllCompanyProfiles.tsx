@@ -11,13 +11,14 @@ import {
 } from "../lib/company-profile-defaults";
 import { formatRecordDate } from "../lib/company-profile-formatters";
 import { deleteCompanyProfileRecord, listCompanyProfiles } from "../lib/company-profile-storage";
+import { ask } from "@/lib/confirm-dialog";
 
 export function AllCompanyProfiles() {
   const [refreshToken, setRefreshToken] = useState(0);
   const records = useMemo(() => listCompanyProfiles(), [refreshToken]);
 
-  function handleDelete(id: string) {
-    if (!window.confirm("Delete this saved company details sheet?")) {
+  async function handleDelete(id: string) {
+    if (!await ask("Delete this saved company details sheet?")) {
       return;
     }
     deleteCompanyProfileRecord(id);

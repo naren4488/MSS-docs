@@ -1,5 +1,6 @@
 import { Plus, Trash2 } from "lucide-react";
 import type { Employee } from "../types/employee-directory";
+import { ask } from "@/lib/confirm-dialog";
 
 interface EmployeeCardEditorProps {
   employee: Employee;
@@ -123,8 +124,8 @@ export function EmployeeListEditor({ employees, onChange, onAdd }: EmployeeListE
           employee={employee}
           index={index}
           onChange={(next) => onChange(employees.map((item, i) => (i === index ? next : item)))}
-          onDelete={() => {
-            if (!window.confirm(`Remove ${employee.name.trim() || "this employee"} from the register?`)) {
+          onDelete={async () => {
+            if (!await ask(`Remove ${employee.name.trim() || "this employee"} from the register?`)) {
               return;
             }
             onChange(employees.filter((_, i) => i !== index));

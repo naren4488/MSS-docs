@@ -20,6 +20,7 @@ import {
   saveAgreementDraft,
 } from "../lib/agreement-storage";
 import type { AgreementData, AgreementLanguage, AgreementTemplate } from "../types/agreement";
+import { ask } from "@/lib/confirm-dialog";
 
 function cloneData(data: AgreementData) {
   return JSON.parse(JSON.stringify(data)) as AgreementData;
@@ -100,25 +101,25 @@ export function AgreementMaker() {
     }
   }
 
-  function handleBack() {
-    if (isDirty && !window.confirm("You have unsaved changes. Go back to all agreements anyway?")) {
+  async function handleBack() {
+    if (isDirty && !await ask("You have unsaved changes. Go back to all agreements anyway?")) {
       return;
     }
     navigate("/agreements");
   }
 
-  function handleReset() {
-    if (!window.confirm("Reset the form to default values? Any unsaved edits will be lost.")) {
+  async function handleReset() {
+    if (!await ask("Reset the form to default values? Any unsaved edits will be lost.")) {
       return;
     }
     setData(createDefaultAgreementData(explicitTemplate ?? data.template, data.language));
   }
 
-  function handleLanguageChange(next: AgreementLanguage) {
+  async function handleLanguageChange(next: AgreementLanguage) {
     if (next === data.language) return;
     if (!isHindiSupported(data.template) && next === "hi") return;
     if (
-      !window.confirm(
+      !await ask(
         next === "hi"
           ? "Switch to Hindi? Template text will be replaced with the Hindi version. Your filled-in details (company, party, variables, witnesses) will be preserved, but any custom edits to clause text will be lost."
           : "Switch to English? Template text will be replaced with the English version. Your filled-in details will be preserved, but any custom edits to clause text will be lost.",
